@@ -1,0 +1,19 @@
+{
+  "localSlug": "cafe-albor",
+  "formato": "CARRUSEL",
+  "numDiapositivas": 3,
+  "idea": "Presentamos nuestra tostada de aguacate, huevo pochado y dukkah como el desayuno estrella de Café Albor: fresco, mediterráneo y perfecto para empezar el día en Málaga.",
+  "tipo": "NOVEDAD",
+  "fotos": [
+    {
+      "ruta": "fotos/cafe-albor-tostada.webp",
+      "papel": "PLATO",
+      "nota": "Tostada de aguacate con café y zumo"
+    },
+    {
+      "ruta": "fotos/cafe-albor-cafe.webp",
+      "papel": "OTRO",
+      "nota": "Café por el lateral con local de fondo borroso"
+    }
+  ]
+}

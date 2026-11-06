@@ -1,0 +1,53 @@
+{
+  "slug": "cafe-albor",
+  "nombre": "Café Albor",
+  "ciudad": "Málaga, Centro Histórico",
+  "descripcion": "Cafetería de especialidad con repostería artesanal, desayunos mediterráneos y un rincón tranquilo para trabajar o tomar algo al sol.",
+  "tonos": [
+    "Cercano",
+    "mediterráneo",
+    "artesanal",
+    "fresco",
+    "acogedor"
+  ],
+  "colores": [
+    {
+      "nombre": "Verde Albor",
+      "hex": "#2F5D50"
+    },
+    {
+      "nombre": "Caramelo",
+      "hex": "#C8A27A"
+    },
+    {
+      "nombre": "Crema",
+      "hex": "#F5EFE6"
+    },
+    {
+      "nombre": "Espresso",
+      "hex": "#4B3621"
+    },
+    {
+      "nombre": "Terracota",
+      "hex": "#E2725B"
+    },
+    {
+      "nombre": "Blanco",
+      "hex": "#FFFFFF"
+    }
+  ],
+  "tipografias": [
+    {
+      "rol": "TITULOS",
+      "descripcion": "Fraunces"
+    },
+    {
+      "rol": "TEXTOS",
+      "descripcion": "Work Sans"
+    },
+    {
+      "rol": "ROTULO",
+      "descripcion": "Fraunces Bold"
+    }
+  ]
+}

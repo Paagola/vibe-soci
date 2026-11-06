@@ -1,0 +1,13 @@
+{
+  "localSlug": "asador-etxebarri",
+  "formato": "POST",
+  "idea": "La gamba roja de Palamós a la brasa de leña: sal gruesa y nada más",
+  "tipo": "PLATO_ESTRELLA",
+  "fotos": [
+    {
+      "ruta": "fotos/gamba-roja-de-palamos.png",
+      "papel": "PLATO",
+      "nota": "dos gambas rojas de Palamós a la brasa sobre plato cuadrado de cristal esmerilado"
+    }
+  ]
+}

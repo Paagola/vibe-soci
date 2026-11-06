@@ -1,0 +1,19 @@
+# Dependencias
+node_modules/
+
+# Credenciales (las claves solo viven en .env; la plantilla es .env.ejemplo)
+.env
+.env.*
+!.env.ejemplo
+
+# Datos reales y del modo simulado: locales, piezas, fotos, imágenes generadas y exportaciones
+datos/
+datos-simulado/
+# Votos del equipo (aprendizaje del director)
+biblioteca/valoraciones.jsonl
+
+# Archivos generados por scripts y temporales
+ids.json
+ids2.json
+*.tmp
+.DS_Store

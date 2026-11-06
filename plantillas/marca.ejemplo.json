@@ -1,0 +1,15 @@
+{
+  "slug": "asador-etxebarri",
+  "nombre": "Asador Etxebarri",
+  "ciudad": "Axpe (Bizkaia)",
+  "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+  "tonos": ["sobrio", "artesano", "fuego"],
+  "colores": [
+    { "nombre": "Hueso", "hex": "#EDE7DD" },
+    { "nombre": "Carbón", "hex": "#111111" }
+  ],
+  "tipografias": [
+    { "rol": "TITULOS", "descripcion": "grotesca condensada muy pesada, alta y estrecha" },
+    { "rol": "TEXTOS", "descripcion": "monoespaciada pequeña, en mayúsculas" }
+  ]
+}
