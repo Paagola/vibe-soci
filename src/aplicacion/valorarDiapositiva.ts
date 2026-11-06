@@ -40,6 +40,7 @@ export async function valorarDiapositiva(
     motivo,
     prompt: generacion.prompt,
     archivo: generacion.archivo,
+    origen: 'HUMANA', // este caso de uso lo usa la web: vota una persona
   };
   await deps.biblioteca.registrarValoracion(valoracion);
   // Se apunta sobre lo último guardado: si hay un trabajo en marcha, el voto no se pierde cuando termine.

@@ -65,7 +65,10 @@ export class BibliotecaFicheros implements BibliotecaCreativa {
     }));
   }
 
-  /** Las líneas que no se entienden se ignoran: un voto roto no debe parar el estudio. */
+  /**
+   * Los votos de los que aprende el director: solo los humanos (los automáticos siguen en el archivo).
+   * Las líneas que no se entienden se ignoran: un voto roto no debe parar el estudio.
+   */
   private async leerValoraciones(): Promise<Valoracion[]> {
     const contenido = await readFile(this.rutaValoraciones(), 'utf8').catch(() => '');
     return contenido
@@ -79,6 +82,7 @@ export class BibliotecaFicheros implements BibliotecaCreativa {
           return [];
         }
       })
+      .filter((valoracion) => valoracion.origen !== 'AUTOMATICA')
       .reverse()
       .slice(0, VALORACIONES_RECIENTES);
   }

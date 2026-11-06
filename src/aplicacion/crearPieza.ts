@@ -25,7 +25,7 @@ export type BriefNuevaPieza = z.infer<typeof BriefNuevaPieza>;
 
 const RUTA_REFERENCIA = 'referencia/estilo';
 
-export async function crearPieza(deps: Pick<Dependencias, 'piezas' | 'locales' | 'reloj'>, entrada: unknown): Promise<Pieza> {
+export async function crearPieza(deps: Pick<Dependencias, 'piezas' | 'locales' | 'reloj' | 'zonaHoraria'>, entrada: unknown): Promise<Pieza> {
   const brief = validar(BriefNuevaPieza, entrada, 'El brief de la pieza no es válido.');
 
   if (!(await deps.locales.existe(brief.localSlug))) {
@@ -53,7 +53,7 @@ export async function crearPieza(deps: Pick<Dependencias, 'piezas' | 'locales' |
 
   const ahora = deps.reloj();
   const pieza = Pieza.parse({
-    id: await idLibre(deps.piezas, idDePieza(ahora, brief.idea)),
+    id: await idLibre(deps.piezas, idDePieza(ahora, brief.idea, deps.zonaHoraria)),
     localSlug: brief.localSlug,
     creadaEn: ahora.toISOString(),
     formato: brief.formato,

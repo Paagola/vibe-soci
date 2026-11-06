@@ -302,6 +302,7 @@ export function slugificar(texto: string, maxPalabras = 6): string {
     .join('-');
 }
 
-export function idDePieza(fecha: Date, idea: string): string {
-  return `${fecha.toISOString().slice(0, 10)}-${slugificar(idea, 5) || 'pieza'}`;
+/** La fecha del id es la del estudio (p. ej. Europe/Madrid): una pieza creada a las 00:30 lleva el día en que se creó. */
+export function idDePieza(fecha: Date, idea: string, zonaHoraria: string): string {
+  return `${diaEnZona(fecha, zonaHoraria)}-${slugificar(idea, 5) || 'pieza'}`;
 }

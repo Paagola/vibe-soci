@@ -288,6 +288,21 @@ describe('F0 · límite diario por zona horaria', () => {
   });
 });
 
+describe('Pendientes de F0 · votos automáticos', () => {
+  it('los votos automáticos se conservan en el archivo, pero el director solo aprende de los humanos', async () => {
+    const config = await entorno('votos-automaticos');
+    const ruta = join(config.carpetaBiblioteca, 'valoraciones.jsonl');
+    const voto = (fecha: string, motivo: string, extra: object = {}) =>
+      JSON.stringify({ fecha, localSlug: 'l', piezaId: 'p', diapositiva: 1, version: 1, veredicto: 'NO_GUSTA', motivo, prompt: 'p', archivo: 'a', ...extra });
+    await writeFile(ruta, [voto('2026-11-03T23:10:51Z', 'Voto antiguo de la web'), voto('2026-11-03T23:34:24Z', 'Voto de un script', { origen: 'AUTOMATICA' })].join('\n') + '\n');
+
+    const deps = crearContenedor(config, { simular: false, ...sinAvisos });
+    const guia = await deps.biblioteca.leerGuia();
+    assert.deepEqual(guia.valoraciones.map((v) => v.motivo), ['Voto antiguo de la web']);
+    assert.match(await readFile(ruta, 'utf8'), /Voto de un script/, 'el voto automático sigue guardado');
+  });
+});
+
 describe('F0 · el director recibe la proporción real', () => {
   it('el feed se describe como 3:4 con la zona segura 4:5, no como 4:5', () => {
     const contexto = {

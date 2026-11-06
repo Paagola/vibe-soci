@@ -168,7 +168,12 @@ describe('versiones', () => {
 
 describe('nombres', () => {
   it('crea ids legibles y sin tildes', () => {
-    assert.equal(idDePieza(new Date('2026-11-03T12:00:00Z'), '¡Gamba roja de Palamós a la brasa!'), '2026-11-03-gamba-roja-de-palamos-a');
+    assert.equal(idDePieza(new Date('2026-11-03T12:00:00Z'), '¡Gamba roja de Palamós a la brasa!', 'Europe/Madrid'), '2026-11-03-gamba-roja-de-palamos-a');
+  });
+
+  it('la fecha del id es la del día en España, no la de UTC', () => {
+    // 06/11 a las 00:30 en Madrid = 05/11 a las 23:30 en UTC
+    assert.equal(idDePieza(new Date('2026-11-05T23:30:00Z'), 'Gamba roja', 'Europe/Madrid'), '2026-11-06-gamba-roja');
   });
 });
 

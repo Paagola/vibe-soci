@@ -18,7 +18,7 @@ export const PLANTILLAS_DE_PIEZA = {
 export type PlantillaDePieza = keyof typeof PLANTILLAS_DE_PIEZA;
 
 export async function cargarEjemplo(
-  deps: Pick<Dependencias, 'locales' | 'piezas' | 'reloj'>,
+  deps: Pick<Dependencias, 'locales' | 'piezas' | 'reloj' | 'zonaHoraria'>,
   carpeta: string,
   plantilla: PlantillaDePieza,
 ): Promise<Pieza> {

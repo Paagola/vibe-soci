@@ -192,3 +192,12 @@ Reglas de dependencia: `web → aplicacion → (dominio, puertos)` y `adaptadore
 - **Mejora:** el carrusel trae `hiloVisual`, una transición por diapositiva y un contador «01/03» coherente.
 - **Pendiente:** con el mismo local y el mismo plato que el ejemplo 02, el primer concepto aún vuelve a «FUEGO detrás del chuletón».
 - **Pendiente:** la última diapositiva no siempre llevaba llamada a la acción. Ya se ha reforzado la instrucción, pero no se ha vuelto a probar.
+
+## 11. Pendientes conocidos (revisados el 06/11/2026)
+
+| Asunto | Afecta al funcionamiento | Estado |
+|---|---|---|
+| El id de la pieza tomaba la fecha en UTC (una pieza creada a las 00:30 llevaba el día anterior) | Sí: se ve en la web y no cuadra con el límite diario | **Corregido**: `idDePieza` usa `ESTUDIO_ZONA_HORARIA`. Los ids ya creados no cambian |
+| Votos automáticos: 3 de los 4 votos de `valoraciones.jsonl` los escribió un script (03/11/2026, misma ráfaga de 30 ms y el mismo motivo) | Sí: el director los leía como gusto del dueño | **Corregido**: se conservan marcados con `origen: AUTOMATICA` y el director solo aprende de los humanos. Copia previa en `datos/copias/`. En los `pieza.json` de esas piezas la valoración sigue tal cual (solo se usa para mostrarla y no influye en la exportación) |
+| Enlaces a `../creacion-contenido/` en `biblioteca/ejemplos/*.md`, `principios.md`, `analisis-posts.md` y `referencias/indice.json` | No: el director lee esos textos, pero no abre los enlaces, y el índice de referencias ignora esa nota | **Para otra fase**: decidir si se reponen los archivos (si vuelve a aparecer la carpeta) o se cambian los enlaces por una descripción. Cambiar esos textos cambia lo que lee el director, así que conviene hacerlo con una prueba de conceptos delante |
+| Exportar a 4:5 las 9 imágenes generadas antes del 06/11 deja la firma pegada al borde, porque se generaron sin zona segura | Solo para esas piezas | Usar su exportación 3:4. Las nuevas llevan la instrucción de zona segura |

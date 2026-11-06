@@ -164,6 +164,13 @@ export const Pieza = z.object({
 });
 export type Pieza = z.infer<typeof Pieza>;
 
+/**
+ * Quién votó. Solo los votos HUMANOS cuentan como gusto del dueño.
+ * Los AUTOMATICOS (escritos por un script) se conservan por trazabilidad, pero el director no aprende de ellos.
+ * Los votos antiguos sin este campo se hicieron desde la web: cuentan como humanos.
+ */
+export const OrigenValoracion = z.enum(['HUMANA', 'AUTOMATICA']);
+
 export const Valoracion = z.object({
   fecha: z.string(),
   localSlug: z.string(),
@@ -174,5 +181,8 @@ export const Valoracion = z.object({
   motivo: texto(3, 300),
   prompt: z.string(),
   archivo: z.string(),
+  origen: OrigenValoracion.optional(),
+  /** Por qué se marcó así (p. ej. de dónde salió un voto automático). */
+  notaOrigen: z.string().max(300).optional(),
 });
 export type Valoracion = z.infer<typeof Valoracion>;
