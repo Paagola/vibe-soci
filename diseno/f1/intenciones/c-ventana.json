@@ -1,0 +1,198 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "c-ventana",
+  "version": 1,
+  "titulo": "Sin complejos · la escena real del local como ventana, y la torre que se sale",
+  "notas": "Familia: fotografía integrada. Pensada para la foto real: usa la escena del local (el neón, la barra oscura, el papel de DAK) en una ventana vertical alta, al tamaño que la foto aguanta (1,5×). La ventana es más estrecha que la torre, así que la hamburguesa se sale por el borde derecho y pasa por delante del titular, que va girado a toda la altura en la columna derecha. Composición asimétrica: foto a la izquierda, palabra vertical a la derecha y una cartela abajo con el nombre del plato y la frase exacta de la idea. «Sin complejos» sale de la descripción del propio local. La sombra negra desplazada de la ventana es el recurso gráfico: convierte la foto en un objeto pegado al cartel.",
+  "marca": "dak-burger",
+  "activos": {
+    "plato": "dak-real-manhattan"
+  },
+  "textos": {
+    "titular": "Sin\ncomplejos",
+    "firma": "DAK Burger",
+    "lugar": "La Cala de Mijas",
+    "plato": "Manhattan Tower",
+    "idea": "Tres carnes, tres de bacon y tres de cheddar en una sola torre."
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@rojo"
+    },
+    {
+      "id": "sombra-ventana",
+      "tipo": "forma",
+      "figura": "rect",
+      "caja": {
+        "x": 0.08333333333333333,
+        "y": 0.1375,
+        "w": 0.5009,
+        "h": 0.68
+      },
+      "color": "@negro",
+      "nota": "Sombra dura desplazada: hace de la foto un objeto pegado en el cartel."
+    },
+    {
+      "id": "ventana",
+      "tipo": "imagen",
+      "activo": "plato",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.125,
+        "w": 0.5009,
+        "h": 0.68
+      },
+      "enfoque": {
+        "x": 0.37,
+        "y": 0.5
+      },
+      "zoom": 1,
+      "retoque": {
+        "contraste": 1.06,
+        "calidez": 0.04,
+        "saturacion": 1.04
+      },
+      "nota": "Ventana vertical: entra el neón arriba, la torre y la tabla abajo. Es más estrecha que la torre para que esta se salga por la derecha."
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.6,
+        "y": 0.125,
+        "w": 0.3333,
+        "h": 0.68
+      },
+      "ajuste": "caja",
+      "vertical": "abajo",
+      "rotacion": -90,
+      "alinear": "izquierda",
+      "nota": "Girado: se lee de abajo arriba y ocupa toda la altura de la ventana."
+    },
+    {
+      "id": "sombra-salida",
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "proyectada",
+      "desenfoque": 26,
+      "desplazamiento": {
+        "x": 12,
+        "y": 16
+      },
+      "opacidad": 0.45,
+      "fusion": "multiply"
+    },
+    {
+      "id": "plato",
+      "tipo": "recorte",
+      "activo": "plato",
+      "alineadoCon": "ventana",
+      "retoque": {
+        "contraste": 1.06,
+        "calidez": 0.04,
+        "saturacion": 1.04
+      },
+      "nota": "La misma torre de la foto, en el mismo sitio y a la misma escala, pero sin recortar por la ventana.",
+      "contraerBorde": 2.5
+    },
+    {
+      "id": "firma",
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.083,
+        "w": 0.4,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "vertical": "abajo"
+    },
+    {
+      "id": "lugar",
+      "tipo": "texto",
+      "texto": "@lugar",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.5333,
+        "y": 0.083,
+        "w": 0.4,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "derecha",
+      "vertical": "abajo"
+    },
+    {
+      "id": "cartela-plato",
+      "tipo": "texto",
+      "texto": "@plato",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.846,
+        "w": 0.5,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 26,
+      "vertical": "arriba"
+    },
+    {
+      "id": "cartela-idea",
+      "tipo": "texto",
+      "texto": "@idea",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.876,
+        "w": 0.5,
+        "h": 0.04
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "izquierda",
+      "vertical": "arriba"
+    },
+    {
+      "id": "grano",
+      "tipo": "textura",
+      "recurso": "grano",
+      "intensidad": 0.08,
+      "fusion": "overlay"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "firma",
+        "lugar",
+        "cartela-plato",
+        "cartela-idea"
+      ],
+      "sujeto": "plato",
+      "maximo": 0
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.35
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "cartela-idea",
+      "ratio": 4.5
+    }
+  ]
+}

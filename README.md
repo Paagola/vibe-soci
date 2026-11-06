@@ -52,6 +52,20 @@ Las fotos están en `plantillas/fotos/`.
 3. En la diapositiva, abre **«Importar una imagen hecha a mano»** y súbela.
 4. Para cambiar algo, en «Pedir cambio» marca **«Lo genero a mano»**: el estudio te da el prompt nuevo y el orden de los adjuntos, y vuelves a importar.
 
+## Compositor gráfico (F1, en pruebas)
+
+Es la base de la nueva arquitectura ([propuesta](diseno/propuesta-creativa/PROPUESTA.md), [informe de la F1](diseno/f1/INFORME-F1.md)). El diseño se escribe como una **intención**: capas, retícula de 12 × 16, relaciones y textos. El compositor la resuelve a píxeles y la pinta por capas con sharp, SVG y fontkit.
+- El texto es exacto porque se pinta con trazos de las fuentes de `recursos/tipografias/` (OFL).
+- Cada capa se repinta solo si cambia.
+- Cada versión se guarda entera y no se sobrescribe.
+
+Funciona aparte del flujo de la web, que sigue igual.
+
+```bash
+npm run activo -- --local <slug> --id <id> --desde <foto> --tipo REAL --uso PUBLICABLE --descripcion "…"   # copia la foto, crea su máscara (Apple Vision, macOS) y guarda su procedencia
+npm run f1                                                                                              # compone los diseños de diseno/f1/ en datos/disenos/f1/
+```
+
 ## Lo que aprende el estudio
 
 - `biblioteca/principios.md`: lo que ha gustado y lo que no. **Edítalo** cuando aprendáis algo.

@@ -1,0 +1,25 @@
+{
+  "nota": "Plan de la F1. Cada diseño se compone con el activo de grok (prueba de composición: el producto está alterado y no se puede publicar) y con la foto real (prueba de fidelidad: es el producto de verdad). La ventana (C) necesita la escena real del local, así que solo tiene sentido con la foto real.",
+  "marca": "marcas/dak-burger.json",
+  "disenos": [
+    {
+      "intencion": "intenciones/a-tres.json",
+      "variantes": { "composicion": { "plato": "dak-grok-torre" }, "fidelidad": { "plato": "dak-real-manhattan" } }
+    },
+    {
+      "intencion": "intenciones/b-alzado.json",
+      "variantes": { "composicion": { "plato": "dak-grok-torre" }, "fidelidad": { "plato": "dak-real-manhattan" } }
+    },
+    {
+      "intencion": "intenciones/c-ventana.json",
+      "variantes": { "fidelidad": { "plato": "dak-real-manhattan" } }
+    }
+  ],
+  "edicion": {
+    "nota": "Prueba de capas independientes: se cambia solo el titular de A y se vuelve a componer con el mismo compositor.",
+    "diseno": "a-tres",
+    "variante": "composicion",
+    "texto": "titular",
+    "valor": "TORRE"
+  }
+}

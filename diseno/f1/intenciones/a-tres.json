@@ -1,0 +1,240 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "a-tres",
+  "version": 1,
+  "titulo": "TRES · la palabra monumental detrás de la torre",
+  "notas": "Familia: color plano a sangre. Mecanismo: la palabra detrás del producto. «TRES» ocupa todo el ancho útil; la torre tapa como mucho el 20 % de la parte más tapada de la palabra (la S): la E conserva su brazo de abajo y no se lee como una F, y proyecta su sombra hacia el fondo. La hamburguesa se sale por abajo y por la derecha: apoyada en el borde no flota, y al desplazarla deja la T y la R limpias y da tensión a la composición (no es el plato centrado de siempre). Jerarquía en tres niveles: firma y lugar diminutos, el nombre del plato en la misma grotesca a tamaño medio y la palabra enorme; se lee «Manhattan Tower · tres». El premio, en versalitas, cierra el bloque por la derecha.",
+  "marca": "dak-burger",
+  "activos": {
+    "plato": "dak-grok-torre"
+  },
+  "textos": {
+    "titular": "TRES",
+    "apoyo": "Manhattan Tower",
+    "firma": "DAK Burger",
+    "lugar": "La Cala de Mijas",
+    "premio": "Premiada en The\nChampions Burger"
+  },
+  "tokens": {
+    "estilos": {
+      "subtitular": {
+        "fuente": "anybody",
+        "ejes": {
+          "wdth": 72,
+          "wght": 850
+        },
+        "caso": "mayusculas",
+        "tracking": 0,
+        "interlineado": 0.92,
+        "color": "@negro"
+      }
+    }
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@rojo"
+    },
+    {
+      "id": "luz",
+      "tipo": "degradado",
+      "forma": "radial",
+      "caja": {
+        "x": 0.05,
+        "y": 0.45,
+        "w": 1.3,
+        "h": 0.8
+      },
+      "paradas": [
+        {
+          "en": 0,
+          "color": "#FF7A4D",
+          "opacidad": 0.55
+        },
+        {
+          "en": 1,
+          "color": "@rojo",
+          "opacidad": 0
+        }
+      ],
+      "nota": "Luz cálida detrás de la torre: separa el plato del fondo sin dibujar nada."
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          4,
+          10
+        ]
+      },
+      "ajuste": "eje-ancho",
+      "alinear": "centro",
+      "vertical": "arriba",
+      "nota": "La anchura de la fuente se ajusta para que la palabra llene el ancho útil a la mayor altura posible."
+    },
+    {
+      "id": "sombra-torre",
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "proyectada",
+      "desenfoque": 50,
+      "desplazamiento": {
+        "x": -26,
+        "y": -4
+      },
+      "opacidad": 0.55,
+      "fusion": "multiply",
+      "nota": "La luz viene de delante y algo de la izquierda: la sombra cae detrás de la torre, sobre la palabra."
+    },
+    {
+      "id": "plato",
+      "tipo": "recorte",
+      "activo": "plato",
+      "escala": {
+        "anchoSujeto": 0.88
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.2,
+          "y": 0,
+          "w": 1,
+          "h": 1
+        },
+        "alinear": "abajo-derecha"
+      },
+      "sangradoAbajo": 0.08,
+      "retoque": {
+        "contraste": 1.04,
+        "saturacion": 1.05
+      },
+      "contraerBorde": 2.5
+    },
+    {
+      "id": "filete",
+      "tipo": "forma",
+      "figura": "linea",
+      "desde": {
+        "x": 0.0667,
+        "y": 0.1125
+      },
+      "hasta": {
+        "x": 0.9333,
+        "y": 0.1125
+      },
+      "color": "@negro",
+      "grosor": 2
+    },
+    {
+      "id": "firma",
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.083,
+        "w": 0.4,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "vertical": "abajo"
+    },
+    {
+      "id": "lugar",
+      "tipo": "texto",
+      "texto": "@lugar",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.5333,
+        "y": 0.083,
+        "w": 0.4,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "derecha",
+      "vertical": "abajo"
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "subtitular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.14,
+        "w": 0.5,
+        "h": 0.042
+      },
+      "ajuste": "eje-ancho"
+    },
+    {
+      "id": "premio",
+      "tipo": "texto",
+      "texto": "@premio",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.5667,
+        "y": 0.14,
+        "w": 0.3667,
+        "h": 0.042
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "derecha",
+      "vertical": "abajo"
+    },
+    {
+      "id": "grano",
+      "tipo": "textura",
+      "recurso": "grano",
+      "intensidad": 0.09,
+      "fusion": "overlay"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "detras",
+      "texto": "titular",
+      "sujeto": "plato",
+      "cobertura": [
+        0.14,
+        0.2
+      ],
+      "medida": "franja",
+      "zona": {
+        "desde": 0.22,
+        "hasta": 0.8
+      }
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "firma",
+        "lugar",
+        "apoyo",
+        "premio"
+      ],
+      "sujeto": "plato",
+      "maximo": 0
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "premio",
+      "ratio": 4.5
+    }
+  ]
+}

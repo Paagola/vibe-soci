@@ -11,10 +11,13 @@
     "estudio": "tsx --env-file-if-exists=.env src/web/arrancar.ts",
     "estudio:simulado": "ESTUDIO_SIMULAR=1 tsx --env-file-if-exists=.env src/web/arrancar.ts",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test test/*.test.ts"
+    "test": "tsx --test test/*.test.ts",
+    "f1": "tsx --env-file-if-exists=.env src/herramientas/f1.ts",
+    "activo": "tsx --env-file-if-exists=.env src/herramientas/prepararActivo.ts"
   },
   "dependencies": {
     "express": "^5.3.0",
+    "fontkit": "^2.0.4",
     "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },

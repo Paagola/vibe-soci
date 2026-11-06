@@ -1,0 +1,25 @@
+{
+  "nota": "Catálogo de fuentes del compositor. Solo fuentes con licencia que permita usarlas y redistribuirlas (OFL). Las fuentes propias de un cliente entran aquí solo con su licencia acreditada.",
+  "fuentes": [
+    {
+      "id": "anybody",
+      "familia": "Anybody",
+      "archivo": "anybody/Anybody[wdth,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/anybody",
+      "descargada": "2026-11-06",
+      "clasificacion": ["grotesca", "variable", "ultracondensada", "display"],
+      "ejes": { "wdth": [50, 150], "wght": [100, 900] }
+    },
+    {
+      "id": "archivo",
+      "familia": "Archivo",
+      "archivo": "archivo/Archivo[wdth,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/archivo",
+      "descargada": "2026-11-06",
+      "clasificacion": ["grotesca", "variable", "texto", "versalitas"],
+      "ejes": { "wdth": [62, 125], "wght": [100, 900] }
+    }
+  ]
+}

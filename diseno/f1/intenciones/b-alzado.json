@@ -1,0 +1,294 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "b-alzado",
+  "version": 1,
+  "titulo": "Alzado · la Manhattan Tower dibujada como un edificio",
+  "notas": "Familia: low-key editorial, noche. Mecanismo: el plato leído como un edificio en alzado. Cada piso de la torre tiene su línea de nivel (discontinua, pasa por detrás del plato) y su nombre de planta a la izquierda: ático, tercero, segundo, primero. El suelo es una línea continua sobre la que se apoya la torre con su sombra de contacto. Jerarquía asimétrica: el nombre del plato arriba a la izquierda, en rojo, con «Tower» más grande; la torre a la derecha; abajo, la frase exacta de la idea. Mucho negro: el espacio vacío es parte del dibujo. Un resplandor rojo detrás del plato recuerda el neón del local.",
+  "marca": "dak-burger",
+  "activos": {
+    "plato": "dak-grok-torre"
+  },
+  "textos": {
+    "titular": "Manhattan\nTower",
+    "idea": "Tres carnes, tres de bacon y tres de cheddar en una sola torre.",
+    "lugar": "DAK Burger\nLa Cala de Mijas",
+    "premio": "Premiada en The\nChampions Burger",
+    "atico": "Ático",
+    "tercero": "Tercero",
+    "segundo": "Segundo",
+    "primero": "Primero",
+    "bajo": "Bajo"
+  },
+  "tokens": {
+    "estilos": {
+      "titular-rojo": {
+        "fuente": "anybody",
+        "ejes": {
+          "wdth": 50,
+          "wght": 900
+        },
+        "caso": "mayusculas",
+        "tracking": 0,
+        "interlineado": 0.9,
+        "color": "@rojo"
+      },
+      "planta": {
+        "fuente": "archivo",
+        "ejes": {
+          "wdth": 100,
+          "wght": 600
+        },
+        "caso": "mayusculas",
+        "tracking": 0.16,
+        "interlineado": 1.2,
+        "color": "@papel"
+      },
+      "texto-claro": {
+        "fuente": "archivo",
+        "ejes": {
+          "wdth": 100,
+          "wght": 500
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.3,
+        "color": "@papel"
+      },
+      "versalita-clara": {
+        "fuente": "archivo",
+        "ejes": {
+          "wdth": 100,
+          "wght": 600
+        },
+        "caso": "mayusculas",
+        "tracking": 0.14,
+        "interlineado": 1.35,
+        "color": "@papel"
+      }
+    }
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@negro"
+    },
+    {
+      "id": "neon",
+      "tipo": "degradado",
+      "forma": "radial",
+      "caja": {
+        "x": 0.25,
+        "y": 0.28,
+        "w": 0.9,
+        "h": 0.62
+      },
+      "paradas": [
+        {
+          "en": 0,
+          "color": "@rojo",
+          "opacidad": 0.34
+        },
+        {
+          "en": 1,
+          "color": "@rojo",
+          "opacidad": 0
+        }
+      ],
+      "nota": "Resplandor rojo detrás de la torre: el neón del local, sin dibujar un neón."
+    },
+    {
+      "id": "plantas",
+      "tipo": "niveles",
+      "de": "plato",
+      "estilo": "planta",
+      "tamano": 24,
+      "color": "@papel",
+      "grosor": 1.5,
+      "discontinua": [
+        6,
+        7
+      ],
+      "opacidad": 0.85,
+      "niveles": [
+        {
+          "punto": "cima",
+          "izquierda": "@atico"
+        },
+        {
+          "punto": "carne-superior",
+          "izquierda": "@tercero"
+        },
+        {
+          "punto": "carne-central",
+          "izquierda": "@segundo"
+        },
+        {
+          "punto": "carne-inferior",
+          "izquierda": "@primero"
+        }
+      ],
+      "nota": "Las líneas pasan por detrás de la torre: el plato está delante del plano."
+    },
+    {
+      "id": "suelo",
+      "tipo": "niveles",
+      "de": "plato",
+      "estilo": "planta",
+      "tamano": 24,
+      "color": "@papel",
+      "grosor": 2.5,
+      "niveles": [
+        {
+          "punto": "suelo",
+          "izquierda": "@bajo"
+        }
+      ]
+    },
+    {
+      "id": "sombra-contacto",
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "contacto",
+      "ancho": 0.86,
+      "alto": 40,
+      "desenfoque": 22,
+      "desplazamiento": {
+        "x": 0,
+        "y": 4
+      },
+      "opacidad": 0.85
+    },
+    {
+      "id": "plato",
+      "tipo": "recorte",
+      "activo": "plato",
+      "escala": {
+        "altoSujeto": 0.42
+      },
+      "ancla": {
+        "caja": {
+          "col": [
+            6,
+            12
+          ],
+          "fila": [
+            6,
+            14
+          ]
+        },
+        "alinear": "abajo-derecha"
+      },
+      "retoque": {
+        "contraste": 1.05,
+        "saturacion": 1.04,
+        "brillo": 0.98
+      },
+      "contraerBorde": 2.5
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular-rojo",
+      "caja": {
+        "col": [
+          1,
+          6
+        ],
+        "fila": [
+          2,
+          5
+        ]
+      },
+      "ajuste": "ancho-por-linea",
+      "vertical": "arriba"
+    },
+    {
+      "id": "premio",
+      "tipo": "texto",
+      "texto": "@premio",
+      "estilo": "versalita-clara",
+      "caja": {
+        "x": 0.5333,
+        "y": 0.0815,
+        "w": 0.4,
+        "h": 0.06
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "derecha",
+      "vertical": "arriba",
+      "opacidad": 0.75
+    },
+    {
+      "id": "idea",
+      "tipo": "texto",
+      "texto": "@idea",
+      "estilo": "texto-claro",
+      "caja": {
+        "col": [
+          1,
+          5
+        ],
+        "fila": [
+          15,
+          15
+        ]
+      },
+      "ajuste": "fijo",
+      "tamano": 28,
+      "vertical": "arriba"
+    },
+    {
+      "id": "lugar",
+      "tipo": "texto",
+      "texto": "@lugar",
+      "estilo": "versalita-clara",
+      "caja": {
+        "col": [
+          7,
+          12
+        ],
+        "fila": [
+          15,
+          15
+        ]
+      },
+      "ajuste": "fijo",
+      "tamano": 24,
+      "alinear": "derecha",
+      "vertical": "arriba"
+    },
+    {
+      "id": "grano",
+      "tipo": "textura",
+      "recurso": "grano",
+      "intensidad": 0.07,
+      "fusion": "overlay"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular",
+        "idea",
+        "premio",
+        "lugar"
+      ],
+      "sujeto": "plato",
+      "maximo": 0
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "idea",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 3
+    }
+  ]
+}
