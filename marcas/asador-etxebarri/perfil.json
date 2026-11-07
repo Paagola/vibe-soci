@@ -1,0 +1,51 @@
+{
+  "esquema": "marca/perfil@2",
+  "slug": "asador-etxebarri",
+  "constantes": {
+    "nombre": { "valor": "Asador Etxebarri", "fuente": "DOCUMENTO", "referencia": "datos/locales/asador-etxebarri/marca.json", "confirmado": false },
+    "ubicacion": { "valor": "En la plaza de Axpe, al pie de la montaña. Axpe (Bizkaia)", "fuente": "DOCUMENTO", "referencia": "datos/locales/asador-etxebarri/marca.json (ciudad y descripcion)", "confirmado": false },
+    "concepto": { "valor": "Producto y fuego, sin artificios.", "fuente": "DOCUMENTO", "referencia": "datos/locales/asador-etxebarri/marca.json (descripcion)", "confirmado": false },
+    "personalidad": { "valor": ["sobrio", "artesano", "fuego"], "fuente": "DOCUMENTO", "referencia": "datos/locales/asador-etxebarri/marca.json (tonos)", "confirmado": false },
+    "paleta": {
+      "valor": [
+        { "nombre": "Hueso", "hex": "#EDE7DD", "papel": "texto y luz sobre carbón" },
+        { "nombre": "Carbón", "hex": "#111111", "papel": "fondo y negro de las fotos (punto negro)" }
+      ],
+      "fuente": "DOCUMENTO", "referencia": "datos/locales/asador-etxebarri/marca.json (colores); los papeles los propone el estudio", "confirmado": false
+    },
+    "tipografias": {
+      "valor": [
+        { "rol": "TITULOS", "descripcion": "grotesca condensada muy pesada, alta y estrecha", "fuente": "league-gothic", "licencia": "OFL-1.1" },
+        { "rol": "TEXTOS", "descripcion": "monoespaciada pequeña, en mayúsculas", "fuente": "plex-mono", "licencia": "OFL-1.1" }
+      ],
+      "fuente": "DOCUMENTO", "referencia": "marca.json (descripción de las fuentes); League Gothic e IBM Plex Mono son la elección del estudio", "confirmado": false
+    },
+    "firma": { "valor": "El nombre compuesto en IBM Plex Mono, en mayúsculas pequeñas. Sin logotipo: no hay archivo.", "fuente": "ESTUDIO", "referencia": "proyectos/etxebarri-gamba-carrusel/BRIEF.md", "confirmado": false },
+    "voz": { "valor": ["pocas palabras", "el producto se nombra entero (gamba roja de Palamós)", "sin adjetivos de lujo", "frases que se pueden decir en voz alta"], "fuente": "ESTUDIO", "referencia": "deducida de «sobrio, artesano, fuego» y «sin artificios»", "confirmado": false }
+  },
+  "variables": {
+    "fotografia": { "valor": ["claroscuro de brasa: una luz cálida baja y lateral, el resto en carbón", "primeros planos y macro del producto real", "la foto real tal cual cuando la luz de día cuente algo (la mesa, el plato)"], "fuente": "ESTUDIO", "referencia": "carrusel «Y nada más» (F1.5)", "confirmado": false },
+    "experimentacion": { "valor": 1, "fuente": "ESTUDIO", "referencia": "personalidad «sobrio»: la sorpresa va en la idea, no en los efectos", "confirmado": false },
+    "recursos": { "valor": ["detalles del producto real usados como signos (el grano de sal como punto final)"], "fuente": "ESTUDIO", "referencia": "carrusel «Y nada más» (F1.5)", "confirmado": false }
+  },
+  "restricciones": [
+    { "valor": "No inventar premios, historia, cocinero, técnica de la parrilla ni datos comerciales: no constan.", "fuente": "DOCUMENTO", "referencia": "reglas de la F1.5", "confirmado": true },
+    { "valor": "No mostrar la parrilla ni el fuego como si fueran del local: no hay foto. El fuego se cuenta por su huella en el producto.", "fuente": "ESTUDIO", "referencia": "proyectos/etxebarri-gamba-carrusel/CONCEPTO.md", "confirmado": false },
+    { "valor": "Fidelidad ESTRICTA: el plato tal como es (dos gambas, antenas, sal gruesa, plato de cristal esmerilado).", "fuente": "PROPIETARIO", "referencia": "decisión del 06/11/2026 (dueño del estudio)", "confirmado": true }
+  ],
+  "material": [
+    { "activo": "etx-real-gamba", "muestra": "foto real a 4043 × 2887: dos gambas rojas a la brasa con sal gruesa sobre plato cuadrado de cristal esmerilado, luz de día" },
+    { "activo": "etx-brasa-campana", "muestra": "la misma foto con luz de brasa (generada y comprobada: CONSERVA)" },
+    { "activo": "etx-real-grano-sal", "muestra": "un grano de sal de la foto real, recortado" }
+  ],
+  "pendientes": [
+    "logotipo en archivo (SVG o PNG) y dónde se puede usar",
+    "tipografías propias del local o su licencia",
+    "confirmar League Gothic e IBM Plex Mono como sus fuentes",
+    "preferencias fotográficas del dueño",
+    "grado de experimentación que acepta",
+    "recursos gráficos que considera suyos y los que rechaza",
+    "datos de contacto para la llamada a la acción (reservas, web, teléfono)",
+    "más fotos reales: el local, la plaza, otros platos"
+  ]
+}

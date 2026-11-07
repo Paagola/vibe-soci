@@ -66,6 +66,23 @@ npm run activo -- --local <slug> --id <id> --desde <foto> --tipo REAL --uso PUBL
 npm run f1                                                                                              # compone los diseños de diseno/f1/ en datos/disenos/f1/
 ```
 
+## Dirección de arte y producción (F1.5, en pruebas)
+
+El orden de trabajo cambia a **primero la idea y después la composición**. La metodología está adaptada de design-agent de LangChain ([investigación](diseno/f1_5/INVESTIGACION-DESIGN-AGENT.md), [informe de la F1.5](diseno/f1_5/INFORME-F1.5.md)):
+- [`conocimiento/`](conocimiento/README.md): oficios (dirección de arte, fotografía gastronómica, composición y tipografía, texto publicitario, revisión visual), principios, antipatrones, rúbrica, fichas de referencia y observaciones. El director recibe solo lo de la fase en la que está.
+- [`marcas/<slug>/`](marcas/README.md): perfil de marca v2 (constantes, variables, restricciones, material y pendientes, con la fuente de cada dato) y los tokens del compositor.
+- [`proyectos/<slug>/`](proyectos/etxebarri-gamba-carrusel/BRIEF.md): brief con registro de afirmaciones, concepto, producción (modelos, prompts, recetas y gasto), intenciones, revisión y pie.
+
+```bash
+npm run generar -- proyectos/<slug>/produccion/recetas/<receta>.json --solo-estimar   # precio por la API (gratis); sin --solo-estimar genera, con tope de 5 USD
+npm run fidelidad -- --local <slug> --real <id> --generado <id> --veredicto CONSERVA|ALTERA --nota "…"   # ¿conserva el plato? Solo CONSERVA pasa a PUBLICABLE
+npm run combinar-luz -- --local <slug> --id <nuevo> --luz <id> --detalle <id> --descripcion "…"           # la luz de una imagen y el detalle de otra (sin coste)
+npm run detalle -- --local <slug> --id <nuevo> --desde <id> --recorte x,y,w,h --descripcion "…"          # un detalle real recortado con su máscara
+npm run carrusel -- proyectos/<slug> [--borrador]                                                         # compone, guarda versiones y monta las hojas de revisión
+```
+
+Cada imagen generada se guarda con su receta, su prompt, su `request_id`, sus referencias y su coste. El gasto queda en `datos/gasto/higgsfield.jsonl`. Nada de esto toca el generador antiguo de la web.
+
 ## Lo que aprende el estudio
 
 - `biblioteca/principios.md`: lo que ha gustado y lo que no. **Edítalo** cuando aprendáis algo.

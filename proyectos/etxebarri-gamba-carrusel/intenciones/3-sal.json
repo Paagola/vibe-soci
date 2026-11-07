@@ -1,0 +1,64 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "etx-3-sal",
+  "version": 1,
+  "titulo": "3 · Momento visual: «Sal gruesa.»",
+  "notas": "Macro: los cristales de sal sobre el caparazón, como piedras sobre un paisaje rojo. Casi abstracto. La frase, aún más pequeña.",
+  "marca": "asador-etxebarri",
+  "activos": {
+    "foto": "etx-brasa-campana"
+  },
+  "textos": {
+    "frase": "sal gruesa"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.605,
+        "y": 0.4
+      },
+      "zoom": 2.58,
+      "nota": "Los cristales del caparazón de la gamba delantera.",
+      "retoque": {
+        "brillo": 1.1,
+        "contraste": 1.12,
+        "saturacion": 1.06,
+        "puntoNegro": "@carbon"
+      }
+    },
+    {
+      "id": "frase",
+      "tipo": "texto",
+      "texto": "@frase",
+      "estilo": "frase",
+      "caja": {
+        "x": 0.067,
+        "y": 0.8,
+        "w": 0.5,
+        "h": 0.055
+      },
+      "ajuste": "alto"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "frase",
+      "ratio": 3
+    }
+  ]
+}

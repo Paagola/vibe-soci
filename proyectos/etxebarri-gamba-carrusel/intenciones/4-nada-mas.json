@@ -1,0 +1,70 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "etx-4-nada-mas",
+  "version": 2,
+  "titulo": "4 · Cierre: «Y nada más.»",
+  "notas": "El vacío es el mensaje. Carbón, el final de la frase y el único punto del carrusel: un grano de sal de la foto real. El nombre y el lugar, pequeños, abajo.",
+  "marca": "asador-etxebarri",
+  "activos": {
+    "grano": "etx-real-grano-sal"
+  },
+  "textos": {
+    "frase": "y nada más",
+    "firma": "Asador Etxebarri\nPlaza de Axpe (Bizkaia)"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "frase",
+      "tipo": "texto",
+      "texto": "@frase",
+      "estilo": "frase",
+      "caja": {
+        "x": 0.067,
+        "y": 0.45,
+        "w": 0.6,
+        "h": 0.05
+      },
+      "ajuste": "alto"
+    },
+    {
+      "id": "grano",
+      "tipo": "recorte",
+      "activo": "grano",
+      "trasTexto": {
+        "texto": "frase",
+        "alto": 0.95,
+        "separacion": 0.07,
+        "elevacion": 0
+      },
+      "bordeSuave": 0.6,
+      "nota": "El punto final es un grano de sal de verdad, casi tan alto como las mayúsculas: tiene que verse en el móvil."
+    },
+    {
+      "id": "firma",
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "firma",
+      "caja": {
+        "x": 0.067,
+        "y": 0.86,
+        "w": 0.7,
+        "h": 0.07
+      },
+      "ajuste": "fijo",
+      "tamano": 28
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "firma",
+      "ratio": 4.5
+    }
+  ],
+  "padre": 1
+}

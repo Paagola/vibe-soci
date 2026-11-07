@@ -1,0 +1,65 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "etx-2-brasa",
+  "version": 1,
+  "titulo": "2 · Desarrollo: «Brasa de leña.»",
+  "notas": "La cámara se acerca a las cabezas. El fuego no está en el plato, pero se ve en el producto: las puntas tostadas, el brillo del caparazón. La frase sigue, más pequeña, en la sombra.",
+  "marca": "asador-etxebarri",
+  "activos": {
+    "foto": "etx-brasa-campana"
+  },
+  "textos": {
+    "frase": "brasa\nde leña,"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.425,
+        "y": 0.475
+      },
+      "zoom": 1.81,
+      "nota": "Las dos cabezas y las puntas negras de las patas: la huella del fuego.",
+      "retoque": {
+        "brillo": 1.1,
+        "contraste": 1.12,
+        "saturacion": 1.06,
+        "puntoNegro": "@carbon"
+      }
+    },
+    {
+      "id": "frase",
+      "tipo": "texto",
+      "texto": "@frase",
+      "estilo": "frase",
+      "caja": {
+        "x": 0.067,
+        "y": 0.4,
+        "w": 0.24,
+        "h": 0.17
+      },
+      "ajuste": "caja",
+      "vertical": "arriba"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "frase",
+      "ratio": 3
+    }
+  ]
+}

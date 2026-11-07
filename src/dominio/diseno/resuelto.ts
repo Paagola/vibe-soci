@@ -22,6 +22,8 @@ export interface LineaResuelta {
   tamano: number;
   /** Ancho visual (de borde de glifo a borde de glifo). */
   ancho: number;
+  /** Dónde acaba la tinta de la última letra, en el sistema del bloque (para colocar algo «tras el texto»). */
+  fin?: number;
 }
 
 interface BaseResuelta {

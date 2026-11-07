@@ -30,6 +30,19 @@ const RespuestaEstado = z.object({
   error: z.string().optional(),
 });
 
+const RespuestaEstimacion = z.object({
+  usd: z.string().optional(),
+  credits: z.string().optional(),
+  pricing_description: z.string().optional(),
+});
+
+/** Lo que devuelve /estimate: importe en USD cuando el modelo tiene precio fijo; si cobra por tokens, solo la tarifa. */
+export interface Estimacion {
+  usd?: number;
+  creditos?: number;
+  tarifa?: string;
+}
+
 export interface OpcionesCliente {
   fetch?: typeof fetch;
   dormir?: (ms: number) => Promise<void>;
@@ -65,6 +78,20 @@ export class ClienteHiggsfield {
     return subida.public_url;
   }
 
+  /**
+   * Precio de una petición antes de enviarla (POST /estimate/<modelo>, no genera ni cobra).
+   * Algunos modelos cobran por tokens y solo devuelven la descripción de la tarifa, sin importe.
+   */
+  async estimar(modelo: string, cuerpo: Record<string, unknown>): Promise<Estimacion> {
+    const respuesta = await this.pedirJson('POST', `${BASE}/estimate/${modelo}`, RespuestaEstimacion, cuerpo);
+    const usd = respuesta.usd === undefined ? undefined : Number(respuesta.usd);
+    return {
+      ...(usd !== undefined && Number.isFinite(usd) ? { usd } : {}),
+      ...(respuesta.credits !== undefined ? { creditos: Number(respuesta.credits) } : {}),
+      ...(respuesta.pricing_description ? { tarifa: respuesta.pricing_description } : {}),
+    };
+  }
+
   async enviar(modelo: string, cuerpo: Record<string, unknown>, claveIdempotencia: string): Promise<TrabajoEnviado> {
     const envio = await this.pedirJson('POST', `${BASE}/${modelo}`, RespuestaEnvio, cuerpo, { 'Idempotency-Key': claveIdempotencia });
     return { requestId: envio.request_id, urlEstado: envio.status_url ?? `${BASE}/requests/${envio.request_id}/status` };
@@ -96,6 +123,11 @@ export class ClienteHiggsfield {
       await this.dormir(pausa + Math.random() * 500);
       pausa = Math.min(pausa * 1.5, 10_000);
     }
+  }
+
+  /** El estado completo de una petición tal como lo devuelve la API, para guardarlo como procedencia. */
+  async consultar(urlEstado: string): Promise<Record<string, unknown>> {
+    return this.pedirJson('GET', urlEstado, z.record(z.string(), z.unknown()));
   }
 
   async descargar(url: string): Promise<{ bytes: Buffer; tipo: string }> {

@@ -13,7 +13,12 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "f1": "tsx --env-file-if-exists=.env src/herramientas/f1.ts",
-    "activo": "tsx --env-file-if-exists=.env src/herramientas/prepararActivo.ts"
+    "activo": "tsx --env-file-if-exists=.env src/herramientas/prepararActivo.ts",
+    "generar": "tsx --env-file-if-exists=.env src/herramientas/generarActivo.ts",
+    "fidelidad": "tsx src/herramientas/fidelidad.ts",
+    "combinar-luz": "tsx src/herramientas/combinarLuz.ts",
+    "detalle": "tsx src/herramientas/extraerDetalle.ts",
+    "carrusel": "tsx src/herramientas/carrusel.ts"
   },
   "dependencies": {
     "express": "^5.3.0",

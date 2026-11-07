@@ -20,6 +20,35 @@
       "descargada": "2026-11-06",
       "clasificacion": ["grotesca", "variable", "texto", "versalitas"],
       "ejes": { "wdth": [62, 125], "wght": [100, 900] }
+    },
+    {
+      "id": "league-gothic",
+      "familia": "League Gothic",
+      "archivo": "league-gothic/LeagueGothic[wdth].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/leaguegothic",
+      "descargada": "2026-11-07",
+      "clasificacion": ["grotesca", "condensada", "alta", "display", "tipo-de-madera"],
+      "ejes": { "wdth": [75, 100] },
+      "nota": "Revival de Alternate Gothic No. 1 (1903), de la época de los carteles de tipos de madera. Alta, estrecha y pesada."
+    },
+    {
+      "id": "plex-mono",
+      "familia": "IBM Plex Mono",
+      "archivo": "ibm-plex-mono/IBMPlexMono-Medium.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/ibmplexmono",
+      "descargada": "2026-11-07",
+      "clasificacion": ["monoespaciada", "texto", "versalitas"]
+    },
+    {
+      "id": "plex-mono-regular",
+      "familia": "IBM Plex Mono",
+      "archivo": "ibm-plex-mono/IBMPlexMono-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/ibmplexmono",
+      "descargada": "2026-11-07",
+      "clasificacion": ["monoespaciada", "texto"]
     }
   ]
 }

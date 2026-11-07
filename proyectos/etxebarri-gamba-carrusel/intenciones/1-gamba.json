@@ -1,0 +1,121 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "etx-1-gamba",
+  "version": 2,
+  "titulo": "1 · Gancho: «Gamba roja de Palamós.»",
+  "notas": "La diapositiva más llena del carrusel. La gamba enorme en la penumbra, a sangre por abajo y por los lados, con la luz de brasa entrando por la izquierda. La frase empieza aquí y acaba en coma: pide pasar a la siguiente. Nada detrás del producto, nada encima.",
+  "marca": "asador-etxebarri",
+  "activos": {
+    "foto": "etx-brasa-campana"
+  },
+  "textos": {
+    "frase": "Gamba roja\nde Palamós,"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": -0.05,
+        "y": 0.2,
+        "w": 1.1,
+        "h": 0.9
+      },
+      "enfoque": {
+        "x": 0.6,
+        "y": 0.5
+      },
+      "zoom": 1,
+      "nota": "El plato entero; las antenas se cortan por la izquierda y la cola casi toca el borde derecho.",
+      "retoque": {
+        "brillo": 1.1,
+        "contraste": 1.12,
+        "saturacion": 1.06,
+        "puntoNegro": "@carbon"
+      }
+    },
+    {
+      "id": "luz",
+      "tipo": "degradado",
+      "forma": "radial",
+      "caja": {
+        "x": -0.05,
+        "y": 0.36,
+        "w": 0.95,
+        "h": 0.62
+      },
+      "paradas": [
+        {
+          "en": 0,
+          "color": "@hueso",
+          "opacidad": 0.55
+        },
+        {
+          "en": 0.55,
+          "color": "@hueso",
+          "opacidad": 0.18
+        },
+        {
+          "en": 1,
+          "color": "@hueso",
+          "opacidad": 0
+        }
+      ],
+      "fusion": "soft-light",
+      "nota": "Aclarado (dodge) sobre el producto: la luz de brasa le llega con más fuerza al cuerpo de las gambas, que se quedaba turbio. No toca el fondo."
+    },
+    {
+      "id": "fundido",
+      "tipo": "degradado",
+      "forma": "lineal",
+      "caja": {
+        "x": 0,
+        "y": 0.19,
+        "w": 1,
+        "h": 0.12
+      },
+      "angulo": 90,
+      "paradas": [
+        {
+          "en": 0,
+          "color": "@carbon",
+          "opacidad": 1
+        },
+        {
+          "en": 1,
+          "color": "@carbon",
+          "opacidad": 0
+        }
+      ],
+      "nota": "La foto se funde con el aire de arriba: la luz cae y no hay borde."
+    },
+    {
+      "id": "frase",
+      "tipo": "texto",
+      "texto": "@frase",
+      "estilo": "frase",
+      "caja": {
+        "x": 0.067,
+        "y": 0.082,
+        "w": 0.866,
+        "h": 0.235
+      },
+      "ajuste": "caja",
+      "vertical": "arriba"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "frase",
+      "ratio": 3
+    }
+  ],
+  "padre": 1
+}

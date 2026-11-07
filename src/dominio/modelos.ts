@@ -3,6 +3,7 @@
  * Los nombres siguen los de la app SOCIETY (pieza, diapositiva, generación).
  */
 import { z } from 'zod';
+import { Motivo } from './aprendizaje.js';
 
 const texto = (min: number, max: number) => z.string().trim().min(min).max(max);
 
@@ -184,5 +185,10 @@ export const Valoracion = z.object({
   origen: OrigenValoracion.optional(),
   /** Por qué se marcó así (p. ej. de dónde salió un voto automático). */
   notaOrigen: z.string().max(300).optional(),
+  /**
+   * Motivos estructurados (F1.5): qué aspecto gustó o no y por qué. Opcionales; los votos antiguos solo tienen
+   * el motivo libre. De aquí salen las observaciones del aprendizaje (dominio/aprendizaje.ts).
+   */
+  motivos: z.array(Motivo).max(7).optional(),
 });
 export type Valoracion = z.infer<typeof Valoracion>;

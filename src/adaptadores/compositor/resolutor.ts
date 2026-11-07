@@ -4,7 +4,7 @@
  * No pinta: eso lo hace el renderizador con el documento que sale de aquí.
  */
 import type { Activo } from '../../dominio/activos.js';
-import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion } from '../../dominio/diseno/intencion.js';
+import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque } from '../../dominio/diseno/intencion.js';
 import type { CapaResuelta, EstiloResuelto, Problema, Resuelto } from '../../dominio/diseno/resuelto.js';
 import { alinearEn, dentroDe, lienzoDe, rectDeCaja, zonaSegura, type Lienzo, type Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
@@ -51,9 +51,16 @@ export class ResolutorDiseno {
     const indice = new Map(intencion.capas.map((capa, i) => [capa.id, i]));
     if (indice.size !== intencion.capas.length) throw new RangeError('Hay dos capas con el mismo id.');
 
+    const trasTexto: Array<{ capa: CapaDe<'recorte'>; comun: { id: string; z: number; opacidad: number; fusion: CapaResuelta['fusion'] } }> = [];
+
     for (const capa of [...intencion.capas].sort((a, b) => orden(a) - orden(b))) {
       if (capa.oculta) continue;
       const comun = { id: capa.id, z: indice.get(capa.id)!, opacidad: capa.opacidad, fusion: capa.fusion };
+      // Lo que va «tras un texto» se coloca al final, cuando el texto ya tiene su sitio definitivo.
+      if (capa.tipo === 'recorte' && capa.trasTexto) {
+        trasTexto.push({ capa, comun });
+        continue;
+      }
       switch (capa.tipo) {
         case 'relleno':
           resueltas.set(capa.id, { ...comun, tipo: 'relleno', color: color(capa.color) });
@@ -79,7 +86,7 @@ export class ResolutorDiseno {
           transformaciones.set(capa.id, { escala, ox, oy, marco });
           medidas.ampliacion[capa.id] = redondear3(escala);
           avisarAmpliacion(problemas, capa.id, escala, activo);
-          resueltas.set(capa.id, { ...comun, tipo: 'imagen', activo: capa.activo, origen: { x: ox, y: oy, w, h }, destino: marco, marco, retoque: capa.retoque });
+          resueltas.set(capa.id, { ...comun, tipo: 'imagen', activo: capa.activo, origen: { x: ox, y: oy, w, h }, destino: marco, marco, retoque: conColorResuelto(capa.retoque, color) });
           break;
         }
         case 'recorte': {
@@ -106,7 +113,7 @@ export class ResolutorDiseno {
           }
           medidas.ampliacion[capa.id] = redondear3(escala);
           avisarAmpliacion(problemas, capa.id, escala, activo);
-          resueltas.set(capa.id, { ...comun, tipo: 'recorte', activo: capa.activo, origen: { ...bbox }, destino, sujeto: destino, retoque: capa.retoque, bordeSuave: capa.bordeSuave, contraerBorde: capa.contraerBorde });
+          resueltas.set(capa.id, { ...comun, tipo: 'recorte', activo: capa.activo, origen: { ...bbox }, destino, sujeto: destino, retoque: conColorResuelto(capa.retoque, color), bordeSuave: capa.bordeSuave, contraerBorde: capa.contraerBorde });
           break;
         }
         case 'sombra': {
@@ -189,6 +196,15 @@ export class ResolutorDiseno {
     }
 
     await this.aplicarRelaciones(intencion, resueltas, activos, lienzo, medidas, problemas);
+    for (const { capa, comun } of trasTexto) {
+      const { activo } = disponible(capa.activo);
+      if (!activo.mascara) throw new RangeError(`El activo «${activo.id}» no tiene máscara: no se puede recortar.`);
+      const destino = this.trasTexto(capa, resueltas, activo.mascara.bbox);
+      const escala = destino.w / activo.mascara.bbox.w;
+      medidas.ampliacion[capa.id] = redondear3(escala);
+      avisarAmpliacion(problemas, capa.id, escala, activo);
+      resueltas.set(capa.id, { ...comun, tipo: 'recorte', activo: capa.activo, origen: { ...activo.mascara.bbox }, destino, sujeto: destino, retoque: conColorResuelto(capa.retoque, color), bordeSuave: capa.bordeSuave, contraerBorde: capa.contraerBorde });
+    }
     this.comprobar(intencion, resueltas, zona, problemas);
 
     return {
@@ -237,13 +253,28 @@ export class ResolutorDiseno {
       texto: contenido,
       estilo: { ...aEstiloResuelto(estilo, color), ejes: bloque.ejes, ...(capa.color ? { color: color(capa.color) } : {}) },
       tamano: redondear3(bloque.tamano),
-      lineas: bloque.lineas.map((l) => ({ texto: l.texto, x: redondear3(l.x), base: redondear3(l.base), tamano: redondear3(l.tamano), ancho: redondear3(l.medida.ancho) })),
+      lineas: bloque.lineas.map((l) => ({ texto: l.texto, x: redondear3(l.x), base: redondear3(l.base), tamano: redondear3(l.tamano), ancho: redondear3(l.medida.ancho), fin: redondear3(l.x + l.medida.maxX) })),
       caja: transformarRect(bloque.visual, matriz),
       matriz,
       rotacion: capa.rotacion,
       contorno: capa.contorno,
       sangrado: capa.sangrado,
     };
+  }
+
+  /** Rect del sujeto que va detrás de la última letra de un texto, a escala de su altura de mayúscula. */
+  private trasTexto(capa: CapaDe<'recorte'>, resueltas: Map<string, CapaResuelta>, bbox: Rect): Rect {
+    const ancla = capa.trasTexto!;
+    const texto = resueltas.get(ancla.texto);
+    if (!texto || texto.tipo !== 'texto') throw new RangeError(`«${capa.id}» va tras «${ancla.texto}», que no es un texto visible.`);
+    if (texto.rotacion !== 0) throw new RangeError(`«${capa.id}»: colocar tras un texto girado no está soportado.`);
+    const linea = texto.lineas.at(-1)!;
+    const mayuscula = this.motor.alturaMayusculas(texto.estilo, linea.tamano);
+    const h = ancla.alto * mayuscula;
+    const w = (bbox.w * h) / bbox.h;
+    const [, , , , ex, ey] = texto.matriz;
+    const fin = linea.fin ?? linea.x + linea.ancho;
+    return { x: ex + fin + ancla.separacion * mayuscula, y: ey + linea.base - ancla.elevacion * mayuscula - h, w, h };
   }
 
   private recorteDe(resueltas: Map<string, CapaResuelta>, id: string, quien: string): CapaRecorteResuelta {
@@ -361,6 +392,12 @@ function avisarAmpliacion(problemas: Problema[], capa: string, escala: number, a
       mensaje: `La foto «${activo.id}» se amplía ${escala.toFixed(2)}× (${activo.ancho} × ${activo.alto} px): se verá blanda. Hace falta una foto con más resolución o usarla más pequeña.`,
     });
   }
+}
+
+/** El punto negro del retoque puede ser un token de la marca: aquí se pasa a HEX. */
+function conColorResuelto(retoque: Retoque | undefined, color: (valor: Color) => string): Retoque | undefined {
+  if (!retoque?.puntoNegro) return retoque;
+  return { ...retoque, puntoNegro: color(retoque.puntoNegro) };
 }
 
 export function resolverColor(intencion: Intencion, valor: Color): string {

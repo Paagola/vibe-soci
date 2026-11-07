@@ -1,0 +1,50 @@
+{
+  "nota": "Criterio del estudio aprendido de las valoraciones de la dirección (Víctor). Vale para todas las marcas; no es el gusto de ningún restaurante. Cada evidencia es una valoración humana con su motivo; el estado lo calcula dominio/aprendizaje.ts (estadoDe).",
+  "observaciones": [
+    {
+      "id": "fuerza-publicitaria",
+      "marca": "estudio",
+      "aspecto": "IDEA",
+      "enunciado": "Quiere anuncios que llamen la atención: producto protagonista, foto con volumen y profundidad, tipografía de gran formato, contraste, energía publicitaria y una idea detrás.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "piezas/2026-11-03-la-manhattan-tower-tres-carnes", "explicita": true, "motivo": { "aspecto": "IDEA", "juicio": "A_FAVOR", "detalle": "Las dos primeras publicaciones (Marketing Studio y Grok) me gustan por su fuerza visual: protagonismo del producto, volumen, tipografía grande, contraste, energía publicitaria, integración, idea." } }
+      ]
+    },
+    {
+      "id": "no-infografia",
+      "marca": "estudio",
+      "aspecto": "COMPOSICION",
+      "enunciado": "Rechaza el aspecto de infografía: líneas, alturas, etiquetas y estructura técnica sobre un plato.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "disenos/f1/b-alzado", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "B parece una infografía arquitectónica: las líneas, alturas y etiquetas convierten una publicación gastronómica en un esquema explicativo." } }
+      ]
+    },
+    {
+      "id": "no-rigidez-de-reglas",
+      "marca": "estudio",
+      "aspecto": "COMPOSICION",
+      "enunciado": "Rechaza las composiciones rígidas que se notan construidas con reglas (marco de foto, titular vertical, disposición de ejercicio).",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "disenos/f1/c-ventana", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "C: el marco, el titular vertical y la disposición son demasiado rígidos; parece un ejercicio de reglas, no una campaña con personalidad." } }
+      ]
+    },
+    {
+      "id": "palabra-detras-no-por-defecto",
+      "marca": "estudio",
+      "aspecto": "IDEA",
+      "enunciado": "La palabra enorme detrás del producto tiene fuerza, pero el lenguaje visual no puede depender siempre de ella.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "disenos/f1/a-tres", "explicita": true, "motivo": { "aspecto": "IDEA", "juicio": "A_FAVOR", "detalle": "A tiene más fuerza, aunque tampoco quiero que dependamos siempre de colocar una palabra enorme detrás de un producto." } }
+      ]
+    },
+    {
+      "id": "sin-estetica-generica",
+      "marca": "estudio",
+      "aspecto": "PERSONALIZACION",
+      "enunciado": "Ni minimalista, ni elegante, ni editorial por defecto: la solución visual depende de la historia y del local.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "brief/f1-5", "explicita": true, "motivo": { "aspecto": "PERSONALIZACION", "juicio": "A_FAVOR", "detalle": "No quiero que todas las publicaciones sean minimalistas, elegantes, editoriales o experimentales; quiero la solución adecuada para cada historia." } }
+      ]
+    }
+  ]
+}

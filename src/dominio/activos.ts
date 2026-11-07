@@ -25,13 +25,52 @@ export const Activo = z.object({
     sha256: z.string().regex(/^[0-9a-f]{64}$/),
     copiadoEn: z.string(),
     generador: z.object({ modelo: z.string(), pieza: z.string(), version: z.number().int() }).optional(),
+    /** Imagen generada por la API desde la herramienta de producción: todo lo que hace falta para repetirla y auditarla. */
+    generacion: z
+      .object({
+        modelo: z.string(),
+        requestId: z.string(),
+        /** Archivo del prompt dentro del proyecto (versionado) y su texto exacto. */
+        promptArchivo: z.string(),
+        prompt: z.string(),
+        parametros: z.record(z.string(), z.unknown()),
+        /** Activos que se mandaron como referencia, en orden, con la huella de lo que se subió. */
+        referencias: z.array(z.object({ activo: z.string(), sha256: z.string() })),
+        costeEstimadoUsd: z.number().nonnegative().optional(),
+        tarifa: z.string().optional(),
+        generadoEn: z.string(),
+      })
+      .optional(),
+    /** Activo derivado de otros por una operación determinista del estudio (sin IA): cuáles y con qué parámetros. */
+    derivacion: z
+      .object({
+        operacion: z.string(),
+        entradas: z.record(z.string(), z.string()),
+        parametros: z.record(z.string(), z.unknown()).default({}),
+      })
+      .optional(),
   }),
+  /**
+   * Comprobación de fidelidad de una imagen generada frente a la foto real. Sin ella, una imagen generada
+   * no pasa a PUBLICABLE.
+   */
+  fidelidad: z
+    .object({
+      frente: z.string(),
+      veredicto: z.enum(['CONSERVA', 'ALTERA']),
+      metodo: z.string(),
+      medidas: z.record(z.string(), z.number()).default({}),
+      notas: z.array(z.string()).default([]),
+      revisadoEn: z.string(),
+    })
+    .optional(),
   /** Lo que cambia respecto al producto real. Vacío en una foto real. */
   alteraciones: z.array(z.string()).default([]),
   mascara: z
     .object({
       archivo: z.string(),
-      metodo: z.enum(['APPLE_VISION', 'GEMINI', 'MANUAL']),
+      /** UMBRAL: por color o brillo dentro de un recorte (p. ej. un grano de sal blanco sobre el caparazón rojo). */
+      metodo: z.enum(['APPLE_VISION', 'GEMINI', 'MANUAL', 'UMBRAL']),
       creadaEn: z.string(),
       /** Caja del sujeto en píxeles de la imagen. */
       bbox: RectPx,

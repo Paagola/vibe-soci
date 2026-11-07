@@ -38,6 +38,11 @@ export const Retoque = z.object({
   saturacion: z.number().min(0).max(2).optional(),
   contraste: z.number().min(0.5).max(1.8).optional(),
   calidez: z.number().min(-0.3).max(0.3).optional(),
+  /**
+   * El negro más profundo de la foto. Con el negro de la marca (p. ej. un carbón #111111) la foto y el fondo
+   * liso comparten el mismo negro y no se nota dónde acaba una y empieza el otro.
+   */
+  puntoNegro: z.union([z.string().regex(/^#[0-9A-Fa-f]{6}$/), z.string().regex(/^@[a-z][a-zA-Z0-9-]*$/)]).optional(),
 });
 export type Retoque = z.infer<typeof Retoque>;
 
@@ -96,6 +101,21 @@ export const CapaRecorte = z.object({
   bordeSuave: z.number().min(0).max(4).default(0.8),
   /** Encoge la máscara unos px antes de suavizarla: quita el filo del fondo que a veces arrastra (p. ej. el neón). */
   contraerBorde: z.number().min(0).max(8).default(0),
+  /**
+   * En vez de escala y ancla: el sujeto va justo detrás de la última letra de un texto, como si fuera un signo
+   * (el grano de sal que hace de punto final). Las medidas van en alturas de mayúscula de esa línea.
+   */
+  trasTexto: z
+    .object({
+      texto: Id,
+      /** Alto del sujeto. */
+      alto: z.number().positive().max(2),
+      /** Hueco entre la tinta de la última letra y el sujeto. */
+      separacion: z.number().min(-0.5).max(2).default(0.08),
+      /** Cuánto se levanta la base del sujeto sobre la línea base (0 = apoyado, como un punto). */
+      elevacion: z.number().min(-0.5).max(1.5).default(0),
+    })
+    .optional(),
 });
 
 /** Sombra del sujeto: proyectada (la forma del plato, desplazada y difuminada) o de contacto (una elipse bajo la base). */

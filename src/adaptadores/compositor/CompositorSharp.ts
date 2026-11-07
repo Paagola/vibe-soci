@@ -86,7 +86,7 @@ export class CompositorSharp implements Compositor {
         const { ancho, alto } = disponible.activo;
         const w = Math.max(1, Math.round(capa.destino.w));
         const h = Math.max(1, Math.round(capa.destino.h));
-        const foto = await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(capa.origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), capa.retoque)
+        const foto = await (await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(capa.origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), capa.retoque))
           .ensureAlpha()
           .png()
           .toBuffer();
@@ -254,8 +254,12 @@ function vectorial(lienzo: Lienzo, cuerpo: string, definiciones = ''): Promise<B
   return sharp(Buffer.from(documentoSvg(lienzo, cuerpo, 1, definiciones))).png().toBuffer();
 }
 
-/** Ajustes fotográficos suaves: brillo y saturación (modulate), contraste (linear) y calidez (recomb). */
-function retocar(imagen: Sharp, retoque?: Retoque): Sharp {
+/**
+ * Ajustes fotográficos suaves: brillo y saturación (modulate), contraste (linear) y calidez (recomb).
+ * El punto negro va en una segunda pasada: tiene que aplicarse sobre la foto ya recortada a 0–255
+ * (si se combina con el contraste en un solo linear, el contraste lleva el negro por debajo de 0 y el punto negro no llega).
+ */
+async function retocar(imagen: Sharp, retoque?: Retoque): Promise<Sharp> {
   if (!retoque) return imagen;
   let resultado = imagen;
   if (retoque.brillo !== undefined || retoque.saturacion !== undefined) resultado = resultado.modulate({ brightness: retoque.brillo ?? 1, saturation: retoque.saturacion ?? 1 });
@@ -268,7 +272,14 @@ function retocar(imagen: Sharp, retoque?: Retoque): Sharp {
       [0, 0, 1 - c],
     ]);
   }
-  return resultado;
+  if (!retoque.puntoNegro) return resultado;
+  // 0 → el color pedido (p. ej. el carbón de la marca) y 255 → 255, canal a canal.
+  const negro = [1, 3, 5].map((i) => parseInt(retoque.puntoNegro!.slice(i, i + 2), 16));
+  const intermedia = await resultado.png().toBuffer();
+  return sharp(intermedia).linear(
+    negro.map((c) => (255 - c) / 255),
+    negro,
+  );
 }
 
 async function alfaRecortado(disponible: ActivoDisponible, origen: { x: number; y: number; w: number; h: number }, w: number, h: number): Promise<Sharp> {
@@ -289,7 +300,7 @@ async function recortar(
   const { ancho, alto } = disponible.activo;
   const w = Math.max(1, Math.round(anchoDestino));
   const h = Math.max(1, Math.round(altoDestino));
-  const color = await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), retoque).toBuffer();
+  const color = await (await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), retoque)).toBuffer();
   let alfa = await (await alfaRecortado(disponible, origen, w, h)).png().toBuffer();
   if (contraerBorde > 0) {
     // Encoger: se difumina y se vuelve a cortar por arriba de la mitad; el borde entra unos px hacia dentro.
