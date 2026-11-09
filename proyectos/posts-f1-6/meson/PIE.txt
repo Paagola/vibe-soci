@@ -1,0 +1,9 @@
+Salmón glaseado sobre arroz negro. Para cenar esta noche.
+
+El Mesón de Cervantes · Calle Álamos · Málaga
+
+---
+Fuente de cada dato (no se publica):
+- «Salmón glaseado sobre arroz negro»: los elementos de la foto del plato (activo meson-real-salmon).
+- «Para cenar esta noche»: datos/locales/meson-de-cervantes/marca.json, descripción: «Cenas de noche, ambiente vivo». Decisión del 09/11/2026: entra porque consta.
+- Nombre y calle: marca.json. Sin precio, horario ni reservas: no constan.

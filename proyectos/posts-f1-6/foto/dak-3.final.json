@@ -1,0 +1,83 @@
+{
+  "intento": 3,
+  "fecha": "2026-11-09",
+  "regla": "otra toma (09/11)",
+  "toma": {
+    "otra": true,
+    "cambios": [
+      "lado (giro de 45°)",
+      "distancia (MEDIO → PRIMER_PLANO)",
+      "altura 15°"
+    ]
+  },
+  "descripcion": {
+    "anguloGrados": 5,
+    "distancia": "MEDIO",
+    "encuadre": "Plano medio frontal, casi a ras de la tabla; la burger en el centro, tabla y papel delante, neón rojo y estanterías desenfocados detrás.",
+    "luz": "Flash frontal algo alto; brillos en el pan y el cheddar; el neón da un halo rojo al fondo.",
+    "elementos": [
+      {
+        "nombre": "pan brioche",
+        "estado": "dorado y brillante",
+        "recuento": 2
+      },
+      {
+        "nombre": "carne de vacuno",
+        "estado": "gruesa y sellada",
+        "recuento": 3
+      },
+      {
+        "nombre": "bacon",
+        "estado": "crujiente; en la foto subida asoman tiras sueltas por los lados",
+        "recuento": 3
+      },
+      {
+        "nombre": "cheddar",
+        "estado": "fundido y goteando",
+        "recuento": 3
+      },
+      {
+        "nombre": "papel",
+        "estado": "beige con impresión negra pequeña",
+        "recuento": 1
+      },
+      {
+        "nombre": "tabla",
+        "estado": "madera oscura y rugosa",
+        "recuento": 1
+      }
+    ],
+    "defectos": [
+      "El ángulo a ras de tabla ya es el clásico de una burger: subir más de 30° la convertiría en otro plato peor.",
+      "Tiras de bacon sueltas."
+    ],
+    "utilizable": true,
+    "motivo": "Se ven todos los elementos y se pueden contar."
+  },
+  "huecos": {
+    "plato": "the Manhattan Tower burger",
+    "origen": "from a burger restaurant",
+    "elementos": "a tall stacked burger with a glossy golden brioche bun (top and bottom), three thick seared beef patties with crusty edges, crispy bacon tucked neatly between the patties with no loose strands hanging out, melted orange cheddar dripping over the patties, on beige parchment paper with a small black print that stays small and partly hidden under the bottom bun, on a dark rough wooden board",
+    "recuento": "Exactly one burger with three beef patties, three layers of bacon and three slices of cheddar.",
+    "camara": {
+      "anguloGrados": 20,
+      "descripcion": "a closer three-quarter view from the front-left corner of the board, the camera turned about 45 degrees around the burger compared with @image1 and slightly higher, at about 20 degrees above the board, so both the front and the left side of the stack read and the top of the bun is seen a little from above; deep depth of field, every layer from the top of the bun to the bottom bun in sharp focus",
+      "objetivoMm": 100,
+      "apertura": 11,
+      "giroGrados": 45,
+      "distancia": "PRIMER_PLANO"
+    },
+    "ideaGrafica": "the burger large in the centre of the frame, its top bun at about 12% from the top and the board leaving the frame at the bottom, the background behind the burger clean, even and near black on every side so the burger can be cut out and rows of a repeated word placed behind it later",
+    "luz": "Low-key, one hard side light from the left grazing the bun, the patty crust and the bacon, sharp highlights on the melted cheddar, everything else falling into near black",
+    "colorDominante": "the warm tones of the burger (golden bun, red bacon, orange cheddar) the only strong colours"
+  },
+  "decisiones": [
+    "Regla nueva (09/11): otra toma por lado (giro de 45°, desde la esquina izquierda de la tabla) y distancia (de plano medio a primer plano); la altura sube 15°, de 5° a 20°.",
+    "f/11 y «every layer in sharp focus»: revisión de María (la parte de arriba del pan salía borrosa al recortar).",
+    "«bacon tucked neatly…, no loose strands»: decisión del 09/11.",
+    "Papel con impresión pequeña y medio tapada: el intento 2 inventó texto de periódico en el papel.",
+    "Burger centrada: la composición del post es simétrica (observación producto-centrado-si-simetrica)."
+  ],
+  "prompt": "@image1 is a real photo of the Manhattan Tower burger from a burger restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a tall stacked burger with a glossy golden brioche bun (top and bottom), three thick seared beef patties with crusty edges, crispy bacon tucked neatly between the patties with no loose strands hanging out, melted orange cheddar dripping over the patties, on beige parchment paper with a small black print that stays small and partly hidden under the bottom bun, on a dark rough wooden board. Exactly one burger with three beef patties, three layers of bacon and three slices of cheddar. Nothing else added. New composition by a professional food photographer: a closer three-quarter view from the front-left corner of the board, the camera turned about 45 degrees around the burger compared with @image1 and slightly higher, at about 20 degrees above the board, so both the front and the left side of the stack read and the top of the bun is seen a little from above; deep depth of field, every layer from the top of the bun to the bottom bun in sharp focus, 100 mm lens at f/11, the burger large in the centre of the frame, its top bun at about 12% from the top and the board leaving the frame at the bottom, the background behind the burger clean, even and near black on every side so the burger can be cut out and rows of a repeated word placed behind it later. Low-key, one hard side light from the left grazing the bun, the patty crust and the bacon, sharp highlights on the melted cheddar, everything else falling into near black, the warm tones of the burger (golden bun, red bacon, orange cheddar) the only strong colours. Photographic realism, no text.",
+  "problemas": []
+}

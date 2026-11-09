@@ -2,7 +2,7 @@
  * Instrucciones de la FASE DE FOTO, separadas de las de diseño (instrucciones.ts): aquí la foto va sin texto,
  * así que no aplica la regla «foto y texto en una sola imagen». La plantilla está en dominio/fotoNueva.ts.
  */
-import { DIFERENCIA_MINIMA_GRADOS } from '../../dominio/fotoNueva.js';
+import { DIFERENCIA_MINIMA_GRADOS, DIFERENCIA_PARCIAL_GRADOS, GIRO_MINIMO_GRADOS } from '../../dominio/fotoNueva.js';
 import type { GuiaCreativa } from '../../puertos/BibliotecaCreativa.js';
 
 export function instruccionesFoto(guia: GuiaCreativa): string {
@@ -19,7 +19,7 @@ ${guia.ejemplos.map((e) => e.trim()).join('\n\n---\n\n') || 'No hay ejemplos.'}
 
 # Reglas que no se rompen nunca
 - Nada inventado: ni ingredientes, ni guarniciones, ni vajilla, ni manos, ni objetos que no estén en la foto subida. Lo que sí puedes cambiar: cámara, luz, fondo, superficie, encuadre y colocación (sin cambiar el número de piezas).
-- La cámara nueva queda a más de ${DIFERENCIA_MINIMA_GRADOS}° de la foto subida.
+- La foto nueva es OTRA TOMA, no la subida mejorada: la cámara sube o baja más de ${DIFERENCIA_MINIMA_GRADOS}°, o cambian al menos dos de: el lado (girar ${GIRO_MINIMO_GRADOS}° o más alrededor del plato), la distancia (otro tamaño de plano) y la altura (${DIFERENCIA_PARCIAL_GRADOS}° o más). Si la foto subida ya está en el ángulo clásico del plato, gira y cambia la distancia en vez de estropear el ángulo.
 - Ningún texto, letra ni logotipo en la foto.
 - Respondes solo con JSON válido, sin texto antes ni después.`;
 }
@@ -46,6 +46,7 @@ Imagen adjunta: ${e.archivo}, la foto real que ha subido el restaurante. Mide ${
 ${referencia}
 # Paso 1: describe la foto subida, antes de proponer nada
 - "anguloGrados": la altura de la cámara sobre el plano de la mesa (0 = a ras de mesa, 90 = cenital, negativo si mira hacia arriba). Mírala bien: un ¾ alto está en torno a 45°.
+- "distancia": el tamaño de plano: GENERAL (el plato y mucho entorno), MEDIO (el plato entero con algo de aire), PRIMER_PLANO (el plato llena el encuadre o se corta) o MACRO (un detalle).
 - "encuadre" y "luz": cómo está hecha.
 - "elementos": cada elemento real con su estado (tostado, glaseado, brillante…) y su recuento (null si no se puede contar).
 - "defectos": lo que tiene de foto rápida (resolución, luz plana, cosas que sobran en el encuadre, manchas).
@@ -57,7 +58,7 @@ El estudio monta el prompt con esta estructura exacta (no la escribas tú):
 - "plato" y "origen": qué es y de qué tipo de local, sin nombre propio.
 - "elementos": todos los de la foto, con su estado, incluida la vajilla. Superficie y fondo son libres.
 - "recuento": «Exactly …» con el número de cada pieza que se pueda contar.
-- "camara": altura en grados (a más de ${DIFERENCIA_MINIMA_GRADOS}° de la original), una frase que la describa, objetivo y apertura.
+- "camara": altura en grados, "giroGrados" (cuánto gira alrededor del plato respecto a la foto subida: 0 el mismo lado, 45 un ¾ desde la esquina, 90 de costado), "distancia" (otro tamaño de plano si cambia), una frase que describa el resultado visible, objetivo y apertura. Tiene que ser otra toma (regla de arriba).
 - "ideaGrafica": la composición con sitio para cada cosa: qué va grande, dónde, qué sale por los bordes, qué línea guía la mirada y dónde queda el hueco limpio para el titular.
 - "luz": la fuente, su dirección y su calidad, y lo que hace en el plato.
 - "colorDominante": qué color manda y cuál es el único fuerte.
@@ -66,5 +67,5 @@ Elige cámara, distancia y luz por el plato y la referencia, no por costumbre.
 En "decisiones", explica en español cada decisión y de qué ejemplo o referencia la sacas.
 ${problemas}
 Responde solo con este JSON (los números son de relleno: pon los tuyos):
-{"descripcion":{"anguloGrados":0,"encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":1}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
+{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":1}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
 }

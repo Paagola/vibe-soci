@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-f1-6/recetas/dak-3.json",
+  "prompt": {
+    "archivo": "proyectos/posts-f1-6/paquetes/DAK-3/prompt.txt",
+    "sha256": "9e503158d979b731168b43c51f5128315eb6ae18725ee237faa758d9a34823fa"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "dak-real-manhattan",
+      "sha256": "2135fc70be4f580d441d9a9a578fb22427feebea6274f916298d11520c313347"
+    }
+  ]
+}

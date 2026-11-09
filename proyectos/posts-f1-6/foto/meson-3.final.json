@@ -1,0 +1,83 @@
+{
+  "intento": 3,
+  "fecha": "2026-11-09",
+  "regla": "otra toma (09/11)",
+  "toma": {
+    "otra": true,
+    "cambios": [
+      "altura 45°"
+    ]
+  },
+  "descripcion": {
+    "anguloGrados": 45,
+    "distancia": "MEDIO",
+    "encuadre": "Plano medio en ¾ alto (45–50°), el bol centrado sobre madera oscura.",
+    "luz": "Frontal algo plana, sombras suaves, fondo oscuro.",
+    "elementos": [
+      {
+        "nombre": "lomo de salmón",
+        "estado": "glaseado, costra dorada",
+        "recuento": 1
+      },
+      {
+        "nombre": "arroz negro",
+        "estado": "brillante, con espinacas",
+        "recuento": null
+      },
+      {
+        "nombre": "quenelle de puré naranja",
+        "estado": "firme",
+        "recuento": 1
+      },
+      {
+        "nombre": "aceite verde",
+        "estado": "gotas",
+        "recuento": null
+      },
+      {
+        "nombre": "brotes",
+        "estado": "frescos",
+        "recuento": null
+      },
+      {
+        "nombre": "escamas de sal negra y pimienta",
+        "estado": "por encima",
+        "recuento": null
+      },
+      {
+        "nombre": "bol",
+        "estado": "cerámica blanca, borde arenoso",
+        "recuento": 1
+      }
+    ],
+    "defectos": [
+      "¾ alto muy habitual; luz plana."
+    ],
+    "utilizable": true,
+    "motivo": "Se ven todos los elementos."
+  },
+  "huecos": {
+    "plato": "a glazed salmon fillet on black rice",
+    "origen": "at a Mediterranean tapas restaurant",
+    "elementos": "the glazed seared salmon fillet with a crisp golden crust and pink flaking sides, a bed of glossy black rice with wilted spinach, a quenelle of bright orange purée, drizzles of bright green herb oil, a small bunch of fresh microgreens, a few black salt flakes and cracked pepper on the salmon and the plate, the white shallow ceramic bowl with a raw sandy rim",
+    "recuento": "Exactly one salmon fillet, one quenelle of purée and one bowl.",
+    "camara": {
+      "anguloGrados": 90,
+      "descripcion": "a straight top-down view from directly above, 90 degrees: the bowl is a perfect circle, the glazed crust of the salmon fillet seen from above, the orange quenelle and the green oil drops reading as clear shapes on the glossy black rice",
+      "objetivoMm": 50,
+      "apertura": 8,
+      "distancia": "MEDIO"
+    },
+    "ideaGrafica": "the round bowl centred left to right in the lower part of the frame, its centre at about 66% from the top and its lower edge just cut by the bottom of the frame, the upper half of the frame the empty dark tabletop, left clean for a large headline added later",
+    "luz": "Low-key, the bowl on a dark walnut table whose grain only shows close to the bowl, one hard light from the upper right edge of the frame grazing the salmon crust, the purée and the raw rim of the bowl, a crisp short shadow falling to the lower left, the tabletop falling into near black away from the bowl",
+    "colorDominante": "the warm orange of the glazed crust and the purée the only strong colour, the green oil a small accent"
+  },
+  "decisiones": [
+    "Opción (b) del 09/11: cenital. De 45° a 90°: otra toma por altura.",
+    "Bol centrado: el post de María (v006) es un bloque centrado.",
+    "Mitad superior libre: la familia F4 (post-22) pone el titular grande arriba.",
+    "Clave baja con entorno real (madera de nogal que se lee junto al bol): observación de V1 y V3, con pocas imágenes."
+  ],
+  "prompt": "@image1 is a real photo of a glazed salmon fillet on black rice at a Mediterranean tapas restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the glazed seared salmon fillet with a crisp golden crust and pink flaking sides, a bed of glossy black rice with wilted spinach, a quenelle of bright orange purée, drizzles of bright green herb oil, a small bunch of fresh microgreens, a few black salt flakes and cracked pepper on the salmon and the plate, the white shallow ceramic bowl with a raw sandy rim. Exactly one salmon fillet, one quenelle of purée and one bowl. Nothing else added. New composition by a professional food photographer: a straight top-down view from directly above, 90 degrees: the bowl is a perfect circle, the glazed crust of the salmon fillet seen from above, the orange quenelle and the green oil drops reading as clear shapes on the glossy black rice, 50 mm lens at f/8, the round bowl centred left to right in the lower part of the frame, its centre at about 66% from the top and its lower edge just cut by the bottom of the frame, the upper half of the frame the empty dark tabletop, left clean for a large headline added later. Low-key, the bowl on a dark walnut table whose grain only shows close to the bowl, one hard light from the upper right edge of the frame grazing the salmon crust, the purée and the raw rim of the bowl, a crisp short shadow falling to the lower left, the tabletop falling into near black away from the bowl, the warm orange of the glazed crust and the purée the only strong colour, the green oil a small accent. Photographic realism, no text.",
+  "problemas": []
+}

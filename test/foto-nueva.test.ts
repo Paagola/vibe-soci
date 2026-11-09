@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { DIFERENCIA_MINIMA_GRADOS, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva } from '../src/dominio/fotoNueva.js';
+import { DIFERENCIA_MINIMA_GRADOS, esOtraToma, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva } from '../src/dominio/fotoNueva.js';
 import { instruccionesFoto, textoFotoNueva } from '../src/adaptadores/gemini/instruccionesFoto.js';
 
 // Los huecos del prompt de la gamba que gustó: el montaje tiene que dar ese mismo prompt.
@@ -41,6 +41,19 @@ describe('Plantilla de foto nueva', () => {
     assert.equal(problemasFotoNueva(justo, { ancho: 4043, alto: 2887 }).length, 1, '30° justos no bastan');
   });
 
+  it('otra toma sin subir 30°: dos cambios entre lado, distancia y altura (09/11, caso DAK a 5°)', () => {
+    const dak = { ...gamba.descripcion, anguloGrados: 5, distancia: 'MEDIO' as const };
+    const base = { anguloGrados: 20, descripcion: 'x', objetivoMm: 100, apertura: 11 };
+    assert.equal(esOtraToma(dak, { ...base, giroGrados: 45, distancia: 'PRIMER_PLANO' }).otra, true, 'gira, se acerca y sube 15°');
+    assert.equal(esOtraToma(dak, { ...base, anguloGrados: 8, giroGrados: 45, distancia: 'PRIMER_PLANO' }).otra, true, 'gira y se acerca');
+    assert.equal(esOtraToma(dak, { ...base, anguloGrados: 8, giroGrados: 45 }).otra, false, 'solo gira: no basta');
+    assert.equal(esOtraToma(dak, { ...base, anguloGrados: 15 }).otra, false, 'el intento 1 de DAK (unos 10–15°, mismo lado y distancia)');
+    assert.equal(esOtraToma({ ...dak, anguloGrados: 45 }, { ...base, anguloGrados: 85, giroGrados: 90 }).otra, true, 'cenital: basta la altura');
+    assert.equal(esOtraToma({ ...dak, anguloGrados: 70 }, { ...base, anguloGrados: 88, giroGrados: 90 }).otra, false, 'cerca del cenital el giro no cuenta');
+    const sinDatos = { ...gamba, huecos: { ...gamba.huecos, camara: { ...gamba.huecos.camara, anguloGrados: 35, giroGrados: 90 } } };
+    assert.match(problemasFotoNueva(sinDatos, { ancho: 4043, alto: 2887 })[0] ?? '', /No es otra toma.*solo cambia lado/);
+  });
+
   it('una foto pequeña obliga a anotar la resolución en los defectos', () => {
     assert.match(problemasFotoNueva(gamba, { ancho: 382, alto: 510 }).join(), /382 × 510/);
     const anotada = { ...gamba, descripcion: { ...gamba.descripcion, defectos: ['resolución baja: 382 px'] } };
@@ -55,7 +68,7 @@ describe('Plantilla de foto nueva', () => {
     const t = textoFotoNueva({ plato: 'salmón', archivo: 'fotos/01-plato.jpg', ancho: 1920, alto: 1279 });
     assert.match(t, /Paso 1: describe la foto subida/);
     assert.match(t, /1920 × 1279 px/);
-    assert.doesNotMatch(t, /macro|low-key|clave baja|10 degrees/i);
+    assert.doesNotMatch(t, /macro (lens|close)|low-key|clave baja|10 degrees/i, 'MACRO solo aparece como una de las distancias posibles');
   });
 });
 

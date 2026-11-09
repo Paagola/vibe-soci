@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-f1-6/recetas/meson-3.json",
+  "prompt": {
+    "archivo": "proyectos/posts-f1-6/paquetes/MESON-3/prompt.txt",
+    "sha256": "cb80d94116904203299d439580023aea725e2121e39b5d1855ee2b9fa4b0906d"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "meson-real-salmon",
+      "sha256": "4208446941494b1e49027572a89ab8073e37954372bdc400195718f86d68a952"
+    }
+  ]
+}

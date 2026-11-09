@@ -1,9 +1,9 @@
 {
   "esquema": "diseno/intencion@1",
   "id": "dak-post",
-  "version": 6,
+  "version": 7,
   "titulo": "DAK · F2 palabra repetida (post-09)",
-  "notas": "Pieza de prueba (no consta contrato). De post-09 se toma: la palabra repetida en filas a todo lo ancho, el producto recortado que tapa las del centro y una fila final distinta; la etiqueta pequeña arriba entre filetes. No se copia: SANDWICH, Borcelle, ORDER NOW, la web ni el crema. El mecanismo nace del plato: la Manhattan Tower es una torre, y la palabra se apila como sus pisos. PENDIENTE DE DECISIÓN DEL USUARIO: la foto es el intento 1, descartado por la regla de ángulo (dos fallos seguidos).",
+  "notas": "Pieza de prueba (no consta contrato). De post-09 se toma: la palabra repetida en filas a todo lo ancho, el producto recortado que tapa las del centro y una fila final distinta; la etiqueta pequeña arriba entre filetes. No se copia: SANDWICH, Borcelle, ORDER NOW, la web ni el crema. El mecanismo nace del plato: la Manhattan Tower es una torre, y la palabra se apila como sus pisos. v007 (09/11): foto nueva (intento 3, regla «otra toma»), con f/11 y todas las capas nítidas; el giro de 45° pedido no salió (sigue frontal, más cerca y algo más alta).",
   "marca": "dak-burger",
   "tokens": {
     "colores": {},
@@ -22,7 +22,7 @@
     }
   },
   "activos": {
-    "foto": "dak-post-f2-foto-mcp-1"
+    "foto": "dak-post-f2-foto-mcp-3"
   },
   "textos": {
     "etiqueta": "DAK Burger · La Cala de Mijas",

@@ -1,9 +1,9 @@
 {
   "esquema": "diseno/intencion@1",
   "id": "meson-post",
-  "version": 6,
+  "version": 7,
   "titulo": "Mesón de Cervantes · F4 oscuro editorial (post-22)",
-  "notas": "Pieza de prueba (no consta contrato). De post-22 se toma: el titular enorme de serif de alto contraste a todo lo ancho con una script que lo cruza por debajo, la fila de versalitas pequeñas bajo el titular y el plato abajo con el aire oscuro arriba. No se copia: Mocktail, Drink Club, Borcelle, 2026, el verde ni el rosa (el magenta es de la marca). PENDIENTE DE DECISIÓN DEL USUARIO: la foto es el intento 2, descartado por la regla de ángulo (dos fallos seguidos).",
+  "notas": "Pieza de prueba (no consta contrato). De post-22 se toma: el titular enorme de serif de alto contraste a todo lo ancho con una script que lo cruza por debajo, la fila de versalitas pequeñas bajo el titular y el plato abajo con el aire oscuro arriba. No se copia: Mocktail, Drink Club, Borcelle, 2026, el verde ni el rosa (el magenta es de la marca). v007 (09/11): foto nueva cenital (intento 3, opción b). La foto baja un 17 % para que el bol empiece por debajo del bloque de texto; un degradado a negro tapa la junta y el bol se corta abajo.",
   "marca": "meson-de-cervantes",
   "tokens": {
     "colores": {},
@@ -21,7 +21,7 @@
     }
   },
   "activos": {
-    "foto": "meson-post-f4-foto-mcp-2"
+    "foto": "meson-post-f4-foto-mcp-3"
   },
   "textos": {
     "titular": "Salmón",
@@ -41,18 +41,42 @@
       "activo": "foto",
       "caja": {
         "x": 0,
-        "y": 0,
+        "y": 0.17,
         "w": 1,
         "h": 1
       },
       "retoque": {
         "puntoNegro": "@negro"
       },
-      "zoom": 1.2,
+      "zoom": 1,
       "enfoque": {
         "x": 0.5,
-        "y": 0
+        "y": 0.5
       }
+    },
+    {
+      "id": "junta",
+      "tipo": "degradado",
+      "forma": "lineal",
+      "caja": {
+        "x": 0,
+        "y": 0.165,
+        "w": 1,
+        "h": 0.13
+      },
+      "angulo": 90,
+      "paradas": [
+        {
+          "en": 0,
+          "color": "@negro",
+          "opacidad": 1
+        },
+        {
+          "en": 1,
+          "color": "@negro",
+          "opacidad": 0
+        }
+      ]
     },
     {
       "id": "titular",
