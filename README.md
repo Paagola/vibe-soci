@@ -95,7 +95,7 @@ El estado vivo del proyecto, las decisiones vigentes y lo que queda están en [`
 - **Gasto:**
   - Gemini, solo en el tier gratuito (texto y visión);
   - Higgsfield por el MCP, solo para pruebas autorizadas, con `get_cost` antes de cada petición.
-  - La vía de generación del producto **no está decidida** (ESTADO.md §8).
+  - **Vía de generación del producto (09/11): Gemini de imagen de pago.** Tú activas la facturación (`GEMINI_FACTURACION=si`) y el código pone el tope (`GEMINI_TOPE_USD`). Ver «Orden única».
 
 ```bash
 npm run referencia -- comprobar --local <slug>                      # ¿puede pasar a concepto? Solo lee: nombra las 3 familias propuestas
@@ -106,6 +106,46 @@ npm run referencia -- ficha --local <slug> --id <id> --desde ficha.json         
 ```
 
 **La web todavía no aplica esta regla.** Sus pantallas están pendientes de aprobar (ver `diseno/ARQUITECTURA.md` §11).
+
+## Orden única de punta a punta (en pruebas, 09/11/2026)
+
+De la foto subida al post exportado, con dos paradas para que confirmes. Cada vez que la lanzas sigue desde donde se quedó. El estado está en `proyectos/<proyecto>/post.json`.
+
+```bash
+npm run post -- nuevo <proyecto> --local <slug> --foto <ruta> --plato "nota del dueño" --referencia <ref-id>   # [--simular]
+npm run post -- <proyecto>                        # sigue hasta la siguiente parada
+npm run post -- <proyecto> --confirmo             # confirma los elementos y el gasto, o la foto
+npm run post -- <proyecto> --rechazo "motivo"     # rechaza la foto (vuelve a generar si quedan intentos)
+npm run post -- <proyecto> --importar <imagen>    # sin facturación: usa una foto generada a mano
+```
+
+**Los pasos, en orden:**
+1. **Referencia:** obligatoria en las 5 primeras piezas.
+2. **Foto subida:** se registra como activo real.
+3. **Propuesta del director:** plantilla de foto nueva y regla «otra toma».
+4. **■ Confirmas los elementos y el gasto** (como mucho 2 intentos).
+5. **Foto nueva:** Gemini de pago, solo con `GEMINI_FACTURACION=si` y con el tope `GEMINI_TOPE_USD`.
+6. **Comprobación de salida automática:** si descarta, otro intento; si descarta 2 seguidos, se para.
+7. **■ Confirmas la foto.**
+8. **Máscara.**
+9. **Intención de diseño.** Hasta que el director la escriba (F3) la escribe una persona: si falta, la orden deja un borrador y se para.
+10. **Composición y exportación** a 3:4 y 4:5.
+11. **La pieza se marca** para el umbral de referencia.
+
+**Modo simulado (`--simular`):** director, generador, revisor y máscara simulados. No gasta nada, y todo va a `datos-simulado/` (los locales y las referencias se leen de `datos/`).
+
+**Comprobación de salida suelta:**
+
+```bash
+npm run comprobar-foto -- --local <slug> --generado <id> --real <id> --propuesta proyectos/…/foto/x.final.json [--pieza "gamba=2"] [--sin-guardar]
+```
+
+Hace tres preguntas a Gemini:
+- un **checklist** frente a la lista de elementos;
+- si la **toma** es la misma, comparando las fotos lado a lado;
+- la **anatomía**, contando por teselas.
+
+Decide el código. El resultado va al activo (`revisionAutomatica`), y tu veredicto (`fidelidad`) no cambia.
 
 ## Lo que aprende el estudio
 
@@ -129,6 +169,9 @@ npm run referencia -- ficha --local <slug> --id <id> --desde ficha.json         
 |---|---|---|
 | `GEMINI_API_KEY` | — | Director creativo |
 | `GEMINI_MODELO` / `GEMINI_MODELO_RESPALDO` | `gemini-3.8-flash` / `gemini-3.5-flash` | Modelo principal y modelo de respaldo |
+| `GEMINI_FACTURACION` | `no` | `si` **solo** cuando la clave tenga la facturación de Google activada. Es la vía de generación del producto (09/11/2026). Con `no`, la orden única no genera por la API |
+| `GEMINI_TOPE_USD` | `1` | Tope acumulado de gasto en imágenes de Gemini, que el código comprueba **antes** de cada envío (un presupuesto de Google Cloud solo avisa) |
+| `GEMINI_MODELO_IMAGEN` | `gemini-3-pro-image` | Modelo de imagen de la vía de producción |
 | `HF_KEY` | — | Higgsfield, con el formato `KEY_ID:KEY_SECRET` |
 | `HF_MODELO` | `marketing-studio/image` | También `ideogram/v4.0` o `xai/grok-imagine-image-2.0` |
 | `HF_RESOLUCION` | `4k` | `1k`, `2k` o `4k` |

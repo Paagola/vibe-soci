@@ -12,7 +12,7 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
 1. **Generador antiguo (web, MVP).** Gemini dirige e Higgsfield (API) genera la imagen entera, con el texto dentro. Hay que conservarlo.
 2. **Vía nueva (F1–F1.6, en pruebas).** La IA hace solo la foto, sin texto, y un compositor propio (sharp, SVG y fontkit) pinta una **intención de diseño** escrita en JSON.
    - Hoy es una cadena de herramientas de línea de comandos que maneja una persona o una IA en conversación.
-   - **No hay un flujo único:** la orden de punta a punta está pendiente de decidir la vía de generación (ESTADO.md §8).
+   - **La orden única (`npm run post`, 09/11)** va de la foto subida al post exportado, con dos paradas para confirmar. Está probada en simulado. La generación real espera a que se active la facturación de Gemini, y la intención de diseño la sigue escribiendo una persona (F3).
 
 ## Reglas vigentes (09/11/2026)
 
@@ -27,7 +27,8 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
   - De la referencia se toma el oficio, nunca los textos ni las marcas.
 - **Datos del restaurante:** no se inventa ninguno. Una frase entra solo si consta en sus datos.
 - **Gasto:**
-  - Gemini solo en el tier gratuito, sin facturación;
+  - Gemini de texto y visión en el tier gratuito hasta que se active la facturación;
+  - **vía del producto (09/11): Gemini de imagen de pago**, con `GEMINI_FACTURACION=si` (lo activa el usuario) y el tope del código `GEMINI_TOPE_USD`;
   - Higgsfield por el MCP solo para pruebas autorizadas, con `get_cost` antes de cada petición, un tope por tarea y parada tras 2 fallos seguidos.
   - **Congelado (09/11):** ninguna pieza nueva y ninguna foto nueva sin autorización.
 - **Trabajo por fases**, con revisión del usuario antes de seguir. Commits locales al cerrar cada paso, sin push.
@@ -42,7 +43,8 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
 | F1 · compositor | Etiqueta `f1` | `diseno/f1/INFORME-F1.md` (histórico) |
 | F1.5 · dirección de arte | Etiqueta `f1_5` | `diseno/f1_5/INFORME-F1.5.md` (histórico) |
 | F1.6 · referencia, foto nueva y 4 posts | Etiqueta `f1_6`, más los commits del 09/11 | `diseno/f1_6/ESTADO.md` (vivo); el resto de `diseno/f1_6/` es histórico |
-| Siguiente: la orden única de punta a punta | Espera la decisión de la vía de generación | ESTADO.md §12 |
+| Orden única de punta a punta | Hecha y probada en simulado (09/11) | `npm run post`, ESTADO.md §3 |
+| Siguiente: activar la facturación, calibrar la comprobación de salida y F3 | Pendiente | ESTADO.md §12 |
 
 ## Código clave
 
@@ -64,7 +66,8 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
   - `src/dominio/diseno/`: esquemas de la intención;
   - `src/adaptadores/compositor/`;
   - `src/herramientas/carrusel.ts`.
-- **Comprobación de salida:** solo **diseñada y probada con un prototipo** (`proyectos/prueba-comprobacion-salida/`). No está implementada.
+- **Comprobación de salida:** `src/dominio/comprobacionSalida.ts`, `src/adaptadores/gemini/RevisorVisualGemini.ts` y `npm run comprobar-foto`. Implementada; la calibración con Gemini real está pendiente.
+- **Orden única:** `src/aplicacion/post/ordenPost.ts`, `src/dominio/post.ts` y `npm run post`; los dobles para `--simular` están en `src/adaptadores/simulado/FotoSimulada.ts`.
 - **Pruebas:** `npm test`; `test/datos-locales.test.ts` valida los datos reales de los locales.
 
 ## Modelos

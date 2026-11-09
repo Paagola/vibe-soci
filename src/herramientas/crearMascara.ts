@@ -10,14 +10,14 @@
  *
  * Uso: tsx src/herramientas/crearMascara.ts --local L --id ID --metodo luminancia|vision|combinada [--desde 28] [--hasta 60]
  */
-import { execFileSync } from 'node:child_process';
-import { mkdir, readFile, stat } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import { Activo } from '../dominio/activos.js';
 import { RAIZ, leerConfig } from '../config.js';
 import { escribirJson } from '../adaptadores/ficheros/json.js';
+import { SegmentadorVision } from '../adaptadores/imagen/SegmentadorVision.js';
 
 const { values } = parseArgs({
   options: { local: { type: 'string' }, id: { type: 'string' }, metodo: { type: 'string', default: 'luminancia' }, desde: { type: 'string', default: '28' }, hasta: { type: 'string', default: '60' } },
@@ -32,14 +32,7 @@ async function principal(): Promise<void> {
   const archivo = `mascara-${values.metodo}.png`;
 
   if (values.metodo === 'vision') {
-    const herramienta = join(RAIZ, 'node_modules', '.cache', 'estudio-contenido', 'mascara');
-    if (!(await stat(herramienta).then(() => true, () => false))) {
-      await mkdir(join(herramienta, '..'), { recursive: true });
-      execFileSync('swiftc', ['-O', join(RAIZ, 'src', 'herramientas', 'mascara.swift'), '-o', herramienta], { stdio: 'inherit' });
-    }
-    execFileSync(herramienta, [ruta, join(carpeta, archivo)], { stdio: 'inherit' });
-    const ajustada = await sharp(join(carpeta, archivo)).resize(activo.ancho, activo.alto, { fit: 'fill' }).extractChannel(0).png().toBuffer();
-    await sharp(ajustada).toFile(join(carpeta, archivo));
+    await writeFile(join(carpeta, archivo), await new SegmentadorVision(RAIZ).mascara(ruta));
   } else if (values.metodo === 'luminancia') {
     const desde = Number(values.desde);
     const hasta = Number(values.hasta);

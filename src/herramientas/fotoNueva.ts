@@ -14,9 +14,10 @@ import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import { RAIZ, leerConfig } from '../config.js';
 import { BibliotecaFicheros } from '../adaptadores/ficheros/BibliotecaFicheros.js';
-import { ClienteGemini, type ParteGemini } from '../adaptadores/gemini/ClienteGemini.js';
-import { instruccionesFoto, textoFotoNueva } from '../adaptadores/gemini/instruccionesFoto.js';
-import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../dominio/fotoNueva.js';
+import { ClienteGemini } from '../adaptadores/gemini/ClienteGemini.js';
+import { DirectorFotoGemini } from '../adaptadores/gemini/DirectorFotoGemini.js';
+import { registradorDeUso } from '../adaptadores/gemini/registroUso.js';
+import { proponerFotoNueva } from '../aplicacion/fotos/proponerFotoNueva.js';
 
 const { values } = parseArgs({ options: { foto: { type: 'string' }, plato: { type: 'string' }, salida: { type: 'string' }, referencia: { type: 'string' } } });
 
@@ -26,9 +27,6 @@ async function resumenReferencia(id: string): Promise<string> {
   return campos.map((c) => `${c}: ${JSON.stringify(f[c])}`).join(' · ');
 }
 
-const reducir = async (ruta: string, lado: number) =>
-  (await sharp(ruta).rotate().resize(lado, lado, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 90 }).toBuffer()).toString('base64');
-
 async function principal(): Promise<void> {
   const { foto, plato, salida, referencia } = values;
   if (!foto || !plato || !salida) throw new Error('Faltan --foto, --plato o --salida');
@@ -36,38 +34,16 @@ async function principal(): Promise<void> {
   if (!config.geminiApiKey) throw new Error('Falta GEMINI_API_KEY en .env');
   const guia = await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia();
   const modelos = [config.geminiModelo, ...(config.geminiModeloRespaldo ? [config.geminiModeloRespaldo] : [])];
-  const cliente = new ClienteGemini(config.geminiApiKey, modelos);
+  const cliente = new ClienteGemini(config.geminiApiKey, modelos, { alUsar: registradorDeUso(config.carpetaDatos, 'director-foto', config.geminiFacturacion) });
+  const director = new DirectorFotoGemini(cliente, guia, modelos);
+  const encargo = {
+    foto: resolve(foto),
+    plato,
+    ...(referencia ? { referencia: { id: referencia, resumen: await resumenReferencia(referencia), imagen: join(RAIZ, 'biblioteca', 'referencias', `${referencia}.jpg`) } } : {}),
+  };
+  const { propuesta, prompt, problemas, intentos } = await proponerFotoNueva(director, encargo);
   const meta = await sharp(resolve(foto)).metadata();
   const lado = { ancho: meta.width ?? 0, alto: meta.height ?? 0 };
-  const archivo = 'fotos/01-plato.jpg';
-  const encargo = {
-    plato,
-    archivo,
-    ...lado,
-    ...(referencia ? { referencia: { id: referencia, resumen: await resumenReferencia(referencia) } } : {}),
-  };
-  const imagenes: ParteGemini[] = [
-    { text: `Imagen «${archivo}» · ${plato}:` },
-    { inlineData: { mimeType: 'image/jpeg', data: await reducir(resolve(foto), 1536) } },
-    ...(referencia
-      ? ([
-          { text: `Post de referencia «${referencia}» (solo para ti, no se envía al generador):` },
-          { inlineData: { mimeType: 'image/jpeg', data: await reducir(join(RAIZ, 'biblioteca', 'referencias', `${referencia}.jpg`), 768) } },
-        ] as ParteGemini[])
-      : []),
-  ];
-
-  let problemas: string[] = [];
-  let propuesta: PropuestaFotoNueva | undefined;
-  const intentos: Array<{ problemas: string[] }> = [];
-  for (let intento = 1; intento <= 2; intento++) {
-    propuesta = await cliente.generarJson(instruccionesFoto(guia), [{ text: textoFotoNueva(encargo, problemas) }, ...imagenes], PropuestaFotoNueva);
-    problemas = problemasFotoNueva(propuesta, lado);
-    intentos.push({ problemas });
-    if (problemas.length === 0) break;
-  }
-  if (!propuesta) throw new Error('El director no respondió.');
-  const prompt = montarPromptFotoNueva(propuesta.huecos);
   await mkdir(dirname(resolve(salida)), { recursive: true });
   await writeFile(
     resolve(salida),

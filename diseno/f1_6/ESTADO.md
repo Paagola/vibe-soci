@@ -1,6 +1,6 @@
 # Estado del proyecto `estudio-contenido` (documento vivo)
 
-**Última actualización: 09/11/2026, por la tarde.** Este es el único documento que dice el estado vigente. Los informes de fase (`FASE-0`, `FASE-1`, `BENCHMARK`, `METODO-SOCIETY`, `POSTS-F1-6`, F1, F1.5 y la propuesta) son históricos: si algo de ellos choca con este, vale este.
+**Última actualización: 09/11/2026, por la noche.** Este es el único documento que dice el estado vigente. Los informes de fase (`FASE-0`, `FASE-1`, `BENCHMARK`, `METODO-SOCIETY`, `POSTS-F1-6`, F1, F1.5 y la propuesta) son históricos: si algo de ellos choca con este, vale este.
 
 **Cómo leer las marcas de cada dato:**
 - **[comprobado]**: ejecutado o medido el 09/11.
@@ -25,7 +25,18 @@
 | 10 | Documentación | Este documento vivo; los informes marcados como históricos; actualizados `CONTEXTO-PARA-IA.md`, `ARQUITECTURA.md` (§2, E6 y §11) y el README | este commit |
 | 11 | Congelado | Ninguna pieza nueva; las únicas fotos nuevas son las 2 del punto 4 | — |
 
-**Comprobaciones de cierre:** `npm run typecheck` limpio y `npm test` con 135 de 135 [comprobado].
+**Comprobaciones de cierre de esa tanda:** `npm run typecheck` limpio y `npm test` con 135 de 135 [comprobado].
+
+### 0b. Segunda tanda del 09/11 (tus decisiones 1, 2, 3 y 5)
+
+| Decisión | Resultado | Commit |
+|---|---|---|
+| 1. **Vía del producto: Gemini de imagen de pago** | **La facturación la activas tú.** El código está listo y no genera nada mientras `GEMINI_FACTURACION=no`, que es el valor por defecto. Al activarla, comprueba **antes** de cada envío el tope `GEMINI_TOPE_USD` (1 USD por defecto), apunta cada envío y su coste real en `datos/gasto/gemini.jsonl` y no reintenta nunca. Modelo: `gemini-3-pro-image` (Nano Banana Pro) | este commit |
+| 2. DAK y Mesón v007 | **Aprobados** («bastante bien») | — |
+| 3. **Comprobación de salida** | **Implementada:** dominio, puerto `RevisorVisual`, adaptador de Gemini, caso de uso, orden `npm run comprobar-foto` y 11 pruebas con las respuestas reales del prototipo. **La calibración con Gemini real está pendiente:** la cuota gratuita sigue agotada (429) | `b3fd5a5` |
+| 5. **Orden única** | **Hecha:** `npm run post`, con dos paradas, la referencia exigida, 2 intentos como mucho, comprobación automática, borrador de intención, composición y la pieza contada. **Probada de punta a punta en simulado**, más 9 pruebas nuevas (6 de la orden y 3 del generador de pago con un `fetch` falso). **No se ha usado de verdad:** espera a que actives la facturación | este commit |
+
+**Comprobaciones de cierre:** `npm run typecheck` limpio y `npm test` con **155 de 155** [comprobado]. No se ha generado ninguna foto ni se ha gastado nada en esta tanda.
 
 ---
 
@@ -48,8 +59,9 @@
 | F1 · compositor | Hecho (etiqueta `f1`) | `diseno/f1/INFORME-F1.md`, `test/compositor.test.ts` | — |
 | F1.5 · dirección de arte | Hecho (etiqueta `f1_5`); la FASE 0 de F1.6 lo dio por fallido | `diseno/f1_5/INFORME-F1.5.md` | — |
 | F1.6 · referencia obligatoria, foto nueva, benchmark, 4 posts y arreglos | Hecho (etiqueta `f1_6` y 4 commits del 09/11) | Este documento | Lo de §12 |
-| **Siguiente · orden única de punta a punta** | **Espera tu decisión de la vía de generación (§8)** | — | Todo |
-| F3 (el director escribe la intención), F4 (pantallas web) y F5 (crítico visual) | No empezadas. La comprobación de salida (§9) es la primera pieza de F5 | `PROPUESTA.md` §13 (histórico) | — |
+| **Orden única de punta a punta** | **Hecha el 09/11 y probada en simulado** | `npm run post`, `test/orden-post.test.ts`, `src/aplicacion/post/ordenPost.ts` | Usarla de verdad (facturación) y la intención automática (F3) |
+| **Siguiente · F3: el director escribe la intención** desde la ficha de la referencia | Es lo que hoy obliga a parar en INTENCION | — | Todo |
+| F4 (pantallas web) y F5 (crítico visual) | No empezadas. La comprobación de salida (§9) es la primera pieza de F5 | `PROPUESTA.md` §13 (histórico) | — |
 
 ---
 
@@ -58,9 +70,12 @@
 - **Generador antiguo (web):** sí. Subes una foto y sale un post, con el método viejo (imagen con el texto dentro, sin referencia ni compositor).
   - Con datos reales, la web arranca y lista los locales [comprobado].
   - La generación real no se ha vuelto a lanzar desde el 03/11, porque gasta.
-- **Vía nueva:** **no hay una orden única.** Cada post son unos 10 pasos con herramientas sueltas y una IA en conversación:
-  - **automáticos:** registrar la referencia, la plantilla de foto nueva, importar, la máscara, componer y exportar;
-  - **a mano:** corregir al director, generar por el MCP, comprobar la fidelidad, escribir la intención y la rúbrica.
+- **Vía nueva: sí, con `npm run post` (09/11).** La foto subida llega hasta el post exportado. Quedan tres cosas fuera:
+  - **la generación real necesita que actives la facturación.** Mientras tanto, la orden lo explica y acepta una foto hecha a mano (`--importar`);
+  - **la intención de diseño la escribe una persona:** la orden deja un borrador válido y se para;
+  - **está probada solo en simulado**, en una ejecución completa y con 6 pruebas. Con Gemini real no se ha usado.
+
+  **Lo que sigue siendo a mano:** escribir la intención y juzgar la foto en las dos paradas.
 
 ---
 
@@ -107,12 +122,15 @@
 
 - **Lo que falta:**
   - la web no la llama;
-  - mi cadena de herramientas no la **exige** (lo hará la orden única);
+  - **la orden única la exige** (paso REFERENCIA, probado); las herramientas sueltas, no;
   - el chiringuito (`chiringuito-prueba`) no tiene `marca.json` y su referencia (un pin) no está registrada.
 
-### 4.4 Fidelidad por componentes · **DISEÑADA Y PROBADA CON UN PROTOTIPO; NO IMPLEMENTADA**
+### 4.4 Fidelidad por componentes · **IMPLEMENTADA (09/11); CALIBRACIÓN PENDIENTE**
 
-**Detecta 3 de los 4 fallos que pediste (75 %), sin falsas alarmas en 3 aciertos**, con 8 de los 22 casos previstos medidos antes de que se acabara la cuota gratuita. Se le escapa la anatomía fina (V3D, y también S3). Detalle en §9. Hasta que se implemente, los veredictos los pongo yo en `activo.json`.
+- **En el prototipo detectó 3 de los 4 fallos que pediste (75 %), sin falsas alarmas en 3 aciertos**, con 8 de los 22 casos medidos. Se le escapaba la anatomía fina (V3D, y también S3).
+- La versión implementada añade la **pasada por teselas** para esos casos. **Sin probar con Gemini real:** la cuota sigue agotada.
+- Va dentro de la orden única, y suelta con `npm run comprobar-foto`.
+- Detalle en §9.
 
 ---
 
@@ -123,13 +141,14 @@
 | 06/11 | Lienzo 3:4 con zona segura 4:5; se exporta a 3:4 y 4:5, y las historias a 9:16. Apple Vision solo como adaptador local. Fuentes OFL. El generador antiguo se conserva. Composición, tipografía, foto, fidelidad y personalización se evalúan por separado |
 | 07/11 | **Fidelidad FLEXIBLE:** cambian la cámara, la luz, el fondo, la superficie, el encuadre y la colocación; se conservan los elementos, su número, la anatomía, los ingredientes y la vajilla; se descarta si añade algo. ESTRICTA solo si el local lo pide |
 | 07/11 | Foto nueva, no foto mejorada. Referencia obligatoria en las 5 primeras. Los mecanismos aprobados se adaptan, no se prohíben |
-| 07/11 | Gemini solo en el tier gratuito, sin facturación |
+| 07/11 | Gemini solo en el tier gratuito, sin facturación. **Sustituida el 09/11** para la imagen (fila de la vía) |
 | 07/11 | MCP de Higgsfield con `get_cost` antes de cada petición, un tope por tarea y parada tras 2 fallos seguidos |
 | 08/11 | La revisión de María es criterio del estudio; pasada a los oficios el 09/11 |
 | **09/11** | Regla «otra toma» en lugar de «más de 30°» |
 | **09/11** | Las piezas hechas con herramientas cuentan para las 5 |
 | **09/11** | Una frase sobre el local entra solo si consta en sus datos («Para cenar esta noche» sí consta) |
-| **09/11** | **La vía de generación la decides tú;** no se activa nada de pago |
+| **09/11** | **Vía de generación del producto: Gemini de imagen de pago.** Tú activas la facturación (`GEMINI_FACTURACION=si`) y el código pone el tope (`GEMINI_TOPE_USD`). Higgsfield por el MCP queda solo para pruebas |
+| **09/11** | DAK y Mesón v007, aprobados |
 | **09/11** | **Congelado:** ninguna pieza ni foto nueva sin autorización. Saldo: 4,81 créditos |
 | **09/11** | Commits locales al cerrar cada paso, para no acumular |
 
@@ -171,7 +190,7 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 
 ---
 
-## 8. Vía de generación del producto: comparación (decides tú)
+## 8. Vía de generación del producto: comparación (decidido el 09/11: Gemini de pago)
 
 **Cómo leer la tabla:**
 - **Tasa de acierto:** foto que conserva los elementos **y** es otra toma, medida en nuestras imágenes ya revisadas.
@@ -189,7 +208,7 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 
 **Qué modelo se cobra de verdad (punto 8, comprobado):** **los movimientos se etiquetan con el modelo pedido**, y Pro y NB2 cuestan lo mismo a 2K. El cobro, por tanto, no distingue cuál se usó; el identificador del trabajo, sí. La lectura más probable es que nunca hubo sustitución.
 
-**Lo que necesita una decisión tuya:** la vía. Si quieres más datos antes, la prueba más barata e informativa sería **tu prompt V1 por Marketing Studio** (1–2 imágenes, unos 0,35–0,7 USD): es el único hueco grande de la tabla.
+**Decisión del 09/11: Gemini de imagen de pago.** Un argumento más a favor que no estaba en la tabla: si el MCP servía Pro, como parece, **las 23 fotos del MCP son evidencia del mismo modelo** que se usará por la API (`gemini-3-pro-image`), incluidas V1 y V3, que te gustaron.
 
 **Fuentes externas consultadas el 09/11** (precios no oficiales, por confirmar):
 - [ai.google.dev/pricing](https://ai.google.dev/pricing)
@@ -200,7 +219,17 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 
 ---
 
-## 9. Comprobación de salida automática (diseño; no implementada)
+## 9. Comprobación de salida automática (implementada el 09/11)
+
+**Implementación:**
+- `src/dominio/comprobacionSalida.ts` (`decidirSalida`);
+- `src/puertos/RevisorVisual.ts`;
+- `src/adaptadores/gemini/RevisorVisualGemini.ts`, con las tres preguntas y las teselas;
+- `src/aplicacion/fotos/comprobarFotoNueva.ts`, que guarda `revisionAutomatica` en el activo;
+- `npm run comprobar-foto`;
+- `test/comprobacion-salida.test.ts`.
+
+**Lo que falta:** medir con Gemini real los 14 casos pendientes y las teselas en V3D y S3. La primera prueba real de la herramienta, sobre V3D y sin guardar, dio 429.
 
 ### Diseño
 
@@ -282,16 +311,18 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 
 ## 11. Problemas abiertos y riesgos
 
-1. **No hay vía de generación para el producto** hasta que decidas (§8). Es el bloqueo de la orden única.
+1. **La facturación de Gemini no está activada.** Hasta que la actives, la orden única no genera por la API; se puede importar una foto hecha a mano. Cuando la actives:
+   - pon un **presupuesto con alertas** en Google Cloud. Solo avisa, pero avisa;
+   - deja `GEMINI_TOPE_USD` bajo, por ejemplo 1–2 USD, para las primeras pruebas.
 2. **La toma de DAK es dudosa** y no quedan créditos autorizados para otro intento.
 3. **El Mesón cenital cumple la regla pero pierde impacto.** La regla «otra toma» no mide si la foto sirve a la idea del post.
-4. **La comprobación de salida no está implementada.** Hasta entonces, la fidelidad depende de mi ojo.
-5. **Las llamadas de Gemini no se registran** cuando son gratuitas, y **la cuota gratuita no basta para revisar cada foto** (§9). Si la comprobación de salida va en el producto, su coste entra en la decisión de §8: con la tarifa de pago, unos 0,005 USD por comprobación, una cifra calculada en una fase anterior y sin volver a comprobar.
+4. **La comprobación de salida está implementada pero sin calibrar con Gemini real.** Un veredicto PASA todavía no es de fiar: por eso la orden se para siempre en tu parada de foto.
+5. **La cuota gratuita no basta para revisar cada foto** (§9). Desde el 09/11, las llamadas de texto y visión **sí se registran**, con sus tokens, en `datos/gasto/gemini-texto.jsonl`. Si activas la facturación, también pasarán a pago, a unos 0,005 USD por pregunta (cifra calculada en una fase anterior, sin volver a comprobar). Ese gasto no tiene tope propio.
 6. **Fuentes y licencias:** fotos de Wikimedia (CC BY-SA, con atribución), referencias de Canva (solo oficio).
 7. **Deuda técnica:**
    - enlaces rotos a `creacion-contenido/`;
    - el gasto del MVP sin registrar;
-   - unos 15 scripts sueltos sin orquestador;
+   - unos 15 scripts sueltos; la orden única los encadena, pero siguen ahí para trabajar paso a paso;
    - el chiringuito sin `marca.json`.
 8. **`datos/` no está en git.** La copia del 09/11 la tienes que mover tú a otro disco.
 
@@ -301,15 +332,13 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 
 | # | Qué | Esfuerzo | Coste | ¿Decisión tuya? |
 |---|---|---|---|---|
-| 1 | **Elegir la vía de generación** (§8), o autorizar antes la prueba de V1 por Marketing Studio | — | 0 o unos 0,35–0,7 USD | **Sí** |
-| 2 | **Orden única de punta a punta** (`npm run post`): exige la referencia, plantilla y «otra toma», generación por la vía elegida, importación, máscara, comprobación de salida, componer y exportar, con paradas para tu confirmación | 2–3 días | Lo de cada foto | Después del 1 |
-| 3 | Terminar la medición de §9 (14 casos, cuando vuelva la cuota) y probar la pasada por teselas con V3D y S3. Después, implementarla: puerto `RevisorVisual`, adaptador de Gemini y regla en el dominio | Medio día más 1 día | 0 (tier gratuito, sujeto a cuota) | Sí (¿la implemento?) |
-| 4 | Puerta de entrada: la lista de elementos que el dueño confirma (primero en la línea de comandos) | Medio día | 0 | No |
-| 5 | Visto bueno de DAK v007 y de Mesón v007, o qué cambiar | — | 0 | **Sí** |
-| 6 | El director escribe la intención desde la ficha de la referencia (F3) | 3–5 días | 0 | No |
-| 7 | Capacidades del compositor que faltan | 1–2 días | 0 | No |
-| 8 | Pantallas web (F4) | Varios días | 0 | **Sí** |
-| 9 | Probar con 3–5 fotos reales «con prisa» de hosteleros | 1 h más la generación | Unos 5 créditos o 0,35–0,9 USD por foto final | **Sí** (las fotos) |
+| 1 | **Activar la facturación de Gemini** y poner `GEMINI_FACTURACION=si`, más un presupuesto con alertas en Google Cloud. Después, **un primer post real con la orden**: un local ya conocido y su foto, sin gastar en nada más | Lo tuyo, 15 min; la prueba, 1 h | Unos 0,15–0,45 USD (1–2 intentos más la revisión) | **Sí:** la activación es tuya |
+| 2 | **Calibrar la comprobación de salida** con Gemini real: los 14 casos pendientes y las teselas en V3D y S3. Reanuda sola (`proyectos/prueba-comprobacion-salida/`) | Medio día | 0 si vuelve la cuota gratuita; céntimos si ya hay facturación | No |
+| 3 | **F3: el director escribe la intención** desde la ficha de la referencia, para que la orden no se pare en INTENCION | 3–5 días | 0 (texto) | No |
+| 4 | Puerta de entrada mejor: hoy confirmas la lista que propone el director; falta que el dueño la corrija desde una pantalla | Medio día en línea de comandos | 0 | No |
+| 5 | Capacidades del compositor que faltan | 1–2 días | 0 | No |
+| 6 | Pantallas web (F4), con la orden única por debajo | Varios días | 0 | **Sí** |
+| 7 | Probar con 3–5 fotos reales «con prisa» de hosteleros | 1 h más la generación | Unos 0,35 USD por foto final | **Sí** (las fotos) |
 
 ---
 
@@ -321,4 +350,5 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
    - no se ha gastado más de lo autorizado.
 2. **Un error mío:** para aclarar el cobro pedí `nano_banana_2` y, sin quererlo, **cambié el modelo** de las dos fotos de hoy respecto a las 23 anteriores. Está anotado en la procedencia, pero DAK y Mesón v007 no son comparables uno a uno con los intentos anteriores.
 3. **Corregí una conclusión equivocada** («nos sirven NB2 en vez de Pro») que había repetido en tres informes. La había sacado de un identificador interno sin comprobar qué devolvía al pedir el otro modelo.
-4. **El riesgo de fondo sigue:** la regla «otra toma» y el checklist miden lo comprobable, no si la foto sirve a la idea (lo muestra el Mesón cenital). Ese juicio sigue siendo tuyo o de una diseñadora.
+4. **Por la noche, la orden única existe y está probada, pero solo en simulado.** No la doy por buena hasta usarla con Gemini real. El diseño del borrador de intención es un marcador de posición, no un diseño.
+5. **El riesgo de fondo sigue:** la regla «otra toma» y el checklist miden lo comprobable, no si la foto sirve a la idea (lo muestra el Mesón cenital). Ese juicio sigue siendo tuyo o de una diseñadora.

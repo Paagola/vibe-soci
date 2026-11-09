@@ -13,19 +13,19 @@
  * Uso: tsx --env-file=.env src/herramientas/generarGeminiImagen.ts <receta.json> [--tope 1] [--solo-contar] [--gratuito]
  */
 import { createHash } from 'node:crypto';
-import { appendFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import { dirname, join, relative, resolve } from 'node:path';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import sharp from 'sharp';
 import { z } from 'zod';
 import { Activo } from '../dominio/activos.js';
 import { RAIZ, leerConfig } from '../config.js';
 import { escribirJson } from '../adaptadores/ficheros/json.js';
-import { construirContenido, construirPeticion, costeRealUsd, estimarUsd, GastoGemini, leerRespuesta, sumarGasto, TARIFAS } from '../adaptadores/gemini/imagenGemini.js';
+import { apuntarGastoGemini, gastoAcumuladoGemini, pedirGemini } from '../adaptadores/gemini/GeneradorFotoGemini.js';
+import { construirContenido, construirPeticion, costeRealUsd, estimarUsd, type GastoGemini, leerRespuesta, TARIFAS } from '../adaptadores/gemini/imagenGemini.js';
 import { leerReceta, prepararReferencia } from '../adaptadores/gemini/recetaGemini.js';
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const TIEMPO_MAXIMO_MS = 240_000;
 
 type Gasto = GastoGemini;
 
@@ -137,26 +137,9 @@ async function principal(): Promise<void> {
   console.log(`Activo ${receta.id}: ${meta.width} × ${meta.height} · ${gratuito ? 'tier gratuito, 0 USD; en pago' : 'coste real'} ${realUsd?.toFixed(4) ?? '¿?'} USD → ${relative(RAIZ, carpeta)}`);
 }
 
-async function pedir(clave: string, url: string, cuerpo: unknown): Promise<unknown> {
-  const respuesta = await fetch(url, {
-    method: 'POST',
-    headers: { 'x-goog-api-key': clave, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cuerpo),
-    signal: AbortSignal.timeout(TIEMPO_MAXIMO_MS),
-  });
-  if (!respuesta.ok) throw new Error(`Gemini HTTP ${respuesta.status}: ${(await respuesta.text()).replace(/\s+/g, ' ').slice(0, 2000)}`);
-  return respuesta.json();
-}
-
-async function gastoAcumulado(registro: string): Promise<number> {
-  if (!(await existe(registro))) return 0;
-  return sumarGasto((await readFile(registro, 'utf8')).split('\n'));
-}
-
-async function apuntar(registro: string, gasto: Gasto): Promise<void> {
-  await mkdir(dirname(registro), { recursive: true });
-  await appendFile(registro, `${JSON.stringify(GastoGemini.parse(gasto))}\n`);
-}
+const pedir = (clave: string, url: string, cuerpo: unknown) => pedirGemini(clave, url, cuerpo);
+const gastoAcumulado = gastoAcumuladoGemini;
+const apuntar = (registro: string, gasto: Gasto) => apuntarGastoGemini(registro, gasto);
 
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 
