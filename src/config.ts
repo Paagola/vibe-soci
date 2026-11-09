@@ -15,6 +15,9 @@ const Entorno = z.object({
   GEMINI_API_KEY: opcional(z.string().trim()),
   GEMINI_MODELO: opcional(z.string().trim()),
   GEMINI_MODELO_RESPALDO: opcional(z.string().trim()),
+  GEMINI_FACTURACION: opcional(z.enum(['si', 'no'])),
+  GEMINI_TOPE_USD: opcional(z.coerce.number().positive()),
+  GEMINI_MODELO_IMAGEN: opcional(z.string().trim()),
   HF_KEY: opcional(z.string().trim().regex(/^[^:\s]+:\S+$/, 'tiene que ser KEY_ID:KEY_SECRET')),
   HF_MODELO: opcional(
     z.string().refine((id) => id in MODELOS_HIGGSFIELD, `tiene que ser uno de: ${Object.keys(MODELOS_HIGGSFIELD).join(', ')}`),
@@ -41,6 +44,15 @@ export interface Config {
   geminiModelo: string;
   /** Se usa si el principal está saturado. */
   geminiModeloRespaldo?: string;
+  /**
+   * La clave de Gemini tiene la facturación activada (vía de generación elegida el 09/11/2026). Por defecto, no:
+   * entonces la imagen no se puede generar por la API y lo demás va al tier gratuito.
+   */
+  geminiFacturacion: boolean;
+  /** Tope acumulado de gasto en Gemini (imagen), que comprueba el código antes de cada envío. Google solo avisa. */
+  geminiTopeUsd: number;
+  /** Modelo de imagen de la vía de producción. */
+  geminiModeloImagen: string;
   hfKey?: string;
   hfModelo: string;
   hfResolucion: Resolucion;
@@ -60,6 +72,9 @@ export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     geminiApiKey: e.GEMINI_API_KEY,
     geminiModelo: e.GEMINI_MODELO ?? 'gemini-3.8-flash',
     geminiModeloRespaldo: e.GEMINI_MODELO_RESPALDO ?? 'gemini-3.5-flash',
+    geminiFacturacion: e.GEMINI_FACTURACION === 'si',
+    geminiTopeUsd: e.GEMINI_TOPE_USD ?? 1,
+    geminiModeloImagen: e.GEMINI_MODELO_IMAGEN ?? 'gemini-3-pro-image',
     hfKey: e.HF_KEY,
     hfModelo: e.HF_MODELO ?? MODELO_POR_DEFECTO,
     hfResolucion: e.HF_RESOLUCION ?? '4k',

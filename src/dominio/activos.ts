@@ -4,6 +4,7 @@
  * lo que cambia respecto a la real, y no se publica sin autorización (fidelidad ESTRICTA por defecto).
  */
 import { z } from 'zod';
+import { RevisionAutomatica } from './comprobacionSalida.js';
 
 const RectPx = z.object({ x: z.number().int(), y: z.number().int(), w: z.number().int().positive(), h: z.number().int().positive() });
 
@@ -64,6 +65,11 @@ export const Activo = z.object({
       revisadoEn: z.string(),
     })
     .optional(),
+  /**
+   * Comprobación de salida automática (09/11/2026): checklist, toma y anatomía por un revisor visual, y la decisión del
+   * dominio. Filtra antes de enseñar la foto; no sustituye a `fidelidad` (el veredicto humano).
+   */
+  revisionAutomatica: RevisionAutomatica.optional(),
   /** Lo que cambia respecto al producto real. Vacío en una foto real. */
   alteraciones: z.array(z.string()).default([]),
   mascara: z

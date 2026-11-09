@@ -19,7 +19,8 @@
     "combinar-luz": "tsx src/herramientas/combinarLuz.ts",
     "detalle": "tsx src/herramientas/extraerDetalle.ts",
     "carrusel": "tsx src/herramientas/carrusel.ts",
-    "referencia": "tsx src/herramientas/referencia.ts"
+    "referencia": "tsx src/herramientas/referencia.ts",
+    "comprobar-foto": "tsx --env-file-if-exists=.env src/herramientas/comprobarFoto.ts"
   },
   "dependencies": {
     "express": "^5.3.0",

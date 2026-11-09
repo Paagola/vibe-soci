@@ -54,6 +54,9 @@ async function entorno(nombre: string): Promise<Config> {
   await writeFile(join(base, 'biblioteca', 'principios.md'), '# Principios de prueba');
   return {
     geminiModelo: 'x',
+    geminiFacturacion: false,
+    geminiTopeUsd: 1,
+    geminiModeloImagen: 'gemini-3-pro-image',
     hfModelo: 'marketing-studio/image',
     hfResolucion: '2k',
     limiteImagenesDia: 40,

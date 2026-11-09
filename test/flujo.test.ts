@@ -39,6 +39,9 @@ describe('flujo completo en simulado', () => {
     deps = crearContenedor(
       {
         geminiModelo: 'x',
+        geminiFacturacion: false,
+        geminiTopeUsd: 1,
+        geminiModeloImagen: 'gemini-3-pro-image',
         hfModelo: 'marketing-studio/image',
         hfResolucion: '2k',
         limiteImagenesDia: 40,

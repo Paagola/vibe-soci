@@ -30,18 +30,33 @@ const Respuesta = z.object({
     )
     .optional(),
   promptFeedback: z.object({ blockReason: z.string().optional() }).optional(),
+  modelVersion: z.string().optional(),
+  usageMetadata: z
+    .object({ promptTokenCount: z.number().default(0), candidatesTokenCount: z.number().default(0), thoughtsTokenCount: z.number().default(0) })
+    .optional(),
 });
+
+/** Lo que gastó una llamada, tal como lo cuenta la API (para el registro de gasto cuando hay facturación). */
+export interface UsoGemini {
+  modelo: string;
+  tokensEntrada: number;
+  tokensSalida: number;
+  tokensRazonamiento: number;
+}
 
 export interface OpcionesClienteGemini {
   fetch?: typeof fetch;
   dormir?: (ms: number) => Promise<void>;
   avisar?: (mensaje: string) => void;
+  /** Se llama tras cada respuesta con su recuento de tokens. */
+  alUsar?: (uso: UsoGemini) => void;
 }
 
 export class ClienteGemini {
   private readonly fetch: typeof fetch;
   private readonly dormir: (ms: number) => Promise<void>;
   private readonly avisar: (mensaje: string) => void;
+  private readonly alUsar: (uso: UsoGemini) => void;
   /** Si un modelo falla, las siguientes llamadas de esta ejecución empiezan por el de respaldo. */
   private primerModelo = 0;
 
@@ -54,6 +69,7 @@ export class ClienteGemini {
     this.fetch = opciones.fetch ?? fetch;
     this.dormir = opciones.dormir ?? ((ms) => new Promise((resolver) => setTimeout(resolver, ms)));
     this.avisar = opciones.avisar ?? (() => {});
+    this.alUsar = opciones.alUsar ?? (() => {});
   }
 
   async generarJson<T>(instrucciones: string, partes: ParteGemini[], esquema: z.ZodType<T>): Promise<T> {
@@ -80,6 +96,14 @@ export class ClienteGemini {
       generationConfig: { responseMimeType: 'application/json' },
     });
     const datos = Respuesta.parse(await respuesta.json());
+    if (datos.usageMetadata) {
+      this.alUsar({
+        modelo: datos.modelVersion ?? '¿?',
+        tokensEntrada: datos.usageMetadata.promptTokenCount,
+        tokensSalida: datos.usageMetadata.candidatesTokenCount,
+        tokensRazonamiento: datos.usageMetadata.thoughtsTokenCount,
+      });
+    }
 
     if (datos.promptFeedback?.blockReason) {
       throw new ErrorDeServicio(SERVICIO, `ha bloqueado la petición (${datos.promptFeedback.blockReason})`, false);
