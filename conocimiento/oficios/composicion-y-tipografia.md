@@ -32,6 +32,16 @@ El compositor resuelve los píxeles, comprueba las reglas y pinta por capas.
 - **Contrastes de escala:** una frase monumental frente a una firma diminuta, o el producto a sangre frente a mucho aire. Generan tensión.
 - **Asimetría con intención:** texto en bandera a la izquierda y producto cargado a un lado. El centrado se reserva para cuando hace falta (un cartel o un sello).
 
+### Lecciones de la revisión de María, diseñadora (08/11/2026)
+
+Salen de su revisión de los 4 posts de F1.6 (`diseno/f1_6/POSTS-F1-6.md` §10; antes y después en `diseno/f1_6/img/posts-f1-6-revision-maria.jpg`). Cada una cita la pieza de la que sale en `observaciones/estudio.json`.
+
+- **Aire entre bloques y espacio repartido.** Dos textos apilados necesitan un hueco claro (el compositor avisa con `SEPARACION` por debajo de 0,35 cuerpos del más pequeño), y el espacio se reparte sin dejar zonas muertas arriba o abajo. «No tengas miedo a aumentar las distancias entre los elementos» (Mesón, Etxebarri).
+- **Si la composición es simétrica, el producto va centrado.** Un producto desplazado en una composición centrada parece un error, no una intención («que el café no esté centrado es un delito capital»). La asimetría de arriba sigue valiendo cuando toda la composición es asimétrica.
+- **El nombre del plato se lee entero y en orden.** Un juego tipográfico (palabra repetida, palabra detrás) no puede tapar ni desordenar el nombre: en DAK, «MANHATTAN» pasó arriba para que se leyera «MANHATTAN TOWER».
+- **Dos textos enfrentados llevan el mismo peso alrededor.** Si a un lado hay dos elementos y al otro uno, el de los dos parece más bajo (Mesón, v005). Mejor un solo bloque.
+- **Menos texto.** Cinco textos en el 40 % superior (Mesón) son demasiados: lo que sobra va al pie de la publicación.
+
 ## Relaciones entre texto e imagen
 
 Es el vocabulario; ninguna es obligatoria y ninguna se repite por costumbre.
@@ -48,7 +58,7 @@ Es el vocabulario; ninguna es obligatoria y ninguna se repite por costumbre.
 ## Tipografía
 
 - **Dos familias como máximo.** Display para la frase y texto para la firma. La mono solo cuando la marca la pide.
-- **El tamaño se pone para el móvil:** un lienzo de 1080 px se ve a unos 360–400 px. La altura de mayúscula mínima es de 16 px en el lienzo (comprobado) y se recomiendan 20 o más. La firma, a 28 px o más.
+- **El tamaño se pone para el móvil:** un lienzo de 1080 px se ve a unos 360–400 px. **La altura de mayúscula mínima es de 22 px en el lienzo** (por debajo, el compositor da error) y **los textos secundarios van a unos 34 px de cuerpo o más**, la firma incluida. Prueba: los 4 posts de F1.6 llevaban textos de 24–28 px y varias personas que los vieron dijeron que eran demasiado pequeños (08/11; `observaciones/estudio.json` → `texto-secundario-legible`).
 - **Caja:**
   - frases en minúscula de oración cuando son frases (y la continuidad entre diapositivas lo agradece);
   - mayúsculas cuando la marca las pide o la palabra es un cartel.
@@ -93,3 +103,4 @@ Pendientes que tendrían valor real cuando una idea los pida:
 | El mismo tamaño de frase en todas las diapositivas | Plano, sin ritmo | El tamaño decrece y la posición baja: el ritmo es parte de la idea |
 | Un grano de sal del tamaño de un punto tipográfico (Etxebarri 4, v1) | En el móvil no se ve, y la idea depende de verlo | Casi tan alto como las mayúsculas: se lee como un objeto que hace de punto |
 | Etiquetas y líneas para «explicar» un plato (DAK B) | Parece una infografía | Una frase y la foto: lo que explica la foto no se escribe |
+| Textos a 24–28 px y apelotonados contra el borde del papel (Etxebarri v005, Mesón v005) | No se leen en el móvil y el bloque parece apretado | 34 px o más y el aire repartido (v006, revisión de María) |

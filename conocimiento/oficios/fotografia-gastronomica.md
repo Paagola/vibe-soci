@@ -34,6 +34,50 @@ Recortar o ampliar una sola foto no sustituye a una toma nueva. Es el error de `
 - en `ejemplos/01`, «la misma foto con más calidad» no gustó, y la corrección cambió la cámara;
 - en el MVP (03/11), la pieza de Grok con el patrón de abajo consiguió una toma a ras de mesa con «BRASA» detrás, y la de Marketing Studio con «recrea el plato exacto» repitió el ángulo (`diseno/f1_6/img/mvp-via-integrada.jpg`).
 
+**Otra toma, no la misma (regla del 09/11/2026, en `dominio/fotoNueva.ts` → `esOtraToma`):** la altura de la cámara cambia más de 30°, o cambian al menos dos de: el lado (girar 45° o más alrededor del plato), la distancia (otro tamaño de plano) y la altura (15° o más).
+- **Por qué no basta «más de 30°»:** la burger de DAK se subió a unos 5°, que ya es el ángulo clásico de una burger. Subir 30° la convierte en otro plato peor; girar y acercarse da una toma nueva.
+- **Prueba:** en el benchmark, un ¾ a 25° sobre un ¾ a 45° volvió a la foto subida (4 imágenes). DAK y Mesón fallaron la regla de 30° dos veces cada uno (07/11).
+- **Ojo:** pedir un giro no garantiza que salga. En DAK, intento 3 (09/11), salieron la distancia y la altura, pero la burger siguió frontal. Por eso el resultado se comprueba aparte, preguntando lado a lado si es el mismo punto de vista.
+
+## Empezar por lo que ya gustó (observación del 07/11/2026)
+
+Antes que cualquier referencia externa, el prompt sale de los **ejemplos que gustaron del mismo local o del mismo plato** (`biblioteca/ejemplos/`, los marcados «GUSTÓ»). La referencia externa solo añade lo que esos ejemplos no tienen; nunca sustituye su aspecto.
+- **Prueba:**
+  - S1–S3 se escribieron tomando la pared de pizarra de post-11 como estilo y no gustó ninguna;
+  - V1 (el prompt del usuario de `ejemplos/03`, tal cual) y V3 (la misma estética desde otro ángulo) gustaron mucho.
+
+  Son pocas imágenes: 3 frente a 2 (`diseno/f1_6/METODO-SOCIETY.md`, tanda 2).
+- **Para probar un método** (el de Society, por ejemplo), sus piezas se añaden **de una en una** al prompt que gustó. Reescribirlo entero (V2) perdió la cámara y no enseña qué falló.
+
+## Clave baja con entorno real (observación con POCAS imágenes, no regla)
+
+Lo que parece separar las fotos que gustaron de las que no **no es la oscuridad sola**, sino la clave baja **junto con un entorno real**:
+- una superficie que se lee (el mantel en V1, el roble quemado con veta en V3);
+- una luz con una fuente clara (el contraluz estrecho en V1, el foco lateral rasante en V3);
+- una cámara baja y cercana.
+
+**Con qué imágenes se apoya, y son muy pocas:**
+- gustaron 2: V1 y V3;
+- no gustaron 12: las 8 del benchmark, oscuras (46–71 % de sombras) pero sobre un vacío de carbón liso, y 4 claras (S1–S3 y V2).
+
+La saturación no separa unas de otras. **Puede cambiar con la próxima imagen:** se revisa en cuanto haya más fotos valoradas.
+
+## La cámara se describe por su resultado visible (observación del 07/11/2026)
+
+Además de los grados y la óptica, el prompt dice **qué se ve** desde esa cámara. Por ejemplo: «the camera almost touching the tablecloth so the frosted glass plate is seen nearly edge-on», o «every cup is a perfect circle».
+- **Funcionó en 2 de 4 posts** (07/11):
+  - Etxebarri, intento 2: a ras de mesa;
+  - café, intento 2: cenital.
+- **No bastó en DAK ni en Mesón**, intento 2: cuando la foto subida ya es una buena foto de producto, el modelo vuelve a su geometría.
+- **En el cenital del Mesón** (intento 3, 09/11) funcionó. En DAK, intento 3, el giro no salió.
+
+Es una ayuda, no una garantía.
+
+## Recorte nítido de arriba abajo (revisión de María, 08/11/2026)
+
+Un plato que se va a recortar (palabra detrás, patrón) pide **profundidad de campo amplia: f/8–f/11 y «every layer in sharp focus»**. Con f/4, el pan de arriba de DAK salía borroso y se notaba en el recorte.
+- **Comprobado en 1 imagen:** DAK, intento 3 (09/11), con f/11 salió nítida de arriba abajo.
+
 ## Fidelidad (decisión del 07/11/2026; sustituye a la del 06/11)
 
 **Por defecto, FLEXIBLE** (`marcas/<slug>/perfil.json` → `fidelidad`):
