@@ -1,6 +1,7 @@
 {
   "nota": "Carrusel «Y nada más» (F1.5). Una frase repartida en cuatro diapositivas; cada una tiene menos que la anterior y la cámara se acerca hasta un grano de sal.",
   "local": "asador-etxebarri",
+  "pieza": { "fecha": "2026-11-07" },
   "marca": "../../marcas/asador-etxebarri/tokens.json",
   "diapositivas": [
     { "intencion": "intenciones/1-gamba.json" },

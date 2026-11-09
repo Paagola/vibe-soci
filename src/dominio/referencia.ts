@@ -131,6 +131,28 @@ export function piezasRealesDelLocal(piezas: Pieza[], local: string): number {
   return piezas.filter((p) => p.localSlug === local && !(p.generaciones.length > 0 && p.generaciones.every((g) => g.origen === 'SIMULADO'))).length;
 }
 
+/**
+ * Una pieza hecha con las herramientas de línea de comandos (decisión del 09/11/2026: cuentan para el umbral).
+ * Se declara en el plan del proyecto (`proyectos/…/plan.json` → `pieza`); los planes sin `pieza` son experimentos
+ * (benchmark, maquetas) y no cuentan.
+ */
+export const PiezaHecha = z.object({
+  /** Carpeta del proyecto, relativa a proyectos/. */
+  proyecto: z.string().min(1),
+  local: z.string().min(1),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'AAAA-MM-DD'),
+  /** Id de la referencia registrada con `npm run referencia` de la que parte, si la hay. */
+  referencia: z.string().min(1).optional(),
+});
+export type PiezaHecha = z.infer<typeof PiezaHecha>;
+
+/** Piezas del local que cuentan para el umbral: las reales de la app y las hechas con herramientas. */
+export function piezasQueCuentan(app: Pieza[], herramientas: PiezaHecha[], local: string): { app: number; herramientas: number; total: number } {
+  const deApp = piezasRealesDelLocal(app, local);
+  const deHerramientas = herramientas.filter((p) => p.local === local).length;
+  return { app: deApp, herramientas: deHerramientas, total: deApp + deHerramientas };
+}
+
 export type PasoAConcepto =
   | { puede: true; motivo: string }
   | { puede: false; motivo: string; falta: 'REFERENCIA' | 'FICHA' | 'CAPTURA' };

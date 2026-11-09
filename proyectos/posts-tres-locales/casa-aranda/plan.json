@@ -1,6 +1,10 @@
 {
   "nota": "Casa Aranda · post F1 (post-03). PIEZA DE PRUEBA, NO PUBLICABLE: foto de partida de Wikimedia Commons (CC BY-SA 2.0), no del dueño; colores propuestos por el estudio.",
   "local": "casa-aranda",
+  "pieza": {
+    "fecha": "2026-11-08",
+    "referencia": "ref-post-03"
+  },
   "marca": "../../../marcas/casa-aranda/tokens.json",
   "diapositivas": [
     {

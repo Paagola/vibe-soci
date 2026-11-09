@@ -4,12 +4,14 @@
  *   referencia registrar --local L --id ID (--imagen ruta | --enlace url | --biblioteca post-11) [--nota "…"]
  *   referencia captura   --local L --id ID --imagen ruta        (cuando el enlace no se pudo leer)
  *   referencia ficha     --local L --id ID --desde ficha.json   (añade el análisis)
- *   referencia comprobar --local L [--referencia ID]            (¿puede la pieza pasar a concepto?)
+ *   referencia comprobar --local L [--referencia ID]            (¿puede la pieza pasar a concepto? Solo lee)
+ *   referencia propuestas --local L                            (pinta la ficha visual de las tres familias propuestas)
  *   referencia listar    --local L
  *   referencia familias
  *
- * Si falta la referencia, «comprobar» propone tres familias y pinta su ficha visual en
- * datos/locales/<L>/referencias/propuestas.jpg para que el usuario elija.
+ * «comprobar» no escribe nada (09/11/2026): si falta la referencia, nombra las tres familias propuestas.
+ * La ficha visual (datos/locales/<L>/referencias/propuestas.jpg) la pinta solo «propuestas».
+ * Cuentan para el umbral las piezas de la app y las hechas con herramientas (`pieza` en proyectos/…/plan.json).
  */
 import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -25,9 +27,10 @@ import { comprobarReferencia } from '../aplicacion/referencias/comprobarReferenc
 import type { DepsReferencias } from '../aplicacion/referencias/dependencias.js';
 import { guardarFicha } from '../aplicacion/referencias/guardarFicha.js';
 import { registrarReferencia } from '../aplicacion/referencias/registrarReferencia.js';
+import { PiezasHechasFicheros } from '../adaptadores/ficheros/PiezasHechasFicheros.js';
 import { RAIZ, leerConfig } from '../config.js';
 import { ErrorDeUsuario } from '../dominio/errores.js';
-import type { FamiliaBiblioteca } from '../dominio/referencia.js';
+import { proponerFamilias, type FamiliaBiblioteca } from '../dominio/referencia.js';
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -49,6 +52,7 @@ async function principal(): Promise<void> {
   const biblioteca = new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(config.carpetaBiblioteca, 'referencias'));
   const deps: DepsReferencias = {
     piezas: new AlmacenPiezasFicheros(join(config.carpetaDatos, 'piezas')),
+    piezasHechas: new PiezasHechasFicheros(join(RAIZ, 'proyectos')),
     locales: new AlmacenLocalesFicheros(carpetaLocales),
     referencias: new AlmacenReferenciasFicheros(carpetaLocales),
     biblioteca,
@@ -96,14 +100,23 @@ async function principal(): Promise<void> {
     case 'comprobar': {
       const estado = await comprobarReferencia(deps, { local: pedir(local, 'local'), ...(values.referencia ? { referencia: values.referencia } : {}) });
       console.log(`${estado.paso.puede ? '✓' : '✖'} ${estado.paso.motivo}`);
-      console.log(`  Piezas reales del local: ${estado.piezasReales} · referencia obligatoria hasta ${estado.umbral}.`);
+      console.log(
+        `  Piezas del local: ${estado.piezasReales} (${estado.desglose.app} de la app y ${estado.desglose.herramientas} con herramientas) · referencia obligatoria hasta ${estado.umbral}.`,
+      );
       if (estado.propuestas.length) {
         console.log('  Familias propuestas (elige una y regístrala con --biblioteca <post>):');
         for (const f of estado.propuestas) console.log(`   ${f.id} · ${f.nombre} · posts ${f.posts.join(', ')}`);
-        const destino = join(carpetaLocales, local!, 'referencias', 'propuestas.jpg');
-        await fichaVisual(destino, estado.propuestas, biblioteca);
-        console.log(`  Ficha visual: ${relative(RAIZ, destino)}`);
+        console.log(`  Para verlas en una hoja: referencia propuestas --local ${local}`);
       }
+      return;
+    }
+    case 'propuestas': {
+      const marca = await deps.locales.obtener(pedir(local, 'local'));
+      const familias = proponerFamilias(await biblioteca.familias(), marca.tonos);
+      const destino = join(carpetaLocales, local!, 'referencias', 'propuestas.jpg');
+      await fichaVisual(destino, familias, biblioteca);
+      for (const f of familias) console.log(`  ${f.id} · ${f.nombre} · posts ${f.posts.join(', ')}`);
+      console.log(`✓ Ficha visual: ${relative(RAIZ, destino)}`);
       return;
     }
     case 'listar': {
@@ -118,7 +131,7 @@ async function principal(): Promise<void> {
       return;
     }
     default:
-      throw new ErrorDeUsuario('Órdenes: registrar, captura, ficha, comprobar, listar, familias');
+      throw new ErrorDeUsuario('Órdenes: registrar, captura, ficha, comprobar, propuestas, listar, familias');
   }
 }
 

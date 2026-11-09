@@ -3,7 +3,8 @@
  * Sin red (el lector de enlaces usa un fetch simulado) y sin gasto.
  */
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
@@ -14,6 +15,7 @@ import { CatalogoTipografico } from '../src/adaptadores/compositor/tipografias.j
 import { AlmacenLocalesFicheros } from '../src/adaptadores/ficheros/AlmacenLocalesFicheros.js';
 import { AlmacenReferenciasFicheros } from '../src/adaptadores/ficheros/AlmacenReferenciasFicheros.js';
 import { BibliotecaDeReferenciasFicheros } from '../src/adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
+import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFicheros.js';
 import { anadirCaptura } from '../src/aplicacion/referencias/anadirCaptura.js';
 import { comprobarReferencia } from '../src/aplicacion/referencias/comprobarReferencia.js';
 import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
@@ -25,9 +27,11 @@ import { Marca, type Pieza } from '../src/dominio/modelos.js';
 import {
   FamiliaBiblioteca,
   FichaReferencia,
+  PiezaHecha,
   ReferenciaLocal,
   UMBRAL_REFERENCIA_OBLIGATORIA,
   comprobarPasoAConcepto,
+  piezasQueCuentan,
   piezasRealesDelLocal,
   plataformaDe,
   proponerFamilias,
@@ -241,6 +245,73 @@ describe('F1.6 · fuentes nuevas del catálogo', () => {
         vertical: 'arriba',
       });
       assert.ok(bloque.lineas.length >= 1 && bloque.tamano > 10, fuente);
+    }
+  });
+});
+
+describe('F1.6 · piezas hechas con herramientas (cuentan para el umbral desde el 09/11/2026)', () => {
+  it('cuentan junto a las de la app, solo las del local', () => {
+    const hechas = [
+      PiezaHecha.parse({ proyecto: 'p/a', local: 'etx', fecha: '2026-11-07', referencia: 'ref-post-30' }),
+      PiezaHecha.parse({ proyecto: 'p/b', local: 'dak', fecha: '2026-11-07' }),
+    ];
+    assert.deepEqual(piezasQueCuentan([pieza('etx', 'API'), pieza('etx', 'SIMULADO')], hechas, 'etx'), { app: 1, herramientas: 1, total: 2 });
+  });
+
+  it('el lector de proyectos solo cuenta los planes que declaran `pieza` (no los experimentos)', async () => {
+    const carpeta = await mkdtemp(join(tmpdir(), 'estudio-piezas-'));
+    try {
+      const plan = async (ruta: string, contenido: object) => {
+        await mkdir(join(carpeta, ruta), { recursive: true });
+        await writeFile(join(carpeta, ruta, 'plan.json'), JSON.stringify(contenido));
+      };
+      await plan('posts/etx', { local: 'etx', marca: 'x', diapositivas: [], pieza: { fecha: '2026-11-07', referencia: 'ref-post-30' } });
+      await plan('carrusel', { local: 'etx', marca: 'x', diapositivas: [], pieza: { fecha: '2026-11-08' } });
+      await plan('benchmark', { local: 'etx', marca: 'x', diapositivas: [] });
+      const piezas = await new PiezasHechasFicheros(carpeta).listar();
+      assert.deepEqual(piezas.map((p) => p.proyecto).sort(), ['carrusel', join('posts', 'etx')]);
+      await plan('mala', { local: 'etx', pieza: { fecha: 'ayer' } });
+      await assert.rejects(new PiezasHechasFicheros(carpeta).listar(), /pieza/);
+    } finally {
+      await rm(carpeta, { recursive: true, force: true });
+    }
+  });
+
+  it('con las piezas hechas con herramientas se llega al umbral y ya no hace falta referencia', async () => {
+    const hechas = Array.from({ length: 4 }, (_, i) => PiezaHecha.parse({ proyecto: `p${i}`, local: 'etx', fecha: '2026-11-07' }));
+    const deps = {
+      piezas: { listar: async () => [pieza('etx', 'API')] },
+      piezasHechas: { listar: async () => hechas },
+      locales: { obtener: async () => ({ tonos: ['sobrio'] }) },
+      referencias: { obtener: async () => undefined },
+      biblioteca,
+    } as unknown as DepsReferencias;
+    const estado = await comprobarReferencia(deps, { local: 'etx' });
+    assert.equal(estado.paso.puede, true);
+    assert.deepEqual(estado.desglose, { app: 1, herramientas: 4 });
+  });
+});
+
+describe('F1.6 · «referencia comprobar» solo lee (09/11/2026)', () => {
+  it('sin referencia nombra las familias pero no escribe ningún archivo; «propuestas» sí pinta la hoja', async () => {
+    const datos = await mkdtemp(join(tmpdir(), 'estudio-comprobar-'));
+    try {
+      const marca = Marca.parse(JSON.parse(await readFile(join(RAIZ, 'plantillas', 'marca.ejemplo.json'), 'utf8')));
+      await new AlmacenLocalesFicheros(join(datos, 'locales')).guardar(marca);
+      const antes = await readdir(join(datos, 'locales', marca.slug));
+      const orden = (sub: string) =>
+        execFileSync(process.execPath, ['--import', 'tsx', join(RAIZ, 'src', 'herramientas', 'referencia.ts'), sub, '--local', marca.slug], {
+          cwd: RAIZ,
+          env: { ...process.env, ESTUDIO_DATOS: datos },
+          encoding: 'utf8',
+        });
+      const salida = orden('comprobar');
+      assert.match(salida, /Familias propuestas/);
+      assert.deepEqual(await readdir(join(datos, 'locales', marca.slug)), antes, 'comprobar no debe crear nada');
+      orden('propuestas');
+      assert.ok((await readdir(join(datos, 'locales', marca.slug, 'referencias'))).includes('propuestas.jpg'));
+    } finally {
+      await rm(datos, { recursive: true, force: true });
     }
   });
 });

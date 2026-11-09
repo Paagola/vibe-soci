@@ -1,6 +1,10 @@
 {
   "nota": "Pieza de prueba (no consta contrato). De post-09 se toma: la palabra repetida en filas a todo lo ancho, el producto recortado que tapa las del centro y una fila final distinta; la etiqueta pequeña arriba entre filetes. No se copia: SANDWICH, Borcelle, ORDER NOW, la web ni el crema. El mecanismo nace del plato: la Manhattan Tower es una torre, y la palabra se apila como sus pisos.",
   "local": "dak-burger",
+  "pieza": {
+    "fecha": "2026-11-07",
+    "referencia": "ref-post-09"
+  },
   "marca": "../../../marcas/dak-burger/tokens.json",
   "diapositivas": [
     {

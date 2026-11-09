@@ -1,6 +1,10 @@
 {
   "nota": "Pieza de prueba (no consta contrato; Café Albor es la marca de ejemplo del proyecto). De post-10 se toma: el cenital a sangre y el titular que gira siguiendo el borde del recipiente. No se copia: Brunch time, la mano, el plato de raciones ni la web. El círculo sigue la taza de la rosetta.",
   "local": "cafe-albor",
+  "pieza": {
+    "fecha": "2026-11-07",
+    "referencia": "ref-post-10"
+  },
   "marca": "../../../marcas/cafe-albor/tokens.json",
   "diapositivas": [
     {

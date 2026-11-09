@@ -1,6 +1,9 @@
 {
   "nota": "Carrusel continuo de un chiringuito de playa. Fotos generadas solo con texto (Higgsfield, 3 × 2 créditos): pieza de prueba. Faltan los datos del local (nombre, playa, horario) y sus platos reales.",
   "local": "chiringuito-prueba",
+  "pieza": {
+    "fecha": "2026-11-08"
+  },
   "marca": "../../marcas/chiringuito-prueba/tokens.json",
   "diapositivas": [
     {

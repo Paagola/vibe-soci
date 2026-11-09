@@ -1,6 +1,10 @@
 {
   "nota": "Pieza de prueba (no consta contrato). De post-22 se toma: el titular enorme de serif de alto contraste a todo lo ancho con una script que lo cruza por debajo, la fila de versalitas pequeñas bajo el titular y el plato abajo con el aire oscuro arriba. No se copia: Mocktail, Drink Club, Borcelle, 2026, el verde ni el rosa (el magenta es de la marca).",
   "local": "meson-de-cervantes",
+  "pieza": {
+    "fecha": "2026-11-07",
+    "referencia": "ref-post-22"
+  },
   "marca": "../../../marcas/meson-de-cervantes/tokens.json",
   "diapositivas": [
     {

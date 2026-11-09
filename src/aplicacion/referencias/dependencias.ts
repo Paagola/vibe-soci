@@ -2,10 +2,13 @@ import type { AlmacenLocales, AlmacenPiezas } from '../../puertos/Almacenes.js';
 import type { AlmacenReferencias } from '../../puertos/AlmacenReferencias.js';
 import type { BibliotecaDeReferencias } from '../../puertos/BibliotecaDeReferencias.js';
 import type { ObtenedorEnlaces } from '../../puertos/ObtenedorEnlaces.js';
+import type { PiezasHechas } from '../../puertos/PiezasHechas.js';
 
 export interface DepsReferencias {
   /** Piezas del modo real (el simulado tiene su propio almacén y no cuenta). */
   piezas: AlmacenPiezas;
+  /** Piezas hechas con las herramientas de línea de comandos: también cuentan para el umbral (09/11/2026). */
+  piezasHechas?: PiezasHechas;
   locales: AlmacenLocales;
   referencias: AlmacenReferencias;
   biblioteca: BibliotecaDeReferencias;
