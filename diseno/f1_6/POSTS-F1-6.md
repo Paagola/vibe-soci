@@ -1,5 +1,7 @@
 # F1.6 · Cuatro posts de principio a fin, plantilla de foto nueva y puerta de calidad
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 07/11/2026. Sin commit; espera tu revisión.
 
 ## Resumen

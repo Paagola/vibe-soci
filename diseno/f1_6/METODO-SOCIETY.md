@@ -1,5 +1,7 @@
 # F1.6 · Lo que aprendí del repositorio Society, y la prueba que propongo
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 07/11/2026. Leído en `github.com/Paagola/society`:
 - **skill `directoria`:** el método PromptDirector, las correcciones de hostelería 00–08 y la plantilla de prompt;
 - **skill `director-reels`:** el compilador de prompts y el perfil de Da Tonino;

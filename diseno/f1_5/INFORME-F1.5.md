@@ -1,5 +1,7 @@
 # Informe F1.5 · Dirección artística con la metodología de design-agent y primer carrusel profesional
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](../f1_6/ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 2026-11-07. La F2 no se ha empezado, el director automático no se ha tocado y no se ha publicado nada.
 
 ![Carrusel](../../proyectos/etxebarri-gamba-carrusel/img/carrusel.jpg)

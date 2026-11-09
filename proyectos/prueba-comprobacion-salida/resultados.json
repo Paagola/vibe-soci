@@ -1,0 +1,412 @@
+{
+  "fecha": "2026-11-09T17:00:38.585Z",
+  "modelos": [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash"
+  ],
+  "resultados": [
+    {
+      "id": "V3D",
+      "humano": {
+        "elementos": "FALLA",
+        "fallo": "tres colas (un cuerpo de más)"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "deep red prawns",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Se observan dos gambas rojas enteras con cabeza y cola."
+          },
+          {
+            "nombre": "square pale frosted glass plate",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Plato cuadrado de vidrio translúcido presente."
+          },
+          {
+            "nombre": "coarse salt",
+            "esperado": null,
+            "visto": null,
+            "presente": true,
+            "nota": "Granos de sal gruesa visibles sobre las gambas."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "CONSERVA",
+        "motivos": []
+      }
+    },
+    {
+      "id": "V1",
+      "humano": {
+        "elementos": "FALLA",
+        "fallo": "tercera cabeza a la derecha",
+        "toma": "DISTINTA"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "gambas rojas enteras",
+            "esperado": 2,
+            "visto": 3,
+            "presente": true,
+            "nota": "Tres cabezas de gamba visibles en la composición."
+          },
+          {
+            "nombre": "plato de vidrio esmerilado",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Presente en el encuadre."
+          },
+          {
+            "nombre": "mantel blanco",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Presente en la superficie."
+          }
+        ],
+        "anatomia": [
+          "Cabeza de gamba adicional detrás de las piezas principales."
+        ],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "DESCARTA",
+        "motivos": [
+          "gambas rojas enteras: 3 en vez de 2",
+          "anatomía: Cabeza de gamba adicional detrás de las piezas principales."
+        ]
+      },
+      "toma": {
+        "alturaReal": "alta desde arriba",
+        "alturaNueva": "baja",
+        "mismoLado": false,
+        "mismaDistancia": false,
+        "mismoPuntoDeVista": false,
+        "explicacion": "La imagen 1 está tomada en un ángulo picado elevado mostrando la superficie de la fuente, mientras que la imagen 2 es una toma lateral a ras de mesa."
+      }
+    },
+    {
+      "id": "DAK-2",
+      "humano": {
+        "elementos": "FALLA",
+        "fallo": "texto de periódico inventado en el papel",
+        "toma": "MISMA"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "pan brioche (superior e inferior)",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Pan brioche completo presente."
+          },
+          {
+            "nombre": "hamburguesas de carne",
+            "esperado": 3,
+            "visto": 3,
+            "presente": true,
+            "nota": "Tres carnes de vacuno visibles."
+          },
+          {
+            "nombre": "capas de bacon",
+            "esperado": 3,
+            "visto": 3,
+            "presente": true,
+            "nota": "Bacon distribuido en tres niveles."
+          },
+          {
+            "nombre": "lonchas de queso cheddar",
+            "esperado": 3,
+            "visto": 3,
+            "presente": true,
+            "nota": "Queso derretido sobre cada carne."
+          },
+          {
+            "nombre": "papel de cocina impreso",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Papel impreso bajo la hamburguesa."
+          },
+          {
+            "nombre": "tabla de madera",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Tabla rústica de madera."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [
+          "Texto tipo periódico legible impreso en el papel de base"
+        ],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "DESCARTA",
+        "motivos": [
+          "texto nuevo: Texto tipo periódico legible impreso en el papel de base"
+        ]
+      },
+      "toma": {
+        "alturaReal": "baja",
+        "alturaNueva": "¾",
+        "mismoLado": false,
+        "mismaDistancia": false,
+        "mismoPuntoDeVista": false,
+        "explicacion": "La imagen 1 está tomada desde un ángulo bajo a ras de la base, mientras que la imagen 2 es una toma en ángulo de tres cuartos desde más arriba, mostrando la parte superior de la tabla de madera."
+      }
+    },
+    {
+      "id": "CAFE-1",
+      "humano": {
+        "elementos": "FALLA",
+        "fallo": "posavasos añadido"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "artisan ceramic cups",
+            "esperado": 3,
+            "visto": 3,
+            "presente": true,
+            "nota": "Se observan las tres tazas cerámicas de estilo similar."
+          },
+          {
+            "nombre": "latte art patterns",
+            "esperado": null,
+            "visto": null,
+            "presente": true,
+            "nota": "La segunda taza grande muestra roseta en lugar de tulipán."
+          },
+          {
+            "nombre": "rectangular wooden tray",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Bandeja de madera rectangular presente."
+          },
+          {
+            "nombre": "silver spoons",
+            "esperado": 3,
+            "visto": 3,
+            "presente": true,
+            "nota": "Tres cucharas de metal presentes."
+          },
+          {
+            "nombre": "folded light brown paper napkin",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Servilleta de papel presente."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [
+          "Bandeja o posavasos redondo de madera bajo una taza"
+        ],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "DESCARTA",
+        "motivos": [
+          "añadido: Bandeja o posavasos redondo de madera bajo una taza"
+        ]
+      }
+    },
+    {
+      "id": "S3",
+      "humano": {
+        "elementos": "FALLA",
+        "fallo": "los cuerpos se funden; a la delantera no se le ve la cola"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "gambas rojas enteras",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Dos gambas completas presentes."
+          },
+          {
+            "nombre": "cabezas, antenas y patas",
+            "esperado": null,
+            "visto": null,
+            "presente": true,
+            "nota": "Detalles anatómicos bien representados."
+          },
+          {
+            "nombre": "sal gorda y acabado",
+            "esperado": null,
+            "visto": null,
+            "presente": true,
+            "nota": "Textura y sal visibles."
+          },
+          {
+            "nombre": "plato de vidrio translúcido",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Plato similar al original."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "CONSERVA",
+        "motivos": []
+      }
+    },
+    {
+      "id": "V3",
+      "humano": {
+        "elementos": "CONSERVA",
+        "toma": "DISTINTA"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "gambas rojas enteras",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Se observan dos gambas enteras con cabezas, patas y sal."
+          },
+          {
+            "nombre": "plato cuadrado de vidrio translúcido",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Plato de cristal al ácido presente."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "CONSERVA",
+        "motivos": []
+      },
+      "toma": {
+        "alturaReal": "alta desde arriba",
+        "alturaNueva": "3/4",
+        "mismoLado": false,
+        "mismaDistancia": false,
+        "mismoPuntoDeVista": false,
+        "explicacion": "La segunda fotografía está tomada desde un lado opuesto y un ángulo más bajo que la imagen original."
+      }
+    },
+    {
+      "id": "S1",
+      "humano": {
+        "elementos": "CONSERVA",
+        "toma": "DISTINTA"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "deep red prawns",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Dos gambas completas conservadas."
+          },
+          {
+            "nombre": "frosted glass plate",
+            "esperado": null,
+            "visto": null,
+            "presente": true,
+            "nota": "Plato de vidrio mate presente."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "CONSERVA",
+        "motivos": []
+      },
+      "toma": {
+        "alturaReal": "¾ alta",
+        "alturaNueva": "¾",
+        "mismoLado": false,
+        "mismaDistancia": false,
+        "mismoPuntoDeVista": false,
+        "explicacion": "La segunda toma se realizó desde un ángulo más bajo, un lado diferente y a mayor distancia del plato."
+      }
+    },
+    {
+      "id": "ETX-2",
+      "humano": {
+        "elementos": "CONSERVA",
+        "toma": "DISTINTA"
+      },
+      "checklist": {
+        "elementos": [
+          {
+            "nombre": "gambas rojas enteras",
+            "esperado": 2,
+            "visto": 2,
+            "presente": true,
+            "nota": "Se observan dos unidades completas con sal y marcas de asado."
+          },
+          {
+            "nombre": "plato de cristal esmerilado",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Plato cuadrado de vidrio translúcido presente."
+          },
+          {
+            "nombre": "mantel blanco",
+            "esperado": 1,
+            "visto": 1,
+            "presente": true,
+            "nota": "Superficie con mantel textil blanco."
+          }
+        ],
+        "anatomia": [],
+        "anadidos": [],
+        "textoNuevo": [],
+        "seguro": true
+      },
+      "veredicto": {
+        "v": "CONSERVA",
+        "motivos": []
+      },
+      "toma": {
+        "alturaReal": "alta desde arriba",
+        "alturaNueva": "baja",
+        "mismoLado": false,
+        "mismaDistancia": false,
+        "mismoPuntoDeVista": false,
+        "explicacion": "La primera foto es un picado superior y la segunda es un plano lateral casi a ras de mesa."
+      }
+    }
+  ]
+}

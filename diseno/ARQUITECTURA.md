@@ -28,7 +28,16 @@ Por eso el MVP tiene **dos vías de generación** (decisión E6):
 - **Por la API.** Se usa un modelo intercambiable. Por defecto es `marketing-studio/image` en modo directo (`enhance_prompt: false`), que admite hasta 16 imágenes de referencia, 4K y edición.
 - **A mano.** Se genera en la web de Higgsfield con Nano Banana Pro, siguiendo `plan.md`, y después se ejecuta `importar`. El resto del flujo es el mismo: revisar, corregir, valorar y exportar.
 
-**Otra vía (comprobada el 03/11/2026):** la clave de Gemini del equipo ya da acceso a `gemini-3-pro-image`, que es Nano Banana Pro, por la **API de Google**. Para usarlo bastaría un adaptador más, `GeneradorGeminiImagen`, que implemente el puerto `GeneradorImagen`. No hay que tocar nada más. Esas imágenes se pagan a Google, no salen de los créditos de Higgsfield; está relacionado con la comprobación C-25.
+**Otra vía (03/11/2026), corregida el 07/11:** la clave de Gemini del equipo **lista** `gemini-3-pro-image`, pero **ningún modelo de imagen de Gemini tiene tier gratuito en la API**. La llamada real dio HTTP 429 (07/11) y la clave está en el tier gratuito, sin facturación. El adaptador existe (`src/adaptadores/gemini/imagenGemini.ts` y `src/herramientas/generarGeminiImagen.ts`, con tope y registro), pero **no se puede usar sin activar la facturación de Google, y eso no está decidido**.
+
+**Lo que se ha usado de verdad desde el 07/11 (actualizado el 09/11/2026):**
+- Todas las fotos nuevas (25) salieron del **conector MCP de Higgsfield**, llamado desde una conversación con una IA, con `get_cost` antes de cada petición. **El código no puede llamar al MCP**, así que esta vía sirve para pruebas, no para el producto.
+- **El nombre del modelo no es fiable en las respuestas del MCP:**
+  - pedido `nano_banana_pro` → el trabajo responde `nano_banana_2` y el movimiento se etiqueta «Nano Banana Pro»;
+  - pedido `nano_banana_2` → el trabajo responde `nano_banana_flash` y el movimiento se etiqueta «Nano Banana 2».
+
+  A 2K, los dos cuestan 2 créditos. Lo más probable es que `nano_banana_2` sea el identificador interno de Pro, pero no está demostrado.
+- **La vía de generación del producto está sin decidir:** la comparación de las tres opciones está en [`f1_6/ESTADO.md`](f1_6/ESTADO.md) §8.
 
 ## 3. Decisiones
 
@@ -39,7 +48,7 @@ Por eso el MVP tiene **dos vías de generación** (decisión E6):
 | E3 | **Puertos y adaptadores.** El dominio y los casos de uso solo dependen de interfaces. | Permite cambiar Gemini o Higgsfield, simular sin gastar y probar el flujo entero. | Llamar a las APIs desde los comandos: queda acoplado y no se puede probar. |
 | E4 | **Director creativo en dos pasos**: primero 3 conceptos distintos y tú eliges, después el plan del concepto elegido. | Responde a R1, R2 y R4: la IA propone ideas y tú decides. Así no hay una plantilla única. | Un solo paso que escribe el prompt: sale siempre el mismo recurso. |
 | E5 | **La biblioteca son datos, no código**: `principios.md`, `ejemplos/*.md` y `valoraciones.jsonl`. | Lo que gusta cambia, y el equipo lo edita sin tocar código (R4). Cada voto con su motivo enseña al director. | Reglas escritas dentro del prompt en el código. |
-| E6 | **Generador intercambiable** con una estrategia por modelo: `marketing-studio/image` (por defecto), `ideogram/v4.0` y `xai/grok-imagine-image-2.0`. También la vía manual con Nano Banana Pro. | Ver §2. Cada modelo tiene sus propios parámetros y límites (referencias, longitud del prompt, proporciones). | **Ads Studio**: impone su propia creatividad y rompe R2 y R4. |
+| E6 | **Generador intercambiable** con una estrategia por modelo: `marketing-studio/image` (por defecto **en la web antigua**), `ideogram/v4.0` y `xai/grok-imagine-image-2.0`. También la vía manual. **Actualizado el 09/11/2026:** la vía nueva (foto sin texto y compositor) no tiene generador por defecto. Las pruebas se hacen por el MCP de Higgsfield (no automatizable) y la vía del producto la decide el usuario (ESTADO.md §8). Grok queda descartado para la foto nueva: conserva la geometría de la foto subida (benchmark, 3 de 3). | Ver §2. Cada modelo tiene sus propios parámetros y límites (referencias, longitud del prompt, proporciones). | **Ads Studio**: impone su propia creatividad y rompe R2 y R4. |
 | E7 | **Coste**: hay confirmación, un límite diario (40, como D-32) e `Idempotency-Key`. El `requestId` se guarda **antes** de esperar, y si se corta, se reanuda en lugar de reenviar. | R8. | |
 | E8 | **Regla de cifras**: un número que sale en la imagen tiene que estar en la idea o en las condiciones. Si no, el plan se rechaza y se pide otra vez. | Es la misma regla que la app (la IA no inventa precios ni fechas). | Fiarse del prompt. |
 | E9 | **Modo `--simular`**: un director y un generador falsos que no gastan nada. Desde el 06/11/2026 tiene **sus propios datos** (`datos-simulado/`: locales, piezas y votos). | Para probar el flujo y los tests sin claves. Con los datos aparte, una imagen simulada nunca cuenta como hecha ni se envía como portada en el modo real. | Compartir `datos/` y filtrar por origen en cada regla: es fácil olvidar un filtro. |
@@ -195,7 +204,7 @@ Reglas de dependencia: `web → aplicacion → (dominio, puertos)` y `adaptadore
 
 ## 11. Pendientes conocidos (revisados el 06/11/2026; ampliados el 07/11/2026)
 
-**F1.6, referencia obligatoria (07/11/2026).** Mientras un local tenga menos de 5 piezas creadas en modo real, una pieza no pasa de brief a concepto sin una referencia elegida y analizada (`src/dominio/referencia.ts`, `comprobarReferencia`). Hoy lo aplica la línea de comandos (`npm run referencia`). **El flujo web tendrá que respetar esta regla** antes de `proponerConceptos` cuando se aprueben sus pantallas; hasta entonces el generador antiguo no la comprueba.
+**F1.6, referencia obligatoria (07/11/2026; ampliada el 09/11).** Mientras un local tenga menos de 5 piezas, una pieza no pasa de brief a concepto sin una referencia elegida y analizada (`src/dominio/referencia.ts`, `comprobarReferencia`). **Cuentan las piezas de la app y las hechas con herramientas** (las que declaran `pieza` en `proyectos/…/plan.json`; decisión del 09/11). Hoy lo aplica la línea de comandos (`npm run referencia`), que **solo lee**: la hoja de familias la pinta `referencia propuestas`. **El flujo web tendrá que respetar esta regla** antes de `proponerConceptos` cuando se aprueben sus pantallas; hasta entonces el generador antiguo no la comprueba.
 
 
 | Asunto | Afecta al funcionamiento | Estado |

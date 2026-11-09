@@ -1,5 +1,7 @@
 # Estudio de contenido · Propuesta de arquitectura creativa (fase 2)
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](../f1_6/ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 **Fecha:** 6 de noviembre de 2026
 **Base:** el código actual de `estudio-contenido/`, el informe de auditoría `INFORME_REDISENO_ESTUDIO_CONTENIDO.md`, pruebas locales hechas para esta propuesta e investigación de las integraciones.
 **Qué no se ha hecho:** no se ha modificado ningún archivo del proyecto (esta carpeta es nueva), no se han usado las claves de Gemini ni de Higgsfield y no se ha gastado nada.

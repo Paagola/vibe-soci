@@ -1,5 +1,7 @@
 # F1.6 · FASE 0: estudio y plan
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 2026-11-07. Sin código, sin generar imágenes y sin gasto. Solo he hecho tres cosas:
 - leer;
 - mirar las 29 referencias una a una (en hojas de tres, a su tamaño real de 512 × 640);

@@ -1,5 +1,7 @@
 # F1.6 · Benchmark de foto nueva: vía A (integrada) frente a vía B (por capas)
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 2026-11-07. Lanzado con tu «adelante».
 - **Gasto:** **2,012 USD en 8 imágenes**, de un tope de 2,70. No falló ninguna, no hubo reintentos y queda sin usar la reserva de 0,69 USD.
 - **Acumulado de Higgsfield:** 3,989 USD (registro en `datos/gasto/higgsfield.jsonl`).

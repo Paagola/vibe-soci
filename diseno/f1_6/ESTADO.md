@@ -1,38 +1,38 @@
-# Estado real del proyecto `estudio-contenido`
+# Estado del proyecto `estudio-contenido` (documento vivo)
 
-09/11/2026. Informe de solo lectura: no se ha generado nada, no se ha gastado nada, no se ha cambiado código y no hay commit.
+**Última actualización: 09/11/2026, por la tarde.** Este es el único documento que dice el estado vigente. Los informes de fase (`FASE-0`, `FASE-1`, `BENCHMARK`, `METODO-SOCIETY`, `POSTS-F1-6`, F1, F1.5 y la propuesta) son históricos: si algo de ellos choca con este, vale este.
 
 **Cómo leer las marcas de cada dato:**
-- **[comprobado]**: lo he ejecutado o medido hoy, 09/11.
-- **[hecho, sin recomprobar]**: lo hice en una sesión anterior y está en un informe o en la procedencia de un activo, pero hoy no lo he vuelto a mirar.
-- **[supuesto]**: deducción mía, sin prueba directa.
+- **[comprobado]**: ejecutado o medido el 09/11.
+- **[hecho, sin recomprobar]**: hecho antes, consta en un informe o en la procedencia de un activo.
+- **[supuesto]**: deducción, sin prueba directa.
 
 ---
 
-## 0. Comprobaciones de hoy
+## 0. Qué cambió el 09/11 (tus decisiones 1–11)
 
-| Qué | Resultado |
-|---|---|
-| `npm run typecheck` | **Limpio**, sin errores [comprobado] |
-| `npm test` | **128 de 128** pasan, 0 fallan, 43 suites. El «Error: boom» del registro es un error provocado a propósito por `webEstimacion.test.ts` [comprobado] |
-| `git log` | **4 commits** en `main`: `f9910c2` F0, `87adaf2` pendientes de F0, `4a57f81` F1 (etiqueta `f1`) y `3bbfe33` F1.5 (etiqueta `f1_5`, 07/11 14:04). No hay más [comprobado] |
-| `git status` | **Todo F1.6 está sin confirmar:** 24 archivos modificados (673 líneas añadidas y 93 borradas), 1 borrado y **306 archivos nuevos** sin seguimiento, que `git status` agrupa en 49 entradas (código, pruebas, conocimiento, 6 marcas, 6 proyectos y `diseno/f1_6/`). `datos/` no está en git [comprobado] |
-| Saldo de Higgsfield (MCP `balance`) | **8,81 créditos**, plan *plus* [comprobado] |
-| Movimientos de Higgsfield (MCP `transactions`) | Desde el 07/11 hay **23 cargos de 2 créditos (46 en total)**. Coinciden uno a uno con las 23 líneas del MCP del registro [comprobado] |
-| Registro `datos/gasto/higgsfield.jsonl` | 67 líneas y **37 trabajos**, todos completados: **3,989 USD por la API** y **46 créditos por el MCP** [comprobado] |
-| Registro `datos/gasto/gemini.jsonl` | 1 intento de imagen (`gemini-3-pro-image`), con **HTTP 429** y 0 USD [comprobado] |
-| Regla de referencia (`npm run referencia -- comprobar`) | Los cuatro posts de F1.6 pasan con su referencia registrada. Ver §4.3 [comprobado] |
+| # | Qué | Resultado | Commit |
+|---|---|---|---|
+| 1 | Commit de F1.6 | Hecho, con la etiqueta `f1_6`. `.gitignore` deja fuera `.env`, `datos/`, `revision-externa*` y las copias `.zip` de la biblioteca [comprobado con `git check-ignore`] | `40a0953` |
+| 2 | Copia de `datos/` | `/Users/padre/Documents/victor/pantallas/copias-estudio-contenido/datos-2026-11-09.tar.gz`, 826 MB y 1164 archivos [comprobado]. No incluye nada de después de las 17:44 (el prototipo del punto 9 no escribe en `datos/`) | — |
+| 3 | Fallos de §0 | Los dos `marca.json`, con nombres de color acortados (copia previa en `datos/copias/`); prueba nueva que valida **todos** los `datos/locales/*/marca.json`; `referencia comprobar` ya solo lee y la hoja pasa a `referencia propuestas`, con una prueba que falla con la orden antigua. **La web con datos reales lista los 7 locales** (HTTP 200) [comprobado] | `93a6cdf` |
+| 4 | DAK y Mesón | Regla nueva «otra toma» (§4.1). Fotos nuevas con 4 créditos en total y un intento cada una. Posts recompuestos en v007 (§7) | `d0657ce` |
+| 5 | Piezas hechas con herramientas | Cuentan para el umbral. Registradas con la orden las referencias de los 3 locales nuevos (§4.3) | `93a6cdf` |
+| 6 | Oficios | Lecciones de María y las tres observaciones, con su prueba (§6) | `7e9372f` |
+| 7 | «Para cenar esta noche» | **Entra en el pie del Mesón:** consta en su `marca.json` («Cenas de noche, ambiente vivo») | `d0657ce` |
+| 8 | Vía de generación | Tabla comparativa en §8. **No decidido ni activado nada de pago** | este commit |
+| 9 | Comprobación de salida | Diseñada y probada con un prototipo fuera de `src/` (§9): **detecta 3 de los 4 fallos pedidos (75 %)**, con 8 de 22 casos medidos. No implementada | este commit |
+| 10 | Documentación | Este documento vivo; los informes marcados como históricos; actualizados `CONTEXTO-PARA-IA.md`, `ARQUITECTURA.md` (§2, E6 y §11) y el README | este commit |
+| 11 | Congelado | Ninguna pieza nueva; las únicas fotos nuevas son las 2 del punto 4 | — |
 
-**Dos hallazgos de hoy que no estaban en ningún informe:**
-1. **La lista de locales falla con los datos reales.** Los `marca.json` de `candamil` y `casa-aranda`, que creé el 08/11, no pasan el esquema `Marca`: hay nombres de color de más de 30 caracteres. `AlmacenLocalesFicheros.listar()` lanza el error y no devuelve ninguno. Lo he comprobado llamando al almacén desde un script aparte; la web no la he arrancado. **[supuesto]:** la portada de la web real no carga locales. Las pruebas no lo ven porque usan datos simulados.
-2. **`npm run referencia -- comprobar` escribe en disco.** Cuando falta la referencia, pinta `datos/locales/<slug>/referencias/propuestas.jpg`. Hoy creó una para `meson-lo-gueno`, que he borrado, y volvió a escribir la de `asador-etxebarri`. Una orden que solo comprueba no debería escribir nada.
+**Comprobaciones de cierre:** `npm run typecheck` limpio y `npm test` con 135 de 135 [comprobado].
 
 ---
 
 ## 1. Objetivo del producto
 
 1. El hostelero sube con prisa una foto del plato, hecha con el móvil.
-2. El estudio hace una **foto nueva y profesional del mismo plato**: con otro ángulo, otra luz y otra calidad, pero los mismos elementos.
+2. El estudio hace una **foto nueva y profesional del mismo plato**: con otra toma, otra luz y otra calidad, pero los mismos elementos.
 3. Con esa foto monta un **post de nivel estudio**, construido sobre una **referencia de Canva o Pinterest** que el usuario elige.
 4. **En las 5 primeras creaciones de cada local la referencia es obligatoria.**
 5. Los textos solo dicen lo que consta del local, y nada se publica sin el visto bueno.
@@ -41,321 +41,284 @@
 
 ## 2. Fases
 
-| Fase | Estado | Qué entrega | Evidencia | Qué falta |
-|---|---|---|---|---|
-| **MVP** (03–04/11) | Hecho, en git | Web local. Gemini escribe el plan e Higgsfield (API) genera la imagen entera, con el texto dentro | `README.md`, `diseno/ARQUITECTURA.md`, 9 imágenes en `datos/piezas/`, prueba «recorre el flujo entero» (simulada) | Nada de lo nuevo: ni foto nueva, ni referencia obligatoria, ni compositor |
-| **F0** · estabilizar (06/11) | Hecho, en git (`f9910c2`, `87adaf2`) | Datos simulados separados, cerrojo por pieza, límite diario por zona horaria, exportación a 3:4, 4:5 y 9:16, votos automáticos marcados | Pruebas de `fallos`, `webEstimacion` y `proporciones` | — |
-| **F1** · compositor (06–07/11) | Hecho, en git (`4a57f81`, etiqueta `f1`) | Compositor por capas (sharp, SVG y fontkit) que pinta una intención escrita a mano. 3 diseños de DAK | `diseno/f1/INFORME-F1.md`, `test/compositor.test.ts` | Tu valoración: «demasiado robóticos» |
-| **F1.5** · dirección de arte (07/11) | Hecho, en git (`3bbfe33`, etiqueta `f1_5`) | Carpeta `conocimiento/` (método de design-agent), perfil de marca v2 de Etxebarri y el carrusel «Y nada más» | `diseno/f1_5/INFORME-F1.5.md`, `proyectos/etxebarri-gamba-carrusel/` | **La FASE 0 de F1.6 lo dio por fallido:** es la misma foto con el mismo ángulo, no parte de ninguna referencia y prohibía mecanismos aprobados |
-| **F1.6 · FASE 0** · estudio (07/11) | Hecho, sin commit | Diagnóstico, manual de foto nueva, 29 referencias en 10 familias y plan | `diseno/f1_6/FASE-0.md` | — |
-| **F1.6 · FASE 1** · referencia obligatoria (07/11) | Hecho en el dominio y la línea de comandos, sin commit | Regla de las 5 primeras, entrada por imagen o enlace, 29 fichas como datos, fuentes OFL | `src/dominio/referencia.ts`, `test/referencias.test.ts` (19 pruebas), `diseno/f1_6/FASE-1.md` | Web, decidir si cuentan las piezas hechas con herramientas, ficha v2 |
-| **F1.6 · benchmark** (07/11) | Hecho, sin commit | 8 imágenes: vía A (foto y texto juntos) frente a vía B (por capas), con Marketing Studio 2.0 y Grok | `diseno/f1_6/BENCHMARK.md` | **Siguen sin respuesta tus decisiones:** la elección ciega, el acento rojo y la imagen extra de F4 |
-| **F1.6 · método Society** (07/11) | Hecho, sin commit | S1–S3, V1–V3 y V1D/V3D por el MCP; ensayo del director con el salmón | `diseno/f1_6/METODO-SOCIETY.md` | Pasar lo aprendido a `conocimiento/`: pendiente de tu visto bueno |
-| **F1.6 · 4 posts** (07/11) | Hecho a medias, sin commit | Plantilla de foto nueva con la regla de más de 30° y 4 posts compuestos | `diseno/f1_6/POSTS-F1-6.md`, `src/dominio/fotoNueva.ts`, `test/foto-nueva.test.ts` (6 pruebas) | DAK y Mesón no pasan la regla de ángulo; la puerta de calidad no existe |
-| **F1.6 · revisión de María** (08/11) | Hecho, sin commit | Correcciones de los 4 posts; el mínimo de mayúscula sube a 22 px y hay aviso de `SEPARACION` | `POSTS-F1-6.md` §10, 2 pruebas nuevas en `compositor.test.ts` | Nueva foto de DAK (pan borroso); pasar las lecciones a los oficios |
-| **F1.6 · chiringuito** (08/11) | Pieza de prueba | Carrusel continuo de 5 diapositivas, sacado de un pin | `proyectos/chiringuito-carrusel/ENTREGA.md` | Datos y fotos reales del local |
-| **F1.6 · tres locales** (08/11) | Pieza de prueba | Casa Aranda, Mesón Lo Güeno y Candamil, con fotos de Wikimedia | `proyectos/posts-tres-locales/ENTREGA.md` | **Dos `marca.json` inválidos** (§0) |
-| **F2** (propuesta) · activos y máscaras | **Parcial**, hecho de paso | `crearMascara.ts`: Apple Vision, luminancia y las dos combinadas | `BENCHMARK.md` | `puertos/Segmentador`, análisis de la foto dentro del flujo |
-| **F3** · el director escribe la intención | **No empezada** | — | Todas las intenciones de los posts las escribí yo a mano | Todo |
-| **F4** · edición, versiones y exportación en la web | **No empezada** | — | Hay versiones `vNNN` y exportación por línea de comandos | Pantallas: necesitan tu aprobación |
-| **F5** · crítico visual | **No empezada.** La puerta de calidad está **diseñada** | — | `POSTS-F1-6.md` §4 | Implementarla y calibrarla |
-| **F6** · perfil de marca v2 | Parcial | Solo Etxebarri tiene `perfil.json`; los demás, solo `tokens.json` | `marcas/` | Migración y alta |
-| **F7** · activos generados y benchmark | Hecho en la práctica, fuera de orden | `generarActivo.ts` (API), `generarGeminiImagen.ts`, importación del MCP | Registro de gasto | La vía de generación del producto (§9, riesgo 1) |
-| **F8** · carrusel e historias | No empezada como fase | Hay dos carruseles compuestos a mano | — | — |
+| Fase | Estado | Evidencia | Qué falta |
+|---|---|---|---|
+| MVP (web antigua: Gemini dirige, Higgsfield genera la imagen con el texto) | Hecho, en git | `README.md`, prueba «recorre el flujo entero» (simulada) | Nada de lo nuevo |
+| F0 · estabilizar | Hecho (`f9910c2`, `87adaf2`) | Pruebas de fallos, estimación y proporciones | — |
+| F1 · compositor | Hecho (etiqueta `f1`) | `diseno/f1/INFORME-F1.md`, `test/compositor.test.ts` | — |
+| F1.5 · dirección de arte | Hecho (etiqueta `f1_5`); la FASE 0 de F1.6 lo dio por fallido | `diseno/f1_5/INFORME-F1.5.md` | — |
+| F1.6 · referencia obligatoria, foto nueva, benchmark, 4 posts y arreglos | Hecho (etiqueta `f1_6` y 4 commits del 09/11) | Este documento | Lo de §12 |
+| **Siguiente · orden única de punta a punta** | **Espera tu decisión de la vía de generación (§8)** | — | Todo |
+| F3 (el director escribe la intención), F4 (pantallas web) y F5 (crítico visual) | No empezadas. La comprobación de salida (§9) es la primera pieza de F5 | `PROPUESTA.md` §13 (histórico) | — |
 
 ---
 
 ## 3. Qué funciona de punta a punta
 
-**¿Existe un flujo en el que subo una foto y obtengo un post terminado?**
-
-- **En el generador antiguo (la web del MVP), sí, pero con el método viejo.**
-  - Funciona así: subes la foto, el director propone conceptos y un plan, Higgsfield genera la imagen entera con el texto dentro y se exporta.
-  - No aplica la plantilla de foto nueva, ni la referencia obligatoria, ni el compositor.
-  - **Comprobado hoy solo en modo simulado** (`test/web.test.ts`). La última vez que se usó de verdad fue el 03/11.
-  - Además, con los datos reales de hoy **la lista de locales falla** (§0).
-- **En la vía nueva, la que pediste, no.** No hay una orden ni una pantalla que lo haga. Cada post de F1.6 lo he hecho yo en la conversación, enlazando herramientas sueltas:
-
-| Paso | Cómo se hace hoy | ¿Automático? |
-|---|---|---|
-| 1. Registrar la referencia | `npm run referencia -- registrar` (ficha escrita por mí) | La orden sí; el análisis de la ficha, a mano |
-| 2. Describir la foto y rellenar la plantilla | `src/herramientas/fotoNueva.ts` (Gemini, tier gratuito) → `foto/<x>.json` | Sí, con un reintento si falla la regla |
-| 3. Corregir la propuesta del director | Lo hago yo → `foto/<x>.final.json`, con el motivo | **A mano** (en casi todos los casos) |
-| 4. Generar la foto | Yo llamo al **MCP de Higgsfield desde la conversación** (antes, `get_cost`) | **A mano.** El código no puede llamar al MCP |
-| 5. Importar con procedencia | `importarManual.ts --via mcp` | Sí |
-| 6. Comprobar la fidelidad y la regla de ángulo en el resultado | Yo, ampliando la imagen; el veredicto va en `activo.json` | **A mano** |
-| 7. Máscara | `crearMascara.ts` (Vision más luminancia); a veces limpio motas a mano | Casi sí |
-| 8. Intención de diseño | La escribo yo (`proyectos/<p>/intenciones/*.json`) | **A mano** |
-| 9. Componer y exportar a 3:4 y 4:5 | `carrusel.ts` con el `plan.json` del proyecto | Sí |
-| 10. Revisión con la rúbrica | Yo | **A mano** |
-
-**En resumen:** lo determinista funciona (plantilla, regla de ángulo sobre la propuesta, compositor, exportación y registro de gasto). Lo que da la calidad (corregir al director, generar, comprobar la fidelidad y diseñar) lo hago yo a mano.
+- **Generador antiguo (web):** sí. Subes una foto y sale un post, con el método viejo (imagen con el texto dentro, sin referencia ni compositor).
+  - Con datos reales, la web arranca y lista los locales [comprobado].
+  - La generación real no se ha vuelto a lanzar desde el 03/11, porque gasta.
+- **Vía nueva:** **no hay una orden única.** Cada post son unos 10 pasos con herramientas sueltas y una IA en conversación:
+  - **automáticos:** registrar la referencia, la plantilla de foto nueva, importar, la máscara, componer y exportar;
+  - **a mano:** corregir al director, generar por el MCP, comprobar la fidelidad, escribir la intención y la rúbrica.
 
 ---
 
 ## 4. Los 4 requisitos centrales
 
-### 4.1 Foto nueva con ángulo, luz y calidad profesionales · **PARCIAL**
+### 4.1 Foto nueva con otra toma, luz y calidad profesionales · **PARCIAL**
 
-**Hecho:**
-- La plantilla del director está en código: `src/dominio/fotoNueva.ts` y `src/adaptadores/gemini/instruccionesFoto.ts`, con 6 pruebas en `test/foto-nueva.test.ts`. Una de ellas reconstruye tu prompt de la gamba a partir de sus huecos [comprobado: pasan].
-- La regla de más de 30° está en código, pero **solo compara el ángulo que el director dice ver con el que propone**: no mide el ángulo de la foto generada.
-
-**Resultados [hecho, sin recomprobar]:**
-- **4 posts de F1.6:** 2 pasan (Etxebarri y Café). DAK y Mesón fallan la regla dos veces seguidas.
-- **3 locales nuevos:** 3 aceptadas, con un reintento en los churros.
-
-**Lo que no funciona:**
-- El director lee mal el ángulo de la foto subida: dijo que el salmón era cenital y era un ¾ a 45°, y en un ensayo leyó DAK a 35° cuando estaba a 5°.
-- Mete elementos de otros ejemplos: el papel de cuadros y la salsa blanca en DAK.
-- Casi nunca trae una idea gráfica como la de tu prompt.
-- Cuando la foto subida ya es buena, el modelo vuelve a su geometría (DAK y Mesón).
+- **Plantilla del director** en código: `src/dominio/fotoNueva.ts` y `instruccionesFoto.ts`, con 7 pruebas.
+- **Regla nueva del 09/11, «otra toma»** (`esOtraToma`): la altura cambia más de 30°, o cambian al menos dos de:
+  - el **lado** (giro de 45° o más alrededor del plato);
+  - la **distancia** (un escalón entre general, medio, primer plano y macro);
+  - la **altura** (15° o más).
+- **Por qué sustituye a «más de 30°»:** la burger de DAK se subió a unos 5°, que ya es su ángulo clásico; subirla 30° la estropea, y girar y acercarse da otra toma.
+- **La regla solo mira la propuesta**, no el resultado. El resultado se comprueba aparte, preguntando lado a lado si es el mismo punto de vista (§9).
+- **Resultados:**
+  - **Mesón, cenital:** es otra toma.
+  - **DAK, intento 3:** más cerca y algo más alta, pero **el giro de 45° no salió** (sigue frontal). Es un caso límite.
 
 ### 4.2 Posts al nivel de `referencias/` · **PARCIAL**
 
-**Hecho:**
-- **29 fichas en 10 familias**, como datos validados: `conocimiento/referencias/fichas/`, `familias.json` y su prueba.
-- **Compositor**, con las capacidades añadidas: arco, papel rasgado procedural, mínimo de 22 px y aviso de separación.
+- 29 fichas en 10 familias, como datos.
+- Compositor con arco, papel rasgado, mínimo de 22 px y aviso de separación.
+- El nivel lo hemos juzgado yo y una diseñadora. **No ha habido prueba a ciegas contigo frente a las referencias.**
+- Faltan en el compositor: giro libre, capa de patrón, didona condensada y manuscrita monolineal.
 
-**El nivel lo he juzgado yo, más una diseñadora (María) el 08/11:**
-- Etxebarri: «sí»;
-- Café: «por los pelos»;
-- DAK y Mesón: «sí por composición», pero con una foto que no cumple.
+### 4.3 Referencia obligatoria en las 5 primeras · **PARCIAL: en código, con pruebas y usada; no la exige ningún flujo**
 
-No ha habido una **prueba a ciegas contigo frente a las referencias**.
+- **Dominio y pruebas:** `UMBRAL_REFERENCIA_OBLIGATORIA = 5`, `comprobarPasoAConcepto` y `piezasQueCuentan`, con 23 pruebas en `test/referencias.test.ts` [comprobado].
+- **Desde el 09/11 cuentan las piezas hechas con herramientas.** Se declaran con `pieza` en `proyectos/…/plan.json`.
+  - Marcadas: los 7 posts y los 2 carruseles.
+  - El benchmark y la maqueta V3 son experimentos y no cuentan.
+- **`comprobar` solo lee** [comprobado por prueba].
+- **Cuenta actual** [comprobado]:
 
-**Faltan en el compositor:**
-- giro libre (la familia F3);
-- capa de patrón;
-- didona condensada;
-- manuscrita monolineal.
+| Local | Piezas (app + herramientas) | Referencia registrada |
+|---|---|---|
+| Asador Etxebarri | 4 (2 + 2) | ref-post-30 (F7) |
+| DAK Burger | 3 (2 + 1) | ref-post-09 (F2) |
+| El Mesón de Cervantes | 3 (2 + 1) | ref-post-22 (F4) |
+| Café Albor | 2 (1 + 1) | ref-post-10 (F10) |
+| Casa Aranda | 1 (0 + 1) | ref-post-03 (F1), registrada el 09/11 |
+| Mesón Lo Güeno | 1 (0 + 1) | ref-post-05 (F3), registrada el 09/11 |
+| Candamil | 1 (0 + 1) | ref-post-29 (F6), registrada el 09/11 |
 
-### 4.3 Referencia obligatoria en las 5 primeras · **PARCIAL: en código y con pruebas, pero no se exige en ningún flujo**
+- **Lo que falta:**
+  - la web no la llama;
+  - mi cadena de herramientas no la **exige** (lo hará la orden única);
+  - el chiringuito (`chiringuito-prueba`) no tiene `marca.json` y su referencia (un pin) no está registrada.
 
-**Hecho:**
-- `UMBRAL_REFERENCIA_OBLIGATORIA = 5` y `comprobarPasoAConcepto` en `src/dominio/referencia.ts`.
-- El caso de uso `comprobarReferencia`, con **19 pruebas** en `test/referencias.test.ts` [comprobado: pasan].
-- La orden `npm run referencia`. **Comprobado hoy:**
+### 4.4 Fidelidad por componentes · **DISEÑADA Y PROBADA CON UN PROTOTIPO; NO IMPLEMENTADA**
 
-```text
-asador-etxebarri   --referencia ref-post-30 → ✓ Parte de la referencia «ref-post-30» (F7). Piezas reales: 2
-dak-burger         --referencia ref-post-09 → ✓ (F2). Piezas reales: 2
-meson-de-cervantes --referencia ref-post-22 → ✓ (F4). Piezas reales: 2
-cafe-albor         --referencia ref-post-10 → ✓ (F10). Piezas reales: 1
-```
-
-**No hecho:**
-1. **La web no la llama** (`ARQUITECTURA.md` §11).
-2. **Mi cadena de herramientas tampoco la exige:** registrar la referencia es un paso voluntario.
-3. **Las piezas hechas con herramientas no cuentan** para el umbral. `piezasRealesDelLocal` solo cuenta `datos/piezas/`, así que los 7 posts y el carrusel de F1.6 no suman. Está pendiente de tu decisión.
-4. `comprobar` escribe una imagen (§0).
-5. La ficha v2, con la foto descompuesta, sigue propuesta.
-6. Los tres locales nuevos no tienen referencia registrada con la orden. La referencia consta solo en `ENTREGA.md` [comprobado: no tienen carpeta `referencias/`].
-
-### 4.4 Fidelidad por componentes · **NO EMPEZADA en código; diseñada**
-
-- **Puerta de entrada:** solo existe la parte que vive en `problemasFotoNueva`: el ángulo propuesto, que haya recuento, que no pida texto y el aviso de menos de 1000 px.
-  - **No existe** la confirmación de la lista de elementos por el dueño.
-- **Comprobación de salida automática:** **no existe**. No hay `RevisorVisual` ni `ChecklistFoto` en el código [comprobado con grep]. El diseño está en `POSTS-F1-6.md` §4.
-- **Hoy, los veredictos los pongo yo a mano** en `activo.json`. Ninguno está calibrado ni revisado por otra persona, salvo los que tú viste (V1 a V3, V1D y V3D).
-- **Lo que sí hay** (`npm run fidelidad`, de F1.5) compara bordes **en la misma geometría**. No sirve para fotos con otro ángulo.
+**Detecta 3 de los 4 fallos que pediste (75 %), sin falsas alarmas en 3 aciertos**, con 8 de los 22 casos previstos medidos antes de que se acabara la cuota gratuita. Se le escapa la anatomía fina (V3D, y también S3). Detalle en §9. Hasta que se implemente, los veredictos los pongo yo en `activo.json`.
 
 ---
 
 ## 5. Decisiones vigentes
 
-| Fecha | Decisión | ¿Contradice algún documento sin actualizar? |
-|---|---|---|
-| 06/11 | Lienzo 3:4 (1080 × 1440) con zona segura 4:5; se exporta a 3:4 y 4:5, y las historias a 9:16 | No |
-| 06/11 | Apple Vision solo como adaptador local y sustituible. Fuentes OFL, o las del cliente con licencia probada | No |
-| 06/11 | El generador antiguo no se toca y sigue funcionando | **Hoy no funciona del todo** (§0) |
-| 06/11 | El activo de DAK hecho con Grok solo sirve para probar composición | No |
-| 06/11 | Composición, tipografía, fotografía, fidelidad y personalización se evalúan por separado | No |
-| 06/11 | Los votos automáticos se conservan marcados y no enseñan al director | No |
-| **07/11** | **Fidelidad FLEXIBLE por defecto:** pueden cambiar la cámara, la luz, el fondo, la superficie, el encuadre y la colocación. Se conservan los elementos, el recuento, la anatomía, los ingredientes y la vajilla. **Se descarta si añade un componente.** ESTRICTA solo si el local lo pide. Sustituye a la del 06/11 | **Sí:** `CONTEXTO-PARA-IA.md` («Fidelidad ESTRICTA del plato: la IA no cambia ingredientes ni geometría») y `PROPUESTA.md` §15 (histórico). `conocimiento/` y `perfil.json` de Etxebarri sí están al día |
-| 07/11 | Cada foto es una **foto nueva**, no la subida mejorada; la cámara, a **más de 30°** de la original | `CONTEXTO-PARA-IA.md` no lo menciona |
-| 07/11 | Referencia obligatoria en las 5 primeras piezas reales de cada local; de ella se toma el oficio, no los textos | `CONTEXTO-PARA-IA.md` no lo menciona |
-| 07/11 | Los mecanismos aprobados (palabra detrás, la antena que firma) se adaptan, no se prohíben | El `CONCEPTO.md` de F1.5 lleva una nota de corrección |
-| 07/11 | **Gemini solo en el tier gratuito, sin facturación.** No hay modelo de imagen gratis por la API (429). No se propone activar la facturación | **Sí:** `ARQUITECTURA.md` §2 («bastaría un adaptador») y `METODO-SOCIETY.md` §0 punto 5 («sí en nuestra API de Gemini») |
-| 07/11 | El MCP de Higgsfield se puede usar sin preguntar por imagen, con `get_cost` antes de cada petición, un tope por tarea y parada tras 2 fallos seguidos en un post | No consta en `README` ni en `ARQUITECTURA` |
-| 07/11 | **Modelo pedido:** `nano_banana_pro`. **Modelo servido:** `nano_banana_2` en los 23 trabajos. Se anota en la procedencia | `ARQUITECTURA.md` E6 sigue diciendo «`marketing-studio/image` por defecto». La recomendación del benchmark («Marketing Studio 2.0 para la foto nueva») **quedó de hecho sustituida** por el MCP sin que lo decidieras explícitamente |
-| 07/11 | No hay pantallas web nuevas sin tu aprobación | No |
-| 08/11 | La revisión de María se adopta como criterio del estudio: mayúscula de al menos 22 px y hueco entre textos | Es una observación, no está en los oficios: pendiente de tu visto bueno |
-| siempre | Trabajo por fases; ningún commit sin permiso; repositorio local, sin push | — |
-
-**Documentos desfasados:**
-- `CONTEXTO-PARA-IA.md`: dice que F1.5 está sin confirmar, que hay 86 pruebas y que la fidelidad es ESTRICTA, y no menciona F1.6. En el paquete va una versión actualizada; el original no lo he tocado.
-- `ARQUITECTURA.md`: §2 y E6.
-- `biblioteca/ejemplos/*.md` sigue enlazando a `creacion-contenido/`, que ya no existe.
+| Fecha | Decisión |
+|---|---|
+| 06/11 | Lienzo 3:4 con zona segura 4:5; se exporta a 3:4 y 4:5, y las historias a 9:16. Apple Vision solo como adaptador local. Fuentes OFL. El generador antiguo se conserva. Composición, tipografía, foto, fidelidad y personalización se evalúan por separado |
+| 07/11 | **Fidelidad FLEXIBLE:** cambian la cámara, la luz, el fondo, la superficie, el encuadre y la colocación; se conservan los elementos, su número, la anatomía, los ingredientes y la vajilla; se descarta si añade algo. ESTRICTA solo si el local lo pide |
+| 07/11 | Foto nueva, no foto mejorada. Referencia obligatoria en las 5 primeras. Los mecanismos aprobados se adaptan, no se prohíben |
+| 07/11 | Gemini solo en el tier gratuito, sin facturación |
+| 07/11 | MCP de Higgsfield con `get_cost` antes de cada petición, un tope por tarea y parada tras 2 fallos seguidos |
+| 08/11 | La revisión de María es criterio del estudio; pasada a los oficios el 09/11 |
+| **09/11** | Regla «otra toma» en lugar de «más de 30°» |
+| **09/11** | Las piezas hechas con herramientas cuentan para las 5 |
+| **09/11** | Una frase sobre el local entra solo si consta en sus datos («Para cenar esta noche» sí consta) |
+| **09/11** | **La vía de generación la decides tú;** no se activa nada de pago |
+| **09/11** | **Congelado:** ninguna pieza ni foto nueva sin autorización. Saldo: 4,81 créditos |
+| **09/11** | Commits locales al cerrar cada paso, para no acumular |
 
 ---
 
 ## 6. Lo aprendido
 
-### Evidencia razonable (varias imágenes o pruebas)
+**Pasado a los oficios el 09/11, con su prueba:**
+- en `composicion-y-tipografia`: las lecciones de María;
+- en `fotografia-gastronomica`:
+  - la regla «otra toma»;
+  - empezar por los ejemplos que gustaron;
+  - clave baja con entorno real, con la advertencia de que la apoyan pocas imágenes (2 que gustaron frente a 12 que no);
+  - la cámara descrita como resultado visible (funcionó en 3 de 5 casos);
+  - el recorte nítido con f/8–f/11.
 
-| Aprendizaje | Con qué |
-|---|---|
-| «Use it only as the list of elements, not as a layout to copy», junto con una cámara **lejos** de la original, produce una toma nueva. «Recreate / keep the pose» repite el ángulo | Benchmark: 1, 5 y 8 (nuevas) frente a 3, 4, 6 y 7. Piezas A y B del MVP. Ejemplo 01 (NO GUSTÓ y su corrección) |
-| Pedir un ¾ a 25° sobre un ¾ a 45° vuelve a la foto subida; más o menos 30° es el umbral práctico | Benchmark: 4 imágenes. En los posts, Mesón (38° y 33°) y DAK (10–15° sobre 5°) |
-| Grok conserva la geometría de la foto subida y falla con el texto («GAMB») | Benchmark: 3 de 3 |
-| El MCP sirve siempre `nano_banana_2` cuando se pide `nano_banana_pro` | 23 de 23 trabajos [comprobado] |
-| Canva bloquea la lectura automática de enlaces (403/400) y Pinterest devuelve un logotipo genérico | Pruebas contra los sitios reales (FASE 1) |
-| Apple Vision deja fuera el cristal y el papel; la luminancia se agujerea en lo oscuro; las dos combinadas no pierden nada sobre fondo liso | Benchmark 5 y 8, y los posts |
-| El director (Gemini) rellena bien la **estructura** si se le da la plantilla, pero no la **idea gráfica**, y su lista de elementos sale incompleta o contaminada | 3 ensayos (salmón, DAK y café) y 7 propuestas reales |
-| Los textos secundarios de menos de unos 34 px de cuerpo no se leen; el nombre del plato tiene que leerse en orden | Una diseñadora, sobre 4 posts y el carrusel |
-
-### Una sola imagen por variante (indicio, no regla)
-
-- **Tu prompt de la gamba (V1) y su variante V3 gustaron; la reescritura «Society» (V2) no.** Es una imagen cada una, y V2 cambiaba varias cosas a la vez.
-- **«Clave baja con entorno real» es lo que separa lo que gustó de lo que no.** Lo apoyan 2 imágenes que gustaron frente a 12 que no. Que sea oscura no basta.
-- **El método Society (JSON, ficha de texturas, referencia de encuadre):** S1–S3 no gustaron. La luz falló en las tres, y fue un error de mi prompt.
-- **JSON frente a párrafo:** S3 falló en anatomía. No se puede concluir nada.
-- **Foto muy degradada:** V1D y V3D, las dos mal. No dice nada de una foto de móvil normal.
-- **Café:** la frase «a ring of dark wood» provocó un posavasos añadido.
-- **Describir la cámara como resultado visible** («the frosted glass plate seen nearly edge-on») funcionó en Etxebarri y en el café, y no en DAK ni en Mesón.
-- **Recuento en macro:** en V1 se coló una tercera cabeza a pesar de «Exactly two prawns».
+**Nuevo el 09/11:**
+- **f/11 con «every layer in sharp focus»** dio una burger nítida de arriba abajo (1 imagen).
+- **Pedir un giro alrededor del plato no basta:** salió la distancia y no el lado (1 imagen).
+- **El nombre del modelo en el MCP depende de lo que se pida** (§8): «servido `nano_banana_2`» era casi seguro el identificador interno de Pro, no una sustitución. **Los informes anteriores lo leyeron mal.**
+- **El tier gratuito de Gemini no aguanta una tanda de revisión.** 3.8 Flash dio 503 o se quedó sin responder toda la tarde, y 3.5 Flash agotó su cuota gratuita (429) después de unas 25 llamadas con imágenes. Para revisar cada foto del producto hará falta contarlo en la decisión de §8.
+- **La visión de Gemini ve lo grueso y no lo fino:** detectó una gamba de más, el texto inventado y el posavasos, pero no las tres colas ni los cuerpos fundidos.
 
 ---
 
 ## 7. Los 4 posts del objetivo principal
 
-Todos son **piezas de prueba**: no consta el contrato de ningún local, y Etxebarri, además, **no es publicable**.
+Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no es publicable. Antes y después de DAK y Mesón: `diseno/f1_6/img/dak-meson-v006-v007.jpg`.
 
-- **Versiones:** las finales, tras la revisión de María [comprobado: existen].
-- **Créditos:** 4 por post (2 intentos de 2 créditos), 16 en total.
-- **Modelo:** pedido `nano_banana_pro`, servido `nano_banana_2`.
-
-| | **Asador Etxebarri** | **Café Albor** | **DAK Burger** | **El Mesón de Cervantes** |
+| | Etxebarri | Café Albor | DAK Burger | Mesón de Cervantes |
 |---|---|---|---|---|
-| Referencia · familia | post-30 · F7, macro y papel | post-10 · F10, cenital con texto en arco | post-09 · F2, palabra repetida | post-22 · F4, oscuro editorial |
-| Foto original | `etx-real-gamba` (¾ a 45°, luz de día, mantel con mancha) | `cafe-real-cafes`, **382 × 510 px** (la única «con prisa» de verdad) | `dak-real-manhattan` (casi a ras de tabla, unos 5°) | `meson-real-salmon` (¾ a 45–50°) |
-| Prompt usado | Intento 1: `proyectos/posts-f1-6/foto/etxebarri.txt` (contradictorio). **Intento 2:** `etxebarri-2.txt`, tu V1 con la regla de anatomía | `cafe.txt`; **intento 2:** `cafe-2.txt` | **Intento 1:** `dak.txt` (40°); intento 2: `dak-2.txt` (45°) | `meson.txt` (10°); **intento 2:** `meson-2.txt` (8°) |
-| Foto usada en el post | `etx-post-f7-foto-mcp-2` | `cafe-post-f10-foto-mcp-2` | `dak-post-f2-foto-mcp-1` | `meson-post-f4-foto-mcp-2` |
-| Resultado | `datos/disenos/etxebarri/etxebarri-post/v006` | `datos/disenos/cafe/cafe-post/v007` | `datos/disenos/dak/dak-post/v006` | `datos/disenos/meson/meson-post/v006` |
-| Fidelidad (mi veredicto, a mano) | **CONSERVA:** unos 10°, a 35° de la original; dos cabezas; nada añadido | **CONSERVA, con nota:** cenital; una taza cambia el dibujo del latte art | Elementos bien. **Falla el ángulo** (unos 10–15° sobre 5°). El intento 2 inventó texto en el papel | Elementos bien. **Falla el ángulo** (38° y 33° sobre 45–50°) |
-| Rúbrica (idea · composición · tipografía · foto · personalización) | 4 · 4 · 4 · 5 · 4 | 3 · 4 · 4 · 3 · 3 | 4 · 4 · 3 · 4 · 4 | 3 · 4 · 4 · 4 · 4 |
-| ¿Podría estar en `referencias/`? | Sí | Por los pelos | Por composición sí; la foto es casi la tuya mejorada | Sí, pero le falta una idea que nazca del plato |
-| Pendiente | — | — | **Tu decisión:** aceptar, otro intento con una cámara extrema o cambiar la regla. Además, el pan de arriba sale borroso | **Tu decisión** (las mismas opciones) |
-
-**La rúbrica es mía**, más la revisión de María. No la ha validado nadie más.
-
-**Imágenes del paquete:** `revision-externa/imagenes/posts/<local>-1-original.jpg` … `-6-capas.jpg`.
+| Referencia · familia | post-30 · F7 | post-10 · F10 | post-09 · F2 | post-22 · F4 |
+| Foto usada | `etx-post-f7-foto-mcp-2` | `cafe-post-f10-foto-mcp-2` | **`dak-post-f2-foto-mcp-3`** (09/11) | **`meson-post-f4-foto-mcp-3`** (09/11) |
+| Versión vigente | v006 | v007 | **v007** | **v007** |
+| Fidelidad (a mano) | CONSERVA | CONSERVA, con nota (cambia un latte art) | CONSERVA; todas las capas nítidas | CONSERVA |
+| Otra toma | Sí | Sí | **Dudosa:** más cerca y algo más alta, pero frontal | Sí (cenital) |
+| Créditos | 4 | 4 | 4 + 2 | 4 + 2 |
+| Pendiente | — | — | Tu visto bueno a la toma | **El salmón pierde impacto:** en v006 llenaba medio post; ahora es pequeño dentro del bol. Pie con «Para cenar esta noche» en `proyectos/posts-f1-6/meson/PIE.txt` |
 
 ---
 
-## 8. Gasto y saldo
+## 8. Vía de generación del producto: comparación (decides tú)
 
-| Fecha | Tanda | Qué se generó | Vía | Modelo pedido → servido | Coste |
-|---|---|---|---|---|---|
-| 03/11 | MVP | 9 imágenes en 7 piezas | API | 6 `marketing-studio/image` y 3 `grok-imagine-image-2.0` | **No registrado.** [supuesto] Entre 1,4 y 2,5 USD a los precios de `/estimate` del 07/11 |
-| 06–07/11 | F1.5, carrusel de Etxebarri | 6 fotos de prueba: Qwen, Grok y 4 de Marketing Studio | API | Lo mismo (la API no informa de otro) | **1,977 USD** |
-| 07/11 | Benchmark F1.6 | 8 fotos: 5 de Marketing Studio 2.0 y 3 de Grok | API | Lo mismo | **2,012 USD** |
-| 07/11 | Society, intento con Gemini | 1 intento de S1 | API de Gemini | `gemini-3-pro-image`, HTTP 429 | 0 USD |
-| 07/11 | Society S1–S3 | 3 fotos | MCP | `nano_banana_pro` → `nano_banana_2` | 6 créditos |
-| 07/11 | Tanda 2: V1–V3 | 3 fotos | MCP | igual | 6 créditos |
-| 07/11 | Foto degradada: V1D y V3D | 2 fotos | MCP | igual | 4 créditos |
-| 07/11 | 4 posts, intento 1 | 4 fotos | MCP | igual | 8 créditos |
-| 07/11 | 4 posts, intento 2 | 4 fotos | MCP | igual | 8 créditos |
-| 07/11 | Chiringuito | 3 fotos solo con texto | MCP | igual | 6 créditos |
-| 08/11 | Tres locales | 4 fotos (3 y un reintento) | MCP | igual | 8 créditos |
-| | **Total registrado** | **37 trabajos** | | | **3,989 USD por la API y 46 créditos por el MCP** |
+**Cómo leer la tabla:**
+- **Tasa de acierto:** foto que conserva los elementos **y** es otra toma, medida en nuestras imágenes ya revisadas.
+- **Coste por foto final:** coste por intento ÷ tasa de acierto (los reintentos incluidos).
 
-**Conversión de créditos [supuesto]:** 46 créditos son unos 2,88 USD con 0,06256 USD por crédito, la relación que usa el registro. Da **unos 6,86 USD en Higgsfield**, sin contar el MVP.
+| | **Marketing Studio 2.0 por la API de Higgsfield** | **Gemini de imagen de pago (API de Google) con tope** | **MCP de Higgsfield, solo para pruebas** |
+|---|---|---|---|
+| Coste por intento (2K) | **0,344–0,350 USD** con 1 referencia (registro); 0,365 con 3 (`/estimate`, 07/11) | **Unos 0,14 USD** con Nano Banana Pro: 0,134 de salida según fuentes externas, más unos 0,005 de entrada. La página oficial también muestra 0,101 USD a 2K para otro modelo de imagen, probablemente Nano Banana 2. **No he podido confirmarlo en la página oficial** | **2 créditos** a 2K (Pro o NB2) y 1,5 para NB2 a 1K [comprobado con `get_cost`]. El crédito del plan Plus sale a unos **0,039–0,049 USD** según fuentes externas, sin confirmar; el registro usa 0,0626 [supuesto] |
+| Tasa de acierto medida | **20–60 %** (5 imágenes del benchmark que pedían otra toma): 1 clara (b5), 2 dudosas (b1 manchas, b8 plato más transparente) y 2 que volvieron al ángulo original (b3, b7) | **Sin imágenes propias** (429 sin facturación). [supuesto] Si el MCP servía Pro, vale la del MCP: 40 % | **40 %:** 8 válidas de 20 comparables (S1–S3, V1–V3, V1D/V3D, 8 de los posts y 4 de los tres locales; sin el chiringuito, que no tenía foto real). Hoy, con NB2: 1 válida y 1 dudosa de 2 |
+| **Coste por foto final** | **Unos 0,9 USD** (0,58–1,75) | **Unos 0,35 USD** [supuesto: misma tasa que el MCP] | **Unos 5 créditos**, entre 0,20 y 0,31 USD |
+| Modelo que se sirve de verdad | El que se pide (`marketing-studio/image`); no se conoce ninguna sustitución. Es un modelo propio de Higgsfield y puede cambiar sin aviso | El que se llama (`gemini-3-pro-image-preview`); la respuesta lo dice, así que es comprobable | **Ambiguo.** Pedido `nano_banana_pro` → trabajo `nano_banana_2`, movimiento «Nano Banana Pro». Pedido `nano_banana_2` → trabajo `nano_banana_flash`, movimiento «Nano Banana 2». Los dos a 2 créditos. **[supuesto, bien apoyado]:** las 23 fotos hasta el 08/11 eran Pro; las 2 de hoy, NB2 |
+| Evidencia de calidad | Carrusel de F1.5: 3 de 4 conservan (mismo ángulo a propósito). Benchmark: otras tomas a ras de mesa (b1, b5, b8), pero **no gustó ninguna de las 8** (el estilo de vacío de carbón era del prompt). **Nunca se ha probado con tus prompts que gustaron** (V1 y V3) | Ninguna directa. Si el MCP servía Pro, toda la del MCP | 25 imágenes: **V1 y V3 te gustaron**; Etxebarri, Café, Mesón cenital y los 3 locales pasan. Fallos de anatomía o añadidos en V1, V3D, S3, café 1 y DAK 2 |
+| ¿Automatizable? | **Sí:** `generarActivo.ts` (tope acumulado y registro) y el generador de la web antigua | **Sí:** `generarGeminiImagen.ts` (recuento previo, **tope propio en el código**, 1 USD por defecto, registro, sin reintentos para no cobrar dos veces; 15 pruebas). Falta activar la facturación | **No:** necesita una IA en una conversación con el conector. Sirve para pruebas, no para el producto |
+| Riesgos | El más caro por foto final. Con tus prompts no hay datos: habría que probarlo antes (2–3 imágenes, unos 1 USD) | **Activa la facturación de Google, que hoy no quieres.** El presupuesto de Google Cloud **solo avisa, no corta**: cortar exige Pub/Sub y una función que desactive la facturación, y llega con retraso. Mitiga el tope propio de nuestra herramienta, que corta antes de enviar. El modelo es *preview*, así que el precio y el identificador pueden cambiar. En el tier de pago Google no usa los datos para mejorar sus productos (según sus términos; no lo he vuelto a mirar hoy) | Depende de una suscripción personal y de una conversación. Modelo opaco. Saldo: 4,81 créditos. El uso desde un producto no está previsto por el servicio [supuesto] |
 
-**Saldo [comprobado]:** **8,81 créditos**, unas 4 imágenes a 2 créditos.
+**Qué modelo se cobra de verdad (punto 8, comprobado):** **los movimientos se etiquetan con el modelo pedido**, y Pro y NB2 cuestan lo mismo a 2K. El cobro, por tanto, no distingue cuál se usó; el identificador del trabajo, sí. La lectura más probable es que nunca hubo sustitución.
 
-**Gemini de texto y visión** (el director): tier gratuito, 0 USD. Esas llamadas **no se registran en ningún sitio**, así que no puedo decir cuántas fueron.
+**Lo que necesita una decisión tuya:** la vía. Si quieres más datos antes, la prueba más barata e informativa sería **tu prompt V1 por Marketing Studio** (1–2 imágenes, unos 0,35–0,7 USD): es el único hueco grande de la tabla.
 
-**Fuera del registro:** en los movimientos de Higgsfield aparecen cargos del 05/11 (Nano Banana 2.1 a 1,5 créditos, GPT Image y Nano Banana Pro) y del 22/10 (What If y otros). No constan en este proyecto. **[supuesto]:** son de otro trabajo tuyo.
-
----
-
-## 9. Problemas abiertos y riesgos
-
-1. **La vía de generación de todo F1.6 no la puede usar el producto.** Las 23 fotos salieron del MCP, que llamé yo desde la conversación. El código no puede llamarlo.
-   - La API de Higgsfield no tiene Nano Banana.
-   - Gemini cobra por imagen y decidiste no activar la facturación.
-   - La alternativa automatizable probada es Marketing Studio 2.0 por la API (unos 0,35 USD por imagen a 2K, buenas tomas nuevas en el benchmark), pero se dejó de usar sin cerrar esa decisión.
-   - **Es el bloqueo principal para un flujo de punta a punta.**
-2. **¿Qué modelo se usa de verdad?** El trabajo dice `nano_banana_2`, pero los movimientos lo cobran como «Nano Banana Pro» a 2 créditos (el 05/11, Nano Banana 2.1 costaba 1,5). **No lo sé.**
-3. **Hay tres días de trabajo sin commit:** 24 archivos modificados, 1 borrado y 306 nuevos.
-   - `datos/` (475 MB de diseños y 296 MB de activos) no está en git ni tiene copia que me conste.
-4. **Los `marca.json` de Candamil y Casa Aranda son inválidos** y rompen la lista de locales (§0). Los creé a mano sin validarlos con el esquema de la app.
-5. **`referencia comprobar` escribe en disco** (§0).
-6. **La fidelidad y la rúbrica dependen de mi ojo:** es autoevaluación. Hay unas 33 imágenes revisadas a mano y ninguna comprobación automática.
-7. **La regla de más de 30° solo mira la propuesta**, no el resultado. Para una torre de burger quizá no sea la condición correcta: pendiente de tu decisión.
-8. **Casi no se ha probado con fotos «con prisa»:**
-   - el café de 382 px (pasó);
-   - la gamba degradada a mano (falló);
-   - las tres de Wikimedia son fotos razonables.
-
-   No ha entrado **ninguna foto real tuya de un hostelero** desde el MVP.
-9. **Licencias:**
-   - las fotos de Wikimedia (CC BY-SA 2.0) exigen atribución y el permiso del local;
-   - las referencias son plantillas de Canva: se usan solo como oficio.
-10. **Decisiones tuyas sin responder:**
-    - benchmark: la elección ciega, el rojo de la gamba y la imagen extra de F4;
-    - DAK y Mesón;
-    - si las piezas hechas con herramientas cuentan para el umbral;
-    - implementar la puerta de calidad;
-    - el commit;
-    - pasar las lecciones de María y las observaciones a los oficios;
-    - «Para cenar esta noche» en el pie.
-11. **Lo que informes anteriores afirmaron y resultó incompleto:**
-    - **F1.5:** el carrusel se dio por terminado, pero eran recortes de la misma foto con el ángulo del hostelero (FASE 0 §3).
-    - **`METODO-SOCIETY.md`:** dijo que Nano Banana Pro estaba «en nuestra API de Gemini (comprobado hoy)». Estaba listado, pero no se puede usar sin facturación (429).
-    - **`BENCHMARK.md`:** concluyó «Marketing Studio 2.0 es el modelo», y después todo se hizo con otro modelo, servido por el MCP.
-    - **`POSTS-F1-6.md`:** «`comprobar` deja pasar los cuatro» es cierto, pero esos posts no cuentan para el umbral y la orden es voluntaria.
-    - **`ENTREGA.md` de los tres locales:** «como un usuario normal», pero los `marca.json` no los podría abrir la app.
-    - **`CONTEXTO-PARA-IA.md`:** sigue con los datos del 07/11 por la mañana.
-12. **Deuda técnica:**
-    - los enlaces rotos a `creacion-contenido/`;
-    - `ejemplos.zip` y `referencias.zip` sin dueño en `biblioteca/`;
-    - las llamadas de Gemini de texto sin registro;
-    - unos 15 scripts sueltos en `src/herramientas/` sin un orquestador;
-    - el gasto del MVP sin registrar.
+**Fuentes externas consultadas el 09/11** (precios no oficiales, por confirmar):
+- [ai.google.dev/pricing](https://ai.google.dev/pricing)
+- [laozhang.ai, coste por imagen de Gemini 3 Pro Image](https://blog.laozhang.ai/en/posts/gemini-3-pro-image-api-cost-per-image)
+- [Google Cloud: desactivar la facturación con notificaciones](https://docs.cloud.google.com/billing/docs/how-to/disable-billing-with-notifications)
+- [foro de Google AI sobre el límite de gasto de Gemini](https://discuss.ai.google.dev/t/how-to-limit-my-budget-cost-say-30-a-month-spent-for-gemini-api/34512)
+- [Creatify, precios de Higgsfield](https://creatify.ai/blog/higgsfield-pricing-(2026)-plans-and-what-you-ll-actually-pay)
 
 ---
 
-## 10. Lo que queda, por prioridad
+## 9. Comprobación de salida automática (diseño; no implementada)
+
+### Diseño
+
+1. **Entrada:** la foto real, la foto generada y la **lista de elementos confirmada**. La da la puerta de entrada; hasta que exista, sirve la lista de la plantilla.
+2. **Pregunta A, el checklist** (visión de Gemini), sobre la imagen generada:
+   - elemento a elemento, si está y **cuántos hay**;
+   - problemas de **anatomía**;
+   - **lo añadido** (objetos, alimentos o vajilla que no están en la lista; la superficie y el fondo no cuentan);
+   - **texto nuevo** que no está en la foto real;
+   - «seguro» o no.
+3. **Pregunta B, la toma, lado a lado y sin grados:** si se ve desde una altura parecida, desde el mismo lado y a la misma distancia, y si un fotógrafo diría que la cámara está **en el mismo sitio**.
+4. **Decide el código, no el modelo** (función pura del dominio, con pruebas):
+   - DESCARTA si falta algo, cambia un recuento, hay anatomía rota, algo añadido o texto nuevo;
+   - REVISAR si el modelo no está seguro;
+   - si B dice «mismo sitio», no es otra toma.
+
+   El veredicto automático solo filtra antes de enseñarte la imagen: **el tuyo manda**.
+5. **Pasada de anatomía por teselas** (diseñada, sin probar). Hace falta por los dos fallos que se escapan (abajo):
+   - la imagen generada se corta en 4 recortes a resolución completa;
+   - en cada uno se cuentan por separado cabezas y colas (o la pieza equivalente del plato);
+   - si cabezas, colas y piezas no cuadran, DESCARTA.
+6. **Encaje en la arquitectura:**
+   - puerto `RevisorVisual` (`comprobarElementos`, `compararToma`) y adaptador de Gemini;
+   - `veredictoDeSalida` en el dominio;
+   - caso de uso `comprobarFotoNueva`;
+   - el resultado se guarda en `activo.json` → `fidelidad.automatica`, al lado del veredicto humano.
+7. **Cuota del tier gratuito:** la prueba la cortó la cuota (§ siguiente). Hacen falta reintentos con espera y que, sin revisor, la imagen quede en REVISAR, nunca en CONSERVA.
+
+### Prueba con los fallos conocidos [comprobado, 09/11]
+
+- **Prototipo:** `proyectos/prueba-comprobacion-salida/prototipo.mts`, fuera de `src/`. Resultados en `resultados.json`.
+- **Modelo:** `gemini-3.5-flash`. El principal, 3.8 Flash, estaba saturado (503).
+- **Coste:** 0 USD.
+- **Se midieron 8 de los 22 casos previstos:** después de unas 25 llamadas, 3.5 Flash agotó la cuota gratuita (HTTP 429) y 3.8 Flash seguía sin responder. Paré para no insistir.
+
+| Caso | Tu veredicto | Checklist automático | Toma (lado a lado) |
+|---|---|---|---|
+| **V3D**: tres colas | FALLA | **CONSERVA: no lo ve** | — |
+| **V1**: tercera cabeza | FALLA | **DESCARTA:** «3 gambas en vez de 2; cabeza adicional detrás» | DISTINTA (correcto) |
+| **DAK 2**: texto inventado en el papel | FALLA | **DESCARTA:** «texto tipo periódico legible en el papel» | DISTINTA (**tú dijiste misma**) |
+| **Café 1**: posavasos | FALLA | **DESCARTA:** «posavasos redondo de madera bajo una taza» | — |
+| **S3**: cuerpos fundidos | FALLA | **CONSERVA: no lo ve** | — |
+| V3 | CONSERVA | CONSERVA (correcto) | DISTINTA (correcto) |
+| S1 | CONSERVA | CONSERVA (correcto) | DISTINTA (correcto) |
+| Etxebarri 2 | CONSERVA | CONSERVA (correcto) | DISTINTA (correcto) |
+
+**Porcentajes:**
+- **De los 4 fallos que pediste detecta 3, el 75 %.** Se le escapan las tres colas de V3D.
+- Con S3 son 3 de 5, el 60 %. **Los dos que se escapan son de anatomía fina**, los que yo solo vi con la imagen ampliada: de ahí la pasada por teselas del punto 5.
+- **Falsas alarmas:** 0 de 3.
+- **Toma:** 4 de 5 de acuerdo contigo.
+  - El desacuerdo es DAK 2. Mi nota del 07/11 decía «cámara otra vez baja», y el modelo ve un ¾ más alto. Habría que volver a mirarlo entre los dos.
+
+**Lo que falta medir** (mismo script, reanuda solo; espera a que vuelva la cuota gratuita):
+- 8 aciertos más, para las falsas alarmas: café 2, DAK 1 y 3, Mesón 1–3, merluza y habas;
+- la toma de DAK 3, Mesón 1–3, V2, Etxebarri 1 y b1, b2, b5, b6, donde están todos los casos de «misma toma».
+
+**Con 8 casos, el 75 % es un indicio, no una medida.**
+
+---
+
+## 10. Gasto y saldo
+
+| Fecha | Tanda | Imágenes | Vía y modelo | Coste |
+|---|---|---|---|---|
+| 03/11 | MVP | 9 | API: Marketing Studio y Grok | **No registrado** ([supuesto] 1,4–2,5 USD) |
+| 06–07/11 | F1.5 | 6 | API | 1,977 USD |
+| 07/11 | Benchmark | 8 | API | 2,012 USD |
+| 07/11 | Society, tanda 2 y foto degradada | 8 | MCP, pedido Pro | 16 créditos |
+| 07/11 | 4 posts, intentos 1 y 2 | 8 | MCP, pedido Pro | 16 créditos |
+| 07–08/11 | Chiringuito y tres locales | 7 | MCP, pedido Pro | 14 créditos |
+| **09/11** | **DAK y Mesón, intento 3** | **2** | **MCP, pedido NB2** (trabajo `nano_banana_flash`) | **4 créditos** |
+| | **Total registrado** | **39 trabajos** | | **3,989 USD por la API y 50 créditos por el MCP** |
+
+- **Saldo de Higgsfield:** **4,81 créditos** [comprobado]. Desde el 07/11, 25 cargos de 2 créditos, que coinciden con el registro.
+- **Gemini:** 0 USD. Las llamadas de texto y visión en el tier gratuito no se registran.
+
+---
+
+## 11. Problemas abiertos y riesgos
+
+1. **No hay vía de generación para el producto** hasta que decidas (§8). Es el bloqueo de la orden única.
+2. **La toma de DAK es dudosa** y no quedan créditos autorizados para otro intento.
+3. **El Mesón cenital cumple la regla pero pierde impacto.** La regla «otra toma» no mide si la foto sirve a la idea del post.
+4. **La comprobación de salida no está implementada.** Hasta entonces, la fidelidad depende de mi ojo.
+5. **Las llamadas de Gemini no se registran** cuando son gratuitas, y **la cuota gratuita no basta para revisar cada foto** (§9). Si la comprobación de salida va en el producto, su coste entra en la decisión de §8: con la tarifa de pago, unos 0,005 USD por comprobación, una cifra calculada en una fase anterior y sin volver a comprobar.
+6. **Fuentes y licencias:** fotos de Wikimedia (CC BY-SA, con atribución), referencias de Canva (solo oficio).
+7. **Deuda técnica:**
+   - enlaces rotos a `creacion-contenido/`;
+   - el gasto del MVP sin registrar;
+   - unos 15 scripts sueltos sin orquestador;
+   - el chiringuito sin `marca.json`.
+8. **`datos/` no está en git.** La copia del 09/11 la tienes que mover tú a otro disco.
+
+---
+
+## 12. Lo que queda, por prioridad
 
 | # | Qué | Esfuerzo | Coste | ¿Decisión tuya? |
 |---|---|---|---|---|
-| 1 | **Commit de F1.6** (con las piezas de prueba marcadas) y copia de `datos/` | 15 min | 0 | **Sí** (permiso) |
-| 2 | Arreglar los dos `marca.json` (acortar los nombres de color) y añadir una prueba que valide todos los `datos/locales/*/marca.json` | 30 min | 0 | Sí: tocar datos existentes |
-| 3 | Que `referencia comprobar` no escriba nada (la hoja, con una opción aparte) | 30 min | 0 | No |
-| 4 | **Decidir la vía de generación del producto:** Marketing Studio 2.0 por la API, el MCP solo para pruebas o otra | — | Unos 0,35 USD por foto si es Marketing Studio | **Sí** |
-| 5 | **Comprobación de salida automática** (visión con Gemini gratis, elemento a elemento, ángulo estimado), calibrada con las unas 33 imágenes ya revisadas | 1–2 días | 0 (tier gratuito, con límites) | Sí («¿la implemento?») |
-| 6 | Puerta de entrada: la lista de elementos con recuento que el dueño confirma, primero en la línea de comandos | Medio día | 0 | No (sin pantalla) |
-| 7 | **Una sola orden de punta a punta** (`npm run post -- --local … --foto … --referencia …`): exige la referencia, plantilla, generación por la vía del punto 4, importación, máscara, comprobación, componer y exportar, con paradas para que confirmes | 2–3 días | Lo que cueste cada foto | Depende del 4 |
-| 8 | Que la intención de diseño la escriba el director a partir de la ficha de la referencia (F3) | 3–5 días | 0 (Gemini gratis) | No |
-| 9 | Decidir si las piezas hechas con herramientas cuentan para las 5 | — | 0 | **Sí** |
-| 10 | DAK y Mesón: otro intento con una cámara extrema, o revisar la regla | 15 min | 2–4 créditos por post (saldo: 8,81) | **Sí** |
-| 11 | Pasar a los oficios las lecciones de María y las observaciones (ejemplos que gustaron, clave baja con entorno) | 1 h | 0 | **Sí** |
-| 12 | Actualizar `CONTEXTO-PARA-IA.md`, `ARQUITECTURA.md` §2 y E6, y el README | 1 h | 0 | No |
-| 13 | Capacidades del compositor que faltan (giro libre, patrón, didona condensada, manuscrita) | 1–2 días | 0 | No |
-| 14 | Pantallas web nuevas (F4) | Varios días | 0 | **Sí** (aprobación) |
-| 15 | Probar con 3–5 fotos reales «con prisa» de hosteleros | 1 h más la generación | Unos 4 créditos por foto con reintento | **Sí** (las fotos) |
+| 1 | **Elegir la vía de generación** (§8), o autorizar antes la prueba de V1 por Marketing Studio | — | 0 o unos 0,35–0,7 USD | **Sí** |
+| 2 | **Orden única de punta a punta** (`npm run post`): exige la referencia, plantilla y «otra toma», generación por la vía elegida, importación, máscara, comprobación de salida, componer y exportar, con paradas para tu confirmación | 2–3 días | Lo de cada foto | Después del 1 |
+| 3 | Terminar la medición de §9 (14 casos, cuando vuelva la cuota) y probar la pasada por teselas con V3D y S3. Después, implementarla: puerto `RevisorVisual`, adaptador de Gemini y regla en el dominio | Medio día más 1 día | 0 (tier gratuito, sujeto a cuota) | Sí (¿la implemento?) |
+| 4 | Puerta de entrada: la lista de elementos que el dueño confirma (primero en la línea de comandos) | Medio día | 0 | No |
+| 5 | Visto bueno de DAK v007 y de Mesón v007, o qué cambiar | — | 0 | **Sí** |
+| 6 | El director escribe la intención desde la ficha de la referencia (F3) | 3–5 días | 0 | No |
+| 7 | Capacidades del compositor que faltan | 1–2 días | 0 | No |
+| 8 | Pantallas web (F4) | Varios días | 0 | **Sí** |
+| 9 | Probar con 3–5 fotos reales «con prisa» de hosteleros | 1 h más la generación | Unos 5 créditos o 0,35–0,9 USD por foto final | **Sí** (las fotos) |
 
 ---
 
-## 11. Autocrítica
+## 13. Autocrítica (actualizada el 09/11)
 
-1. **Me he desviado hacia hacer piezas en lugar de hacer el producto.**
-   - En tres días hice el benchmark, la prueba Society, 4 posts, el chiringuito, tres locales nuevos y la ronda de María. Cada pieza enseña algo, pero el objetivo era «subo una foto y sale un post».
-   - Ese flujo sigue sin existir: cada post son unos 10 pasos que hago yo en la conversación.
-2. **He apoyado todo el trabajo reciente en una vía que el producto no puede usar** (el MCP desde la conversación) y no lo he dicho con la fuerza necesaria. La decisión del modelo de producción quedó abierta mientras se acumulaban resultados de otro modelo.
-3. **El requisito más importante, la fidelidad comprobada, sigue siendo mi ojo.** Diseñé la puerta de calidad y no la construí. Me evalúo yo mismo la fidelidad y la rúbrica, y eso no escala ni es fiable.
-4. **La regla de la referencia existe, pero mi propia cadena se la salta:** es voluntaria y lo hecho no cuenta. Está «hecha» en el dominio, no en el uso.
-5. **He roto datos sin darme cuenta:** los `marca.json` inválidos. Escribí datos a mano sin pasarlos por el esquema de la app, y las pruebas no lo cubren.
-6. **Demasiados documentos, demasiado largos y que se contradicen:** 6 informes en `diseno/f1_6/` (casi 2000 líneas) y un `CONTEXTO-PARA-IA.md` desfasado. Las fases se han partido en sub-fases (FASE 0, FASE 1, benchmark, Society, posts…) que ya no casan con el plan F0–F8 de la propuesta.
-7. **Lo que cambiaría:**
-   - congelar las piezas de prueba;
-   - hacer el commit;
-   - arreglar los dos fallos de §0;
-   - que decidas la vía de generación;
-   - construir **una sola orden** de punta a punta con la puerta de salida automática;
-   - medir el resultado solo con fotos reales y con prisa de hosteleros, y con una prueba a ciegas tuya frente a las referencias.
-
-   Hasta entonces, ninguna pieza nueva.
+1. **Lo bueno de hoy:**
+   - los arreglos de §0 tienen pruebas que fallan con el código antiguo;
+   - cada paso tiene su commit;
+   - no se ha gastado más de lo autorizado.
+2. **Un error mío:** para aclarar el cobro pedí `nano_banana_2` y, sin quererlo, **cambié el modelo** de las dos fotos de hoy respecto a las 23 anteriores. Está anotado en la procedencia, pero DAK y Mesón v007 no son comparables uno a uno con los intentos anteriores.
+3. **Corregí una conclusión equivocada** («nos sirven NB2 en vez de Pro») que había repetido en tres informes. La había sacado de un identificador interno sin comprobar qué devolvía al pedir el otro modelo.
+4. **El riesgo de fondo sigue:** la regla «otra toma» y el checklist miden lo comprobable, no si la foto sirve a la idea (lo muestra el Mesón cenital). Ese juicio sigue siendo tuyo o de una diseñadora.

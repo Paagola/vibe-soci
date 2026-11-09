@@ -45,7 +45,7 @@ Las fotos están en `plantillas/fotos/`.
 
 ### Generar a mano con Nano Banana Pro
 
-**Nano Banana Pro no está en la API de Higgsfield**, solo en su web. Si quieres usarlo:
+**Nano Banana Pro no está en la API de Higgsfield**, solo en su web y en su conector MCP (y en la API de Gemini, que solo lo da con facturación activada). Si quieres usarlo:
 
 1. Abre `plan.md` desde la sección «Plan». Cada diapositiva trae el prompt y la lista **«Adjunta en este orden»**.
 2. Genera en la web de Higgsfield adjuntando las imágenes en ese orden.
@@ -85,11 +85,21 @@ Cada imagen generada se guarda con su receta, su prompt, su `request_id`, sus re
 
 ## Referencia obligatoria y foto nueva (F1.6, en pruebas)
 
-- **Referencia obligatoria:** en las 5 primeras piezas reales de cada local, el diseño parte de un post de referencia (imagen o captura, enlace de Canva o Pinterest, o una familia de la biblioteca). De él se toma el oficio, nunca los textos ni las marcas. El post de referencia no va al generador: se le pasa su ficha en palabras.
-- **Fidelidad flexible por defecto:** cambian la cámara, la luz, el fondo y el encuadre; se conservan los elementos del plato y la vajilla (`marcas/<slug>/perfil.json` → `fidelidad`).
+El estado vivo del proyecto, las decisiones vigentes y lo que queda están en [`diseno/f1_6/ESTADO.md`](diseno/f1_6/ESTADO.md).
+
+**Decisiones vigentes (09/11/2026):**
+- **Referencia obligatoria:** en las 5 primeras piezas de cada local, el diseño parte de un post de referencia (imagen o captura, enlace de Canva o Pinterest, o una familia de la biblioteca). De él se toma el oficio, nunca los textos ni las marcas. El post de referencia no va al generador: se le pasa su ficha en palabras.
+  - **Cuentan para las 5 las piezas de la app y las hechas con herramientas.** Una pieza hecha con herramientas se declara en su `proyectos/…/plan.json` con `"pieza": { "fecha": "AAAA-MM-DD", "referencia": "<id>" }`. Los planes sin `pieza` son experimentos y no cuentan.
+- **Fidelidad flexible por defecto:** cambian la cámara, la luz, el fondo, la superficie y el encuadre; se conservan los elementos del plato, su número, la anatomía y la vajilla (`marcas/<slug>/perfil.json` → `fidelidad`). Se descarta la imagen que añade algo.
+- **Foto nueva, no foto mejorada.** La toma nueva cambia la altura más de 30°, o al menos dos de estas cosas: el lado (giro de 45° o más), la distancia y la altura (15° o más). Está en `src/dominio/fotoNueva.ts` → `esOtraToma`.
+- **Gasto:**
+  - Gemini, solo en el tier gratuito (texto y visión);
+  - Higgsfield por el MCP, solo para pruebas autorizadas, con `get_cost` antes de cada petición.
+  - La vía de generación del producto **no está decidida** (ESTADO.md §8).
 
 ```bash
-npm run referencia -- comprobar --local <slug>                      # ¿puede pasar a concepto? Si falta referencia, propone 3 familias y pinta su ficha visual
+npm run referencia -- comprobar --local <slug>                      # ¿puede pasar a concepto? Solo lee: nombra las 3 familias propuestas
+npm run referencia -- propuestas --local <slug>                     # pinta la hoja de las 3 familias (datos/locales/<slug>/referencias/propuestas.jpg)
 npm run referencia -- registrar --local <slug> --id <id> --biblioteca post-11   # o --imagen <captura> o --enlace <url de Canva o Pinterest>
 npm run referencia -- captura --local <slug> --id <id> --imagen <captura>       # si el enlace no se pudo leer (Canva suele responder 403)
 npm run referencia -- ficha --local <slug> --id <id> --desde ficha.json         # el análisis de la referencia (esquema referencia/ficha@1)

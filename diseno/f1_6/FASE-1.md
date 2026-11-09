@@ -1,5 +1,7 @@
 # F1.6 · FASE 1: referencia obligatoria y conocimiento
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 2026-11-07. **Sin gasto.** La F1.5 quedó confirmada antes de empezar (commit `3bbfe33`, etiqueta `f1_5`). Lo de esta fase está **sin confirmar**, pendiente de tu revisión.
 
 ## Resumen

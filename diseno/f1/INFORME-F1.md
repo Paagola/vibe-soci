@@ -1,5 +1,7 @@
 # F1 · Compositor gráfico (DAK Burger)
 
+> **Histórico (09/11/2026).** Este informe describe una fase cerrada y ya no manda. El estado vigente, las decisiones y lo que queda están en [`diseno/f1_6/ESTADO.md`](../f1_6/ESTADO.md). Lo que aquí se contradiga con ESTADO.md, vale lo de ESTADO.md.
+
 **Fecha:** 6 de noviembre de 2026
 **Estado:** terminado y pendiente de tu revisión. No se ha empezado la F2 ni el director automático.
 **Gasto:** 0 €. No se ha llamado a Gemini ni a Higgsfield.
