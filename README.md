@@ -83,6 +83,20 @@ npm run carrusel -- proyectos/<slug> [--borrador]                               
 
 Cada imagen generada se guarda con su receta, su prompt, su `request_id`, sus referencias y su coste. El gasto queda en `datos/gasto/higgsfield.jsonl`. Nada de esto toca el generador antiguo de la web.
 
+## Referencia obligatoria y foto nueva (F1.6, en pruebas)
+
+- **Referencia obligatoria:** en las 5 primeras piezas reales de cada local, el diseño parte de un post de referencia (imagen o captura, enlace de Canva o Pinterest, o una familia de la biblioteca). De él se toma el oficio, nunca los textos ni las marcas. El post de referencia no va al generador: se le pasa su ficha en palabras.
+- **Fidelidad flexible por defecto:** cambian la cámara, la luz, el fondo y el encuadre; se conservan los elementos del plato y la vajilla (`marcas/<slug>/perfil.json` → `fidelidad`).
+
+```bash
+npm run referencia -- comprobar --local <slug>                      # ¿puede pasar a concepto? Si falta referencia, propone 3 familias y pinta su ficha visual
+npm run referencia -- registrar --local <slug> --id <id> --biblioteca post-11   # o --imagen <captura> o --enlace <url de Canva o Pinterest>
+npm run referencia -- captura --local <slug> --id <id> --imagen <captura>       # si el enlace no se pudo leer (Canva suele responder 403)
+npm run referencia -- ficha --local <slug> --id <id> --desde ficha.json         # el análisis de la referencia (esquema referencia/ficha@1)
+```
+
+**La web todavía no aplica esta regla.** Sus pantallas están pendientes de aprobar (ver `diseno/ARQUITECTURA.md` §11).
+
 ## Lo que aprende el estudio
 
 - `biblioteca/principios.md`: lo que ha gustado y lo que no. **Edítalo** cuando aprendáis algo.

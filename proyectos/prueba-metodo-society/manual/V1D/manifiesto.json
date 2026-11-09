@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/prueba-metodo-society/recetas/v1d.json",
+  "prompt": {
+    "archivo": "proyectos/prueba-metodo-society/manual/V1D/prompt.txt",
+    "sha256": "1f99ac5e44e0c014bbfa33bfa7472c0f0a0bfcbb3e6d76994c4a7ff0a78c7616"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-degradada-del-plato.jpg",
+      "origen": "etx-real-gamba-degradada",
+      "sha256": "984147cc19a649081cc93af3048dedde5edf78b948d8c522cd9cffa26efa11a9"
+    }
+  ]
+}

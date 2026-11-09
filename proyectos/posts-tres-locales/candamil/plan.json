@@ -1,0 +1,10 @@
+{
+  "nota": "Candamil · post F6 (post-29). PIEZA DE PRUEBA, NO PUBLICABLE: foto de partida de Wikimedia Commons (CC BY-SA 2.0), no del dueño; colores propuestos por el estudio.",
+  "local": "candamil",
+  "marca": "../../../marcas/candamil/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ]
+}

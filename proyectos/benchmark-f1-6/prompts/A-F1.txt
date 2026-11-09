@@ -1,0 +1,12 @@
+Instagram post, vertical 3:4, for Asador Etxebarri, a wood-fire grill restaurant in Axpe (Bizkaia). One single finished image: photograph and typography made together in the same frame.
+
+{{ELEMENTOS}}
+
+NEW PHOTOGRAPH, by a professional food photographer, not a copy of Image 1: near table-level side view at 10 degrees, 100 mm macro lens at f/5.6, the plate and the two prawns large in the lower 55% of the frame, slightly turned so both heads face the camera on the left, the long antennae arching up into the upper part of the frame. Seamless flat charcoal backdrop #111111 and the same charcoal surface. One hard warm side light from the left like the glow of embers, a soft fill from the right, a short soft contact shadow under the plate. Glossy shells and sparkling salt crystals, real texture, nothing plastic.
+
+CREATIVE TYPOGRAPHY, printed in the same frame, bone colour #EDE7DD:
+- The single word "BRASA" in a tall, narrow, very heavy condensed grotesque like wood-type poster letters, filling the full width of the frame across the middle third, placed BEHIND the prawns and the plate so they hide the lower 35% of the letters.
+- Across the upper right of the word, "de leña" in a flowing brush script.
+- Bottom centre, small tracked monospace capitals: "ASADOR ETXEBARRI".
+
+RULES: no other words, no boxes or panels behind the text, no logos, no prices, no slide numbers, no Instagram UI. Spanish text spelled exactly as written, with the ñ. Keep 70 px clear on every edge for the small text.

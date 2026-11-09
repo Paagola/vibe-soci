@@ -1,0 +1,98 @@
+{
+  "fecha": "2026-11-08T22:11:03.509Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "proyectos/posts-tres-locales/fotos-web/merluza-candamil.jpg",
+  "plato": "Merluza con patata, guisantes y salsa de pimentón en Candamil, restaurante de cocina gallega en el centro de Málaga.",
+  "lado": {
+    "ancho": 2592,
+    "alto": 1936
+  },
+  "referencia": "post-29",
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 45,
+      "encuadre": "Picado tres cuartos medio, centrando el plato sobre la mesa con botella de vino y copa de fondo.",
+      "luz": "Luz de interior difusa con una dominante fría/azulada y reflejos planos sobre el plato.",
+      "elementos": [
+        {
+          "nombre": "Lomos de merluza",
+          "estado": "Cocidos, jugosos y desflados, manchados de aceite de pimentón anaranjado",
+          "recuento": 2
+        },
+        {
+          "nombre": "Patatas cocidas (cachelos)",
+          "estado": "Troceadas, tiernas, de color amarillo claro",
+          "recuento": null
+        },
+        {
+          "nombre": "Guisantes",
+          "estado": "Verdes intensos, enteros y brillantes",
+          "recuento": null
+        },
+        {
+          "nombre": "Salsa / ajada de pimentón",
+          "estado": "Aceite emulsionado rojo-anaranjado brillante",
+          "recuento": null
+        },
+        {
+          "nombre": "Plato cerámico",
+          "estado": "Redondo con ala ancha verde oliva/mostaza y fondo beige",
+          "recuento": 1
+        },
+        {
+          "nombre": "Mantel de tela",
+          "estado": "Blanco con patrón geométrico de damero suave",
+          "recuento": 1
+        },
+        {
+          "nombre": "Botella de vino tinto",
+          "estado": "De cristal oscuro con etiqueta, desdibujada en segundo plano",
+          "recuento": 1
+        },
+        {
+          "nombre": "Copa de vino tinto",
+          "estado": "De cristal fino con vino tinto en la esquina superior",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Dominante de color azulada/fría poco apetecible.",
+        "Elementos distractores al fondo (botella, copa, borde de otro plato).",
+        "Encuadre plano e informal de aficionado.",
+        "Falta de contraste dramático y volumen en la textura del pescado."
+      ],
+      "utilizable": true,
+      "motivo": "Sirve como inventario perfecto de los ingredientes reales y la vajilla del local."
+    },
+    "huecos": {
+      "plato": "Galician-style hake fillet with boiled potatoes, green peas and paprika oil broth",
+      "origen": "from a traditional Galician restaurant",
+      "elementos": "two thick tender flakes of white hake fillet drizzled with vibrant orange-red paprika oil, soft yellow boiled potato chunks (cachelos), bright green peas, glossy paprika oil broth, on the same round plate with a wide olive-green border and pale center, resting on a clean light stone backdrop",
+      "recuento": "Exactly two hake fillets, potato chunks, and scattered green peas.",
+      "camara": {
+        "anguloGrados": 90,
+        "descripcion": "directly overhead 90-degree flat lay top-down view, with the olive-green rimmed plate offset to the right third of the frame, cropped by the right edge, leaving clean negative vertical space on the left",
+        "objetivoMm": 50,
+        "apertura": 4
+      },
+      "ideaGrafica": "minimalist editorial zenith composition following modern magazine visual aesthetic: plate cropped on the right edge creating an asymmetric layout, leaving the left 40% of the frame as an ultra-clean neutral surface for vertical text, with crisp sharpness on the fish flake texture and droplets of paprika oil",
+      "luz": "soft diffused window daylight from the top-right creating subtle soft contact shadows under the plate and highlighting the glossy sheen of the paprika oil",
+      "colorDominante": "clean light neutral stone grey background, with bright paprika orange-red and olive green as the only strong accent colors"
+    },
+    "decisiones": [
+      "Se cambia la cámara de un picado informal de 45° a un plano cenital estricto a 90°, variando más de 30° respecto a la foto original para lograr un estilo editorial sobrio.",
+      "Se desplaza el plato hacia el borde derecho cortándolo ligeramente, tal como marca la referencia post-29, reservando un 40% de aire limpio a la izquierda para el titular vertical.",
+      "Se eliminan por completo la botella, la copa y el mantel doméstico, sustituyéndolos por un fondo neutro de piedra clara y luz de ventana lateral muy suave que resalta la jugosidad real de la merluza."
+    ]
+  },
+  "prompt": "@image1 is a real photo of Galician-style hake fillet with boiled potatoes, green peas and paprika oil broth from a traditional Galician restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: two thick tender flakes of white hake fillet drizzled with vibrant orange-red paprika oil, soft yellow boiled potato chunks (cachelos), bright green peas, glossy paprika oil broth, on the same round plate with a wide olive-green border and pale center, resting on a clean light stone backdrop. Exactly two hake fillets, potato chunks, and scattered green peas. Nothing else added. New composition by a professional food photographer: directly overhead 90-degree flat lay top-down view, with the olive-green rimmed plate offset to the right third of the frame, cropped by the right edge, leaving clean negative vertical space on the left, 50 mm lens at f/4, minimalist editorial zenith composition following modern magazine visual aesthetic: plate cropped on the right edge creating an asymmetric layout, leaving the left 40% of the frame as an ultra-clean neutral surface for vertical text, with crisp sharpness on the fish flake texture and droplets of paprika oil. Soft diffused window daylight from the top-right creating subtle soft contact shadows under the plate and highlighting the glossy sheen of the paprika oil, clean light neutral stone grey background, with bright paprika orange-red and olive green as the only strong accent colors. Photographic realism, no text.",
+  "problemasFinales": []
+}

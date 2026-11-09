@@ -1,0 +1,68 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SPECIAL MENU / BIBIMBAP»",
+  "familia": "F9",
+  "mecanismos": [
+    "TEXTO_CURVO",
+    "DIBUJOS_O_PEGATINAS",
+    "SELLO"
+  ],
+  "capas": [
+    "foto de día con flash: fondo azul cielo y azulejos",
+    "bandeja en ¾",
+    "«SPECIAL MENU» ultranegra",
+    "«BIBIMBAP» azul con contorno blanco curvada siguiendo la bandeja",
+    "tres pegatinas de personajes",
+    "sello festoneado con el precio"
+  ],
+  "reticula": "Titular arriba a la derecha; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "ultranegra",
+      "escala": 9
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "redondeada extendida en curva",
+      "escala": 6
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#048DC0",
+      "rol": "azul cielo"
+    },
+    {
+      "hex": "#D5DAE3",
+      "rol": "azulejo blanco"
+    },
+    {
+      "hex": "#09223C",
+      "rol": "marino"
+    },
+    {
+      "hex": "#B56F2E",
+      "rol": "bandeja"
+    }
+  ],
+  "foto": "Flash de día, sombras duras, colores saturados",
+  "recursos": [
+    {
+      "recurso": "personajes",
+      "funcion": "tono desenfadado"
+    },
+    {
+      "recurso": "sello",
+      "funcion": "precio"
+    }
+  ],
+  "lectura": [
+    "SPECIAL MENU",
+    "bandeja",
+    "pegatinas y sello"
+  ],
+  "porQueFunciona": "Divertida pero cargada: solo para locales desenfadados.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

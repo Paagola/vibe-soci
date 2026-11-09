@@ -1,0 +1,15 @@
+{
+  "id": "chiringuito-foto-2",
+  "local": "chiringuito-prueba",
+  "descripcion": "Plato de boquerones fritos en ¾, para recortar (diapositiva 2). Generada solo con texto: no hay foto real del local; pescado genérico, pieza de prueba.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/chiringuito-carrusel/foto/foto2.txt",
+  "referencias": [],
+  "alteraciones": [
+    "Sin foto real del local: el plato es genérico, no el del chiringuito. Solo para prueba."
+  ]
+}

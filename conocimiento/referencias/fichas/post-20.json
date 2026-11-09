@@ -1,0 +1,64 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Breakfast Delight»",
+  "familia": "F4",
+  "mecanismos": [
+    "ACCION_CON_MANO",
+    "LOGOTIPO_TIPOGRAFICO",
+    "TITULAR_EN_EL_AIRE"
+  ],
+  "capas": [
+    "negro",
+    "mano que vierte salsa desde arriba a la izquierda",
+    "plato blanco con postre en ¾",
+    "«Breakfast Delight» didona con florituras crema",
+    "monograma y marca arriba",
+    "nombre del postre abajo a la izquierda"
+  ],
+  "reticula": "Titular arriba en dos líneas escalonadas; textos en las esquinas inferiores; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "didona con florituras",
+      "escala": 9
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#050505",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#C1C0B8",
+      "rol": "texto crema"
+    },
+    {
+      "hex": "#A0192E",
+      "rol": "la salsa"
+    }
+  ],
+  "foto": "Low-key de estudio con una acción que tiene causa (verter)",
+  "recursos": [
+    {
+      "recurso": "la acción",
+      "funcion": "cuenta el plato"
+    },
+    {
+      "recurso": "monograma",
+      "funcion": "serie con el post-21"
+    }
+  ],
+  "lectura": [
+    "el plato y el chorro",
+    "el titular",
+    "el nombre del postre"
+  ],
+  "porQueFunciona": "La acción cuenta el plato; hace serie con el 21.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

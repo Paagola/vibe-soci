@@ -1,0 +1,10 @@
+{
+  "nota": "Mesón Lo Güeno · post F3 (post-05). PIEZA DE PRUEBA, NO PUBLICABLE: foto de partida de Wikimedia Commons (CC BY-SA 2.0), no del dueño; colores propuestos por el estudio.",
+  "local": "meson-lo-gueno",
+  "marca": "../../../marcas/meson-lo-gueno/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ]
+}

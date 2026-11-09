@@ -1,0 +1,26 @@
+{
+  "id": "dak-post-f2-foto",
+  "local": "dak-burger",
+  "descripcion": "Foto nueva de la Manhattan Tower para el post F2 (post-09): ¾ alto a 40°, fondo negro limpio para el patrón de palabras.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/posts-f1-6/foto/dak.txt",
+  "referencias": [
+    {
+      "activo": "dak-real-manhattan",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: los elementos y su recuento.",
+        "noSeCopia": "El encuadre, la luz, el fondo ni el ángulo de la foto subida."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, cámara a más de 30° de la foto subida).",
+    "Superficie y fondo libres (decisión del 07/11)."
+  ]
+}

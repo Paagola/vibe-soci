@@ -1,0 +1,18 @@
+{
+  "id": "etx-bench-b6-b-f4-grok",
+  "local": "asador-etxebarri",
+  "descripcion": "Benchmark F1.6 · Vía B · F4 (sin texto, aire arriba) · Grok 2.0 · foto original.",
+  "modelo": "xai/grok-imagine-image-2.0",
+  "parametros": {
+    "resolution": "2k",
+    "aspect_ratio": "3:4",
+    "quality": "medium"
+  },
+  "promptArchivo": "proyectos/benchmark-f1-6/prompts/B-F4.final.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba",
+      "ladoMaximo": 3072
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«opening hours»",
+  "familia": "F5",
+  "mecanismos": [
+    "TARJETA_DE_INFORMACION",
+    "ACCION_CON_MANO",
+    "SALPICADURA_O_FLOTANTES"
+  ],
+  "capas": [
+    "escena oscura a sangre con bokeh; mano que remueve el matcha (izquierda, cortada por abajo)",
+    "tarjeta translúcida esmerilada con esquinas redondeadas",
+    "textos",
+    "dos hojas que flotan, una pisa la tarjeta"
+  ],
+  "reticula": "Dos columnas; texto en la derecha; margen ≈ 8 % del ancho",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "serif itálica de alto contraste, minúsculas",
+      "escala": 9
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "palo seco geométrico ligero y medio",
+      "escala": 4
+    },
+    {
+      "rol": "MARCA",
+      "clasificacion": "versalitas pequeñas",
+      "escala": 1.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#0B0A07",
+      "rol": "sombra de fondo"
+    },
+    {
+      "hex": "#4A371D",
+      "rol": "madera cálida"
+    },
+    {
+      "hex": "#C9DE8F",
+      "rol": "titular, sacado del matcha"
+    },
+    {
+      "hex": "#9F9469",
+      "rol": "tarjeta translúcida"
+    }
+  ],
+  "foto": "Escena real con acción (remover), poca profundidad de campo",
+  "recursos": [
+    {
+      "recurso": "tarjeta translúcida",
+      "funcion": "ordena la información práctica sin tapar la escena"
+    },
+    {
+      "recurso": "hojas",
+      "funcion": "conectan con el producto"
+    }
+  ],
+  "lectura": [
+    "opening hours",
+    "horarios",
+    "marca y URL"
+  ],
+  "porQueFunciona": "El color del titular sale del producto y la información va en dos niveles limpios.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

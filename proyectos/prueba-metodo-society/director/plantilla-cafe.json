@@ -1,0 +1,86 @@
+{
+  "fecha": "2026-11-07T19:00:37.576Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "plantillas/fotos/cafe-albor-cafe.webp",
+  "plato": "cafés de especialidad con arte latte en tazas de cerámica artesanal, sobre bandeja de madera",
+  "lado": {
+    "ancho": 382,
+    "alto": 510
+  },
+  "referencia": null,
+  "intentos": [
+    {
+      "problemas": [
+        "La foto mide 382 × 510 px: anótalo en \"defectos\" y di si los detalles finos se pueden leer."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 35,
+      "encuadre": "Plano medio descentrado en tercio inferior, con fondo desenfocado del local.",
+      "luz": "Ambiental interior difusa, sin contraste nítido ni reflejos definidos.",
+      "elementos": [
+        {
+          "nombre": "Tazas de cerámica artesanal moteada con borde azul",
+          "estado": "Llenas con café de especialidad y arte latte refinado",
+          "recuento": 3
+        },
+        {
+          "nombre": "Bandeja pequeña de madera clara",
+          "estado": "Limpia y sobria",
+          "recuento": 1
+        },
+        {
+          "nombre": "Cucharas metálicas plateadas",
+          "estado": "Brillantes",
+          "recuento": 3
+        },
+        {
+          "nombre": "Mesa de madera oscura",
+          "estado": "Superficie mate",
+          "recuento": null
+        },
+        {
+          "nombre": "Servilleta de papel",
+          "estado": "Doblada",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Baja resolución (382 × 510 px), detalles finos de microespuma ilegibles",
+        "Fondo con excesiva presencia y elementos que distraen"
+      ],
+      "utilizable": true,
+      "motivo": "Define con precisión el inventario real de tazas, bandeja y cucharas."
+    },
+    "huecos": {
+      "plato": "specialty coffees with latte art",
+      "origen": "from an artisan coffee shop",
+      "elementos": "three speckled ceramic cups with soft blue rims filled with latte art, three metal spoons, a small light-wood tray",
+      "recuento": "Exactly three ceramic cups, three metal spoons, and one wooden tray.",
+      "camara": {
+        "anguloGrados": 85,
+        "descripcion": "top-down zenith view directly above the table",
+        "objetivoMm": 50,
+        "apertura": 4
+      },
+      "ideaGrafica": "tray positioned diagonally across the frame, leaving clean negative dark-wood space for typography",
+      "luz": "soft directional side daylight catching the micro-foam glossy texture and ceramic glaze",
+      "colorDominante": "warm wood neutrals with cream milk foam and subtle blue rim accents"
+    },
+    "decisiones": [
+      "Cambio de ángulo a 85° cenital (diferencia >30° respecto al ¾ original) para lograr un estilo editorial limpio.",
+      "Luz lateral suave de día para realzar la textura de la microespuma sin brillos sintéticos.",
+      "Eliminación del fondo distractor del local usando la mesa de madera como fondo contrastado."
+    ]
+  },
+  "prompt": "@image1 is a real photo of specialty coffees with latte art from an artisan coffee shop. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: three speckled ceramic cups with soft blue rims filled with latte art, three metal spoons, a small light-wood tray. Exactly three ceramic cups, three metal spoons, and one wooden tray. Nothing else added. New composition by a professional food photographer: top-down zenith view directly above the table, 50 mm lens at f/4, tray positioned diagonally across the frame, leaving clean negative dark-wood space for typography. Soft directional side daylight catching the micro-foam glossy texture and ceramic glaze, warm wood neutrals with cream milk foam and subtle blue rim accents. Photographic realism, no text.",
+  "problemasFinales": []
+}

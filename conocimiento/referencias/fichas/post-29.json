@@ -1,0 +1,63 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«steak»",
+  "familia": "F6",
+  "mecanismos": [
+    "PALABRA_GIRADA",
+    "PLATO_CORTADO_POR_EL_BORDE"
+  ],
+  "capas": [
+    "blanco",
+    "rectángulo gris muy claro",
+    "plato cenital cortado por el borde derecho",
+    "«steak» geométrica bold terracota en minúscula girada 90° que sangra",
+    "arco fino oliva",
+    "marca, barrita y frase"
+  ],
+  "reticula": "Asimétrica: palabra a la izquierda, plato a la derecha; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "geométrica bold girada",
+      "escala": 60
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#FFFFFF",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#986548",
+      "rol": "palabra terracota"
+    },
+    {
+      "hex": "#E9E8E8",
+      "rol": "rectángulo"
+    }
+  ],
+  "foto": "Cenital con sombra suave",
+  "recursos": [
+    {
+      "recurso": "palabra que sangra",
+      "funcion": "asimetría radical"
+    },
+    {
+      "recurso": "arco fino",
+      "funcion": "acompaña"
+    }
+  ],
+  "lectura": [
+    "steak",
+    "el plato",
+    "la frase"
+  ],
+  "porQueFunciona": "El aire hace que parezca alta cocina.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

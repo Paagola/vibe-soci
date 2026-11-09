@@ -1,0 +1,100 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "candamil-post",
+  "version": 1,
+  "titulo": "Candamil · F6 blanco editorial y palabra girada (post-29)",
+  "notas": "De post-29 se toma: mucho aire claro, una palabra en minúsculas gigante girada en vertical que sangra por la izquierda, el plato cenital cortado por la derecha y acentos de color mínimos. No se copia: steak, Borcelle, el lema ni la web. PIEZA DE PRUEBA, NO PUBLICABLE: foto de partida de Wikimedia Commons (CC BY-SA 2.0), no del dueño; colores propuestos por el estudio.",
+  "marca": "candamil",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "foto": "candamil-post-foto-mcp-1"
+  },
+  "textos": {
+    "palabra": "merluza",
+    "rotulo": "Candamil",
+    "apoyo": "Cocina gallega\nen Málaga"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      }
+    },
+    {
+      "id": "palabra",
+      "tipo": "texto",
+      "texto": "@palabra",
+      "estilo": "palabra",
+      "caja": {
+        "x": -0.04,
+        "y": 0.19,
+        "w": 0.3,
+        "h": 0.6
+      },
+      "ajuste": "ancho",
+      "rotacion": -90,
+      "sangrado": true
+    },
+    {
+      "id": "rotulo",
+      "tipo": "texto",
+      "texto": "@rotulo",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.085,
+        "w": 0.36,
+        "h": 0.03
+      },
+      "ajuste": "fijo",
+      "tamano": 36
+    },
+    {
+      "id": "barra",
+      "tipo": "forma",
+      "figura": "rect",
+      "caja": {
+        "x": 0.067,
+        "y": 0.85,
+        "w": 0.009,
+        "h": 0.05
+      },
+      "color": "@pimenton"
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.09,
+        "y": 0.85,
+        "w": 0.34,
+        "h": 0.05
+      },
+      "ajuste": "fijo",
+      "tamano": 34
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "rotulo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    }
+  ]
+}

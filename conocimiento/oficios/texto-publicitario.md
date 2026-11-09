@@ -21,7 +21,7 @@ Lo que no consta no se escribe. No se dice ni insinuando, ni como adjetivo, ni e
 
 ## Pocas palabras
 
-- **Una frase por pieza o por diapositiva.** Lo demás va al pie.
+- **Tres niveles como mucho:** un titular de 1 a 3 palabras (o un logotipo tipográfico), un apoyo corto y la firma o un dato real. Lo demás va al pie.
 - **Sin adjetivos de relleno:** exquisito, único, auténtico, premium, increíble. Si el producto es bueno, que lo diga la foto.
 - **El producto se nombra entero y en su forma real:** «gamba roja de Palamós», no «nuestra deliciosa gamba».
 - **Que se pueda decir en voz alta** sin sonar a anuncio.
@@ -46,5 +46,5 @@ Repite el mensaje entero, una línea con el concepto del local si está document
 | «Reserva ya tu mesa» sin datos de reserva | Llamada a la acción inventada | «En la plaza de Axpe, al pie de la montaña» (documentado) |
 | «Premiada en…» sin fuente en el proyecto | Afirmación inventada: la pieza no pasa la revisión | Solo premios que consten en `marca.json` o los diga el dueño |
 | «Del Mediterráneo al Cantábrico en 24 h» | Logística no documentada | «Gamba roja de Palamós», que sí consta |
-| Tres niveles de texto por costumbre (antetítulo, titular, apoyo) | Se convierte en plantilla y en palabras de sobra | Una frase, y el resto en el pie |
+| Una frase larga como titular (F1.5: «Gamba roja de Palamós,») | No hay una palabra protagonista que pueda relacionarse con el producto (detrás, curva, girada) | Una palabra o un logotipo tipográfico como titular; la frase completa, al pie |
 | «Propuesta no oficial · Society» dentro de la imagen | Ruido en la pieza | Esa nota va en la documentación, no en el diseño |

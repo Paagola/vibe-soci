@@ -1,0 +1,10 @@
+{
+  "nota": "Pieza de prueba, NO PUBLICABLE (Etxebarri no la ha encargado). De post-30 se toma: el macro a sangre arriba, la franja de papel negro rasgado abajo y el rótulo de tres niveles (script, palo seco pesado, versalitas). No se copia: Beef Burger, Today's special, Tasty and hot, ni el amarillo. El papel es un recurso procedural del estudio.",
+  "local": "asador-etxebarri",
+  "marca": "../../../marcas/asador-etxebarri/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ]
+}

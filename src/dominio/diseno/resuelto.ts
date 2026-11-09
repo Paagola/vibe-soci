@@ -66,7 +66,7 @@ export type CapaResuelta = BaseResuelta &
         sangrado: boolean;
       }
     | { tipo: 'forma'; figura: 'rect' | 'elipse' | 'linea'; rect?: Rect; desde?: { x: number; y: number }; hasta?: { x: number; y: number }; color: string; grosor?: number; discontinua?: [number, number] }
-    | { tipo: 'circulo-texto'; texto: string; estilo: EstiloResuelto; centro: { x: number; y: number }; radio: number; tamano: number; fondo?: string; giro: number }
+    | { tipo: 'circulo-texto'; texto: string; estilo: EstiloResuelto; centro: { x: number; y: number }; radio: number; tamano: number; fondo?: string; giro: number; arco?: number }
     | {
         tipo: 'niveles';
         estilo: EstiloResuelto;
@@ -87,7 +87,7 @@ export function nombreDeCapa(capa: { z: number; id: string }): string {
 export interface Problema {
   gravedad: 'AVISO' | 'ERROR';
   capa?: string;
-  tipo: 'ZONA_SEGURA' | 'SOLAPE' | 'COBERTURA' | 'RESOLUCION' | 'CONTRASTE' | 'TAMANO_MINIMO' | 'FIDELIDAD' | 'ACTIVO';
+  tipo: 'ZONA_SEGURA' | 'SOLAPE' | 'COBERTURA' | 'RESOLUCION' | 'CONTRASTE' | 'TAMANO_MINIMO' | 'SEPARACION' | 'FIDELIDAD' | 'ACTIVO';
   mensaje: string;
 }
 

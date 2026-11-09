@@ -1,0 +1,64 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "Marco polaroid",
+  "familia": "F5",
+  "mecanismos": [
+    "SALE_DEL_MARCO",
+    "TEXTO_CURVO",
+    "ACCION_CON_MANO"
+  ],
+  "capas": [
+    "escena de sushi desenfocada a sangre",
+    "marco polaroid blanco central",
+    "la misma escena nítida dentro del marco",
+    "palillos y pieza que se salen del marco",
+    "textos naranjas dentro del marco",
+    "texto circular con estrella"
+  ],
+  "reticula": "Central; el marco ocupa ≈ 70 % del ancho",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca heavy",
+      "escala": 7
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#4E443C",
+      "rol": "fondo oscuro"
+    },
+    {
+      "hex": "#F1EEEC",
+      "rol": "marco"
+    },
+    {
+      "hex": "#DA6D2C",
+      "rol": "acento: el salmón"
+    }
+  ],
+  "foto": "Dos niveles de la misma escena, producto con palillos",
+  "recursos": [
+    {
+      "recurso": "marco",
+      "funcion": "aísla el sujeto de un fondo recargado"
+    },
+    {
+      "recurso": "salida del marco",
+      "funcion": "da volumen"
+    }
+  ],
+  "lectura": [
+    "la pieza saliendo",
+    "SUSHI",
+    "texto circular"
+  ],
+  "porQueFunciona": "El marco ordena el fondo y la salida rompe el plano.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

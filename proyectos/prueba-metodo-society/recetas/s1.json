@@ -1,0 +1,47 @@
+{
+  "local": "asador-etxebarri",
+  "modelo": "gemini-3-pro-image",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "alteraciones": [
+    "Colocación cambiada: las dos gambas paralelas y en diagonal (en la foto real están amontonadas). Autorizado el 07/11: mantener exactamente dos.",
+    "Superficie y fondo nuevos: tabla de roble oscuro y pared pizarra (mantel y fondo libres, decisión del 07/11).",
+    "Medidas ESTIMADAS a partir de la foto, no confirmadas por el restaurante: plato de unos 26 cm y gambas de unos 18 cm. Solo orientan al modelo; no son datos para nada que se publique."
+  ],
+  "id": "etx-soc-s1-nbp-json-3refs",
+  "descripcion": "Prueba método Society S1: Nano Banana Pro, brief JSON (DirectorIA) + foto real + ficha de texturas + post-11 sin texto (solo cámara, encuadre y luz). Medidas del prompt (26 cm, 18 cm) estimadas, no confirmadas.",
+  "promptArchivo": "proyectos/prueba-metodo-society/prompts/s1.json.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: exactamente dos gambas rojas a la brasa (cabeza, antenas, patas, sal gruesa, puntas tostadas) y el plato cuadrado de cristal esmerilado.",
+        "noSeCopia": "El mantel blanco, las manchas, el borde del otro plato, la luz de día plana y el ángulo alto. Tampoco la colocación amontonada: en la prueba van paralelas."
+      }
+    },
+    {
+      "archivo": "proyectos/prueba-metodo-society/refs/ficha-texturas-gamba.jpg",
+      "etiqueta": "@image2 (real texture sheet)",
+      "ladoMaximo": 1212,
+      "rol": {
+        "nombre": "ficha de texturas",
+        "gobierna": "Solo las texturas de superficie: caparazón brillante con segmentos, granos de sal gruesa, antenas finas translúcidas, patas con puntas tostadas y cristal esmerilado verde grisáceo.",
+        "noSeCopia": "La cuadrícula ni la disposición de los recortes."
+      }
+    },
+    {
+      "archivo": "proyectos/prueba-metodo-society/refs/post-11-sin-texto.jpg",
+      "etiqueta": "@image3 (template photograph: camera, framing and light only)",
+      "ladoMaximo": 1024,
+      "rol": {
+        "nombre": "referencia de encuadre post-11",
+        "gobierna": "Solo la altura de cámara (unos 20° sobre la mesa), el encuadre (plato en la mitad baja, 40 % superior libre) y la dirección y calidad de la luz (ventana grande y suave detrás a la izquierda).",
+        "noSeCopia": "El cuenco, la ensalada, el cuchillo ni los textos (ya quitados). Si en el resultado aparece el cuchillo o el cuenco, la imagen se descarta."
+      }
+    }
+  ]
+}

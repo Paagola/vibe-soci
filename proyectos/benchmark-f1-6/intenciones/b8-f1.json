@@ -1,0 +1,175 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "bench-b8-f1-degradada",
+  "version": 2,
+  "titulo": "Vía B · F1 · foto b8 (de la foto degradada)",
+  "notas": "Vía B · F1 (post-12 y post-03 en palabras): carbón liso, palabra ultracondensada detrás del producto, script de pincel cruzando y una fila pequeña. Foto nueva generada sin texto.",
+  "marca": "asador-etxebarri",
+  "tokens": {
+    "colores": {
+      "rojo-gamba": "#D2391C"
+    },
+    "estilos": {
+      "brasa": {
+        "fuente": "league-gothic",
+        "ejes": {
+          "wdth": 100
+        },
+        "caso": "mayusculas",
+        "tracking": 0.0,
+        "interlineado": 0.85,
+        "color": "@hueso"
+      },
+      "pincel": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0.0,
+        "interlineado": 1.0,
+        "color": "@hueso"
+      },
+      "fina": {
+        "fuente": "ballet",
+        "ejes": {
+          "opsz": 72
+        },
+        "caso": "tal-cual",
+        "tracking": 0.0,
+        "interlineado": 1.0,
+        "color": "@hueso"
+      },
+      "didona": {
+        "fuente": "bodoni-moda",
+        "ejes": {
+          "opsz": 40,
+          "wght": 500
+        },
+        "caso": "mayusculas",
+        "tracking": 0.01,
+        "interlineado": 0.9,
+        "color": "@hueso"
+      },
+      "versalita": {
+        "fuente": "archivo",
+        "ejes": {
+          "wdth": 100,
+          "wght": 600
+        },
+        "caso": "mayusculas",
+        "tracking": 0.14,
+        "interlineado": 1.5,
+        "color": "@hueso"
+      }
+    }
+  },
+  "activos": {
+    "foto": "etx-bench-b8-b-f1-ms2-degradada"
+  },
+  "textos": {
+    "titular": "BRASA",
+    "script": "de leña",
+    "firma": "Asador Etxebarri"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "retoque": {
+        "puntoNegro": "@carbon"
+      }
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "brasa",
+      "caja": {
+        "x": 0.067,
+        "y": 0.2,
+        "w": 0.866,
+        "h": 0.32
+      },
+      "ajuste": "ancho",
+      "sangrado": false
+    },
+    {
+      "id": "gambas",
+      "tipo": "recorte",
+      "activo": "foto",
+      "alineadoCon": "foto",
+      "bordeSuave": 0.6,
+      "retoque": {
+        "puntoNegro": "@carbon"
+      },
+      "nota": "Las gambas, las antenas y el plato por delante de la palabra (máscara Vision + luminancia)."
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "pincel",
+      "caja": {
+        "x": 0.47,
+        "y": 0.27,
+        "w": 0.46,
+        "h": 0.08
+      },
+      "ajuste": "alto",
+      "color": "@rojo-gamba",
+      "nota": "En el rojo de la gamba (acento sacado del plato, propuesta del estudio): en hueso se fundía con «BRASA» (contraste 1:1, v1)."
+    },
+    {
+      "id": "firma",
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.067,
+        "y": 0.085,
+        "w": 0.6,
+        "h": 0.02
+      },
+      "ajuste": "fijo",
+      "tamano": 26
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "detras",
+      "texto": "titular",
+      "sujeto": "gambas",
+      "cobertura": [
+        0.3,
+        0.45
+      ],
+      "medida": "franja",
+      "zona": {
+        "desde": 0.12,
+        "hasta": 0.7
+      }
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "firma",
+      "ratio": 4.5
+    }
+  ],
+  "padre": 1
+}

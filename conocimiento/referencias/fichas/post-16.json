@@ -1,0 +1,65 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«FREE / SPAGHETTI»",
+  "familia": "F3",
+  "mecanismos": [
+    "PALABRA_GIRADA",
+    "PAPEL_RASGADO",
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "frambuesa con textura",
+    "franja de papel rasgado amarilla abajo",
+    "tenedor con espaguetis recortado, vertical, sale por abajo",
+    "«FREE» amarilla ultra heavy girada 90°",
+    "«SPAGHETTI» condensada + «Bolognese» script",
+    "estrellas y texto"
+  ],
+  "reticula": "Dos verticales: palabra y tenedor; margen ≈ 9 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "ultra heavy girada",
+      "escala": 50
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "condensada",
+      "escala": 6
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "script",
+      "escala": 4
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#D04D59",
+      "rol": "fondo frambuesa"
+    },
+    {
+      "hex": "#F9CF3F",
+      "rol": "amarillo: palabra y papel"
+    }
+  ],
+  "foto": "Recorte vertical sobre fondo controlado",
+  "recursos": [
+    {
+      "recurso": "papel rasgado",
+      "funcion": "cierra abajo"
+    },
+    {
+      "recurso": "palabra girada",
+      "funcion": "ritmo vertical"
+    }
+  ],
+  "lectura": [
+    "el tenedor",
+    "FREE",
+    "SPAGHETTI Bolognese"
+  ],
+  "porQueFunciona": "Dos verticales dan ritmo; dos tintas.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

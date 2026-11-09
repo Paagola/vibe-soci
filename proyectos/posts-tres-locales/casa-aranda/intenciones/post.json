@@ -1,0 +1,151 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "casa-aranda-post",
+  "version": 1,
+  "titulo": "Casa Aranda · F1 palabra detrás (post-03)",
+  "notas": "De post-03 se toma: color plano, el producto recortado delante de una palabra gigante que tapa por arriba, un sello circular y una fila pequeña arriba. No se copia: SUSHI, los palillos, IT'S SUSHI TIME ni la web. PIEZA DE PRUEBA, NO PUBLICABLE: foto de partida de Wikimedia Commons (CC BY-SA 2.0), no del dueño; colores propuestos por el estudio.",
+  "marca": "casa-aranda",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "foto": "casa-aranda-post-foto-mcp-2"
+  },
+  "textos": {
+    "rotulo": "Casa Aranda · Málaga",
+    "palabra": "CHURROS",
+    "script": "con chocolate",
+    "sello": "Desde 1932 · Desde 1932 · "
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@ocre"
+    },
+    {
+      "id": "palabra",
+      "tipo": "texto",
+      "texto": "@palabra",
+      "estilo": "palabra",
+      "caja": {
+        "x": 0.067,
+        "y": 0.66,
+        "w": 0.866,
+        "h": 0.14
+      },
+      "ajuste": "ancho",
+      "alinear": "centro"
+    },
+    {
+      "id": "sombra",
+      "tipo": "sombra",
+      "de": "grupo",
+      "modo": "proyectada",
+      "color": "#5A3608",
+      "desenfoque": 30,
+      "desplazamiento": {
+        "x": 14,
+        "y": 22
+      },
+      "opacidad": 0.35
+    },
+    {
+      "id": "grupo",
+      "tipo": "recorte",
+      "activo": "foto",
+      "escala": {
+        "anchoSujeto": 0.8
+      },
+      "ancla": {
+        "caja": {
+          "x": 0,
+          "y": -0.07,
+          "w": 1,
+          "h": 1
+        },
+        "alinear": "centro"
+      },
+      "contraerBorde": 1,
+      "bordeSuave": 1
+    },
+    {
+      "id": "rotulo",
+      "tipo": "texto",
+      "texto": "@rotulo",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.085,
+        "w": 0.866,
+        "h": 0.03
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "centro"
+    },
+    {
+      "id": "sello",
+      "tipo": "circulo-texto",
+      "texto": "@sello",
+      "estilo": "sello",
+      "centro": {
+        "x": 0.815,
+        "y": 0.855
+      },
+      "radio": 0.085,
+      "tamano": 34,
+      "giro": 0
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "script",
+      "caja": {
+        "x": 0.067,
+        "y": 0.83,
+        "w": 0.5,
+        "h": 0.05
+      },
+      "ajuste": "alto",
+      "alinear": "izquierda"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "detras",
+      "texto": "palabra",
+      "sujeto": "grupo",
+      "cobertura": [
+        0.1,
+        0.2
+      ],
+      "medida": "media",
+      "zona": {
+        "desde": 0.6,
+        "hasta": 0.8
+      }
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "rotulo",
+        "script"
+      ],
+      "sujeto": "grupo",
+      "maximo": 0.02
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "rotulo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "script",
+      "ratio": 1.5
+    }
+  ]
+}

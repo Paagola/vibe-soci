@@ -1,0 +1,57 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Welcome to Fauget Cafe»",
+  "familia": "F4",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "macro oscura a sangre de un cóctel (romero, naranja, púa con joya)",
+    "el nombre del local en serif de florituras crema, grande abajo a la derecha",
+    "frase arriba a la izquierda",
+    "monograma",
+    "contacto"
+  ],
+  "reticula": "Titular abajo a la derecha; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "serif de florituras",
+      "escala": 14
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#0D0808",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#56382A",
+      "rol": "marrón"
+    },
+    {
+      "hex": "#D8D5C4",
+      "rol": "texto crema"
+    }
+  ],
+  "foto": "Macro low-key con poca profundidad de campo",
+  "recursos": [
+    {
+      "recurso": "monograma",
+      "funcion": "serie con el post-20"
+    }
+  ],
+  "lectura": [
+    "el vaso",
+    "el nombre",
+    "la frase"
+  ],
+  "porQueFunciona": "El nombre del local como titular sobre una macro.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

@@ -1,0 +1,71 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«HIGH STEAKS»",
+  "familia": "F4",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO",
+    "TITULAR_EN_EL_AIRE"
+  ],
+  "capas": [
+    "azul noche liso",
+    "cuenco en ¾ (≈ 30°) sobre madera en la mitad baja; cuchillo en diagonal",
+    "«Dishes at» script + «HIGH STEAKS» didona condensada menta",
+    "filete vertical",
+    "«THAT ARE WORTH YOUR MONEY» en versalitas"
+  ],
+  "reticula": "Titular en el tercio superior izquierdo; el filete separa dos columnas; margen ≈ 10 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "didona condensada ligera",
+      "escala": 8
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script fina",
+      "escala": 4
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco en versalitas",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#192129",
+      "rol": "fondo azul noche"
+    },
+    {
+      "hex": "#BDEDEA",
+      "rol": "titular menta"
+    },
+    {
+      "hex": "#CA652A",
+      "rol": "cálidos del plato"
+    },
+    {
+      "hex": "#5A503D",
+      "rol": "madera"
+    }
+  ],
+  "foto": "Low-key con luz lateral, plato con aire arriba",
+  "recursos": [
+    {
+      "recurso": "filete vertical",
+      "funcion": "separa el juego de palabras de la explicación"
+    },
+    {
+      "recurso": "cuchillo",
+      "funcion": "guía la vista"
+    }
+  ],
+  "lectura": [
+    "HIGH STEAKS",
+    "el cuenco",
+    "worth your money"
+  ],
+  "porQueFunciona": "Juego de palabras, titular en el aire oscuro y plato entero reconocible.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

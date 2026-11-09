@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-tres-locales/recetas/candamil.json",
+  "prompt": {
+    "archivo": "proyectos/posts-tres-locales/paquetes/CANDAMIL/prompt.txt",
+    "sha256": "042e97b5dde315e4940c75bd8bd869bd36ad55971b86a25edce4267dc93dc53e"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "candamil-web-merluza",
+      "sha256": "ce98ee78dfde8a6863abc85fe8143d7c83ce14566dd5ab1d08445e611060246f"
+    }
+  ]
+}

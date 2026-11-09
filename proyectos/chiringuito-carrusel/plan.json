@@ -1,0 +1,22 @@
+{
+  "nota": "Carrusel continuo de un chiringuito de playa. Fotos generadas solo con texto (Higgsfield, 3 × 2 créditos): pieza de prueba. Faltan los datos del local (nombre, playa, horario) y sus platos reales.",
+  "local": "chiringuito-prueba",
+  "marca": "../../marcas/chiringuito-prueba/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/1.json"
+    },
+    {
+      "intencion": "intenciones/2.json"
+    },
+    {
+      "intencion": "intenciones/3.json"
+    },
+    {
+      "intencion": "intenciones/4.json"
+    },
+    {
+      "intencion": "intenciones/5.json"
+    }
+  ]
+}

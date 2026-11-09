@@ -1,0 +1,16 @@
+{
+  "nota": "Benchmark F1.6 · vía B: la foto nueva sin texto de cada receta, compuesta con el compositor.",
+  "local": "asador-etxebarri",
+  "marca": "../../marcas/asador-etxebarri/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/b5-f1.json"
+    },
+    {
+      "intencion": "intenciones/b8-f1.json"
+    },
+    {
+      "intencion": "intenciones/b6-f4.json"
+    }
+  ]
+}

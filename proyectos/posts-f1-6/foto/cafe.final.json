@@ -1,0 +1,42 @@
+{
+  "deDirector": "proyectos/posts-f1-6/foto/cafe.json",
+  "correcciones": [
+    {
+      "campo": "elementos",
+      "motivo": "detallar el latte art de cada taza y la marca de las tazas; la servilleta, sin su logotipo (sería texto)",
+      "valor": "three artisan ceramic cups in speckled white clay with a pale blue-green rim and a small stamped triangle mark, a fern rosetta latte art in the large front cup, a wave tulip in the second large cup and a small heart swirl in the small espresso cup, a light-coloured rectangular wooden tray with rounded corners, three silver spoons, one folded light brown paper napkin, all on a dark wooden table"
+    },
+    {
+      "campo": "ideaGrafica",
+      "motivo": "adaptar a la referencia (F10): el texto seguirá el borde de la taza grande, así que necesita un anillo libre alrededor",
+      "valor": "the large fern cup slightly right of centre with a clear, empty ring of dark wood around it, left clean so a circle of text can follow its rim later, the tray entering diagonally from the lower left with the other two cups, the spoons along the left edge, the napkin cut by the lower-right corner"
+    },
+    {
+      "campo": "luz",
+      "motivo": "dar la dirección (la luz cenital desde arriba aplana)",
+      "valor": "Soft daylight from a large window on the left, short soft shadows falling to the right, the micro-foam and the ceramic glaze catching the light"
+    },
+    {
+      "campo": "colorDominante",
+      "motivo": "un color dominante",
+      "valor": "the cream of the milk foam and the pale blue-green rims against the dark wood the only bright accents"
+    }
+  ],
+  "huecos": {
+    "plato": "specialty coffees with latte art",
+    "origen": "from a cafe specializing in craft ceramic cups",
+    "elementos": "three artisan ceramic cups in speckled white clay with a pale blue-green rim and a small stamped triangle mark, a fern rosetta latte art in the large front cup, a wave tulip in the second large cup and a small heart swirl in the small espresso cup, a light-coloured rectangular wooden tray with rounded corners, three silver spoons, one folded light brown paper napkin, all on a dark wooden table",
+    "recuento": "Exactly three cups, three coffees, three spoons, one tray, one napkin.",
+    "camara": {
+      "anguloGrados": 90,
+      "descripcion": "a striking top-down (90 degrees) view",
+      "objetivoMm": 50,
+      "apertura": 2.8
+    },
+    "ideaGrafica": "the large fern cup slightly right of centre with a clear, empty ring of dark wood around it, left clean so a circle of text can follow its rim later, the tray entering diagonally from the lower left with the other two cups, the spoons along the left edge, the napkin cut by the lower-right corner",
+    "luz": "Soft daylight from a large window on the left, short soft shadows falling to the right, the micro-foam and the ceramic glaze catching the light",
+    "colorDominante": "the cream of the milk foam and the pale blue-green rims against the dark wood the only bright accents"
+  },
+  "prompt": "@image1 is a real photo of specialty coffees with latte art from a cafe specializing in craft ceramic cups. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: three artisan ceramic cups in speckled white clay with a pale blue-green rim and a small stamped triangle mark, a fern rosetta latte art in the large front cup, a wave tulip in the second large cup and a small heart swirl in the small espresso cup, a light-coloured rectangular wooden tray with rounded corners, three silver spoons, one folded light brown paper napkin, all on a dark wooden table. Exactly three cups, three coffees, three spoons, one tray, one napkin. Nothing else added. New composition by a professional food photographer: a striking top-down (90 degrees) view, 50 mm lens at f/2.8, the large fern cup slightly right of centre with a clear, empty ring of dark wood around it, left clean so a circle of text can follow its rim later, the tray entering diagonally from the lower left with the other two cups, the spoons along the left edge, the napkin cut by the lower-right corner. Soft daylight from a large window on the left, short soft shadows falling to the right, the micro-foam and the ceramic glaze catching the light, the cream of the milk foam and the pale blue-green rims against the dark wood the only bright accents. Photographic realism, no text.",
+  "problemas": []
+}

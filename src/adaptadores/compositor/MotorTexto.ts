@@ -110,13 +110,14 @@ export class MotorTexto {
   }
 
   /** Texto repartido alrededor de un círculo completo, con las letras mirando hacia fuera. */
-  trazarCircular(estilo: Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking'>, texto: string, tamano: number, cx: number, cy: number, radio: number, giroGrados: number): string {
+  /** Letras sobre una circunferencia desde `giroGrados` (0 = arriba). Ocupan `arcoGrados` (360 = la vuelta entera). */
+  trazarCircular(estilo: Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking'>, texto: string, tamano: number, cx: number, cy: number, radio: number, giroGrados: number, arcoGrados = 360): string {
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const s = tamano / fuente.unitsPerEm;
     const linea = fuente.layout(texto);
     const avances = linea.positions.map((p) => (p.xAdvance + estilo.tracking * fuente.unitsPerEm) * s);
     const total = avances.reduce((a, b) => a + b, 0);
-    const escala = (2 * Math.PI * radio) / total;
+    const escala = ((arcoGrados / 360) * 2 * Math.PI * radio) / total;
     let arco = 0;
     const trazos: string[] = [];
     linea.glyphs.forEach((glifo, i) => {

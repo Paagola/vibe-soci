@@ -1,0 +1,91 @@
+{
+  "fecha": "2026-11-07T18:57:54.172Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "datos/piezas/2026-11-03-salmon-glaseado-sobre-arroz-negro/fotos/01-plato.png",
+  "plato": "salmón glaseado sobre arroz negro, puré de naranja, aceite verde y brotes, plato blanco hondo",
+  "lado": {
+    "ancho": 1920,
+    "alto": 1279
+  },
+  "referencia": null,
+  "intentos": [
+    {
+      "problemas": [
+        "La cámara nueva (15°) está a 30° de la foto subida (45°): tiene que quedar a más de 30° (por ejemplo, rasante o cenital si la original es un ¾ alto)."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 50,
+      "encuadre": "Plano medio cenital-tres cuartos (50°), plato completo centrado.",
+      "luz": "Luz frontal suave de estudio con sombras muy tenues y fondo negro plano.",
+      "elementos": [
+        {
+          "nombre": "Lomo de salmón glaseado",
+          "estado": "Dorado, sellado en superficie y jugoso",
+          "recuento": 1
+        },
+        {
+          "nombre": "Cama de arroz negro",
+          "estado": "Meloso y brillante",
+          "recuento": null
+        },
+        {
+          "nombre": "Quenelle de puré de naranja",
+          "estado": "Texturizado con especias",
+          "recuento": 1
+        },
+        {
+          "nombre": "Aceite verde",
+          "estado": "Goteado brillante",
+          "recuento": null
+        },
+        {
+          "nombre": "Brotes verdes",
+          "estado": "Frescos",
+          "recuento": null
+        },
+        {
+          "nombre": "Plato hondo de cerámica blanca",
+          "estado": "Borde bajo",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Composición centrada típica de aficionado",
+        "Iluminación plana sin relieve ni sombras dramáticas"
+      ],
+      "utilizable": true,
+      "motivo": "Sirve como lista precisa de ingredientes y vajilla."
+    },
+    "huecos": {
+      "plato": "glazed salmon fillet over black rice with orange purée",
+      "origen": "at a modern Mediterranean bistro",
+      "elementos": "a seared golden-glazed salmon fillet, glossy black rice bed, one quenelle of orange purée, drops of vibrant green oil, fresh microgreens, matte white shallow ceramic bowl",
+      "recuento": "Exactly one salmon fillet, one purée quenelle, and one bowl.",
+      "camara": {
+        "anguloGrados": 10,
+        "descripcion": "dramatic low-angle side macro view at 10 degrees just above table surface",
+        "objetivoMm": 90,
+        "apertura": 2.8
+      },
+      "ideaGrafica": "salmon crust entering tightly from lower-right, bowl edge bleeding out off-frame, leaving upper 40% clean dark backdrop for text layout",
+      "luz": "hard directional side flash grazing the salmon crust and oil drops, creating sharp specular highlights",
+      "colorDominante": "low-key black backdrop with warm amber and emerald green accent highlights"
+    },
+    "decisiones": [
+      "Cambio de ángulo a 10° (diferencia de 40° respecto a los 50° originales) para romper la vista plana y dar dramatismo editorial.",
+      "Familia visual Low-Key (Familia b) con flash directo rasante para resaltar texturas del glaseado y aceites.",
+      "Composición descentrada dejando espacio superior libre para jerarquía de texto según normas de lectura móvil."
+    ]
+  },
+  "prompt": "@image1 is a real photo of glazed salmon fillet over black rice with orange purée at a modern Mediterranean bistro. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a seared golden-glazed salmon fillet, glossy black rice bed, one quenelle of orange purée, drops of vibrant green oil, fresh microgreens, matte white shallow ceramic bowl. Exactly one salmon fillet, one purée quenelle, and one bowl. Nothing else added. New composition by a professional food photographer: dramatic low-angle side macro view at 10 degrees just above table surface, 90 mm lens at f/2.8, salmon crust entering tightly from lower-right, bowl edge bleeding out off-frame, leaving upper 40% clean dark backdrop for text layout. hard directional side flash grazing the salmon crust and oil drops, creating sharp specular highlights, low-key black backdrop with warm amber and emerald green accent highlights. Photographic realism, no text.",
+  "problemasFinales": []
+}

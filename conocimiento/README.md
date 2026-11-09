@@ -10,8 +10,8 @@ Cada documento dice en su cabecera en qué **fase** del trabajo sirve. El direct
 | Fase | Qué se decide | Documentos |
 |---|---|---|
 | brief | Qué se sabe del local y qué se puede decir | `oficios/texto-publicitario`, `oficios/direccion-de-arte` |
-| concepto | La idea, la dirección y la narrativa | `oficios/direccion-de-arte`, `principios`, `antipatrones`, `referencias/*` |
-| fotografia | Qué foto necesita la idea y cómo conseguirla sin alterar el plato | `oficios/fotografia-gastronomica` |
+| concepto | La referencia (obligatoria en las 5 primeras piezas), la idea, la dirección y la narrativa | `oficios/direccion-de-arte`, `referencias/familias`, `ejemplos`, `principios`, `antipatrones`, `referencias/*` |
+| fotografia | La foto **nueva** que necesita la idea (otro ángulo, luz y encuadre; los mismos elementos) | `oficios/fotografia-gastronomica`, `ejemplos` |
 | composicion | Cómo se ejecuta la idea con el compositor | `oficios/composicion-y-tipografia`, `principios`, `antipatrones` |
 | texto | Cada palabra de la pieza y del pie, con su fuente | `oficios/texto-publicitario` |
 | revision | Mirar el render, criticarlo y corregir | `oficios/revision-visual`, `rubrica`, `antipatrones` |
@@ -23,7 +23,9 @@ Cada documento dice en su cabecera en qué **fase** del trabajo sirve. El direct
 - `principios.md`: por qué una composición funciona. Cada principio dice si es una **regla comprobable** (con su fuente) o un **criterio que se pondera**.
 - `antipatrones.md`: lo que delata una pieza genérica de IA o de plantilla, y cómo se arregla.
 - `rubrica.md`: cómo se juzga una diapositiva y un carrusel. Hay dos filtros previos (veracidad y fidelidad) y siete criterios que se explican con palabras, no solo con un número.
-- `referencias/`: fichas de referencias públicas. Cada ficha dice qué aporta, qué recurso concreto se puede extraer y qué **no** se copia.
+- `ejemplos.md`: lo que gustó y lo que no en las piezas del usuario (`biblioteca/ejemplos/`), con la lección de cada una.
+- `referencias/familias.md` y `referencias/familias.json`: las 10 familias de los 29 posts de referencia del usuario. `referencias/fichas/post-NN.json`: la ficha estructurada de cada post (esquema `referencia/ficha@1`).
+- `referencias/*.md`: fichas de referencias públicas (Think Small, Powers of Ten…). Cada una dice qué aporta, qué recurso se extrae y qué **no** se copia.
 - `observaciones/`: lo aprendido de las valoraciones, con su evidencia y su estado (hipótesis, observada, confirmada). Lo escriben las valoraciones, no la intuición.
 
 ## Dónde está lo demás

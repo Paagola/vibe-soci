@@ -1,0 +1,92 @@
+{
+  "fecha": "2026-11-08T22:10:20.940Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "proyectos/posts-tres-locales/fotos-web/habas-lo-gueno.jpg",
+  "plato": "Habas con jamón en cazuela de barro, tapa de Mesón Lo Güeno, mesón de tapas del centro de Málaga.",
+  "lado": {
+    "ancho": 2592,
+    "alto": 1728
+  },
+  "referencia": "post-05",
+  "intentos": [
+    {
+      "problemas": [
+        "La cámara nueva (15°) está a 20° de la foto subida (35°): tiene que quedar a más de 30° (por ejemplo, rasante o cenital si la original es un ¾ alto)."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 35,
+      "encuadre": "Plano medio en ángulo de 35 grados (tres cuartos alto), mostrando una cazuela de barro rellena de habas con jamón sobre un plato blanco, con una copa de vino desenfocada en la esquina superior derecha.",
+      "luz": "Luz ambiental de interior de local, cálida, algo plana y con reflejos puntuales en el aceite de las habas y en el borde de la cazuela.",
+      "elementos": [
+        {
+          "nombre": "Habas baby salteadas",
+          "estado": "Tiernas, verdes, brillantes con película de aceite de oliva",
+          "recuento": null
+        },
+        {
+          "nombre": "Tacos de jamón serrano",
+          "estado": "Salteados, rojizos con zonas de grasa rosada",
+          "recuento": null
+        },
+        {
+          "nombre": "Cebolla pochada",
+          "estado": "Translúcida, picada fina",
+          "recuento": null
+        },
+        {
+          "nombre": "Cazuela de barro",
+          "estado": "Glaseada, marrón terracota con asas laterales",
+          "recuento": 1
+        },
+        {
+          "nombre": "Plato inferior de loza blanca",
+          "estado": "Liso, sosteniendo la cazuela",
+          "recuento": 1
+        },
+        {
+          "nombre": "Copa de vino/vermut",
+          "estado": "Desenfocada en el fondo",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Ángulo casero y poco dramático",
+        "Fondo abarrotado con copa desenfocada y barra de bar que distrae",
+        "Iluminación plana que no resalta la textura ni el brillo apetitoso del salteado"
+      ],
+      "utilizable": true,
+      "motivo": "Sirve como lista exacta de ingredientes y recipientes reales del plato para reconstruir la escena desde cero."
+    },
+    "huecos": {
+      "plato": "sautéed baby broad beans with diced cured Serrano ham (habas con jamón)",
+      "origen": "served in a traditional Spanish tapas bar",
+      "elementos": "tender green baby broad beans, small cubes of seared Serrano ham, translucent diced onions, all glossy with extra virgin olive oil, served in the exact glazed brown terracotta dish (cazuela de barro) resting on a plain white porcelain underplate",
+      "recuento": "Exactly one glazed terracotta dish filled with broad beans and ham.",
+      "camara": {
+        "anguloGrados": 75,
+        "descripcion": "a steep top-down angled shot at 75 degrees above the table, capturing the entire round terracotta dish and its white underplate isolated cleanly",
+        "objetivoMm": 90,
+        "apertura": 5.6
+      },
+      "ideaGrafica": "isolated cut-out style on a seamless flat warm cream #EFE9DC background; the terracotta dish is positioned large in the lower 65% of the frame, slightly tilted, leaving the top 35% completely clear for giant red headlines and room on the top-right for a price starburst seal, following Familia A (recorte sobre color plano)",
+      "luz": "bright studio lighting with a soft direct flash from above-left, creating clean highlights on the oil-dusted beans and a soft, realistic contact shadow under the plate against the cream background",
+      "colorDominante": "flat warm cream #EFE9DC background, with the rich terracotta brown and olive green of the food as the main vibrant contrast"
+    },
+    "decisiones": [
+      "Familia visual 'a. Recorte sobre color plano' elegida directamente de la referencia post-05: aislando el plato con la cazuela real sobre un fondo crema plano (#EFE9DC) y sombra de contacto suave.",
+      "Cambio de ángulo de cámara a 75° (picado alto cenital), manteniendo una diferencia de 40° respecto a la foto original (35°), lo que genera una perspectiva completamente nueva y profesional sin repetir el encuadre del cliente.",
+      "Composición pensada para el montaje tipográfico posterior: el producto ocupa la zona inferior (65%), dejando espacio limpio en el tercio superior para el titular gigante en rojo y la píldora informativa, más hueco para el sello dentado de precio pisando la cazuela."
+    ]
+  },
+  "prompt": "@image1 is a real photo of sautéed baby broad beans with diced cured Serrano ham (habas con jamón) served in a traditional Spanish tapas bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: tender green baby broad beans, small cubes of seared Serrano ham, translucent diced onions, all glossy with extra virgin olive oil, served in the exact glazed brown terracotta dish (cazuela de barro) resting on a plain white porcelain underplate. Exactly one glazed terracotta dish filled with broad beans and ham. Nothing else added. New composition by a professional food photographer: a steep top-down angled shot at 75 degrees above the table, capturing the entire round terracotta dish and its white underplate isolated cleanly, 90 mm lens at f/5.6, isolated cut-out style on a seamless flat warm cream #EFE9DC background; the terracotta dish is positioned large in the lower 65% of the frame, slightly tilted, leaving the top 35% completely clear for giant red headlines and room on the top-right for a price starburst seal, following Familia A (recorte sobre color plano). Bright studio lighting with a soft direct flash from above-left, creating clean highlights on the oil-dusted beans and a soft, realistic contact shadow under the plate against the cream background, flat warm cream #EFE9DC background, with the rich terracotta brown and olive green of the food as the main vibrant contrast. Photographic realism, no text.",
+  "problemasFinales": []
+}

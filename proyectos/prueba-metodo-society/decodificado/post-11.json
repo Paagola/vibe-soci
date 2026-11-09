@@ -1,0 +1,58 @@
+{
+  "esquema": "referencia/decodificada@1",
+  "fuente": "biblioteca/referencias/post-11.jpg",
+  "sinTexto": "proyectos/prueba-metodo-society/refs/post-11-sin-texto.jpg",
+  "metodo": "DirectorIA (repositorio Society): JSON Decoded Brief de la FOTO, campo a campo, en inglés; la maqueta va aparte",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07",
+  "medicion": {
+    "nota": "Protocolo de directoria/hosteleria/02 §7-§8, sobre la versión sin texto, a 180 × 240",
+    "luminanciaMediana": 38,
+    "p5": 11,
+    "p95": 141,
+    "sombrasMenos40": 0.57,
+    "rojoAzul": 1.31,
+    "saturacion": 0.43,
+    "fondoTercioSuperior": 36
+  },
+  "foto": {
+    "subject_identity": "A heaped salad of tomato wedges, yellow and orange pepper strips, thin red onion rings and two whole basil leaves on top, in a shallow round stoneware bowl about 20 cm across with a black reactive glaze speckled blue-grey",
+    "realism": "Real editorial food photograph in natural light, not a render",
+    "environment": "The bowl sits on a worn dark oak board with visible grain, fine knife marks and scratches. A chef's knife with a worn wooden handle lies diagonally in the bottom-right corner, cut off by the frame. About 1.5 m behind, a plain matt slate-blue painted wall; a slightly darker horizontal band at the height of the bowl rim marks the far edge of the table",
+    "lighting": "One large soft window light from behind and to the left of the bowl (about 10 o'clock, 45 degrees behind): bright highlights on the tops of the basil leaves and on the left rim of the bowl, a soft sheen on the board behind the bowl, the right side of the bowl falling into shadow. No fill from the front. The wall receives only the spill: brighter behind the bowl, darker towards the edges",
+    "camera": {
+      "lens_mm": 90,
+      "aperture_f": 4,
+      "iso": 200,
+      "shutter": "1/125s",
+      "lens_to_subject_m": 0.9,
+      "subject_to_bg_m": 1.5,
+      "cct_k": 5200,
+      "visible_result": "The whole bowl and the salad sharp, the knife handle slightly soft, the wall a smooth out-of-focus gradient"
+    },
+    "composition": "Vertical 4:5. Camera about 20 degrees above the table (the rim of the bowl reads as a flat ellipse, about one third as tall as it is wide). The bowl centred, slightly left, in the lower 55% of the frame; the top of the basil at about 40% from the top. The upper 40% is empty wall for the headline. The knife enters from the bottom-right corner at about 20 degrees and points at the bowl",
+    "imperfections": "Irregular onion rings, a torn edge on one tomato wedge, a fleck of herb on the bowl rim, knife scratches on the board to the left of the bowl, uneven glaze speckles",
+    "palette": "Vivid food colours (tomato red, pepper yellow-orange, basil green, magenta onion) against a cool, desaturated slate-blue wall and a warm brown board",
+    "mood": "Calm, honest bistro",
+    "negatives": "no text, no logos"
+  },
+  "queSeToma": [
+    "La cámara baja: unos 20° sobre la mesa, 90 mm, f/4. Es lo contrario del ¾ alto de la foto del hostelero",
+    "El plato en la mitad baja y el 40 % superior libre para el titular",
+    "La luz: una sola fuente grande y suave detrás a la izquierda, que recorta los bordes, y el lado derecho en sombra",
+    "El fondo que se lee: pared pizarra a unos 1,5 m (luminancia ≈ 36), no un vacío negro",
+    "La superficie de madera oscura gastada (el mantel y el fondo son libres, decisión del 07/11)",
+    "La diagonal del cuchillo, pero la hacen las antenas de la gamba: no se añade ningún objeto"
+  ],
+  "queNoSeCopia": [
+    "El cuenco, la ensalada y el cuchillo",
+    "Los textos, la tipografía y el filete (los pone el compositor, aparte)",
+    "Cualquier dato del local de la referencia"
+  ],
+  "porQueFallabaNuestraVersion": [
+    "La ficha guardaba la foto en una línea («Low-key con luz lateral, plato con aire arriba»)",
+    "El prompt pedía «seamless flat charcoal backdrop #111111»: un vacío. La referencia tiene pared, mesa y profundidad",
+    "Medido: fondo 7 frente a 36 y saturación 0,22 frente a 0,43 (b3 frente a post-11)",
+    "La cámara pedida (¾ a 25°) quedaba cerca de la foto original (¾ a 45°) y el modelo volvió a ella"
+  ]
+}

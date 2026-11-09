@@ -1,0 +1,64 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SEAFOOD Paella»",
+  "familia": "F7",
+  "mecanismos": [
+    "PAPEL_RASGADO",
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "macro de paella a sangre arriba (≈ 35 %) y abajo (≈ 30 %)",
+    "franja central de papel blanco rasgado y arrugado",
+    "marca y subtítulo",
+    "«SEAFOOD» condensada azul + «Paella» pincel naranja cruzando",
+    "cuerpo",
+    "etiqueta en otro trozo de papel"
+  ],
+  "reticula": "Todo centrado en la franja; margen ≈ 9 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "condensada heavy",
+      "escala": 9
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script de pincel",
+      "escala": 9
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "condensada",
+      "escala": 3
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#D06312",
+      "rol": "el arroz"
+    },
+    {
+      "hex": "#F5F5F7",
+      "rol": "papel"
+    },
+    {
+      "hex": "#5E8DDE",
+      "rol": "azul complementario"
+    }
+  ],
+  "foto": "Macro a sangre con luz de día",
+  "recursos": [
+    {
+      "recurso": "papel rasgado",
+      "funcion": "zona limpia para el texto sobre una textura cargada"
+    }
+  ],
+  "lectura": [
+    "SEAFOOD Paella",
+    "la macro",
+    "el subtítulo"
+  ],
+  "porQueFunciona": "El texto tiene su zona propia y el azul complementa el naranja.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

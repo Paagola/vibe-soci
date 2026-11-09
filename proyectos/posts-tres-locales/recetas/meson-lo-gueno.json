@@ -1,0 +1,27 @@
+{
+  "id": "meson-lo-gueno-post-foto",
+  "local": "meson-lo-gueno",
+  "descripcion": "Foto nueva para el post de post-05: casi cenital (75°) sobre fondo liso para recortar; familia F3 (crema, titular rojo y tira de cuadros). Foto de partida: Wikimedia Commons (CC BY-SA 2.0), no del dueño.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/posts-tres-locales/foto/meson-lo-gueno.txt",
+  "referencias": [
+    {
+      "activo": "lo-gueno-web-habas",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: los elementos y su recuento.",
+        "noSeCopia": "El encuadre, la luz, el fondo ni el ángulo de la foto subida."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, cámara a más de 30° de la foto subida).",
+    "Superficie y fondo libres (decisión del 07/11).",
+    "Foto de partida de terceros (Wikimedia Commons, CC BY-SA 2.0): pieza de prueba, no publicable."
+  ]
+}

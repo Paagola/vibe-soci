@@ -1,0 +1,19 @@
+{
+  "id": "etx-bench-b8-b-f1-ms2-degradada",
+  "local": "asador-etxebarri",
+  "descripcion": "Benchmark F1.6 · Vía B · F1 · Marketing Studio 2.0 · foto DEGRADADA (pareja de b5).",
+  "modelo": "marketing-studio/image",
+  "parametros": {
+    "resolution": "2k",
+    "aspect_ratio": "3:4",
+    "quality": "high",
+    "enhance_prompt": false
+  },
+  "promptArchivo": "proyectos/benchmark-f1-6/prompts/B-F1.final.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba-degradada",
+      "ladoMaximo": 3072
+    }
+  ]
+}

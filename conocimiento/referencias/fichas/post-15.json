@@ -1,0 +1,63 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SAVOR THE ART OF PASTA»",
+  "familia": "F6",
+  "mecanismos": [
+    "ENTRA_POR_LOS_BORDES",
+    "CONTADOR_O_NUMERACION"
+  ],
+  "capas": [
+    "blanco",
+    "tenedor con pasta colgando, recortado, entra por la esquina superior derecha",
+    "tres etiquetas pequeñas arriba",
+    "«Crave» script dentro de una elipse de línea",
+    "titular suizo apretado en tres líneas abajo a la derecha",
+    "«(01)»"
+  ],
+  "reticula": "Retícula suiza; titular alineado a la derecha; margen ≈ 6 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "neogrotesca suiza apretada",
+      "escala": 9
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "etiquetas",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#FFFFFF",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#302C2A",
+      "rol": "texto"
+    },
+    {
+      "hex": "#E0991A",
+      "rol": "la pasta, único color"
+    }
+  ],
+  "foto": "Recorte en suspensión: el producto cuelga",
+  "recursos": [
+    {
+      "recurso": "(01)",
+      "funcion": "serie"
+    },
+    {
+      "recurso": "elipse con script",
+      "funcion": "sello de marca"
+    }
+  ],
+  "lectura": [
+    "la pasta colgando",
+    "el titular",
+    "las etiquetas"
+  ],
+  "porQueFunciona": "Retícula de revista y aire.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

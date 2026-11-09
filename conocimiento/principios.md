@@ -39,7 +39,9 @@ La marca está por encima de los criterios, y lo que pide el dueño en una pieza
 13. **Una foto necesita una luz coherente.** Si en una misma imagen hay dos luces distintas (un producto pegado de otra foto), el ojo lo detecta aunque no sepa decir por qué. *Criterio; comprobado en la F1.5 con el híbrido descartado.*
 14. **El negro de la marca es el negro de las fotos.** El punto negro de cada foto se lleva al negro de la marca para que fondo y foto no hagan escalón. *Criterio (F1.5).*
 15. **No toda foto necesita un fondo artificial.** La mesa real del local también cuenta algo. *Criterio.*
-16. **El producto real manda.** La fidelidad del plato no se negocia sin el dueño. *Regla (decisión del 06/11/2026).*
+16. **Los elementos del plato mandan; la foto no.** Se conservan qué es, cuántas piezas hay, la anatomía, los ingredientes y la vajilla. Cambian la cámara, la luz, el fondo y el encuadre (FLEXIBLE por defecto; ESTRICTA si el local lo pide). *Regla (decisión del 07/11/2026, que sustituye a la del 06/11).*
+16b. **Foto nueva, no foto mejorada.** Cada pieza (y cada diapositiva) es una toma nueva del plato, nunca la foto del hostelero retocada, recortada o ampliada. *Regla (`ejemplos/01`; valoración del 07/11/2026).*
+16c. **Los mecanismos aprobados se adaptan, no se descartan.** Lo que no se repite es la pieza entera. *Regla (valoración del 07/11/2026).*
 
 ## Marca
 
@@ -55,7 +57,7 @@ La marca está por encima de los criterios, y lo que pide el dueño en una pieza
 
 ## Texto
 
-21. **Las mínimas palabras.** Cada dato una vez. La explicación va al pie. *Criterio (design-agent).*
+21. **Tres niveles como máximo.** Titular, apoyo y firma o dato real. Cada dato una vez; la explicación va al pie. *Criterio (las 29 referencias del usuario; design-agent).*
 22. **La puntuación también narra.** Una coma pide seguir y un punto cierra. *Criterio (F1.5).*
 
 ## Fuentes

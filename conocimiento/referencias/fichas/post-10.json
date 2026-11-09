@@ -1,0 +1,57 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«BRUNCH TIME!»",
+  "familia": "F10",
+  "mecanismos": [
+    "TEXTO_CURVO",
+    "ACCION_CON_MANO"
+  ],
+  "capas": [
+    "cenital a sangre de una bandeja de mezze sobre gris",
+    "mano que sirve",
+    "«BRUNCH» y «TIME!» en serif ancha blanca en arco siguiendo el borde de la bandeja",
+    "handle vertical"
+  ],
+  "reticula": "Circular; la bandeja ocupa ≈ 90 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "serif romana ancha bold",
+      "escala": 9
+    },
+    {
+      "rol": "MARCA",
+      "clasificacion": "mínima",
+      "escala": 1.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#494749",
+      "rol": "pizarra"
+    },
+    {
+      "hex": "#C9BFB4",
+      "rol": "plata de la bandeja"
+    },
+    {
+      "hex": "#D79321",
+      "rol": "amarillos de los cuencos"
+    }
+  ],
+  "foto": "Cenital con luz de día dura y una acción",
+  "recursos": [
+    {
+      "recurso": "texto en arco",
+      "funcion": "la forma del plato dicta la tipografía"
+    }
+  ],
+  "lectura": [
+    "la bandeja",
+    "BRUNCH TIME!",
+    "la mano"
+  ],
+  "porQueFunciona": "La forma del plato manda la tipografía y no tapa nada.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

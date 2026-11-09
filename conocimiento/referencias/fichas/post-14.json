@@ -1,0 +1,62 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Pasta DELLA Casa»",
+  "familia": "F4",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "bodegón oscuro a sangre (tomates, ajos, queso, tabla)",
+    "plato de pasta en ¾ abajo",
+    "logotipo tipográfico: «Pasta» y «Casa» script, «DELLA» serif muy pesada, crema",
+    "versalitas",
+    "cita y handle"
+  ],
+  "reticula": "Bloque centrado arriba; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "serif negra",
+      "escala": 10
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script",
+      "escala": 9
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "versalitas",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#080804",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#53341E",
+      "rol": "madera"
+    },
+    {
+      "hex": "#EFE7CF",
+      "rol": "texto crema"
+    }
+  ],
+  "foto": "Bodegón cálido low-key con atrezo de ingredientes",
+  "recursos": [
+    {
+      "recurso": "logotipo tipográfico",
+      "funcion": "el texto es una sola forma"
+    }
+  ],
+  "lectura": [
+    "el bloque tipográfico",
+    "el plato",
+    "la cita"
+  ],
+  "porQueFunciona": "El texto es una sola forma y el plato tiene su espacio.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

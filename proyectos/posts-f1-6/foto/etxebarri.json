@@ -1,0 +1,73 @@
+{
+  "fecha": "2026-11-07T19:03:17.430Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "datos/locales/asador-etxebarri/activos/etx-real-gamba/original.png",
+  "plato": "Gamba roja de Palamós a la brasa de leña, solo con sal gruesa",
+  "lado": {
+    "ancho": 4043,
+    "alto": 2887
+  },
+  "referencia": "post-30",
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 45,
+      "encuadre": "Plano en tres cuartos (45°) desde arriba, mostrando dos gambas rojas sobre un plato rectangular de cristal al ácido transparente sobre mantel blanco.",
+      "luz": "Luz ambiente cenital suave de restaurante, plana y poco dramática, con reflejos difusos en el cristal.",
+      "elementos": [
+        {
+          "nombre": "gambas rojas de Palamós",
+          "estado": "enteras a la brasa, con tono rojo vivo, ligeras marcas de leña, cabezas intactas, largas antenas y escamas de sal gruesa en la cáscara",
+          "recuento": 2
+        },
+        {
+          "nombre": "plato de cristal",
+          "estado": "translucido al ácido, rectangular, esquinas redondeadas",
+          "recuento": 1
+        },
+        {
+          "nombre": "mantel",
+          "estado": "blanco, de tela lisa",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Ángulo genérico en 45° que no aprovecha la volumen de las cabezas y antenas",
+        "Iluminación plana sin luces rasantes para resaltar la sal gruesa y el brillo de la cáscara",
+        "Falta de ambiente dramático de asador de alta cocina"
+      ],
+      "utilizable": true,
+      "motivo": "Sirve perfectamente como inventario de elementos reales (dos gambas rojas enteras a la brasa con sal, plato de cristal translúcido y mantel blanco)."
+    },
+    "huecos": {
+      "plato": "grilled red prawns",
+      "origen": "from Palamós at a high-end Basque wood-fire grill restaurant",
+      "elementos": "two whole deep red grilled prawns with heads, long thin antennae and legs, glistening shells marked by light charcoal grilling, coarse salt flakes, resting on a square pale frosted glass plate on a white tablecloth",
+      "recuento": "Exactly two whole prawns with correct anatomy.",
+      "camara": {
+        "anguloGrados": 10,
+        "descripcion": "a dramatic table-level macro close-up at 10 degrees, bringing the lens right up to the heads of the prawns",
+        "objetivoMm": 100,
+        "apertura": 4
+      },
+      "ideaGrafica": "extreme macro framing inspired by editorial layout post-30, where the glossy, salt-dusted prawns fill the top two-thirds of the frame bleeding off the top and right edges, while their long antennae arch gracefully across the top, leaving a clean, dark low-key shadow in the lower third reserved for typography",
+      "luz": "low-key lighting with a single sharp back-side light from the upper right grazing the crisp shell texture, salt crystals and oil droplets while letting the lower background fall into near black",
+      "colorDominante": "intense deep red as the primary bold accent against dramatic dark low-key shadows"
+    },
+    "decisiones": [
+      "Fidelidad estricta al inventario (§1): se mantienen exactamente las dos gambas rojas enteras con antenas, la sal gruesa, el plato de cristal translúcido y el mantel de la foto original, sin añadir elementos ajenos.",
+      "Familia visual Low-key / Macro a sangre (§2b y §2d): se aplica la estructura del post-30, llevando las gambas a una macro nítida que ocupa los dos tercios superiores para crear impacto táctil con la sal y la textura a la brasa.",
+      "Cambio radical de cámara y luz (§1 y §10): se pasa de los 45° planos de la foto del usuario a un encuadre rasante de 10° con objetivo macro de 100 mm a f/4 y foco nítido en las cabezas, diferenciando claramente la nueva toma profesional de la foto de origen.",
+      "Espacio para la tipografía post-30 (§3 y §4): la luz rasante crea una zona de penumbra profunda en el tercio inferior del encuadre para albergar limpiamente el bloque tipográfico sin tapar el detalle del producto."
+    ]
+  },
+  "prompt": "@image1 is a real photo of grilled red prawns from Palamós at a high-end Basque wood-fire grill restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: two whole deep red grilled prawns with heads, long thin antennae and legs, glistening shells marked by light charcoal grilling, coarse salt flakes, resting on a square pale frosted glass plate on a white tablecloth. Exactly two whole prawns with correct anatomy. Nothing else added. New composition by a professional food photographer: a dramatic table-level macro close-up at 10 degrees, bringing the lens right up to the heads of the prawns, 100 mm lens at f/4, extreme macro framing inspired by editorial layout post-30, where the glossy, salt-dusted prawns fill the top two-thirds of the frame bleeding off the top and right edges, while their long antennae arch gracefully across the top, leaving a clean, dark low-key shadow in the lower third reserved for typography. Low-key lighting with a single sharp back-side light from the upper right grazing the crisp shell texture, salt crystals and oil droplets while letting the lower background fall into near black, intense deep red as the primary bold accent against dramatic dark low-key shadows. Photographic realism, no text.",
+  "problemasFinales": []
+}

@@ -32,9 +32,10 @@
       "id": "palabra-detras-no-por-defecto",
       "marca": "estudio",
       "aspecto": "IDEA",
-      "enunciado": "La palabra enorme detrás del producto tiene fuerza, pero el lenguaje visual no puede depender siempre de ella.",
+      "enunciado": "La palabra detrás del producto es un mecanismo aprobado: se adapta al producto de cada pieza. Lo que no se repite es la pieza entera.",
       "evidencias": [
-        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "disenos/f1/a-tres", "explicita": true, "motivo": { "aspecto": "IDEA", "juicio": "A_FAVOR", "detalle": "A tiene más fuerza, aunque tampoco quiero que dependamos siempre de colocar una palabra enorme detrás de un producto." } }
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "disenos/f1/a-tres", "explicita": true, "motivo": { "aspecto": "IDEA", "juicio": "A_FAVOR", "detalle": "A tiene más fuerza, aunque tampoco quiero que dependamos siempre de colocar una palabra enorme detrás de un producto." } },
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "proyectos/etxebarri-gamba-carrusel", "explicita": true, "motivo": { "aspecto": "IDEA", "juicio": "A_FAVOR", "detalle": "Los mecanismos aprobados no se descartan: se adaptan al producto de cada pieza. Lo que no se repite es la pieza entera (sobre el CONCEPTO de la F1.5, que descartó FUEGO detrás y la antena firma)." } }
       ]
     },
     {
@@ -44,6 +45,88 @@
       "enunciado": "Ni minimalista, ni elegante, ni editorial por defecto: la solución visual depende de la historia y del local.",
       "evidencias": [
         { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "brief/f1-5", "explicita": true, "motivo": { "aspecto": "PERSONALIZACION", "juicio": "A_FAVOR", "detalle": "No quiero que todas las publicaciones sean minimalistas, elegantes, editoriales o experimentales; quiero la solución adecuada para cada historia." } }
+      ]
+    },
+    {
+      "id": "foto-nueva-no-mejorada",
+      "marca": "estudio",
+      "aspecto": "FOTOGRAFIA",
+      "enunciado": "Cada pieza y cada diapositiva es una foto nueva del plato (otro ángulo, luz, óptica y encuadre); nunca la foto del hostelero mejorada, recortada o ampliada.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "proyectos/etxebarri-gamba-carrusel", "explicita": true, "motivo": { "aspecto": "FOTOGRAFIA", "juicio": "A_FAVOR", "detalle": "El carrusel de gambas repite el error de ejemplos/01: las 4 diapositivas son recortes de una foto y la 3 una ampliación con detalle inventado. No es mejorar la foto subida: es fotografiar de nuevo el mismo plato." } }
+      ]
+    },
+    {
+      "id": "fidelidad-flexible-por-defecto",
+      "marca": "estudio",
+      "aspecto": "FIDELIDAD",
+      "enunciado": "Fidelidad flexible por defecto: cambian cámara, luz, fondo, encuadre y colocación; se conservan los elementos (qué es, cuántas piezas, anatomía, ingredientes) y la vajilla.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "brief/f1-6", "explicita": true, "motivo": { "aspecto": "FIDELIDAD", "juicio": "A_FAVOR", "detalle": "Flexible en cámara, luz, fondo y encuadre; estricta en elementos. Sustituye a la decisión del 06/11. La vajilla se conserva, el mantel y el fondo son libres y la colocación puede variar si se mantiene el número de piezas." } }
+      ]
+    },
+    {
+      "id": "partir-de-referencia",
+      "marca": "estudio",
+      "aspecto": "PERSONALIZACION",
+      "enunciado": "En las primeras piezas de cada local, el diseño parte de un post de referencia elegido por el usuario, al nivel de biblioteca/referencias.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "brief/f1-6", "explicita": true, "motivo": { "aspecto": "PERSONALIZACION", "juicio": "A_FAVOR", "detalle": "Partir de un post de referencia (Canva o Pinterest) en las 5 primeras creaciones de cada local, para construir sobre el gusto del usuario." } }
+      ]
+    },
+    {
+      "id": "espacio-entre-elementos",
+      "marca": "estudio",
+      "aspecto": "COMPOSICION",
+      "enunciado": "Los elementos respiran: hueco claro entre bloques de texto y el espacio de cada zona repartido, sin textos pegados al borde ni zonas muertas arriba o abajo.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/etxebarri", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "María (diseñadora): en la banda inferior el texto de arriba va muy arriba, el de debajo demasiado pegado y el último tan arriba que deja vacío abajo; la parte de arriba de la foto, muy vacía." } },
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/meson", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "María (diseñadora): «no tengas miedo a aumentar las distancias entre los elementos, hay mucho texto y muy apelotonado»." } }
+      ]
+    },
+    {
+      "id": "texto-secundario-legible",
+      "marca": "estudio",
+      "aspecto": "TIPOGRAFIA",
+      "enunciado": "Los textos secundarios se leen sin esfuerzo en el móvil: mayúsculas de al menos 22 px en un lienzo de 1080 (unos 30 px de cuerpo). Las líneas de 24 px no llegan.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-08", "pieza": "posts-f1-6", "explicita": true, "motivo": { "aspecto": "TIPOGRAFIA", "juicio": "A_FAVOR", "detalle": "Varias personas que vieron los 4 posts: los textos son demasiado pequeños. Se aplica en el compositor (ALTURA_MAYUSCULA_MINIMA = 22)." } }
+      ]
+    },
+    {
+      "id": "producto-centrado-si-simetrica",
+      "marca": "estudio",
+      "aspecto": "COMPOSICION",
+      "enunciado": "Si la composición es simétrica (texto en círculo, marco o titular centrado alrededor del producto), el producto va centrado en el lienzo.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/cafe", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "María (diseñadora): «no está mal, pero que el café no esté centrado es un delito capital». La taza con el texto en arco estaba desplazada a la derecha." } }
+      ]
+    },
+    {
+      "id": "nombre-del-plato-se-lee",
+      "marca": "estudio",
+      "aspecto": "TIPOGRAFIA",
+      "enunciado": "El nombre del plato se lee entero y en su orden aunque haya un juego tipográfico: el producto no tapa la palabra clave y la lectura de arriba abajo da el nombre correcto.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/dak", "explicita": true, "motivo": { "aspecto": "TIPOGRAFIA", "juicio": "A_FAVOR", "detalle": "María (diseñadora): no se ve el nombre de la hamburguesa (Manhattan Tower); haz algo con eso o ponlo en otro sitio, porque el juego de palabras con la distribución está guay." } }
+      ]
+    },
+    {
+      "id": "recorte-nitido-de-arriba-abajo",
+      "marca": "estudio",
+      "aspecto": "FOTOGRAFIA",
+      "enunciado": "Un plato que se recorta va nítido de arriba abajo (profundidad de campo amplia, f/8–f/11): sin fondo que lo disimule, el desenfoque de la foto se ve como suciedad.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/dak", "explicita": true, "motivo": { "aspecto": "FOTOGRAFIA", "juicio": "A_FAVOR", "detalle": "María (diseñadora): la hamburguesa no está muy limpia, está borrosa por arriba. Comprobado: el pan de arriba está desenfocado en la foto generada (no es por ampliarla: va al 45 %)." } }
+      ]
+    },
+    {
+      "id": "pares-con-el-mismo-peso",
+      "marca": "estudio",
+      "aspecto": "COMPOSICION",
+      "enunciado": "Dos textos a la misma altura, uno a cada lado, necesitan el mismo peso alrededor: si un lado carga con otro elemento encima, su texto parece más bajo.",
+      "evidencias": [
+        { "origen": "HUMANA", "autor": "ESTUDIO", "fecha": "2026-11-07", "pieza": "posts-f1-6/meson", "explicita": true, "motivo": { "aspecto": "COMPOSICION", "juicio": "A_FAVOR", "detalle": "María (diseñadora): con los dos textos de abajo, al poner dos en la derecha (el «glaseado» y la línea) parece que el de la derecha está más bajo que el de la izquierda." } }
       ]
     }
   ]

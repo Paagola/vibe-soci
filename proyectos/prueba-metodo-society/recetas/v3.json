@@ -1,0 +1,37 @@
+{
+  "id": "etx-soc-v3-otro-angulo",
+  "local": "asador-etxebarri",
+  "descripcion": "V3: la misma estética (clave baja, rojo único color) con otro ángulo: ¾ cerrado a 25°, mesa de roble oscuro en lugar de mantel.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/prueba-metodo-society/prompts/mcp/v3.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: exactamente dos gambas rojas a la brasa (cabeza, antenas, patas, sal gruesa, puntas tostadas) y el plato cuadrado de cristal esmerilado.",
+        "noSeCopia": "El mantel blanco, las manchas, el borde del otro plato, la luz de día plana y el ángulo alto. Tampoco la colocación amontonada: en la prueba van paralelas."
+      }
+    },
+    {
+      "archivo": "proyectos/prueba-metodo-society/refs/ficha-texturas-gamba.jpg",
+      "etiqueta": "@image2 (real texture sheet)",
+      "ladoMaximo": 1212,
+      "rol": {
+        "nombre": "ficha de texturas",
+        "gobierna": "Solo las texturas de superficie: caparazón brillante con segmentos, granos de sal gruesa, antenas finas translúcidas, patas con puntas tostadas y cristal esmerilado verde grisáceo.",
+        "noSeCopia": "La cuadrícula ni la disposición de los recortes."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz y encuadre nuevos (¾ a 25°, clave baja).",
+    "Superficie nueva: mesa de roble oscuro en lugar del mantel (fondo libre, decisión del 07/11).",
+    "Medidas ESTIMADAS a partir de la foto, no confirmadas por el restaurante: plato de unos 26 cm y gambas de unos 18 cm. Solo orientan al modelo; no son datos para nada que se publique."
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "chiringuito-5",
+  "version": 3,
+  "titulo": "Chiringuito · carrusel continuo · 5/5",
+  "notas": "Cierre con llamada a la acción. Sin datos inventados: nombre, playa y horario son del local.",
+  "marca": "chiringuito-prueba",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "fondo": "fondo-panorama-5"
+  },
+  "textos": {
+    "titular": "Te esperamos",
+    "script": "en [playa]",
+    "dato": "[Nombre del chiringuito]\n[Horario o reservas: dato del local]"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "imagen",
+      "activo": "fondo",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      }
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.067,
+        "y": 0.2,
+        "w": 0.866,
+        "h": 0.13
+      },
+      "ajuste": "ancho",
+      "alinear": "centro"
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "pincel",
+      "caja": {
+        "x": 0.2,
+        "y": 0.34,
+        "w": 0.6,
+        "h": 0.07
+      },
+      "ajuste": "alto",
+      "alinear": "centro"
+    },
+    {
+      "id": "dato",
+      "tipo": "texto",
+      "texto": "@dato",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.47,
+        "w": 0.866,
+        "h": 0.07
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "centro"
+    }
+  ],
+  "relaciones": []
+}

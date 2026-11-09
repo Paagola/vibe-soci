@@ -1,0 +1,20 @@
+{
+ "deIntento1": "proyectos/posts-tres-locales/foto/casa-aranda.final.json",
+ "motivo": "Intento 1 descartado: cámara a unos 25–30° (a menos de 30° de la foto subida, 45°) y seis churros en vez de cinco. Se pasa a cenital (45° de diferencia), con los churros en abanico para que se cuenten.",
+ "huecos": {
+  "plato": "traditional spanish churros with thick hot chocolate and white coffee",
+  "origen": "from an authentic traditional churrería",
+  "elementos": "five golden crisp fried churros with ridged sides laid side by side in a loose fan on a small oval scalloped metal tray, each churro whole and separate, one white cup of thick dark hot chocolate on a white saucer with a silver spoon, one tall glass of coffee with milk on a white saucer",
+  "recuento": "Exactly five churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray and one silver spoon.",
+  "camara": {
+   "anguloGrados": 90,
+   "descripcion": "a straight top-down view from directly above, 90 degrees: the cup, the glass and both saucers appear as perfect circles and the chocolate surface is a flat dark disc",
+   "objetivoMm": 50,
+   "apertura": 8
+  },
+  "ideaGrafica": "the oval tray with the five churros diagonally in the lower-left half, the chocolate cup on its saucer just to the right of the tray and the coffee glass on its saucer above the cup, the whole group fully inside the frame with a clear margin on every side, on a plain seamless pale grey-blue background so it can be cut out cleanly, generous empty space in the upper part of the frame",
+  "luz": "Soft directional studio light from the upper left, short soft shadows to the lower right, crisp ridges on every churro and a glossy highlight on the chocolate, everything in sharp focus",
+  "colorDominante": "the golden churros and the dark chocolate the only strong colours"
+ },
+ "prompt": "@image1 is a real photo of traditional spanish churros with thick hot chocolate and white coffee from an authentic traditional churrería. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: five golden crisp fried churros with ridged sides laid side by side in a loose fan on a small oval scalloped metal tray, each churro whole and separate, one white cup of thick dark hot chocolate on a white saucer with a silver spoon, one tall glass of coffee with milk on a white saucer. Exactly five churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray and one silver spoon. Nothing else added. New composition by a professional food photographer: a straight top-down view from directly above, 90 degrees: the cup, the glass and both saucers appear as perfect circles and the chocolate surface is a flat dark disc, 50 mm lens at f/8, the oval tray with the five churros diagonally in the lower-left half, the chocolate cup on its saucer just to the right of the tray and the coffee glass on its saucer above the cup, the whole group fully inside the frame with a clear margin on every side, on a plain seamless pale grey-blue background so it can be cut out cleanly, generous empty space in the upper part of the frame. Soft directional studio light from the upper left, short soft shadows to the lower right, crisp ridges on every churro and a glossy highlight on the chocolate, everything in sharp focus, the golden churros and the dark chocolate the only strong colours. Photographic realism, no text."
+}

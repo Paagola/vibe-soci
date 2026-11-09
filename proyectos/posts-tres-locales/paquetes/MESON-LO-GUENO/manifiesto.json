@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-tres-locales/recetas/meson-lo-gueno.json",
+  "prompt": {
+    "archivo": "proyectos/posts-tres-locales/paquetes/MESON-LO-GUENO/prompt.txt",
+    "sha256": "92ce1cdda4e69dd62317a9ab1480cb45c04863ea52891168cec58d82f50a1776"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "lo-gueno-web-habas",
+      "sha256": "68008ba52c2f52f0f734bdf7e0f6543fd5a048c878ed347d766f90814c3f7540"
+    }
+  ]
+}

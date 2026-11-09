@@ -1,0 +1,86 @@
+{
+  "fecha": "2026-11-07T18:59:25.685Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "datos/locales/dak-burger/activos/dak-real-manhattan/original.jpg",
+  "plato": "La Manhattan Tower: tres carnes, tres de bacon y tres de cheddar",
+  "lado": {
+    "ancho": 1120,
+    "alto": 700
+  },
+  "referencia": null,
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 5,
+      "encuadre": "Plano frontal centrado a ras de la tabla de madera con el neón desenfocado al fondo.",
+      "luz": "Luz tenue de ambiente con relleno frontal suave y neón naranja/rojo al fondo.",
+      "elementos": [
+        {
+          "nombre": "Pan brioche brillante",
+          "estado": "Dorado y tostado",
+          "recuento": 1
+        },
+        {
+          "nombre": "Carne picada de ternera",
+          "estado": "Sellada y jugosa",
+          "recuento": 3
+        },
+        {
+          "nombre": "Lonchas de cheddar",
+          "estado": "Fundidas sobre la carne",
+          "recuento": 3
+        },
+        {
+          "nombre": "Tiras de bacon",
+          "estado": "Crujientes y doradas",
+          "recuento": 3
+        },
+        {
+          "nombre": "Papel sulfurizado",
+          "estado": "Con impresión de marca bajo la hamburguesa",
+          "recuento": 1
+        },
+        {
+          "nombre": "Tabla de madera oscura",
+          "estado": "Gruesa y rústica",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Encuadre frontal plano y centrado",
+        "Neón de fondo distrae la atención del producto"
+      ],
+      "utilizable": true,
+      "motivo": "Muestra con claridad los ingredientes reales y la estructura exacta del plato."
+    },
+    "huecos": {
+      "plato": "triple beef burger with bacon and melted cheddar",
+      "origen": "from a gourmet burger restaurant",
+      "elementos": "golden brioche bun, three seared beef patties, three slices of melted cheddar, crisp bacon layers, printed parchment paper, dark wooden board",
+      "recuento": "Exactly three beef patties, three cheddar slices, three bacon layers.",
+      "camara": {
+        "anguloGrados": 45,
+        "descripcion": "dramatic high-angle three-quarter view from 45 degrees",
+        "objetivoMm": 85,
+        "apertura": 2.8
+      },
+      "ideaGrafica": "burger positioned in the lower-right third, creating clean negative space in the upper-left for bold text overlay",
+      "luz": "hard direct flash from the upper-left casting crisp shadows and sharp specular highlights on the cheese and bacon",
+      "colorDominante": "deep black background with warm orange cheddar as the main vibrant accent"
+    },
+    "decisiones": [
+      "Ángulo a 45°: variación de 40° respecto a la original a ras de mesa para destacar las capas superiores del producto.",
+      "Recomposición hacia el tercio inferior derecho: crea espacio limpio en la zona superior izquierda para titular legible (Familia c / Guía §3).",
+      "Luz de flash directo duro: resalta el brillo del queso fundido y la textura del bacon (Familia c, referencia DAK Burger)."
+    ]
+  },
+  "prompt": "@image1 is a real photo of triple beef burger with bacon and melted cheddar from a gourmet burger restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: golden brioche bun, three seared beef patties, three slices of melted cheddar, crisp bacon layers, printed parchment paper, dark wooden board. Exactly three beef patties, three cheddar slices, three bacon layers. Nothing else added. New composition by a professional food photographer: dramatic high-angle three-quarter view from 45 degrees, 85 mm lens at f/2.8, burger positioned in the lower-right third, creating clean negative space in the upper-left for bold text overlay. Hard direct flash from the upper-left casting crisp shadows and sharp specular highlights on the cheese and bacon, deep black background with warm orange cheddar as the main vibrant accent. Photographic realism, no text.",
+  "problemasFinales": []
+}

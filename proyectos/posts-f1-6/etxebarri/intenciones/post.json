@@ -1,0 +1,160 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "etxebarri-post",
+  "version": 6,
+  "titulo": "Etxebarri · F7 macro + papel rasgado (post-30)",
+  "notas": "Pieza de prueba, NO PUBLICABLE (Etxebarri no la ha encargado). De post-30 se toma: el macro a sangre arriba, la franja de papel negro rasgado abajo y el rótulo de tres niveles (script, palo seco pesado, versalitas). No se copia: Beef Burger, Today's special, Tasty and hot, ni el amarillo. El papel es un recurso procedural del estudio.",
+  "marca": "asador-etxebarri",
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "pesada": {
+        "fuente": "league-gothic",
+        "ejes": {
+          "wdth": 100
+        },
+        "caso": "mayusculas",
+        "tracking": 0.01,
+        "interlineado": 0.9,
+        "color": "@hueso"
+      },
+      "pincel": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1,
+        "color": "@hueso"
+      },
+      "mono": {
+        "fuente": "plex-mono",
+        "ejes": {},
+        "caso": "mayusculas",
+        "tracking": 0.16,
+        "interlineado": 1.4,
+        "color": "@hueso"
+      }
+    }
+  },
+  "activos": {
+    "foto": "etx-post-f7-foto-mcp-2",
+    "papel": "recurso-papel-rasgado-negro"
+  },
+  "textos": {
+    "script": "sal gruesa y nada más",
+    "titular": "Gamba roja",
+    "apoyo": "De Palamós · Asador Etxebarri · Axpe"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "retoque": {
+        "puntoNegro": "@carbon"
+      },
+      "zoom": 1.2,
+      "enfoque": {
+        "x": 0.47,
+        "y": 0.5
+      }
+    },
+    {
+      "id": "sombra-papel",
+      "tipo": "sombra",
+      "de": "papel",
+      "modo": "proyectada",
+      "desenfoque": 18,
+      "desplazamiento": {
+        "x": 0,
+        "y": -8
+      },
+      "opacidad": 0.55
+    },
+    {
+      "id": "papel",
+      "tipo": "recorte",
+      "activo": "papel",
+      "escala": {
+        "anchoSujeto": 1.4
+      },
+      "ancla": {
+        "caja": {
+          "x": -0.2,
+          "y": 0.6,
+          "w": 1.4,
+          "h": 0.42
+        },
+        "alinear": "arriba-centro"
+      },
+      "sangradoAbajo": 0,
+      "bordeSuave": 0.5
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "pincel",
+      "caja": {
+        "x": 0.2,
+        "y": 0.675,
+        "w": 0.6,
+        "h": 0.045
+      },
+      "ajuste": "alto",
+      "alinear": "centro"
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "pesada",
+      "caja": {
+        "x": 0.2,
+        "y": 0.775,
+        "w": 0.6,
+        "h": 0.1
+      },
+      "ajuste": "ancho",
+      "alinear": "centro"
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "mono",
+      "caja": {
+        "x": 0.067,
+        "y": 0.905,
+        "w": 0.866,
+        "h": 0.024
+      },
+      "ajuste": "fijo",
+      "tamano": 32,
+      "alinear": "centro"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    }
+  ]
+}

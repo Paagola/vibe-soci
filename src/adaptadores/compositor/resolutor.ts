@@ -15,8 +15,19 @@ import { alfaDeSvg, alfaDelSujeto, cobertura, documentoSvg, medidorDeCobertura, 
 const ESCALA_MEDIDA = 0.25;
 /** A partir de aquí la foto se amplía tanto que se verá blanda. */
 export const AMPLIACION_MAXIMA = 1.6;
-/** Altura de mayúscula mínima en px para que un texto se lea en el móvil (1080 px de ancho). */
-export const ALTURA_MAYUSCULA_MINIMA = 16;
+/**
+ * Altura de mayúscula mínima en px para que un texto se lea en el móvil (1080 px de ancho), unos 30 px de cuerpo.
+ * Era 16; se subió el 08/11/2026 porque las líneas de 24 px de los posts F1.6 se leían mal en el móvil
+ * (revisión de una diseñadora y de otras personas).
+ */
+export const ALTURA_MAYUSCULA_MINIMA = 22;
+/**
+ * Separación mínima entre dos bloques de texto que se apilan, en cuerpos (tamaño de letra) del más pequeño.
+ * Por debajo se leen como un amasijo (revisión del 08/11/2026: «demasiado pegado», «muy apelotonado»).
+ * Se mide en cuerpo y no en altura de mayúscula porque en las manuscritas la mayúscula es enorme y la minúscula,
+ * que es lo que se ve, pequeña: «glaseado» bajo «Salmón» respira con 41 px y la mayúscula pedía 61.
+ */
+export const SEPARACION_MINIMA_EN_CUERPOS = 0.35;
 
 type Matriz = [number, number, number, number, number, number];
 
@@ -168,6 +179,7 @@ export class ResolutorDiseno {
             tamano: capa.tamano,
             fondo: capa.fondo && color(capa.fondo),
             giro: capa.giro,
+            ...(capa.arco !== undefined ? { arco: capa.arco } : {}),
           });
           break;
         }
@@ -379,7 +391,32 @@ export class ResolutorDiseno {
         }
       }
     }
+    this.comprobarSeparacion(resueltas, problemas);
     void intencion;
+  }
+
+  /** Dos textos apilados (uno encima del otro, compartiendo columna) necesitan aire entre ellos. Se mide la tinta. */
+  private comprobarSeparacion(resueltas: Map<string, CapaResuelta>, problemas: Problema[]): void {
+    const textos = [...resueltas.values()]
+      .filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.rotacion === 0 && c.opacidad > 0)
+      .map((c) => ({ c, cuerpo: Math.min(...c.lineas.map((l) => l.tamano)) }))
+      .sort((a, b) => a.c.caja.y - b.c.caja.y);
+    for (let i = 0; i < textos.length; i++) {
+      for (let j = i + 1; j < textos.length; j++) {
+        const arriba = textos[i]!;
+        const abajo = textos[j]!;
+        const a = arriba.c.caja;
+        const b = abajo.c.caja;
+        const compartenColumna = a.x < b.x + b.w && b.x < a.x + a.w;
+        if (!compartenColumna) continue;
+        const hueco = b.y - (a.y + a.h);
+        const minimo = SEPARACION_MINIMA_EN_CUERPOS * Math.min(arriba.cuerpo, abajo.cuerpo);
+        if (hueco < minimo) {
+          const que = hueco < 0 ? `se montan ${Math.round(-hueco)} px` : `quedan a ${Math.round(hueco)} px`;
+          problemas.push({ gravedad: 'AVISO', capa: abajo.c.id, tipo: 'SEPARACION', mensaje: `«${arriba.c.id}» y «${abajo.c.id}» ${que}: deja al menos ${Math.round(minimo)} px para que respiren.` });
+        }
+      }
+    }
   }
 }
 

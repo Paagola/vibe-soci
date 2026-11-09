@@ -1,0 +1,64 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Restaurant Exclusive Promo»",
+  "familia": "F4",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO",
+    "SELLO",
+    "TITULAR_EN_EL_AIRE"
+  ],
+  "capas": [
+    "escena real del local, oscura, a sangre (mesa, copa, postre abajo a la derecha)",
+    "«Restaurant» script y «Exclusive Promo» serif condensada",
+    "versalitas",
+    "estrella amarilla con el descuento",
+    "píldora con URL e iconos"
+  ],
+  "reticula": "Titular centrado en el tercio superior; plato en el inferior; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "script de florituras",
+      "escala": 9
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "serif condensada",
+      "escala": 5
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco mínimo",
+      "escala": 1.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#080C0E",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#D2C0AE",
+      "rol": "texto crema"
+    },
+    {
+      "hex": "#9C7C64",
+      "rol": "madera"
+    }
+  ],
+  "foto": "Ambiente real del local, luz cálida baja",
+  "recursos": [
+    {
+      "recurso": "estrella",
+      "funcion": "el dato es el único color fuerte"
+    }
+  ],
+  "lectura": [
+    "Restaurant",
+    "plato y copa",
+    "estrella"
+  ],
+  "porQueFunciona": "Ambiente real y serif elegante; el único color fuerte es el dato.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

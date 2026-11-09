@@ -1,0 +1,65 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Today's special BEEF BURGER»",
+  "familia": "F7",
+  "mecanismos": [
+    "PAPEL_RASGADO",
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "macro de burger a sangre en los dos tercios de arriba, bokeh cálido",
+    "papel negro arrugado y rasgado en el tercio inferior",
+    "script dorada + «BEEF BURGER» heavy blanca + versalitas"
+  ],
+  "reticula": "Texto centrado en la franja inferior; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "heavy",
+      "escala": 7
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script",
+      "escala": 5
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "versalitas",
+      "escala": 2.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#483123",
+      "rol": "fondo cálido"
+    },
+    {
+      "hex": "#131011",
+      "rol": "papel negro"
+    },
+    {
+      "hex": "#CF8944",
+      "rol": "script dorada"
+    },
+    {
+      "hex": "#D8C2AC",
+      "rol": "pan"
+    }
+  ],
+  "foto": "Macro a sangre, el producto sale por la derecha y por arriba",
+  "recursos": [
+    {
+      "recurso": "papel negro rasgado",
+      "funcion": "zona propia para el texto"
+    }
+  ],
+  "lectura": [
+    "la burger",
+    "BEEF BURGER",
+    "la script"
+  ],
+  "porQueFunciona": "El texto tiene su zona propia sin pelearse con la foto.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

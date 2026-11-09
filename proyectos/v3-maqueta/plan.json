@@ -1,0 +1,13 @@
+{
+  "nota": "Punto 5 (07/11): V3 maquetado con el compositor en dos familias. Pieza de prueba, no publicable.",
+  "local": "asador-etxebarri",
+  "marca": "../../marcas/asador-etxebarri/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/v3-f4.json"
+    },
+    {
+      "intencion": "intenciones/v3-f1.json"
+    }
+  ]
+}

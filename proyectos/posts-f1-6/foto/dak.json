@@ -1,0 +1,99 @@
+{
+  "fecha": "2026-11-07T19:03:04.334Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "datos/locales/dak-burger/activos/dak-real-manhattan/original.jpg",
+  "plato": "La Manhattan Tower: tres carnes, tres de bacon y tres de cheddar",
+  "lado": {
+    "ancho": 1120,
+    "alto": 700
+  },
+  "referencia": "post-09",
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 35,
+      "encuadre": "Plano medio corto, centrado en la hamburguesa, mostrando la parte superior del tablero de madera y un fondo oscuro desenfocado con una luz de neón.",
+      "luz": "Flash directo frontal o ligeramente superior, creando brillos en el pan y el queso, con una sombra sutil detrás de la hamburguesa. El letrero de neón en el fondo añade un resplandor rojo.",
+      "elementos": [
+        {
+          "nombre": "Pan de brioche",
+          "estado": "brillante, dorado",
+          "recuento": 2
+        },
+        {
+          "nombre": "Carne de vacuno",
+          "estado": "gruesa, sellada",
+          "recuento": 3
+        },
+        {
+          "nombre": "Bacon",
+          "estado": "crujiente, rizado",
+          "recuento": 3
+        },
+        {
+          "nombre": "Queso cheddar",
+          "estado": "fundido, naranja, goteando",
+          "recuento": 3
+        },
+        {
+          "nombre": "Salsa/condimento",
+          "estado": "blanca",
+          "recuento": null
+        },
+        {
+          "nombre": "Papel encerado",
+          "estado": "a cuadros, blanco y rojo, arrugado",
+          "recuento": null
+        },
+        {
+          "nombre": "Tabla de madera",
+          "estado": "oscura, rugosa",
+          "recuento": null
+        },
+        {
+          "nombre": "Luz de neón",
+          "estado": "roja/naranja, desenfocada, en forma de botella",
+          "recuento": null
+        }
+      ],
+      "defectos": [
+        "La iluminación es algo plana, no muy artística.",
+        "El fondo es algo ruidoso y la luz de neón es un elemento distractor, no profesional.",
+        "Composición sencilla y centrada, le falta dinamismo."
+      ],
+      "utilizable": true,
+      "motivo": "Todos los elementos y sus cantidades son claramente visibles y pueden usarse como inventario para la nueva foto."
+    },
+    "huecos": {
+      "plato": "Manhattan Tower burger",
+      "origen": "a burger restaurant",
+      "elementos": "a tall stacked burger with a glossy brioche bun (top and bottom), three thick seared beef patties, three layers of crispy curled bacon, three layers of melted orange cheddar cheese, and white sauce, sitting on crumpled white and red checkered paper on a dark, rough wooden board",
+      "recuento": "Exactly three beef patties, three layers of bacon, and three layers of melted cheddar.",
+      "camara": {
+        "anguloGrados": 70,
+        "descripcion": "a high three-quarter view looking down, emphasizing the impressive layers and height of the burger.",
+        "objetivoMm": 100,
+        "apertura": 2.8
+      },
+      "ideaGrafica": "The burger will be placed large, slightly off-center to the right, in the lower 70% of the frame, seen from above, tilted slightly. This allows the left and upper parts of the frame to be a clean area for a repeated text pattern. The burger will partially overlap and break the rhythm of this text, creating depth and making the burger stand out.",
+      "luz": "low-key, one hard side-light from the left, grazing the texture of the bun, patties, and bacon, creating sharp highlights and deep shadows, making the cheese glisten. Everything else falls into near black.",
+      "colorDominante": "Deep, dark background (near black) with the burger's warm tones (golden bun, red bacon, orange cheddar) as the strong colors, and a vibrant yellow (#FFC107) for the text pattern."
+    },
+    "decisiones": [
+      "**Ángulo de cámara (70 grados):** Se elige un ángulo alto (70 grados) para la nueva foto, significativamente diferente del ángulo medio-alto (35-40 grados) de la foto original. Esto cumple con el principio §1 de no copiar el mismo ángulo y busca un contraste de más de 30 grados. Este ángulo permite mostrar la composición de torre de la hamburguesa y a la vez crear un espacio plano suficiente para el patrón de texto en el fondo, siguiendo la referencia del post-09.",
+      "**Objetivo y apertura (100mm f/2.8):** Un objetivo de 100mm macro con una apertura de f/2.8 es ideal para capturar la nitidez de cada capa y textura de la hamburguesa, mientras se consigue un desenfoque suave en las zonas que lo requieran. Esto asegura un producto protagonista y detalles reales, como indica el principio §2.",
+      "**Iluminación (low-key, luz dura lateral):** Una luz dura lateral en un ambiente low-key, con el resto en penumbra, resalta las texturas de la carne, el bacon y el pan, y el brillo del queso fundido. Esto crea una imagen dramática y apetitosa, de acuerdo con la familia visual 'Low-key' (§2b) y el principio de 'Producto protagonista' (§5). Esta técnica es similar a la usada en el ejemplo del chuletón que 'GUSTÓ'.",
+      "**Idea gráfica (hamburguesa rompiendo patrón de texto):** La hamburguesa se coloca grande y ligeramente descentrada para que actúe como un elemento disruptor sobre un patrón de texto repetido que ocuparía el resto del fondo. Este mecanismo, extraído de la referencia del post-09 ('La palabra repetida como patrón tapado por el producto'), permite que la hamburguesa sea el centro de atención mientras el texto añade una capa de profundidad a la composición, como indica el principio §5 ('Producto protagonista') y §3 ('Jerarquía y legibilidad').",
+      "**Color dominante (fondo oscuro, texto amarillo vibrante):** Se opta por un fondo casi negro para el patrón de texto, lo que hace que los colores cálidos de la hamburguesa y el texto amarillo vibrante destaquen intensamente. Esto crea una paleta de dos o tres tintas con un fuerte contraste, en línea con el principio §6 ('Color: pocas tintas y con identidad') y las ideas de los posts 'low-key' que 'GUSTARON'."
+    ]
+  },
+  "prompt": "@image1 is a real photo of Manhattan Tower burger a burger restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a tall stacked burger with a glossy brioche bun (top and bottom), three thick seared beef patties, three layers of crispy curled bacon, three layers of melted orange cheddar cheese, and white sauce, sitting on crumpled white and red checkered paper on a dark, rough wooden board. Exactly three beef patties, three layers of bacon, and three layers of melted cheddar. Nothing else added. New composition by a professional food photographer: a high three-quarter view looking down, emphasizing the impressive layers and height of the burger, 100 mm lens at f/2.8, The burger will be placed large, slightly off-center to the right, in the lower 70% of the frame, seen from above, tilted slightly. This allows the left and upper parts of the frame to be a clean area for a repeated text pattern. The burger will partially overlap and break the rhythm of this text, creating depth and making the burger stand out. Low-key, one hard side-light from the left, grazing the texture of the bun, patties, and bacon, creating sharp highlights and deep shadows, making the cheese glisten. Everything else falls into near black, Deep, dark background (near black) with the burger's warm tones (golden bun, red bacon, orange cheddar) as the strong colors, and a vibrant yellow (#FFC107) for the text pattern. Photographic realism, no text.",
+  "problemasFinales": []
+}

@@ -11,13 +11,14 @@ Si la pieza tiene uno de estos sin una razón escrita en la dirección de arte, 
 
 | Antipatrón | Cómo se ve | Arreglo |
 |---|---|---|
-| La palabra enorme detrás del producto, siempre | Funciona una vez; a la tercera es la marca del estudio, no la del local | Buscar la relación que nace de este producto (señalar, hacer de signo, el aire de la foto) |
+| Repetir la pieza entera que gustó | La misma composición con otro plato | Mantener el mecanismo aprobado (palabra detrás, antena que firma, curva) y adaptarlo al producto nuevo. **Los mecanismos aprobados no son antipatrones** (valoración del 07/11/2026) |
+| La foto del hostelero «mejorada» | El mismo ángulo con más luz (`ejemplos/01`, carrusel F1.5) | Una foto nueva: otra cámara, otra luz y otro encuadre (`oficios/fotografia-gastronomica.md`) |
 | Texto centrado por sistema | Todo al eje, como un certificado | Bandera a la izquierda y composición asimétrica; centrar solo si es la idea |
 | Tarjetas flotantes | Rectángulos con sombra suave que «contienen» texto | Quitar la tarjeta; si el texto no se lee, cambiar su sitio o la foto |
 | Marcos decorativos | La foto metida en un recuadro que no cuenta nada (DAK C) | Foto a sangre, o un marco que sea la idea (una ventana real, una pantalla) |
 | Simetría por defecto | Dos platos a los lados y el título en medio | Cargar un lado y dejar aire en el otro |
 | Degradados gratuitos | Un fondo que va de un color a otro «para que no sea plano» | El color plano de la marca; los degradados, solo como luz (fundido o aclarado) |
-| Exceso de etiquetas | Antetítulo, titular, apoyo, etiqueta de precio, sello y contador | Una frase y la firma; el resto, al pie |
+| Exceso de etiquetas | Más de tres niveles de texto, o varios sellos y contadores a la vez | Tres niveles (titular, apoyo, firma o dato) y como mucho un recurso con propósito; el resto, al pie |
 | Líneas y separadores | Filetes, puntos medios, barras entre palabras (DAK B) | Espacio; si hace falta separar, un salto de línea |
 | Textura de papel por defecto | Papel arrugado o grano para dar «calidez» | Textura solo si la marca la tiene (el papel de envolver de DAK) |
 | Sombras genéricas | La misma sombra difusa bajo todo | Una sombra de contacto coherente con la luz de la foto, o ninguna |

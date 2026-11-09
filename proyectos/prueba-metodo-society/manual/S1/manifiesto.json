@@ -1,0 +1,27 @@
+{
+  "receta": "proyectos/prueba-metodo-society/recetas/s1.json",
+  "prompt": {
+    "archivo": "proyectos/prueba-metodo-society/manual/S1/prompt.txt",
+    "sha256": "c1a2bd90efb3556f0c617f6b15d538acd0a37fee99753bceba7c9d286b37d8b6"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "etx-real-gamba",
+      "sha256": "16539b7f692c3070d8212c03d2e72d82b727aec48d12aa09731e406ce7ffbb8f"
+    },
+    {
+      "orden": 2,
+      "archivo": "2-ficha-de-texturas.jpg",
+      "origen": "archivo:proyectos/prueba-metodo-society/refs/ficha-texturas-gamba.jpg",
+      "sha256": "b36beba1e337eca96b6c4e4863bdbae3a7444ff50104761eb2b91f00e7e2798b"
+    },
+    {
+      "orden": 3,
+      "archivo": "3-referencia-de-encuadre-post-11.jpg",
+      "origen": "archivo:proyectos/prueba-metodo-society/refs/post-11-sin-texto.jpg",
+      "sha256": "2b3f0583d838b3eef5ab513cea7aa5e5af506d42c4c972426d95b05491a48361"
+    }
+  ]
+}

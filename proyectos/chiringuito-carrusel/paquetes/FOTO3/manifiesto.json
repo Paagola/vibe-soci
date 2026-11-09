@@ -1,0 +1,8 @@
+{
+  "receta": "proyectos/chiringuito-carrusel/recetas/foto3.json",
+  "prompt": {
+    "archivo": "proyectos/chiringuito-carrusel/paquetes/FOTO3/prompt.txt",
+    "sha256": "0d36098b02ab0c6727ef6e76d97ee870a6ba0670bb914ced6feabb91571ff865"
+  },
+  "referencias": []
+}

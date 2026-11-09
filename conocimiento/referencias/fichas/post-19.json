@@ -1,0 +1,59 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«BEST COFFEE EVER»",
+  "familia": "F8",
+  "mecanismos": [
+    "CONTORNO_AL_CRUZAR",
+    "SALPICADURA_O_FLOTANTES",
+    "FORMAS_ORGANICAS"
+  ],
+  "capas": [
+    "fondo partido: forma orgánica marrón a la izquierda y blanco",
+    "café con hielo recortado",
+    "salpicadura congelada",
+    "granos flotando",
+    "titular blanco: macizo sobre el marrón y solo contorno donde cruza el vaso"
+  ],
+  "reticula": "Titular a la izquierda en el tercio medio; margen ≈ 5 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca extendida black",
+      "escala": 8
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "versalitas",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#6E460A",
+      "rol": "forma marrón"
+    },
+    {
+      "hex": "#FCFCFB",
+      "rol": "blanco"
+    },
+    {
+      "hex": "#C0A085",
+      "rol": "café"
+    }
+  ],
+  "foto": "Recorte con salpicadura (estudio)",
+  "recursos": [
+    {
+      "recurso": "contorno al cruzar",
+      "funcion": "el titular puede ser enorme sin tapar el producto"
+    }
+  ],
+  "lectura": [
+    "el vaso",
+    "BEST COFFEE EVER",
+    "BUY NOW"
+  ],
+  "porQueFunciona": "Titular enorme sin tapar el producto; dos tintas.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

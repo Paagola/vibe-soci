@@ -1,5 +1,12 @@
 # Concepto y dirección de arte · «Y nada más»
 
+> **Corrección de la F1.6 (2026-11-07).** Este concepto tiene tres errores, que se conservan por trazabilidad:
+> - descarta «FUEGO detrás» y «la antena firma», que son mecanismos **aprobados** por el usuario y había que adaptarlos, no descartarlos;
+> - trata la fidelidad como «no tocar la foto», cuando debía ser una foto nueva con los mismos elementos;
+> - no parte de ninguna referencia.
+>
+> Ver `diseno/f1_6/FASE-0.md` §3 y `conocimiento/principios.md` 16, 16b y 16c.
+
 Versión 2 (2026-11-07). La versión 1 se escribió antes de generar nada. La 2 recoge lo que obligó a cambiar la revisión de los renders (ver REVISION.md):
 - **La frase pasa a ser una sola, con comas.** En la v1 cada fragmento acababa en punto y cerraba la diapositiva, así que no pedía deslizar.
 - **El punto negro de las fotos es el carbón de la marca.**

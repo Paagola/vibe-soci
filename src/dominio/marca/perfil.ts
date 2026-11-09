@@ -38,9 +38,26 @@ const Tipografia = z.object({
   licencia: z.string().optional(),
 });
 
+/**
+ * Fidelidad del producto en las fotos nuevas (decisión de la dirección del estudio, 07/11/2026; sustituye a la del 06/11):
+ * - FLEXIBLE (por defecto): cambian cámara, luz, fondo, encuadre y colocación; se conservan los ELEMENTOS del plato
+ *   (qué es, cuántas piezas, anatomía, ingredientes) y la vajilla. Se descarta lo que añade un componente nuevo;
+ *   no se descarta lo que solo cambia la luz o el brillo.
+ * - ESTRICTA (si el local lo pide): además no cambia el ángulo; para otro ángulo se pide al restaurante una foto nueva.
+ */
+export const Fidelidad = z.enum(['FLEXIBLE', 'ESTRICTA']);
+export type Fidelidad = z.infer<typeof Fidelidad>;
+export const FIDELIDAD_POR_DEFECTO = {
+  valor: 'FLEXIBLE' as const,
+  fuente: 'ESTUDIO' as const,
+  referencia: 'decisión de la dirección del estudio, 07/11/2026 (valor por defecto para todos los locales)',
+  confirmado: true,
+};
+
 export const PerfilDeMarca = z.object({
   esquema: z.literal('marca/perfil@2'),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+  fidelidad: Dato(Fidelidad).default(FIDELIDAD_POR_DEFECTO),
   constantes: z.object({
     nombre: Dato(z.string()),
     ubicacion: Dato(z.string()),

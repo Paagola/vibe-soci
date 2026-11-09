@@ -1,0 +1,135 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "chiringuito-1",
+  "version": 4,
+  "titulo": "Chiringuito · carrusel continuo · 1/5",
+  "notas": "Portada. El sol y la fuente de pescaíto cruzan a la diapositiva 2 (carrusel continuo, pin de Pinterest). Fotos generadas solo con texto (sin foto del local): pieza de prueba, no publicable.",
+  "marca": "chiringuito-prueba",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "fondo": "fondo-panorama-1",
+    "fuente": "chiringuito-foto-1-mcp-1"
+  },
+  "textos": {
+    "marca": "[Nombre del chiringuito] · Málaga",
+    "titular": "Pescaíto",
+    "script": "frente al mar",
+    "desliza": "Desliza →"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "imagen",
+      "activo": "fondo",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      }
+    },
+    {
+      "id": "marca",
+      "tipo": "texto",
+      "texto": "@marca",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.085,
+        "w": 0.8,
+        "h": 0.02
+      },
+      "ajuste": "fijo",
+      "tamano": 34
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.067,
+        "y": 0.14,
+        "w": 0.75,
+        "h": 0.15
+      },
+      "ajuste": "ancho"
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "pincel",
+      "caja": {
+        "x": 0.22,
+        "y": 0.27,
+        "w": 0.6,
+        "h": 0.065
+      },
+      "ajuste": "alto"
+    },
+    {
+      "id": "sombra-fuente",
+      "tipo": "sombra",
+      "de": "fuente",
+      "modo": "proyectada",
+      "color": "#0b3550",
+      "desenfoque": 34,
+      "desplazamiento": {
+        "x": 16,
+        "y": 26
+      },
+      "opacidad": 0.32
+    },
+    {
+      "id": "fuente",
+      "tipo": "recorte",
+      "activo": "fuente",
+      "escala": {
+        "anchoSujeto": 0.5
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.42000000000000004,
+          "y": 0.12,
+          "w": 1,
+          "h": 1
+        },
+        "alinear": "centro"
+      },
+      "contraerBorde": 1,
+      "bordeSuave": 1
+    },
+    {
+      "id": "desliza",
+      "tipo": "texto",
+      "texto": "@desliza",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.885,
+        "w": 0.433,
+        "h": 0.02
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "izquierda"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "marca",
+        "titular",
+        "script",
+        "desliza"
+      ],
+      "sujeto": "fuente",
+      "maximo": 0.02
+    }
+  ]
+}

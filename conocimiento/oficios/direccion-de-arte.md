@@ -14,7 +14,12 @@ El compositor sabe colocar, medir y pintar, pero no sabe diseñar. Este oficio d
 1. **El restaurante.** Lee el perfil (`marcas/<slug>/perfil.json`). Separa sus constantes, lo que lo hace reconocible, de sus variables, lo que puede cambiar en esta pieza. Mira el material real: qué fotos hay y qué se ve en ellas a resolución completa.
 2. **Qué quiere comunicar la pieza.** Un mensaje que un desconocido pueda repetir. Si hacen falta dos, son dos piezas.
 3. **Qué se puede decir.** Prepara el registro de afirmaciones (`texto-publicitario`). La idea solo puede apoyarse en lo documentado y en lo que se ve.
-4. **Referencias pertinentes.** Dos o tres fichas de `referencias/`, y de cada una solo el recurso que sirve.
+4. **La referencia.**
+   - **Mientras el local tenga menos de 5 piezas reales**, la pieza parte de la referencia que elige el usuario (imagen, enlace o una familia de la biblioteca). El dominio no deja pasar a concepto sin ella (`dominio/referencia.ts`).
+   - **Se toma** el oficio: la jerarquía, el mecanismo y el tratamiento de la foto.
+   - **No se copian** textos, marcas ni la pieza entera.
+   - **El concepto declara** qué toma y qué no (`UsoDeReferencia`).
+   - **Ficha y familia:** cada referencia tiene su ficha, y su familia está en `referencias/familias.md`.
 5. **La idea.** En una frase. Tiene que ser de uno de estos tres tipos:
    - **algo real mostrado**: el producto, su textura, la huella del fuego;
    - **una idea concreta**: una metáfora o un giro que solo esta pieza puede hacer;
@@ -73,7 +78,7 @@ Un carrusel es una sola idea contada en secuencia. Cada diapositiva tiene que me
 |---|---|---|
 | DAK · B «Alzado»: líneas de nivel, alturas y rótulos («ático», «tercero») | Convierte la burger en un esquema técnico: es la estructura del compositor, no una idea publicitaria (valoración del estudio, 07/11/2026) | Etxebarri: el fuego no se dibuja con recursos, se cuenta con la huella real en el producto (las puntas tostadas) |
 | DAK · C «Ventana»: foto enmarcada y titular vertical | Rígido: se nota que es un ejercicio de reglas | Etxebarri 1: producto monumental a sangre y frase en bandera en el aire oscuro |
-| Repetir «palabra enorme detrás del producto» porque funcionó una vez | Una idea que se repite se convierte en plantilla | Buscar un recurso que nazca de este producto: el grano de sal como punto final |
+| Descartar «FUEGO detrás» o «la antena firma» porque ya estaban en la biblioteca (F1.5) | Son **mecanismos aprobados por el usuario** (ejemplos 02, 03, 05 y 07). Descartarlos tiró justo lo que gustaba (valoración del 07/11/2026) | Adaptarlos al producto de esta pieza: «BRASA» detrás de las gambas o la antena que firma. No se repite la pieza entera, sí el mecanismo |
 | Contar el «viaje de Palamós a Axpe» | No hay datos de procedencia ni de transporte: sería inventar | Contar solo lo documentado: «gamba roja de Palamós, brasa de leña, sal gruesa y nada más» |
 | Cuatro diapositivas con «foto + titular arriba» | Monotonía, aunque cambie la foto | La frase baja de la portada al pie y la cámara se acerca hasta un grano |
 

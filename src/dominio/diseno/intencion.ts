@@ -190,6 +190,11 @@ export const CapaCirculoTexto = z.object({
   fondo: Color.optional(),
   /** Ángulo de inicio en grados (0 = arriba). */
   giro: z.number().default(0),
+  /**
+   * Grados de circunferencia que ocupa el texto. Sin él, la vuelta entera (sello). Con 180 y giro −90, la mitad de
+   * arriba: el texto que sigue el borde de un plato o una taza y se lee derecho (familia F10, post-10).
+   */
+  arco: z.number().min(10).max(360).optional(),
 });
 
 /**

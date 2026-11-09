@@ -186,6 +186,32 @@ describe('F1 · resolutor', () => {
     assert.ok(tipos.includes('RESOLUCION:plato'), tipos.join(' '));
   });
 
+  it('el mínimo de lectura en el móvil es de 22 px de mayúscula: una línea de 24 px de cuerpo no llega (revisión 08/11)', async () => {
+    const intencion = intencionBase({ relaciones: [] });
+    const capas = intencion.capas.map((c) => (c.id === 'firma' ? ({ ...c, tamano: 24 } as typeof c) : c));
+    const pequena = await compositor.resolver({ ...intencion, capas }, { plato });
+    assert.ok(pequena.problemas.some((p) => p.tipo === 'TAMANO_MINIMO' && p.capa === 'firma'));
+    const grande = await compositor.resolver({ ...intencion, capas: capas.map((c) => (c.id === 'firma' ? ({ ...c, tamano: 34 } as typeof c) : c)) }, { plato });
+    assert.ok(!grande.problemas.some((p) => p.tipo === 'TAMANO_MINIMO' && p.capa === 'firma'));
+  });
+
+  it('avisa si dos textos apilados van pegados o montados, y no si respiran o están lado a lado (revisión 08/11)', async () => {
+    const texto = (id: string, x: number, y: number) =>
+      ({ id, tipo: 'texto', texto: '@firma', estilo: 'pequeno', caja: { x, y, w: 0.35, h: 0.03 }, ajuste: 'fijo', tamano: 40 }) as const;
+    const separacion = async (b: { x: number; y: number }) => {
+      const intencion = intencionBase({
+        capas: [{ id: 'fondo', tipo: 'relleno', color: '@rojo' }, texto('arriba', 0.1, 0.3), texto('abajo', b.x, b.y)] as Intencion['capas'],
+        relaciones: [],
+      });
+      return (await compositor.resolver(intencion, { plato })).problemas.filter((p) => p.tipo === 'SEPARACION');
+    };
+    const pegados = await separacion({ x: 0.1, y: 0.3 + 32 / 1440 });
+    assert.equal(pegados.length, 1);
+    assert.equal(pegados[0]?.capa, 'abajo');
+    assert.equal((await separacion({ x: 0.1, y: 0.4 })).length, 0, 'con aire de sobra');
+    assert.equal((await separacion({ x: 0.55, y: 0.3 })).length, 0, 'lado a lado, en otra columna');
+  });
+
   it('«alineadoCon»: el recorte se queda en el mismo sitio y a la misma escala que su foto, aunque se salga del marco', async () => {
     const intencion = intencionBase({
       capas: [

@@ -106,6 +106,10 @@ describe('F1.5 · recuperación de conocimiento', () => {
     assert.ok(!nombres('fotografia').includes('texto-publicitario'));
     assert.ok(nombres('revision').includes('rubrica') && nombres('revision').includes('revision-visual'));
     assert.ok(nombres('concepto').includes('ref-think-small'));
+    // F1.6: los ejemplos del usuario y las familias de sus referencias llegan al director por fase.
+    assert.ok(nombres('fotografia').includes('ejemplos-del-usuario'));
+    assert.ok(nombres('concepto').includes('familias-de-referencia') && nombres('concepto').includes('ejemplos-del-usuario'));
+    assert.ok(nombres('brief').includes('familias-de-referencia'), 'la referencia se elige antes del concepto');
     assert.ok(!documentos.some((d) => d.ruta.endsWith('README.md')), 'los README no se ofrecen');
     assert.ok(documentos.length >= 12, `${documentos.length} documentos`);
   });

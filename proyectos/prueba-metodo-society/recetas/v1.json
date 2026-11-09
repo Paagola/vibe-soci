@@ -1,0 +1,25 @@
+{
+  "id": "etx-soc-v1-tu-prompt",
+  "local": "asador-etxebarri",
+  "descripcion": "V1: el prompt que gustó (ejemplo 01 corregido), tal cual, con la foto real como única referencia. Control.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/prueba-metodo-society/prompts/mcp/v1.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: exactamente dos gambas rojas a la brasa (cabeza, antenas, patas, sal gruesa, puntas tostadas) y el plato cuadrado de cristal esmerilado.",
+        "noSeCopia": "El mantel blanco, las manchas, el borde del otro plato, la luz de día plana y el ángulo alto. Tampoco la colocación amontonada: en la prueba van paralelas."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz y encuadre nuevos (macro a ras de mesa, clave baja)."
+  ]
+}

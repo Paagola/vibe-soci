@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-tres-locales/recetas/casa-aranda.json",
+  "prompt": {
+    "archivo": "proyectos/posts-tres-locales/paquetes/CASA-ARANDA/prompt.txt",
+    "sha256": "5f09d370337cea537e0ada2a6578c343928493dc92a85b0ebeb5376b17309d76"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "casa-aranda-web-churros",
+      "sha256": "3e1c31689a50ce324aa5fa00ec21d70e4a58f57cfa6ae93d5303904adc20dd8d"
+    }
+  ]
+}

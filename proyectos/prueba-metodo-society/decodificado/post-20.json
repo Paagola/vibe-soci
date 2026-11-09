@@ -1,0 +1,54 @@
+{
+  "esquema": "referencia/decodificada@1",
+  "fuente": "biblioteca/referencias/post-20.jpg",
+  "sinTexto": null,
+  "notaSinTexto": "No consigo quitar «Breakfast Delight» limpio (cruza la mano y el plato blanco y deja un rastro). Esta referencia va solo en palabras.",
+  "metodo": "DirectorIA (repositorio Society): JSON Decoded Brief de la FOTO, campo a campo, en inglés; la maqueta va aparte",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07",
+  "medicion": {
+    "nota": "Protocolo de directoria/hosteleria/02 §7-§8, sobre el post con texto (el texto sube algo p95), a 180 × 240",
+    "luminanciaMediana": 41,
+    "p5": 1,
+    "p95": 201,
+    "sombrasMenos40": 0.5,
+    "rojoAzul": 1.16,
+    "saturacion": 0.21,
+    "fondoTercioSuperior": 20
+  },
+  "foto": {
+    "subject_identity": "A plated dessert on a large plain white round plate: a rectangular slab of dark chocolate cake, a quenelle of pale ice cream, a ball of red sorbet, halved cherries, small piped cream dots and micro herbs, arranged in a loose line across the centre of the plate",
+    "realism": "Real restaurant food photograph, not a render",
+    "environment": "A bare hand enters from the top-left corner, holding a small metal jug and pouring a thin continuous stream of dark red sauce straight down onto the plate. The plate sits on a black surface; in the top-right, far out of focus, the dark clothes of a person standing at the table",
+    "lighting": "Hard directional light from camera-left at a low angle, like sun through a window: crisp shadows fall to the right of the cake and the quenelle, the left rim of the plate is bright, the background falls to near black",
+    "camera": {
+      "lens_mm": 50,
+      "aperture_f": 2.8,
+      "iso": 400,
+      "shutter": "1/500s",
+      "lens_to_subject_m": 0.6,
+      "subject_to_bg_m": 1,
+      "cct_k": 5500,
+      "visible_result": "The dessert and the falling stream sharp, the hand slightly soft, the person in the background a dark blur"
+    },
+    "composition": "Vertical 4:5. Camera about 45 degrees above the table. The plate fills the lower three quarters and is cut by the right edge; the hand and the jug in the top-left corner, cut by the frame; the stream is a vertical line that joins the hand to the food. The upper third, dark and quiet, carries the headline",
+    "imperfections": "A small drip on the plate where the stream lands, uneven piped dots, a crumb of cake beside the slab",
+    "palette": "Black and white with one deep red accent (the sauce, the sorbet, the cherries)",
+    "mood": "Theatrical, a moment caught",
+    "negatives": "no text, no logos"
+  },
+  "traduccionAGamba": {
+    "estado": "PENDIENTE_DE_APROBAR",
+    "motivo": "La acción con mano añade un elemento (la mano). Según tu regla del 07/11, eso descarta la imagen salvo que lo apruebes",
+    "idea": "Una mano deja caer granos de sal gruesa desde unos 20 cm sobre las dos gambas; los granos caen con estela de movimiento. Es el gesto de «sal gruesa y nada más»: cambia el producto (la sal se posa), no es una pose (R-GESTO-01 de Society)"
+  },
+  "queSeToma": [
+    "Cámara a 45°, plato que llena el encuadre y se corta por un borde",
+    "Una acción con causa que une la mano y el producto en una línea vertical",
+    "Luz dura lateral con sombras nítidas y fondo casi negro",
+    "Un solo acento de color sobre blanco y negro"
+  ],
+  "queNoSeCopia": [
+    "El postre, la jarra, la persona del fondo, los textos y el monograma"
+  ]
+}

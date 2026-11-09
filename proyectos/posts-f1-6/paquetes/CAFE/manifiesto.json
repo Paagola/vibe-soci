@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-f1-6/recetas/cafe.json",
+  "prompt": {
+    "archivo": "proyectos/posts-f1-6/paquetes/CAFE/prompt.txt",
+    "sha256": "d56158267bc3093fdfb5ac0ee6261df8c387f6484d0290d349aaed8ce955fff8"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "cafe-real-cafes",
+      "sha256": "fadcf34b3f3cea5831bce999bdefe9363996ddc85ca610a386af421047f039c0"
+    }
+  ]
+}

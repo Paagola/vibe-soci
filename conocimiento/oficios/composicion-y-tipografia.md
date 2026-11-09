@@ -19,7 +19,7 @@ El compositor resuelve los píxeles, comprueba las reglas y pinta por capas.
 
 - **Un foco por diapositiva.** Lo más grande y con más contraste es aquello para lo que existe la pieza. Dos focos son el máximo; tres son dos piezas.
 - **Lo secundario baja de verdad:** mucho más pequeño, más ligero o con menos contraste. Si la firma casi iguala al titular, compite con él.
-- **Las mínimas palabras.** Cada dato aparece una vez. No hay subtítulo, eslogan ni etiqueta que el brief no pida.
+- **Tres niveles, y nada más.** Titular (una palabra o un logotipo tipográfico), un apoyo corto y la firma o un dato real. Es lo que repiten casi todas las referencias del usuario (`referencias/familias.md`). Cada dato aparece una vez y lo largo va al pie.
 - **Entrecerrar los ojos:** en la miniatura borrosa, lo primero que se ve debe ser el foco (`revision-visual`).
 
 ## Escala y espacio
@@ -39,7 +39,7 @@ Es el vocabulario; ninguna es obligatoria y ninguna se repite por costumbre.
 | Relación | Cómo se escribe | Úsala cuando… |
 |---|---|---|
 | El texto en el aire que deja la foto | Caja en la zona oscura y relación `noSolapar` | La foto tiene un vacío natural (claroscuro) |
-| La palabra detrás del producto | Relación `detras` con cobertura por franjas | La profundidad es la idea. **No por costumbre** |
+| La palabra detrás del producto | Relación `detras` con cobertura por franjas | **Mecanismo aprobado** (ejemplos 02, 05 y 07; posts 3 y 12). Se adapta al producto; lo que no se repite es la pieza entera |
 | El producto que se sale del marco | `recorte` con `alineadoCon` | El marco cuenta algo; si no, sobra |
 | Un detalle del producto como signo | `recorte` con `trasTexto` | Un elemento real puede hacer de signo (el grano de sal como punto final) |
 | Texto que señala la prueba | Caja junto al detalle | La frase nombra lo que se ve («brasa de leña» junto a las puntas tostadas) |

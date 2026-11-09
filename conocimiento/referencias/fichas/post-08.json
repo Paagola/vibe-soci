@@ -1,0 +1,69 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«ROMANTIC Dinner»",
+  "familia": "F5",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO",
+    "DIBUJOS_O_PEGATINAS",
+    "TARJETA_DE_INFORMACION"
+  ],
+  "capas": [
+    "barra nocturna desenfocada con bokeh, copa central",
+    "iconos de flecha en las esquinas",
+    "fecha y hora apiladas",
+    "«ROMANTIC» grotesca y «Dinner» script",
+    "dibujos de línea",
+    "tres columnas de información"
+  ],
+  "reticula": "Tres columnas abajo; margen ≈ 6 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca + script",
+      "escala": 6
+    },
+    {
+      "rol": "DATO",
+      "clasificacion": "grotesca",
+      "escala": 6
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "columnas en palo seco",
+      "escala": 2.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#181918",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#D7853D",
+      "rol": "luz cálida"
+    },
+    {
+      "hex": "#F4DCA6",
+      "rol": "texto amarillo claro"
+    }
+  ],
+  "foto": "Ambiente sin producto protagonista",
+  "recursos": [
+    {
+      "recurso": "dibujos de línea",
+      "funcion": "ilustran el evento"
+    },
+    {
+      "recurso": "columnas",
+      "funcion": "información práctica ordenada"
+    }
+  ],
+  "lectura": [
+    "ROMANTIC Dinner",
+    "fecha",
+    "condiciones"
+  ],
+  "porQueFunciona": "Orden de evento: cuándo, qué y condiciones. No sirve para un plato.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

@@ -1,0 +1,63 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«New Seasonal Drink is Here!»",
+  "familia": "F9",
+  "mecanismos": [
+    "DIBUJOS_O_PEGATINAS",
+    "SELLO",
+    "PAPEL_RASGADO",
+    "FLECHAS_A_MANO",
+    "PALABRA_DETRAS"
+  ],
+  "capas": [
+    "crema con personajes de línea",
+    "trama de puntos y estrella azul",
+    "dos bebidas recortadas que tapan la base del titular",
+    "«New» script de contorno + titular heavy azul",
+    "sello naranja",
+    "franja azul rasgada",
+    "flechas"
+  ],
+  "reticula": "Tres franjas horizontales; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "heavy",
+      "escala": 7
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script de contorno",
+      "escala": 6
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#FAF4E7",
+      "rol": "crema"
+    },
+    {
+      "hex": "#265694",
+      "rol": "azul"
+    },
+    {
+      "hex": "#B56A34",
+      "rol": "naranja"
+    }
+  ],
+  "foto": "Recortes con sombra",
+  "recursos": [
+    {
+      "recurso": "muchos recursos",
+      "funcion": "es el límite de densidad"
+    }
+  ],
+  "lectura": [
+    "el titular",
+    "las bebidas",
+    "el sello"
+  ],
+  "porQueFunciona": "Funciona a pesar de la carga porque va en tres franjas.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

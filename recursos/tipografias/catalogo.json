@@ -8,8 +8,22 @@
       "licencia": "OFL-1.1",
       "fuente": "https://github.com/google/fonts/tree/main/ofl/anybody",
       "descargada": "2026-11-06",
-      "clasificacion": ["grotesca", "variable", "ultracondensada", "display"],
-      "ejes": { "wdth": [50, 150], "wght": [100, 900] }
+      "clasificacion": [
+        "grotesca",
+        "variable",
+        "ultracondensada",
+        "display"
+      ],
+      "ejes": {
+        "wdth": [
+          50,
+          150
+        ],
+        "wght": [
+          100,
+          900
+        ]
+      }
     },
     {
       "id": "archivo",
@@ -18,8 +32,22 @@
       "licencia": "OFL-1.1",
       "fuente": "https://github.com/google/fonts/tree/main/ofl/archivo",
       "descargada": "2026-11-06",
-      "clasificacion": ["grotesca", "variable", "texto", "versalitas"],
-      "ejes": { "wdth": [62, 125], "wght": [100, 900] }
+      "clasificacion": [
+        "grotesca",
+        "variable",
+        "texto",
+        "versalitas"
+      ],
+      "ejes": {
+        "wdth": [
+          62,
+          125
+        ],
+        "wght": [
+          100,
+          900
+        ]
+      }
     },
     {
       "id": "league-gothic",
@@ -28,8 +56,19 @@
       "licencia": "OFL-1.1",
       "fuente": "https://github.com/google/fonts/tree/main/ofl/leaguegothic",
       "descargada": "2026-11-07",
-      "clasificacion": ["grotesca", "condensada", "alta", "display", "tipo-de-madera"],
-      "ejes": { "wdth": [75, 100] },
+      "clasificacion": [
+        "grotesca",
+        "condensada",
+        "alta",
+        "display",
+        "tipo-de-madera"
+      ],
+      "ejes": {
+        "wdth": [
+          75,
+          100
+        ]
+      },
       "nota": "Revival de Alternate Gothic No. 1 (1903), de la época de los carteles de tipos de madera. Alta, estrecha y pesada."
     },
     {
@@ -39,7 +78,11 @@
       "licencia": "OFL-1.1",
       "fuente": "https://github.com/google/fonts/tree/main/ofl/ibmplexmono",
       "descargada": "2026-11-07",
-      "clasificacion": ["monoespaciada", "texto", "versalitas"]
+      "clasificacion": [
+        "monoespaciada",
+        "texto",
+        "versalitas"
+      ]
     },
     {
       "id": "plex-mono-regular",
@@ -48,7 +91,183 @@
       "licencia": "OFL-1.1",
       "fuente": "https://github.com/google/fonts/tree/main/ofl/ibmplexmono",
       "descargada": "2026-11-07",
-      "clasificacion": ["monoespaciada", "texto"]
+      "clasificacion": [
+        "monoespaciada",
+        "texto"
+      ]
+    },
+    {
+      "id": "bodoni-moda",
+      "familia": "Bodoni Moda",
+      "archivo": "bodoni-moda/BodoniModa[opsz,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/bodonimoda",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "didona",
+        "serif",
+        "alto-contraste",
+        "display",
+        "variable"
+      ],
+      "ejes": {
+        "opsz": [
+          6,
+          96
+        ],
+        "wght": [
+          400,
+          900
+        ]
+      },
+      "nota": "Para la familia F4 (oscuro editorial: post-11, 20, 22)."
+    },
+    {
+      "id": "bodoni-moda-italica",
+      "familia": "Bodoni Moda",
+      "archivo": "bodoni-moda/BodoniModa-Italic[opsz,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/bodonimoda",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "didona",
+        "serif",
+        "italica",
+        "alto-contraste",
+        "variable"
+      ],
+      "ejes": {
+        "opsz": [
+          6,
+          96
+        ],
+        "wght": [
+          400,
+          900
+        ]
+      }
+    },
+    {
+      "id": "ballet",
+      "familia": "Ballet",
+      "archivo": "ballet/Ballet[opsz].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/ballet",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "script",
+        "formal",
+        "florituras",
+        "alto-contraste",
+        "variable"
+      ],
+      "ejes": {
+        "opsz": [
+          16,
+          72
+        ]
+      },
+      "nota": "Script de florituras para logotipos tipográficos (post-11 «Dishes at», 20, 21, 14)."
+    },
+    {
+      "id": "kaushan-script",
+      "familia": "Kaushan Script",
+      "archivo": "kaushan-script/KaushanScript-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/kaushanscript",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "script",
+        "pincel"
+      ],
+      "nota": "Script de pincel que cruza un palo seco (post-12 «Tasty», 24 «Paella», 30)."
+    },
+    {
+      "id": "fraunces",
+      "familia": "Fraunces",
+      "archivo": "fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/fraunces",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "serif",
+        "variable",
+        "display",
+        "texto",
+        "soft"
+      ],
+      "ejes": {
+        "opsz": [
+          9,
+          144
+        ],
+        "wght": [
+          100,
+          900
+        ],
+        "SOFT": [
+          0,
+          100
+        ],
+        "WONK": [
+          0,
+          1
+        ]
+      },
+      "nota": "Tipografía de marca de Café Albor (títulos)."
+    },
+    {
+      "id": "fraunces-italica",
+      "familia": "Fraunces",
+      "archivo": "fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/fraunces",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "serif",
+        "italica",
+        "variable",
+        "display"
+      ],
+      "ejes": {
+        "opsz": [
+          9,
+          144
+        ],
+        "wght": [
+          100,
+          900
+        ],
+        "SOFT": [
+          0,
+          100
+        ],
+        "WONK": [
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "work-sans",
+      "familia": "Work Sans",
+      "archivo": "work-sans/WorkSans[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/worksans",
+      "descargada": "2026-11-07",
+      "clasificacion": [
+        "grotesca",
+        "variable",
+        "texto",
+        "versalitas"
+      ],
+      "ejes": {
+        "wght": [
+          100,
+          900
+        ]
+      },
+      "nota": "Tipografía de marca de Café Albor (textos)."
     }
   ]
 }

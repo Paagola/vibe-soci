@@ -1,0 +1,27 @@
+{
+  "id": "etx-soc-v1d-tu-prompt-degradada",
+  "local": "asador-etxebarri",
+  "descripcion": "V1 con la foto degradada: el prompt que gustó, tal cual, con la foto degradada como única referencia.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/prueba-metodo-society/prompts/mcp/v1.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba-degradada",
+      "etiqueta": "@image1 (real photograph of the dish, degraded phone version)",
+      "ladoMaximo": 2048,
+      "rol": {
+        "nombre": "foto degradada del plato",
+        "gobierna": "Solo la comida y la vajilla: exactamente dos gambas rojas a la brasa (cabeza, antenas, patas, sal gruesa, puntas tostadas) y el plato cuadrado de cristal esmerilado.",
+        "noSeCopia": "La calidad (pequeña, torcida, fría, movida), el mantel, las manchas, la luz de día y el ángulo alto."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz y encuadre nuevos (macro a ras de mesa, clave baja).",
+    "Partida de la foto DEGRADADA (etx-real-gamba-degradada, SOLO_PRUEBA_COMPOSICION): prueba de que el método aguanta fotos hechas con prisa (punto 8 del usuario, 07/11)."
+  ]
+}

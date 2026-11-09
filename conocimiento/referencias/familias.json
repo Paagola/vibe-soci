@@ -1,0 +1,218 @@
+{
+  "nota": "Familias de los 29 posts de referencia del usuario (biblioteca/referencias), analizadas a mano el 07/11/2026 (diseno/f1_6/FASE-0.md §2). «encajaCon» son tonos de marca con los que encaja cada familia: sirven para proponer tres familias cuando el usuario no tiene referencia.",
+  "familias": [
+    {
+      "id": "F1",
+      "nombre": "Color plano + recorte + palabra detrás",
+      "posts": [
+        "post-03",
+        "post-12"
+      ],
+      "fondo": "COLOR",
+      "receta": "Fondo plano saturado (o color de marca) → una palabra ultracondensada a ancho completo, tapada abajo por el producto entre un 30 y un 45 % → producto recortado grande, vista lateral, sombra de contacto → script que cruza la palabra → una fila pequeña abajo. Dos o tres tintas, a ser posible complementarias.",
+      "faltaEnElCompositor": [
+        "fuentes script (ya en el catálogo: kaushan-script, ballet)",
+        "máscara fiable: foto nueva sobre fondo controlado (croma)"
+      ],
+      "encajaCon": [
+        "canalla",
+        "urbano",
+        "callejero",
+        "desenfadado",
+        "joven"
+      ]
+    },
+    {
+      "id": "F2",
+      "nombre": "Palabra repetida como patrón",
+      "posts": [
+        "post-09",
+        "post-25",
+        "post-28"
+      ],
+      "fondo": "COLOR",
+      "receta": "Fondo plano o foto oscura → una palabra corta repetida en filas o rejilla, una sola familia → el producto o una mano tapan las repeticiones del centro → como mucho un sello.",
+      "faltaEnElCompositor": [
+        "capa «patrón» (hoy hay que escribir cada fila)",
+        "giro libre del recorte"
+      ],
+      "encajaCon": [
+        "canalla",
+        "urbano",
+        "callejero",
+        "desenfadado",
+        "divertido"
+      ]
+    },
+    {
+      "id": "F3",
+      "nombre": "Color plano de oferta con recurso",
+      "posts": [
+        "post-02",
+        "post-05",
+        "post-16",
+        "post-17"
+      ],
+      "fondo": "COLOR",
+      "receta": "Fondo plano con textura sutil → producto recortado (cenital o lateral) → palabra girada o arcos alrededor del producto → sello con un dato real → tira, papel o mancha como firma.",
+      "faltaEnElCompositor": [
+        "texto en arco o sobre un trazo",
+        "capa vectorial (sellos, manchas, tiras)",
+        "papel rasgado",
+        "giro libre del recorte"
+      ],
+      "encajaCon": [
+        "desenfadado",
+        "familiar",
+        "informal",
+        "alegre"
+      ]
+    },
+    {
+      "id": "F4",
+      "nombre": "Oscuro editorial: serif o script",
+      "posts": [
+        "post-07",
+        "post-11",
+        "post-14",
+        "post-20",
+        "post-21",
+        "post-22"
+      ],
+      "fondo": "OSCURO",
+      "receta": "Escena o estudio oscuro a sangre, luz lateral o flash → plato en ¾ en la mitad baja con aire arriba → logotipo tipográfico de script con didona o serif, en crema o en un color sacado del plato → versalitas pequeñas → una acción opcional (verter, servir).",
+      "faltaEnElCompositor": [],
+      "encajaCon": [
+        "sobrio",
+        "elegante",
+        "nocturno",
+        "artesano",
+        "fuego",
+        "clasico",
+        "premium"
+      ]
+    },
+    {
+      "id": "F5",
+      "nombre": "Escena oscura con información o marco",
+      "posts": [
+        "post-01",
+        "post-06",
+        "post-08"
+      ],
+      "fondo": "FOTO",
+      "receta": "Escena del local o del producto desenfocada → la información práctica ordenada (tarjeta translúcida, columnas) o un marco del que sale el producto → dibujos de línea.",
+      "faltaEnElCompositor": [
+        "tarjeta translúcida con desenfoque",
+        "dibujos de línea"
+      ],
+      "encajaCon": [
+        "eventos",
+        "cocteleria",
+        "ambiente"
+      ]
+    },
+    {
+      "id": "F6",
+      "nombre": "Blanco o claro editorial",
+      "posts": [
+        "post-04",
+        "post-15",
+        "post-29"
+      ],
+      "fondo": "CLARO",
+      "receta": "Blanco o piedra clara → plato cenital cortado por un borde, o un elemento que cuelga → titular suizo apretado o palabra girada que sangra → etiquetas, (01) o anotaciones con flechas.",
+      "faltaEnElCompositor": [
+        "flechas a mano"
+      ],
+      "encajaCon": [
+        "sobrio",
+        "elegante",
+        "minimalista",
+        "sereno",
+        "alta cocina"
+      ]
+    },
+    {
+      "id": "F7",
+      "nombre": "Macro a sangre + franja de papel",
+      "posts": [
+        "post-24",
+        "post-30"
+      ],
+      "fondo": "FOTO",
+      "receta": "Macro a sangre arriba y abajo → franja de papel rasgado (blanco o negro arrugado) → logotipo tipográfico de heavy y script encima.",
+      "faltaEnElCompositor": [
+        "activo de papel con borde rasgado"
+      ],
+      "encajaCon": [
+        "artesano",
+        "rustico",
+        "fuego",
+        "contundente",
+        "canalla",
+        "generoso"
+      ]
+    },
+    {
+      "id": "F8",
+      "nombre": "Salpicadura congelada sobre claro",
+      "posts": [
+        "post-18",
+        "post-19"
+      ],
+      "fondo": "CLARO",
+      "receta": "Fondo claro o partido → bebida recortada con salpicadura congelada y elementos volando → titular que pasa a contorno al cruzar el producto.",
+      "faltaEnElCompositor": [
+        "contorno dividido por la máscara",
+        "la salpicadura tiene que venir de la foto"
+      ],
+      "encajaCon": [
+        "fresco",
+        "alegre",
+        "vibrante",
+        "juvenil"
+      ]
+    },
+    {
+      "id": "F9",
+      "nombre": "Ilustrado y pegatinas",
+      "posts": [
+        "post-13",
+        "post-26",
+        "post-27"
+      ],
+      "fondo": "COLOR",
+      "receta": "Flash de día, colores planos → pegatinas o personajes, sellos, flechas, trama → titular heavy o script retro.",
+      "faltaEnElCompositor": [
+        "ilustraciones",
+        "trama de puntos",
+        "sellos"
+      ],
+      "encajaCon": [
+        "desenfadado",
+        "divertido",
+        "familiar",
+        "juvenil"
+      ]
+    },
+    {
+      "id": "F10",
+      "nombre": "Cenital a sangre con texto que sigue la forma",
+      "posts": [
+        "post-10"
+      ],
+      "fondo": "FOTO",
+      "receta": "Cenital a sangre → texto en arcos siguiendo el borde del plato → una mano que sirve.",
+      "faltaEnElCompositor": [
+        "texto en arco a partir de la elipse del plato"
+      ],
+      "encajaCon": [
+        "luminoso",
+        "compartir",
+        "mediterraneo",
+        "alegre"
+      ]
+    }
+  ]
+}

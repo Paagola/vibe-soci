@@ -1,0 +1,36 @@
+{
+  "id": "etx-soc-v2-tu-prompt-mejorado",
+  "local": "asador-etxebarri",
+  "descripcion": "V2: el prompt que gustó + método Society (ficha de texturas, luz con fuente, color asignado, regla de anatomía), fiel a la imagen que gustó: macro a ras de mesa, mantel blanco, sala oscura, canto del plato brillando.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/prueba-metodo-society/prompts/mcp/v2.txt",
+  "referencias": [
+    {
+      "activo": "etx-real-gamba",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: exactamente dos gambas rojas a la brasa (cabeza, antenas, patas, sal gruesa, puntas tostadas) y el plato cuadrado de cristal esmerilado.",
+        "noSeCopia": "El mantel blanco, las manchas, el borde del otro plato, la luz de día plana y el ángulo alto. Tampoco la colocación amontonada: en la prueba van paralelas."
+      }
+    },
+    {
+      "archivo": "proyectos/prueba-metodo-society/refs/ficha-texturas-gamba.jpg",
+      "etiqueta": "@image2 (real texture sheet)",
+      "ladoMaximo": 1212,
+      "rol": {
+        "nombre": "ficha de texturas",
+        "gobierna": "Solo las texturas de superficie: caparazón brillante con segmentos, granos de sal gruesa, antenas finas translúcidas, patas con puntas tostadas y cristal esmerilado verde grisáceo.",
+        "noSeCopia": "La cuadrícula ni la disposición de los recortes."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz y encuadre nuevos (macro a ras de mesa, clave baja; plato cortado por el borde).",
+    "Medidas ESTIMADAS a partir de la foto, no confirmadas por el restaurante: plato de unos 26 cm y gambas de unos 18 cm. Solo orientan al modelo; no son datos para nada que se publique."
+  ]
+}

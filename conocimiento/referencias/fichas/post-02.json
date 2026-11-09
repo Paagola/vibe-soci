@@ -1,0 +1,69 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SUSHI» con texto curvo",
+  "familia": "F3",
+  "mecanismos": [
+    "TEXTO_CURVO",
+    "SELLO",
+    "PATRON_REPETIDO"
+  ],
+  "capas": [
+    "naranja plano con «SUSHI» fantasma repetido tono sobre tono",
+    "servilleta verde recortada y girada en diagonal",
+    "bandeja cenital recortada con sombra suave, salsera y palillos",
+    "textos curvos pequeños alrededor de la bandeja y la salsera",
+    "«30 % OFF» en recuadro discontinuo",
+    "«SUSHI» gigante abajo a la derecha"
+  ],
+  "reticula": "Diagonal; bloque del titular abajo a la derecha; textos menores en esquinas; margen ≈ 9 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca condensada heavy",
+      "escala": 14
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "palo seco",
+      "escala": 2
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "versalitas en curva",
+      "escala": 1.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#DB5B0A",
+      "rol": "fondo dominante (66 %)"
+    },
+    {
+      "hex": "#81A286",
+      "rol": "complementario: la servilleta"
+    },
+    {
+      "hex": "#F1E3D6",
+      "rol": "texto"
+    }
+  ],
+  "foto": "Cenital recortada, girada unos 20°",
+  "recursos": [
+    {
+      "recurso": "texto curvo",
+      "funcion": "abraza el producto"
+    },
+    {
+      "recurso": "sello de descuento",
+      "funcion": "dato de la oferta"
+    }
+  ],
+  "lectura": [
+    "la bandeja (verde sobre naranja)",
+    "SUSHI",
+    "30 % OFF"
+  ],
+  "porQueFunciona": "Complementarios naranja y verde; la diagonal da movimiento; el texto rodea sin tapar.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

@@ -1,0 +1,97 @@
+{
+  "fecha": "2026-11-08T22:08:46.122Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "proyectos/posts-tres-locales/fotos-web/churros-casa-aranda.jpg",
+  "plato": "Churros con chocolate de Casa Aranda, churrería de Málaga fundada en 1932. Foto de una mesa del local: churros, taza de chocolate y café con leche.",
+  "lado": {
+    "ancho": 1725,
+    "alto": 1725
+  },
+  "referencia": "post-03",
+  "intentos": [
+    {
+      "problemas": [
+        "La cámara nueva (15°) está a 30° de la foto subida (45°): tiene que quedar a más de 30° (por ejemplo, rasante o cenital si la original es un ¾ alto)."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 45,
+      "encuadre": "Plano medio en ángulo de 45 grados sobre mesa exterior metálica de terraza, mostrando un vaso de café con leche sobre plato blanco, un sobre de azúcar, una taza de chocolate caliente con cuchara, una bandeja metálica con churros y un servilletero verde de fondo.",
+      "luz": "Luz natural de día exterior, dura y plana, con reflejos especulares intensos sobre la mesa metálica.",
+      "elementos": [
+        {
+          "nombre": "Churros estilo tejeringo dorados y crujientes",
+          "estado": "Recién fritos, dorados, sección irregular",
+          "recuento": 4
+        },
+        {
+          "nombre": "Taza de chocolate caliente espeso",
+          "estado": "Espeso, oscuro, brillante",
+          "recuento": 1
+        },
+        {
+          "nombre": "Vaso de café con leche",
+          "estado": "Con capa ligera de espuma superior",
+          "recuento": 1
+        },
+        {
+          "nombre": "Platos blancos de loza",
+          "estado": "Límpios",
+          "recuento": 2
+        },
+        {
+          "nombre": "Bandeja metálica ovalada",
+          "estado": "Plateada, mate",
+          "recuento": 1
+        },
+        {
+          "nombre": "Cucharilla metálica",
+          "estado": "Brillante",
+          "recuento": 1
+        },
+        {
+          "nombre": "Sobre de azúcar",
+          "estado": "Cerrado, impreso",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Servilletero verde de plástico que distrae al fondo",
+        "Reflejos duros y descontrolados en la mesa metálica",
+        "Encuadre abarrotado y poco profesional"
+      ],
+      "utilizable": true,
+      "motivo": "Contiene la lista completa de elementos reales del desayuno tradicional (churros, chocolate, café y vajilla)."
+    },
+    "huecos": {
+      "plato": "traditional spanish churros with thick hot chocolate and white coffee",
+      "origen": "from an authentic traditional churrería",
+      "elementos": "four golden crisp fried churros on a small oval metal tray, one cup of thick dark hot chocolate on a white saucer with a silver spoon, one glass of coffee with milk on a white saucer, one paper sugar packet",
+      "recuento": "Exactly four churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray, one silver spoon, one sugar packet.",
+      "camara": {
+        "anguloGrados": 10,
+        "descripcion": "a low-angle studio hero shot at 10 degrees from table level, isolated style",
+        "objetivoMm": 90,
+        "apertura": 4
+      },
+      "ideaGrafica": "the dish of churros and hot chocolate cup placed as a crisp central cut-out with soft contact shadow in the lower half of the frame, leaving generous clean space in the upper background for bold typography overlay",
+      "luz": "soft directional studio flash from the upper left creating subtle highlights on the chocolate and crispy texture on the churros",
+      "colorDominante": "flat warm terracotta background with soft contrast"
+    },
+    "decisiones": [
+      "Cámara a 10° (diferencia de 35° respecto a los 45° originales) para cumplir holgadamente la regla de superar los 30° de diferencia y lograr una perspectiva frontal baja de bodegón editorial.",
+      "Adopción de la familia A (recorte/aislamiento sobre fondo de color plano) siguiendo la referencia `post-03`, eliminando el servilletero y el fondo caótico del local real.",
+      "Composición en tercio inferior dejando el 45% superior despejado para permitir el juego tipográfico 'detrás del producto' de la referencia."
+    ]
+  },
+  "prompt": "@image1 is a real photo of traditional spanish churros with thick hot chocolate and white coffee from an authentic traditional churrería. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: four golden crisp fried churros on a small oval metal tray, one cup of thick dark hot chocolate on a white saucer with a silver spoon, one glass of coffee with milk on a white saucer, one paper sugar packet. Exactly four churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray, one silver spoon, one sugar packet. Nothing else added. New composition by a professional food photographer: a low-angle studio hero shot at 10 degrees from table level, isolated style, 90 mm lens at f/4, the dish of churros and hot chocolate cup placed as a crisp central cut-out with soft contact shadow in the lower half of the frame, leaving generous clean space in the upper background for bold typography overlay. Soft directional studio flash from the upper left creating subtle highlights on the chocolate and crispy texture on the churros, flat warm terracotta background with soft contrast. Photographic realism, no text.",
+  "problemasFinales": []
+}

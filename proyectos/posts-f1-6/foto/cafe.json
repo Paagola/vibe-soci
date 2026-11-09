@@ -1,0 +1,96 @@
+{
+  "fecha": "2026-11-07T19:05:22.361Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "plantillas/fotos/cafe-albor-cafe.webp",
+  "plato": "cafés de especialidad con arte latte en tazas de cerámica artesanal, sobre bandeja de madera",
+  "lado": {
+    "ancho": 382,
+    "alto": 510
+  },
+  "referencia": "post-10",
+  "intentos": [
+    {
+      "problemas": [
+        "La foto mide 382 × 510 px: anótalo en \"defectos\" y di si los detalles finos se pueden leer."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 55,
+      "encuadre": "Un primer plano de tres tazas de café en una bandeja de madera sobre una mesa, con el interior borroso de una cafetería como fondo. La escena es informal y ambiental.",
+      "luz": "Luz ambiental suave y plana, presumiblemente de día, sin sombras ni reflejos pronunciados. La iluminación es difusa y uniforme, careciendo de dirección o carácter.",
+      "elementos": [
+        {
+          "nombre": "tazas de cerámica artesanal",
+          "estado": "dos más grandes, una más pequeña",
+          "recuento": 3
+        },
+        {
+          "nombre": "cafés de especialidad",
+          "estado": "con arte latte (uno de helecho, uno abstracto, uno de corazón)",
+          "recuento": 3
+        },
+        {
+          "nombre": "bandeja de madera",
+          "estado": "rectangular, de madera clara, con bordes redondeados",
+          "recuento": 1
+        },
+        {
+          "nombre": "cucharillas de metal",
+          "estado": "plateadas, de diseño simple",
+          "recuento": 3
+        },
+        {
+          "nombre": "servilleta de papel",
+          "estado": "beige claro, plegada, con un logotipo apenas visible",
+          "recuento": 1
+        },
+        {
+          "nombre": "mesa de madera",
+          "estado": "oscura, con vetas de madera visibles",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Baja resolución (382 × 510 px), lo que dificulta la apreciación de detalles finos del arte latte y las texturas.",
+        "Iluminación plana que no realza el producto ni crea volumen.",
+        "Fondo desenfocado pero ruidoso y distraído, con elementos como personas y lámparas que restan protagonismo al plato.",
+        "Encuadre casual y poco profesional, sin intención compositiva clara.",
+        "Las cucharillas están colocadas de forma descuidada."
+      ],
+      "utilizable": true,
+      "motivo": "La foto proporciona un inventario claro y completo de todos los elementos reales necesarios para la nueva composición, incluyendo los detalles del arte latte y la vajilla artesanal."
+    },
+    "huecos": {
+      "plato": "specialty coffees with latte art",
+      "origen": "from a cafe specializing in craft ceramic cups",
+      "elementos": "three ceramic artisan cups (two larger, one smaller espresso-sized) each filled with coffee displaying intricate latte art (fern, abstract, heart patterns), a light-colored rectangular wooden tray with rounded corners, three silver metal spoons, and one folded light brown paper napkin, all resting on a dark wooden table.",
+      "recuento": "Exactly three cups, three coffees, three spoons, one tray, one napkin.",
+      "camara": {
+        "anguloGrados": 90,
+        "descripcion": "a striking top-down (90 degrees) view",
+        "objetivoMm": 50,
+        "apertura": 2.8
+      },
+      "ideaGrafica": "the light-colored wooden tray positioned diagonally, filling most of the frame from the lower left to the upper right. The three coffee cups are arranged strategically on the tray, with the smallest cup prominently in the foreground, creating a clean negative space in the upper left corner for text. The spoons are neatly arranged to the left of the cups, and the napkin peeks in from the lower right corner, just on the dark wooden table.",
+      "luz": "hard overhead daylight from a large window, creating crisp, short shadows beneath the cups and tray, emphasizing the latte art and the texture of the ceramic and wood.",
+      "colorDominante": "the natural tones of the wooden tray and ceramic cups, with the rich browns of the coffee and dark table, accentuating the white latte art as the only strong color pop."
+    },
+    "decisiones": [
+      "**Ángulo de cámara y familia visual (Regla §2 y §1)**: Se elige un ángulo cenital (90°) y luz de día dura para la nueva foto. Esto se alinea con la familia visual 'c. Luz de día o flash directo' y el espíritu de la referencia 'post-10' (que es cenital con luz dura), garantizando una 'foto nueva hecha por un profesional, no su foto mejorada'. El cambio de ángulo de 55° a 90° también cumple el requisito de que la cámara nueva esté a más de 30° de la original.",
+      "**Composición y jerarquía (Regla §3 y §5)**: La referencia 'post-10' utiliza una bandeja circular que ocupa gran parte del encuadre y sirve de base para la tipografía. Aquí, la bandeja rectangular de madera se posiciona diagonalmente para crear una composición dinámica y, crucialmente, generar un espacio limpio en la esquina superior izquierda. Esto permite colocar el texto sin competir con el producto, siguiendo el principio de jerarquía y legibilidad para el móvil, y que el producto ocupe el 40-65% del lienzo como protagonista.",
+      "**Fidelidad de elementos (Regla §1)**: Se enumeran rigurosamente todos los elementos de la foto original (tazas, cafés, arte latte, bandeja, cucharillas, servilleta, mesa) y se especifica 'Nothing else added' para garantizar que no se introduzcan elementos nuevos (como una mano en acción, que la referencia 'post-10' sí incluye, pero que no está en la foto original y la Regla §1 prohíbe añadir).",
+      "**Detalle y textura (Regla §2 y 'Fallos conocidos')**: La apertura de f/2.8 y el foco en la taza más cercana, combinados con la luz dura, buscan resaltar las texturas reales de la cerámica artesanal, la madera de la bandeja y los detalles finos del arte latte, evitando que el producto parezca de plástico y asegurando que los detalles sean nítidos a pesar de la baja resolución de la foto original.",
+      "**Color (Regla §6)**: Se elige una paleta de colores naturales y neutros (marrón de la madera, crema de las tazas, tonos del café) con el blanco brillante del arte latte como el 'único color fuerte'. Esto crea contraste y permite que el arte latte destaque, siguiendo el principio de 'pocas tintas y con identidad' y que haya 'un único color fuerte'."
+    ]
+  },
+  "prompt": "@image1 is a real photo of specialty coffees with latte art from a cafe specializing in craft ceramic cups. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: three ceramic artisan cups (two larger, one smaller espresso-sized) each filled with coffee displaying intricate latte art (fern, abstract, heart patterns), a light-colored rectangular wooden tray with rounded corners, three silver metal spoons, and one folded light brown paper napkin, all resting on a dark wooden table. Exactly three cups, three coffees, three spoons, one tray, one napkin. Nothing else added. New composition by a professional food photographer: a striking top-down (90 degrees) view, 50 mm lens at f/2.8, the light-colored wooden tray positioned diagonally, filling most of the frame from the lower left to the upper right. The three coffee cups are arranged strategically on the tray, with the smallest cup prominently in the foreground, creating a clean negative space in the upper left corner for text. The spoons are neatly arranged to the left of the cups, and the napkin peeks in from the lower right corner, just on the dark wooden table. Hard overhead daylight from a large window, creating crisp, short shadows beneath the cups and tray, emphasizing the latte art and the texture of the ceramic and wood, the natural tones of the wooden tray and ceramic cups, with the rich browns of the coffee and dark table, accentuating the white latte art as the only strong color pop. Photographic realism, no text.",
+  "problemasFinales": []
+}

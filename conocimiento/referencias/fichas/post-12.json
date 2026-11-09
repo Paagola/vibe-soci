@@ -1,0 +1,63 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Tasty BURGER»",
+  "familia": "F1",
+  "mecanismos": [
+    "PALABRA_DETRAS",
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "cobalto con textura de plástico",
+    "«BURGER» lima ultracondensada a ancho completo, tapada abajo por la burger",
+    "burger recortada a la altura del pan",
+    "«Tasty» script blanca cruzando",
+    "fila de contacto y píldora"
+  ],
+  "reticula": "Central; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "ultracondensada",
+      "escala": 30
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script",
+      "escala": 12
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 1.5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#0D65C1",
+      "rol": "fondo cobalto"
+    },
+    {
+      "hex": "#DDE75A",
+      "rol": "palabra lima"
+    },
+    {
+      "hex": "#955E26",
+      "rol": "producto"
+    }
+  ],
+  "foto": "Recorte lateral con todas las capas",
+  "recursos": [
+    {
+      "recurso": "palabra detrás + script",
+      "funcion": "cuatro planos de profundidad"
+    }
+  ],
+  "lectura": [
+    "la burger",
+    "BURGER Tasty",
+    "ORDER NOW"
+  ],
+  "porQueFunciona": "Contraste máximo de casi complementarios y cuatro planos.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

@@ -1,0 +1,157 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "dak-post",
+  "version": 6,
+  "titulo": "DAK · F2 palabra repetida (post-09)",
+  "notas": "Pieza de prueba (no consta contrato). De post-09 se toma: la palabra repetida en filas a todo lo ancho, el producto recortado que tapa las del centro y una fila final distinta; la etiqueta pequeña arriba entre filetes. No se copia: SANDWICH, Borcelle, ORDER NOW, la web ni el crema. El mecanismo nace del plato: la Manhattan Tower es una torre, y la palabra se apila como sus pisos. PENDIENTE DE DECISIÓN DEL USUARIO: la foto es el intento 1, descartado por la regla de ángulo (dos fallos seguidos).",
+  "marca": "dak-burger",
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "patron": {
+        "fuente": "anybody",
+        "ejes": {
+          "wdth": 150,
+          "wght": 900
+        },
+        "caso": "mayusculas",
+        "tracking": -0.01,
+        "interlineado": 0.86,
+        "color": "@rojo"
+      }
+    }
+  },
+  "activos": {
+    "foto": "dak-post-f2-foto-mcp-1"
+  },
+  "textos": {
+    "etiqueta": "DAK Burger · La Cala de Mijas",
+    "patron": "MANHATTAN\nTOWER\nTOWER\nTOWER\nTOWER\nTOWER\nTOWER",
+    "apoyo": "3 carnes · 3 bacon · 3 cheddar"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@negro"
+    },
+    {
+      "id": "patron",
+      "tipo": "texto",
+      "texto": "@patron",
+      "estilo": "patron",
+      "caja": {
+        "x": 0.067,
+        "y": 0.145,
+        "w": 0.866,
+        "h": 0.73
+      },
+      "ajuste": "ancho-por-linea"
+    },
+    {
+      "id": "sombra",
+      "tipo": "sombra",
+      "de": "burger",
+      "modo": "proyectada",
+      "desenfoque": 40,
+      "desplazamiento": {
+        "x": 0,
+        "y": 28
+      },
+      "opacidad": 0.6
+    },
+    {
+      "id": "burger",
+      "tipo": "recorte",
+      "activo": "foto",
+      "escala": {
+        "altoSujeto": 0.4
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.067,
+          "y": 0.3,
+          "w": 0.866,
+          "h": 0.48
+        },
+        "alinear": "centro"
+      },
+      "bordeSuave": 0.8,
+      "contraerBorde": 1
+    },
+    {
+      "id": "filete-izq",
+      "tipo": "forma",
+      "figura": "linea",
+      "desde": {
+        "x": 0.067,
+        "y": 0.094
+      },
+      "hasta": {
+        "x": 0.14,
+        "y": 0.094
+      },
+      "color": "@rojo",
+      "grosor": 2
+    },
+    {
+      "id": "filete-der",
+      "tipo": "forma",
+      "figura": "linea",
+      "desde": {
+        "x": 0.86,
+        "y": 0.094
+      },
+      "hasta": {
+        "x": 0.933,
+        "y": 0.094
+      },
+      "color": "@rojo",
+      "grosor": 2
+    },
+    {
+      "id": "etiqueta",
+      "tipo": "texto",
+      "texto": "@etiqueta",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.15,
+        "y": 0.083,
+        "w": 0.7,
+        "h": 0.03
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "centro",
+      "color": "@rojo"
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.067,
+        "y": 0.875,
+        "w": 0.866,
+        "h": 0.03
+      },
+      "ajuste": "fijo",
+      "tamano": 36,
+      "alinear": "centro",
+      "color": "@papel"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "etiqueta",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    }
+  ]
+}

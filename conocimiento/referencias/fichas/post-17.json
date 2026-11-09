@@ -1,0 +1,69 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SPAGHETTI Bolognese» simétrico",
+  "familia": "F3",
+  "mecanismos": [
+    "PLATO_CORTADO_POR_EL_BORDE",
+    "FORMAS_ORGANICAS",
+    "LOGOTIPO_TIPOGRAFICO"
+  ],
+  "capas": [
+    "ultramar",
+    "manchas orgánicas amarillas en los lados",
+    "plato vacío cortado por arriba y plato de espaguetis cortado por abajo (cenitales)",
+    "antetítulo espaciado",
+    "«SPAGHETTI» + «Bolognese» script",
+    "botón con flechas"
+  ],
+  "reticula": "Simétrica; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "heavy",
+      "escala": 7
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script",
+      "escala": 6
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "versalitas",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#1803A8",
+      "rol": "fondo ultramar"
+    },
+    {
+      "hex": "#E1AB53",
+      "rol": "manchas amarillas"
+    },
+    {
+      "hex": "#E3E3E5",
+      "rol": "platos y texto"
+    }
+  ],
+  "foto": "Cenitales recortados, cortados por los bordes",
+  "recursos": [
+    {
+      "recurso": "manchas",
+      "funcion": "energía"
+    },
+    {
+      "recurso": "platos cortados",
+      "funcion": "encuadran el texto"
+    }
+  ],
+  "lectura": [
+    "el título",
+    "el plato",
+    "ORDER NOW"
+  ],
+  "porQueFunciona": "Simetría y contraste azul y amarillo.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

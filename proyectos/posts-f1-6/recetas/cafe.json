@@ -1,0 +1,27 @@
+{
+  "id": "cafe-post-f10-foto",
+  "local": "cafe-albor",
+  "descripcion": "Foto nueva de los cafés para el post F10 (post-10): cenital, anillo libre alrededor de la taza grande para el texto en círculo. La foto subida mide 382 × 510 px.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/posts-f1-6/foto/cafe.txt",
+  "referencias": [
+    {
+      "activo": "cafe-real-cafes",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: los elementos y su recuento.",
+        "noSeCopia": "El encuadre, la luz, el fondo ni el ángulo de la foto subida."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, cámara a más de 30° de la foto subida).",
+    "Superficie y fondo libres (decisión del 07/11).",
+    "Foto de partida de baja resolución (382 × 510 px)."
+  ]
+}

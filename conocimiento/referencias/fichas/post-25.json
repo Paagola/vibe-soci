@@ -1,0 +1,69 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«dip»",
+  "familia": "F2",
+  "mecanismos": [
+    "PATRON_REPETIDO",
+    "ACCION_CON_MANO",
+    "TIRA_DE_CUADROS",
+    "SELLO"
+  ],
+  "capas": [
+    "oscuro",
+    "mano que moja una pieza frita en salsa",
+    "«dip» en rejilla de 3 × 5, blanco minúsculas, detrás de la mano",
+    "tiras de cuadros a los lados",
+    "sello festoneado rojo",
+    "contacto"
+  ],
+  "reticula": "Rejilla central; margen ≈ 6 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "geométrica en minúscula",
+      "escala": 5
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#0A0807",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#DEE1E4",
+      "rol": "texto"
+    },
+    {
+      "hex": "#A7591A",
+      "rol": "el frito"
+    },
+    {
+      "hex": "#613419",
+      "rol": "granate"
+    }
+  ],
+  "foto": "Acción con causa sobre fondo desenfocado",
+  "recursos": [
+    {
+      "recurso": "patrón con la palabra de la acción",
+      "funcion": "la palabra es el fondo"
+    },
+    {
+      "recurso": "tiras de cuadros",
+      "funcion": "marco lateral"
+    }
+  ],
+  "lectura": [
+    "la mano y el frito",
+    "dip",
+    "el sello"
+  ],
+  "porQueFunciona": "La palabra de la acción se convierte en el fondo.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

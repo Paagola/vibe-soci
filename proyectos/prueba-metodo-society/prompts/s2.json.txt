@@ -1,0 +1,32 @@
+{
+  "reference_roles": "@image1 is a real photograph of the dish as the restaurant serves it and governs ONLY the food and the tableware: exactly two grilled red prawns and their square frosted-glass plate. Do not take its white tablecloth, its stains, the other plate, its flat daylight or its high camera angle. @image2 is a real texture sheet cut from that same photograph: match its surface textures exactly (wet glossy shell with fine segment lines, coarse salt crystals, very thin translucent antennae, legs with small charred tips, pale green-grey frosted glass); do not copy its layout or its grid.",
+  "subject_identity": "Exactly two whole grilled red prawns, each about 18 cm long from head to tail without the antennae, with their heads, long very thin antennae and legs, lying side by side and parallel, slightly offset, on a diagonal across a square frosted-glass plate about 26 cm across. The tails point to the back-left, the heads to the front-right. The antennae run forward from the heads, cross the front-right edge of the plate and continue over the board towards the bottom-right corner of the frame.",
+  "realism": "Real editorial food photograph taken in natural light by a food photographer, not a render, not CGI.",
+  "environment": "The plate sits on a worn dark oak board with visible grain, fine knife marks and scratches, which fills the bottom of the frame. About 1.5 m behind, a plain matt slate-blue painted wall, readable as a soft gradient, brighter behind the plate and darker towards the edges; a slightly darker horizontal band at plate height marks the far edge of the table. Nothing else is on the table.",
+  "lighting": "One large soft window light from behind and to the left of the plate (about 10 o'clock, 45 degrees behind). It rims the shells and the antennae with thin bright edges, catches the salt crystals as small sparkles, makes the left bevelled edge of the frosted glass glow softly and leaves a soft sheen on the board behind the plate. The right side of the prawns falls into soft shadow. No fill from the front. The wall receives only the spill.",
+  "colour_allocation": "The dominant light is neutral daylight around 5200K: the frosted glass reads pale green-grey and the wall reads slate-blue. Warm tones exist only in the prawn shells and in the oak board. If the glass or the wall turns orange or yellow, the frame is wrong.",
+  "camera": {
+    "lens_mm": 90,
+    "aperture_f": 4,
+    "iso": 200,
+    "shutter": "1/125s",
+    "lens_to_subject_m": 0.9,
+    "subject_to_bg_m": 1.5,
+    "cct_k": 5200,
+    "visible_result": "Both prawns sharp from head to tail, salt included; the front edge of the board slightly soft; the wall a smooth out-of-focus gradient."
+  },
+  "composition": "Vertical 3:4. Camera about 20 degrees above the table: a low three-quarter view, much lower than the high angle of @image1, so the square plate reads as a flattened shape. The plate centred, slightly left, in the lower 55% of the frame; the top of the prawns at about 42% from the top. The upper 40% of the frame is empty wall, clean, for a headline added later. The antennae draw a diagonal leading line from the heads to the bottom-right corner.",
+  "scale": "The plate is about 26 cm across. Each prawn is about 18 cm long without its antennae. Exactly two prawns, no more, no fewer.",
+  "texture": {
+    "shell": "wet glossy deep-red shell with fine segment lines, a few darker roasted patches on the heads, one small specular highlight per segment",
+    "salt": "a few coarse irregular salt crystals of 2-4 mm, translucent white, resting on the shells; not a dusting",
+    "antennae": "very thin, translucent orange-red, slightly curled at the tips",
+    "legs": "thin legs with small dark charred tips",
+    "glass": "matte frosted glass, pale green-grey, with a slightly brighter bevelled edge"
+  },
+  "imperfections": "One antenna bent at an angle near its tip; a single loose salt crystal on the glass to the right of the front prawn; the legs of the two prawns slightly tangled where they touch; uneven roasting on the shells; a faint scratch on the board to the left of the plate.",
+  "render": "Unretouched RAW photograph, natural micro-contrast, fine sensor grain, no beauty retouching.",
+  "palette": "Deep-red prawns against a cool desaturated slate-blue wall and a warm dark oak board, pale green-grey glass. The background is dark but readable, not black.",
+  "mood": "Calm, honest, confident.",
+  "negatives": "No text, no letters, no logos, no watermark. No garnish, no lemon, no herbs, no sauce, no smoke, no flames. No knife, no cutlery, no second plate, no tablecloth, no bowl. No plastic-looking shells, no CGI gloss."
+}

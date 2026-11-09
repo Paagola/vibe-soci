@@ -1,0 +1,91 @@
+{
+  "fecha": "2026-11-07T19:04:15.219Z",
+  "modelos": [
+    "gemini-3.6-flash",
+    "gemini-2.5-flash"
+  ],
+  "foto": "datos/piezas/2026-11-03-salmon-glaseado-sobre-arroz-negro/fotos/01-plato.png",
+  "plato": "salmón glaseado sobre arroz negro, puré de naranja, aceite verde y brotes, plato blanco hondo",
+  "lado": {
+    "ancho": 1920,
+    "alto": 1279
+  },
+  "referencia": "post-22",
+  "intentos": [
+    {
+      "problemas": [
+        "La cámara nueva (15°) está a 30° de la foto subida (45°): tiene que quedar a más de 30° (por ejemplo, rasante o cenital si la original es un ¾ alto)."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 45,
+      "encuadre": "Plano tres cuartos medio, centrado sobre mesa de madera oscura.",
+      "luz": "Luz frontal ligeramente plana con sombras suaves y fondo oscuro.",
+      "elementos": [
+        {
+          "nombre": "Lomo de salmón",
+          "estado": "marcado a la plancha, glaseado brillante",
+          "recuento": 1
+        },
+        {
+          "nombre": "Cama de arroz negro",
+          "estado": "húmedo y compacto",
+          "recuento": 1
+        },
+        {
+          "nombre": "Quenelle de puré de naranja",
+          "estado": "textura firme con especias oscuras",
+          "recuento": 1
+        },
+        {
+          "nombre": "Aceite verde",
+          "estado": "gotas y chorretón fluido",
+          "recuento": null
+        },
+        {
+          "nombre": "Brotes verdes",
+          "estado": "frescos y erguidos",
+          "recuento": 1
+        },
+        {
+          "nombre": "Plato hondo de cerámica",
+          "estado": "blanco mate rugoso",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Ángulo 3/4 muy habitual y plano",
+        "Falta dramatismo en la iluminación y textura"
+      ],
+      "utilizable": true,
+      "motivo": "Los ingredientes y la vajilla son perfectamente distinguibles para el inventario."
+    },
+    "huecos": {
+      "plato": "glazed salmon on black rice",
+      "origen": "modern bistro restaurant",
+      "elementos": "the glazed seared salmon fillet, black rice bed, bright orange purée quenelle, green herb oil drizzle, fresh microgreens, and white shallow ceramic bowl",
+      "recuento": "Exactly ONE salmon fillet, ONE orange purée quenelle, and ONE white ceramic bowl.",
+      "camara": {
+        "anguloGrados": 10,
+        "descripcion": "dramatic low-angle eye-level shot at 10 degrees, plate sitting in the bottom 45% of the frame",
+        "objetivoMm": 85,
+        "apertura": 2.8
+      },
+      "ideaGrafica": "magazine cover layout with dish low in frame, leaving top 55% as dark clear space for typography, line of sight along the salmon length",
+      "luz": "direct hard studio flash from front-right casting a crisp shadow behind the bowl and vivid specular highlights on the salmon glaze",
+      "colorDominante": "deep emerald green backdrop, orange purée as key accent color"
+    },
+    "decisiones": [
+      "Ángulo a 10° para alejarnos más de 30° respecto al 45° original, ganando presencia visual.",
+      "Estilo editorial inspirado en post-22: luz de flash directo nítido y fondo verde oscuro profundo.",
+      "Composición pensada para maquetación de revista: producto centrado en tercio inferior, liberando la mitad superior para titular e información."
+    ]
+  },
+  "prompt": "@image1 is a real photo of glazed salmon on black rice modern bistro restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the glazed seared salmon fillet, black rice bed, bright orange purée quenelle, green herb oil drizzle, fresh microgreens, and white shallow ceramic bowl. Exactly ONE salmon fillet, ONE orange purée quenelle, and ONE white ceramic bowl. Nothing else added. New composition by a professional food photographer: dramatic low-angle eye-level shot at 10 degrees, plate sitting in the bottom 45% of the frame, 85 mm lens at f/2.8, magazine cover layout with dish low in frame, leaving top 55% as dark clear space for typography, line of sight along the salmon length. Direct hard studio flash from front-right casting a crisp shadow behind the bowl and vivid specular highlights on the salmon glaze, deep emerald green backdrop, orange purée as key accent color. Photographic realism, no text.",
+  "problemasFinales": []
+}

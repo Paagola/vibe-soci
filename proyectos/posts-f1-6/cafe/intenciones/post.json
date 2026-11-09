@@ -1,0 +1,98 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "cafe-post",
+  "version": 7,
+  "titulo": "Café Albor · F10 cenital con texto que sigue la forma (post-10)",
+  "notas": "Pieza de prueba (no consta contrato; Café Albor es la marca de ejemplo del proyecto). De post-10 se toma: el cenital a sangre y el titular que gira siguiendo el borde del recipiente. No se copia: Brunch time, la mano, el plato de raciones ni la web. El círculo sigue la taza de la rosetta.",
+  "marca": "cafe-albor",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "foto": "cafe-post-f10-foto-mcp-2"
+  },
+  "textos": {
+    "arco": "CAFÉ DE ESPECIALIDAD",
+    "logo": "Café Albor",
+    "apoyo": "Málaga · Centro Histórico"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@espresso"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "zoom": 1.15,
+      "enfoque": {
+        "x": 0.548,
+        "y": 0.47
+      }
+    },
+    {
+      "id": "arco",
+      "tipo": "circulo-texto",
+      "texto": "@arco",
+      "estilo": "titular",
+      "centro": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "radio": 0.2415,
+      "tamano": 48,
+      "giro": -95,
+      "arco": 190
+    },
+    {
+      "id": "logo",
+      "tipo": "texto",
+      "texto": "@logo",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.1,
+        "y": 0.09,
+        "w": 0.8,
+        "h": 0.06
+      },
+      "ajuste": "alto",
+      "alinear": "centro"
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.1,
+        "y": 0.172,
+        "w": 0.8,
+        "h": 0.025
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "centro"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "logo",
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SUSHI» detrás del plato",
+  "familia": "F1",
+  "mecanismos": [
+    "PALABRA_DETRAS",
+    "ENTRA_POR_LOS_BORDES",
+    "FORMAS_ORGANICAS",
+    "TEXTO_CURVO"
+  ],
+  "capas": [
+    "naranja plano",
+    "gran arco más oscuro detrás del plato",
+    "«SUSHI» dos veces, blanco gigante; el de arriba tapado por el plato (eco)",
+    "plato en ¾ recortado con sombra proyectada",
+    "dos piezas con palillos que entran por las esquinas superiores",
+    "antetítulo en versalitas espaciadas",
+    "texto circular pequeño a la derecha"
+  ],
+  "reticula": "Simétrica central; margen ≈ 6 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca extendida heavy a ancho completo",
+      "escala": 14
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "versalitas heavy espaciadas",
+      "escala": 3
+    },
+    {
+      "rol": "MARCA",
+      "clasificacion": "mínima",
+      "escala": 1
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#D9770A",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#BE5F04",
+      "rol": "arco, profundidad tono sobre tono"
+    },
+    {
+      "hex": "#F5F1ED",
+      "rol": "texto"
+    },
+    {
+      "hex": "#5C4E36",
+      "rol": "cerámica"
+    }
+  ],
+  "foto": "¾ desde unos 45°, recorte limpio",
+  "recursos": [
+    {
+      "recurso": "palabra detrás con eco",
+      "funcion": "profundidad"
+    },
+    {
+      "recurso": "palillos desde las esquinas",
+      "funcion": "llevan la vista al centro"
+    },
+    {
+      "recurso": "arco",
+      "funcion": "halo detrás del plato"
+    }
+  ],
+  "lectura": [
+    "el plato",
+    "SUSHI",
+    "IT'S SUSHI TIME!"
+  ],
+  "porQueFunciona": "Profundidad en cuatro planos (fondo, arco, palabra y plato) con una sola tinta y blanco.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

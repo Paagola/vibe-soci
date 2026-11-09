@@ -1,0 +1,72 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SMOKED BEEF MELT»",
+  "familia": "F3",
+  "mecanismos": [
+    "SELLO",
+    "TIRA_DE_CUADROS",
+    "CONTADOR_O_NUMERACION"
+  ],
+  "capas": [
+    "crema plano",
+    "titular rojo en dos líneas",
+    "subtítulo y píldora 1/3",
+    "sándwich recortado enorme en vista lateral",
+    "estrella dentada roja con el precio que pisa el sándwich",
+    "logotipo pequeño y tira de cuadros roja"
+  ],
+  "reticula": "Columna central; titular a ancho completo arriba; margen ≈ 8 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca ultranegra ancha",
+      "escala": 10
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "palo seco",
+      "escala": 2.3
+    },
+    {
+      "rol": "DATO",
+      "clasificacion": "script dentro del sello"
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#EFE6D0",
+      "rol": "fondo crema"
+    },
+    {
+      "hex": "#FD3837",
+      "rol": "único acento: texto, sello y tira"
+    },
+    {
+      "hex": "#D38046",
+      "rol": "producto"
+    }
+  ],
+  "foto": "Recorte lateral a la altura de la boca, textura real",
+  "recursos": [
+    {
+      "recurso": "sello",
+      "funcion": "precio real"
+    },
+    {
+      "recurso": "contador 1/3",
+      "funcion": "es un carrusel"
+    },
+    {
+      "recurso": "tira de cuadros",
+      "funcion": "firma de marca"
+    }
+  ],
+  "lectura": [
+    "titular",
+    "sándwich",
+    "precio"
+  ],
+  "porQueFunciona": "Responde qué es, cuánto cuesta y que hay más; dos tintas.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

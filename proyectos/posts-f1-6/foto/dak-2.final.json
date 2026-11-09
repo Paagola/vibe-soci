@@ -1,0 +1,30 @@
+{
+  "intento": 2,
+  "motivo": "Intento 1: la cámara salió a la altura de la tabla. Se describe el resultado visible de una cámara alta (lección de Society: cifras + resultado visible).",
+  "cambios": {
+    "camara": {
+      "anguloGrados": 45,
+      "descripcion": "a clearly high three-quarter view from 45 degrees above the board, much higher than @image1: the whole top of the bun reads as a wide oval and the top surface of the wooden board is visible as a broad plane around the burger, while the stacked layers still show on the front side",
+      "objetivoMm": 85,
+      "apertura": 5.6
+    },
+    "ideaGrafica": "the burger large in the middle of the frame, slightly right, the board running diagonally out of the bottom edge, the near-black background clean and even all around the burger so rows of a repeated word can run behind it later"
+  },
+  "huecos": {
+    "plato": "the Manhattan Tower burger",
+    "origen": "from a burger restaurant",
+    "elementos": "a tall stacked burger with a glossy golden brioche bun (top and bottom), three thick seared beef patties with crusty edges, crispy curled bacon between the patties, melted orange cheddar dripping over the patties, on beige parchment paper printed in black, on a dark rough wooden board",
+    "recuento": "Exactly one burger with three beef patties, three layers of bacon and three slices of cheddar.",
+    "camara": {
+      "anguloGrados": 45,
+      "descripcion": "a clearly high three-quarter view from 45 degrees above the board, much higher than @image1: the whole top of the bun reads as a wide oval and the top surface of the wooden board is visible as a broad plane around the burger, while the stacked layers still show on the front side",
+      "objetivoMm": 85,
+      "apertura": 5.6
+    },
+    "ideaGrafica": "the burger large in the middle of the frame, slightly right, the board running diagonally out of the bottom edge, the near-black background clean and even all around the burger so rows of a repeated word can run behind it later",
+    "luz": "Low-key, one hard side light from the left grazing the bun, the patty crust and the bacon, sharp highlights on the melted cheddar, everything else falling into near black",
+    "colorDominante": "the warm tones of the burger (golden bun, red bacon, orange cheddar) the only strong colours"
+  },
+  "prompt": "@image1 is a real photo of the Manhattan Tower burger from a burger restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a tall stacked burger with a glossy golden brioche bun (top and bottom), three thick seared beef patties with crusty edges, crispy curled bacon between the patties, melted orange cheddar dripping over the patties, on beige parchment paper printed in black, on a dark rough wooden board. Exactly one burger with three beef patties, three layers of bacon and three slices of cheddar. Nothing else added. New composition by a professional food photographer: a clearly high three-quarter view from 45 degrees above the board, much higher than @image1: the whole top of the bun reads as a wide oval and the top surface of the wooden board is visible as a broad plane around the burger, while the stacked layers still show on the front side, 85 mm lens at f/5.6, the burger large in the middle of the frame, slightly right, the board running diagonally out of the bottom edge, the near-black background clean and even all around the burger so rows of a repeated word can run behind it later. Low-key, one hard side light from the left grazing the bun, the patty crust and the bacon, sharp highlights on the melted cheddar, everything else falling into near black, the warm tones of the burger (golden bun, red bacon, orange cheddar) the only strong colours. Photographic realism, no text.",
+  "problemas": []
+}

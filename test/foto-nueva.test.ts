@@ -1,0 +1,82 @@
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { DIFERENCIA_MINIMA_GRADOS, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva } from '../src/dominio/fotoNueva.js';
+import { instruccionesFoto, textoFotoNueva } from '../src/adaptadores/gemini/instruccionesFoto.js';
+
+// Los huecos del prompt de la gamba que gustó: el montaje tiene que dar ese mismo prompt.
+const gamba: PropuestaFotoNueva = {
+  descripcion: {
+    anguloGrados: 45, encuadre: 'plato entero', luz: 'luz de día plana',
+    elementos: [{ nombre: 'gamba roja', estado: 'a la brasa, con sal gruesa', recuento: 2 }],
+    defectos: ['mancha en el mantel'], utilizable: true, motivo: 'se ven todos los elementos',
+  },
+  huecos: {
+    plato: 'red prawns from Palamós grilled whole',
+    origen: 'at a Basque wood-fire grill restaurant',
+    elementos: 'two whole deep red prawns lying one over the other with heads, long antennae and legs, shells glistening with coarse salt and light grill marks, the square pale frosted glass plate, the white tablecloth',
+    recuento: 'Exactly two prawns, correct anatomy.',
+    camara: { anguloGrados: 10, descripcion: 'a near table-level side view at 10 degrees', objetivoMm: 100, apertura: 4 },
+    ideaGrafica: 'the two prawn heads large in the lower left, the antennae drawn as fine red lines arching across the dark upper part of the frame, the edge of the frosted glass plate glowing as a thin line of light',
+    luz: 'Low-key, one narrow back-side light from the upper right, everything else near black',
+    colorDominante: 'red the only strong colour',
+  },
+  decisiones: ['—'],
+};
+
+describe('Plantilla de foto nueva', () => {
+  it('monta el prompt con la estructura del de la gamba', () => {
+    const p = montarPromptFotoNueva(gamba.huecos);
+    assert.ok(p.startsWith('@image1 is a real photo of red prawns from Palamós grilled whole at a Basque wood-fire grill restaurant. Use it only as the list of elements, not as a layout to copy.'));
+    assert.match(p, /The new photograph must contain the same real elements: two whole deep red prawns .* the white tablecloth\. Exactly two prawns, correct anatomy\. Nothing else added\./);
+    assert.match(p, /New composition by a professional food photographer: a near table-level side view at 10 degrees, 100 mm lens at f\/4, the two prawn heads/);
+    assert.match(p, /Low-key, one narrow back-side light from the upper right, everything else near black, red the only strong colour\./);
+    assert.ok(p.endsWith('Photographic realism, no text.'));
+  });
+
+  it(`la cámara nueva tiene que quedar a más de ${DIFERENCIA_MINIMA_GRADOS}° de la foto subida`, () => {
+    assert.deepEqual(problemasFotoNueva(gamba, { ancho: 4043, alto: 2887 }), []);
+    const v3 = { ...gamba, huecos: { ...gamba.huecos, camara: { ...gamba.huecos.camara, anguloGrados: 25 } } };
+    assert.match(problemasFotoNueva(v3, { ancho: 4043, alto: 2887 })[0] ?? '', /a 20° de la foto subida/);
+    const justo = { ...gamba, huecos: { ...gamba.huecos, camara: { ...gamba.huecos.camara, anguloGrados: 75 } } };
+    assert.equal(problemasFotoNueva(justo, { ancho: 4043, alto: 2887 }).length, 1, '30° justos no bastan');
+  });
+
+  it('una foto pequeña obliga a anotar la resolución en los defectos', () => {
+    assert.match(problemasFotoNueva(gamba, { ancho: 382, alto: 510 }).join(), /382 × 510/);
+    const anotada = { ...gamba, descripcion: { ...gamba.descripcion, defectos: ['resolución baja: 382 px'] } };
+    assert.deepEqual(problemasFotoNueva(anotada, { ancho: 382, alto: 510 }), []);
+  });
+
+  it('las instrucciones de foto van aparte de las de diseño y no fijan macro, 10° ni clave baja', () => {
+    const guia = { principios: 'P', ejemplos: ['E'], valoraciones: [], referencias: [] };
+    const i = instruccionesFoto(guia);
+    assert.doesNotMatch(i, /Foto y texto en una sola imagen/);
+    assert.match(i, /más de 30°/);
+    const t = textoFotoNueva({ plato: 'salmón', archivo: 'fotos/01-plato.jpg', ancho: 1920, alto: 1279 });
+    assert.match(t, /Paso 1: describe la foto subida/);
+    assert.match(t, /1920 × 1279 px/);
+    assert.doesNotMatch(t, /macro|low-key|clave baja|10 degrees/i);
+  });
+});
+
+describe('Texto en arco (F10): circulo-texto con arco parcial', async () => {
+  const { join } = await import('node:path');
+  const { RAIZ } = await import('../src/config.js');
+  const { CatalogoTipografico } = await import('../src/adaptadores/compositor/tipografias.js');
+  const { MotorTexto } = await import('../src/adaptadores/compositor/MotorTexto.js');
+  const motor = new MotorTexto(new CatalogoTipografico(join(RAIZ, 'recursos', 'tipografias')));
+  const estilo = { fuente: 'work-sans', ejes: { wght: 700 }, tracking: 0.1 };
+  const ys = (svg: string) => [...svg.matchAll(/[ML]\s*([-\d.]+)[ ,]([-\d.]+)/g)].map((m) => Number(m[2]));
+
+  it('con arco 180 y giro −90 todas las letras quedan en la mitad de arriba (se leen derechas)', () => {
+    const svg = motor.trazarCircular(estilo, 'CAFÉ DE ESPECIALIDAD', 40, 500, 500, 200, -90, 180);
+    const y = ys(svg);
+    assert.ok(y.length > 20);
+    assert.ok(Math.max(...y) < 500 + 45, 'nada baja de la línea del centro (más el alto de una letra)');
+  });
+
+  it('sin arco sigue siendo la vuelta entera, como un sello', () => {
+    const svg = motor.trazarCircular(estilo, 'CAFÉ DE ESPECIALIDAD', 40, 500, 500, 200, -90);
+    assert.ok(Math.max(...ys(svg)) > 650, 'hay letras en la mitad de abajo');
+  });
+});

@@ -1,0 +1,65 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«CHERRY Splash»",
+  "familia": "F8",
+  "mecanismos": [
+    "SALPICADURA_O_FLOTANTES",
+    "LOGOTIPO_TIPOGRAFICO",
+    "FORMAS_ORGANICAS"
+  ],
+  "capas": [
+    "blanco con planos diagonales",
+    "vaso con bebida roja, hielo y salpicadura congelada",
+    "cerezas volando",
+    "«CHERRY» condensada carmesí + «Splash» script de pincel",
+    "precio y botón",
+    "onda granate abajo"
+  ],
+  "reticula": "Texto a la izquierda, producto a la derecha; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "condensada heavy",
+      "escala": 10
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script de pincel",
+      "escala": 8
+    },
+    {
+      "rol": "DATO",
+      "clasificacion": "precio",
+      "escala": 5
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#E9E7E9",
+      "rol": "fondo"
+    },
+    {
+      "hex": "#A0192E",
+      "rol": "carmesí"
+    },
+    {
+      "hex": "#4B0C16",
+      "rol": "granate"
+    }
+  ],
+  "foto": "Estudio con flash, movimiento congelado",
+  "recursos": [
+    {
+      "recurso": "salpicadura y frutas",
+      "funcion": "energía y frescura"
+    }
+  ],
+  "lectura": [
+    "la salpicadura",
+    "CHERRY Splash",
+    "el precio"
+  ],
+  "porQueFunciona": "Movimiento con el texto en zonas limpias.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

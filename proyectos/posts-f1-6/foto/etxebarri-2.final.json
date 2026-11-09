@@ -1,0 +1,33 @@
+{
+  "intento": 2,
+  "motivo": "Intento 1: el director pidió a la vez «a ras de mesa» y «gambas en los dos tercios de arriba con el tercio inferior oscuro», y el modelo subió la cámara. Se vuelve al prompt que gustó (V1) con la regla de anatomía y el cuarto inferior en sombra para el papel.",
+  "cambios": {
+    "elementos": "two whole deep red prawns lying one over the other with heads, long antennae and legs, shells glistening with coarse salt and light grill marks, small charred tips on the legs, the square pale frosted glass plate, the white tablecloth",
+    "camara": {
+      "anguloGrados": 10,
+      "descripcion": "a near table-level side view at 10 degrees, the camera almost touching the tablecloth so the frosted glass plate is seen nearly edge-on",
+      "objetivoMm": 100,
+      "apertura": 4
+    },
+    "ideaGrafica": "the two prawn heads large in the middle of the frame, the antennae drawn as fine red lines arching across the dark upper part of the frame, the edge of the frosted glass plate glowing as a thin line of light below them, the lowest quarter of the frame the tablecloth falling into deep shadow",
+    "luz": "Low-key, one narrow back-side light from the upper right, everything else near black",
+    "colorDominante": "red the only strong colour"
+  },
+  "huecos": {
+    "plato": "grilled red prawns",
+    "origen": "from Palamós at a high-end Basque wood-fire grill restaurant",
+    "elementos": "two whole deep red prawns lying one over the other with heads, long antennae and legs, shells glistening with coarse salt and light grill marks, small charred tips on the legs, the square pale frosted glass plate, the white tablecloth",
+    "recuento": "Exactly two whole prawns with correct anatomy, each with one head and one tail fan; no other prawn parts in the frame.",
+    "camara": {
+      "anguloGrados": 10,
+      "descripcion": "a near table-level side view at 10 degrees, the camera almost touching the tablecloth so the frosted glass plate is seen nearly edge-on",
+      "objetivoMm": 100,
+      "apertura": 4
+    },
+    "ideaGrafica": "the two prawn heads large in the middle of the frame, the antennae drawn as fine red lines arching across the dark upper part of the frame, the edge of the frosted glass plate glowing as a thin line of light below them, the lowest quarter of the frame the tablecloth falling into deep shadow",
+    "luz": "Low-key, one narrow back-side light from the upper right, everything else near black",
+    "colorDominante": "red the only strong colour"
+  },
+  "prompt": "@image1 is a real photo of grilled red prawns from Palamós at a high-end Basque wood-fire grill restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: two whole deep red prawns lying one over the other with heads, long antennae and legs, shells glistening with coarse salt and light grill marks, small charred tips on the legs, the square pale frosted glass plate, the white tablecloth. Exactly two whole prawns with correct anatomy, each with one head and one tail fan; no other prawn parts in the frame. Nothing else added. New composition by a professional food photographer: a near table-level side view at 10 degrees, the camera almost touching the tablecloth so the frosted glass plate is seen nearly edge-on, 100 mm lens at f/4, the two prawn heads large in the middle of the frame, the antennae drawn as fine red lines arching across the dark upper part of the frame, the edge of the frosted glass plate glowing as a thin line of light below them, the lowest quarter of the frame the tablecloth falling into deep shadow. Low-key, one narrow back-side light from the upper right, everything else near black, red the only strong colour. Photographic realism, no text.",
+  "problemas": []
+}

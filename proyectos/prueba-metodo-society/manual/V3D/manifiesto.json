@@ -1,0 +1,21 @@
+{
+  "receta": "proyectos/prueba-metodo-society/recetas/v3d.json",
+  "prompt": {
+    "archivo": "proyectos/prueba-metodo-society/manual/V3D/prompt.txt",
+    "sha256": "6b9f39baa30374e1370d748ae597f8c9fe75a67c302808b52246e821319f568f"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-degradada-del-plato.jpg",
+      "origen": "etx-real-gamba-degradada",
+      "sha256": "984147cc19a649081cc93af3048dedde5edf78b948d8c522cd9cffa26efa11a9"
+    },
+    {
+      "orden": 2,
+      "archivo": "2-ficha-de-texturas-degradada.jpg",
+      "origen": "archivo:proyectos/prueba-metodo-society/refs/ficha-texturas-gamba-degradada.jpg",
+      "sha256": "5f121997b2da1f8342682dafff42e68853307d66ce24deceb7ec8d4372c1c524"
+    }
+  ]
+}

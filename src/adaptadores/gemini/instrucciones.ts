@@ -198,3 +198,19 @@ ${problemas}
 Responde solo con este JSON:
 {"prompt":"…","textos":["…"]}`;
 }
+
+/**
+ * Ensayo (herramientas/ensayoDirectorFoto.ts): el director escribe solo el prompt de la foto nueva, sin tipografía.
+ * A propósito no añade reglas del estudio (ni el bloque CAMERA de textoPlan): mide lo que el director saca de la biblioteca.
+ */
+export function textoFotoNuevaDeEnsayo(plato: string, archivo: string): string {
+  return `# Encargo de prueba
+Plato, con la nota que escribió el dueño al subir la foto: «${plato}»
+Imagen adjunta: ${archivo}, la foto real que ha subido el restaurante.
+
+# Qué tienes que hacer ahora
+Esta vez no hay tipografía: el estudio la pondrá después. Escribe solo el prompt, en inglés, de la FOTO NUEVA de este plato que haría un fotógrafo profesional, sin ningún texto en la imagen.
+Aprende de los ejemplos y valoraciones de la guía qué fotos han gustado y cuáles no.
+En "decisiones", explica en español cada decisión del prompt y de qué ejemplo o valoración la sacas.
+Responde solo con este JSON: {"prompt":"…","decisiones":["…"]}`;
+}

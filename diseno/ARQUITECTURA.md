@@ -193,7 +193,10 @@ Reglas de dependencia: `web → aplicacion → (dominio, puertos)` y `adaptadore
 - **Pendiente:** con el mismo local y el mismo plato que el ejemplo 02, el primer concepto aún vuelve a «FUEGO detrás del chuletón».
 - **Pendiente:** la última diapositiva no siempre llevaba llamada a la acción. Ya se ha reforzado la instrucción, pero no se ha vuelto a probar.
 
-## 11. Pendientes conocidos (revisados el 06/11/2026)
+## 11. Pendientes conocidos (revisados el 06/11/2026; ampliados el 07/11/2026)
+
+**F1.6, referencia obligatoria (07/11/2026).** Mientras un local tenga menos de 5 piezas creadas en modo real, una pieza no pasa de brief a concepto sin una referencia elegida y analizada (`src/dominio/referencia.ts`, `comprobarReferencia`). Hoy lo aplica la línea de comandos (`npm run referencia`). **El flujo web tendrá que respetar esta regla** antes de `proponerConceptos` cuando se aprueben sus pantallas; hasta entonces el generador antiguo no la comprueba.
+
 
 | Asunto | Afecta al funcionamiento | Estado |
 |---|---|---|

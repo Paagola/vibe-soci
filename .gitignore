@@ -17,3 +17,10 @@ ids.json
 ids2.json
 *.tmp
 .DS_Store
+
+# Paquete de revisión externa (se regenera; lleva copias de datos/)
+revision-externa/
+revision-externa.zip
+# Copias sueltas de carpetas de la biblioteca (no son la fuente)
+biblioteca/ejemplos.zip
+biblioteca/referencias.zip

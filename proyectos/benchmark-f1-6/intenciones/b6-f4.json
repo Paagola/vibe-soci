@@ -1,0 +1,159 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "bench-b6-f4",
+  "version": 1,
+  "titulo": "Vía B · F4 · foto b6",
+  "notas": "Vía B · F4 (post-11 en palabras): titular en el aire oscuro de arriba como logotipo tipográfico (script fina + didona), filete vertical y versalitas; plato en ¾ abajo.",
+  "marca": "asador-etxebarri",
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "brasa": {
+        "fuente": "league-gothic",
+        "ejes": {
+          "wdth": 100
+        },
+        "caso": "mayusculas",
+        "tracking": 0.0,
+        "interlineado": 0.85,
+        "color": "@hueso"
+      },
+      "pincel": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0.0,
+        "interlineado": 1.0,
+        "color": "@hueso"
+      },
+      "fina": {
+        "fuente": "ballet",
+        "ejes": {
+          "opsz": 72
+        },
+        "caso": "tal-cual",
+        "tracking": 0.0,
+        "interlineado": 1.0,
+        "color": "@hueso"
+      },
+      "didona": {
+        "fuente": "bodoni-moda",
+        "ejes": {
+          "opsz": 40,
+          "wght": 500
+        },
+        "caso": "mayusculas",
+        "tracking": 0.01,
+        "interlineado": 0.9,
+        "color": "@hueso"
+      },
+      "versalita": {
+        "fuente": "archivo",
+        "ejes": {
+          "wdth": 100,
+          "wght": 600
+        },
+        "caso": "mayusculas",
+        "tracking": 0.14,
+        "interlineado": 1.5,
+        "color": "@hueso"
+      }
+    }
+  },
+  "activos": {
+    "foto": "etx-bench-b6-b-f4-grok"
+  },
+  "textos": {
+    "script": "a la brasa de leña",
+    "titular": "Gamba\nroja",
+    "apoyo": "De Palamós,\nsal gruesa\ny nada más"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "relleno",
+      "color": "@carbon"
+    },
+    {
+      "id": "foto",
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "retoque": {
+        "puntoNegro": "@carbon"
+      }
+    },
+    {
+      "id": "script",
+      "tipo": "texto",
+      "texto": "@script",
+      "estilo": "fina",
+      "caja": {
+        "x": 0.067,
+        "y": 0.082,
+        "w": 0.5,
+        "h": 0.06
+      },
+      "ajuste": "alto"
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "didona",
+      "caja": {
+        "x": 0.067,
+        "y": 0.155,
+        "w": 0.45,
+        "h": 0.2
+      },
+      "ajuste": "caja"
+    },
+    {
+      "id": "filete",
+      "tipo": "forma",
+      "figura": "linea",
+      "desde": {
+        "x": 0.56,
+        "y": 0.155
+      },
+      "hasta": {
+        "x": 0.56,
+        "y": 0.335
+      },
+      "color": "@hueso",
+      "grosor": 2
+    },
+    {
+      "id": "apoyo",
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.59,
+        "y": 0.2,
+        "w": 0.36,
+        "h": 0.1
+      },
+      "ajuste": "fijo",
+      "tamano": 26
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "chiringuito-3",
+  "version": 3,
+  "titulo": "Chiringuito · carrusel continuo · 3/5",
+  "notas": "Segundo plato. Plato por confirmar con el local. El plato sigue en la 4. Fotos generadas solo con texto (sin foto del local): pieza de prueba, no publicable.",
+  "marca": "chiringuito-prueba",
+  "tokens": {
+    "colores": {},
+    "estilos": {}
+  },
+  "activos": {
+    "fondo": "fondo-panorama-3",
+    "calamares": "chiringuito-foto-3-mcp-1"
+  },
+  "textos": {
+    "titular": "Calamares"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "tipo": "imagen",
+      "activo": "fondo",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      }
+    },
+    {
+      "id": "titular",
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.067,
+        "y": 0.13,
+        "w": 0.55,
+        "h": 0.1
+      },
+      "ajuste": "ancho"
+    },
+    {
+      "id": "sombra-calamares",
+      "tipo": "sombra",
+      "de": "calamares",
+      "modo": "proyectada",
+      "color": "#0b3550",
+      "desenfoque": 34,
+      "desplazamiento": {
+        "x": 16,
+        "y": 26
+      },
+      "opacidad": 0.32
+    },
+    {
+      "id": "calamares",
+      "tipo": "recorte",
+      "activo": "calamares",
+      "escala": {
+        "anchoSujeto": 1.1
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.42000000000000004,
+          "y": 0.14,
+          "w": 1,
+          "h": 1
+        },
+        "alinear": "centro"
+      },
+      "contraerBorde": 1,
+      "bordeSuave": 1
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular"
+      ],
+      "sujeto": "calamares",
+      "maximo": 0.02
+    }
+  ]
+}

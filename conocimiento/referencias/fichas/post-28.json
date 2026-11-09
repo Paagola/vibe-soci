@@ -1,0 +1,68 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SUSHI» ×5 con flechas",
+  "familia": "F2",
+  "mecanismos": [
+    "PATRON_REPETIDO",
+    "FLECHAS_A_MANO",
+    "ENTRA_POR_LOS_BORDES",
+    "FORMAS_ORGANICAS"
+  ],
+  "capas": [
+    "rojo",
+    "gran círculo blanco",
+    "palillos con sushi que entran por arriba a la derecha",
+    "«SUSHI» apilado cinco veces en rojo y negro alternos",
+    "texto",
+    "flecha negra a mano del precio al sushi",
+    "precio en círculo de línea",
+    "contacto"
+  ],
+  "reticula": "Patrón arriba a la izquierda; recorrido en diagonal; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "ultranegra",
+      "escala": 6
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2.5
+    },
+    {
+      "rol": "DATO",
+      "clasificacion": "ultranegra",
+      "escala": 6
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#EE2607",
+      "rol": "rojo"
+    },
+    {
+      "hex": "#FEFEFE",
+      "rol": "círculo blanco"
+    },
+    {
+      "hex": "#47342C",
+      "rol": "negro"
+    }
+  ],
+  "foto": "Recorte con palillos",
+  "recursos": [
+    {
+      "recurso": "flechas",
+      "funcion": "cuentan el recorrido: del precio al producto"
+    }
+  ],
+  "lectura": [
+    "el patrón",
+    "el sushi",
+    "el precio"
+  ],
+  "porQueFunciona": "Las flechas cuentan un recorrido.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

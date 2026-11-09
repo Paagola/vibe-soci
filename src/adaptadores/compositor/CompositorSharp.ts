@@ -142,7 +142,7 @@ export class CompositorSharp implements Compositor {
       case 'circulo-texto': {
         const altura = this.motor.alturaMayusculas(capa.estilo, capa.tamano);
         const disco = capa.fondo ? `<circle cx="${capa.centro.x}" cy="${capa.centro.y}" r="${capa.radio + altura + capa.tamano * 0.55}" fill="${capa.fondo}"/>` : '';
-        const letras = this.motor.trazarCircular(capa.estilo, capa.texto, capa.tamano, capa.centro.x, capa.centro.y, capa.radio, capa.giro);
+        const letras = this.motor.trazarCircular(capa.estilo, capa.texto, capa.tamano, capa.centro.x, capa.centro.y, capa.radio, capa.giro, capa.arco);
         return vectorial(lienzo, `<g opacity="${capa.opacidad}">${disco}<path d="${letras}" fill="${capa.estilo.color}"/></g>`);
       }
 

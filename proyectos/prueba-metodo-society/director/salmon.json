@@ -1,0 +1,22 @@
+{
+  "fecha": "2026-11-07T18:34:17.502Z",
+  "modelos": [
+    "gemini-3.8-flash",
+    "gemini-3.5-flash"
+  ],
+  "foto": "datos/piezas/2026-11-03-salmon-glaseado-sobre-arroz-negro/fotos/01-plato.png",
+  "plato": "salmón glaseado sobre arroz negro, puré de naranja, aceite verde y brotes, plato blanco hondo",
+  "biblioteca": {
+    "ejemplos": 12,
+    "valoraciones": 1,
+    "referencias": 0
+  },
+  "respuesta": {
+    "prompt": "A professional editorial food photo of the exact dish in Image 1: glazed golden-brown salmon fillet resting on black rice, orange purée quenelle, bright green oil pool, and microgreens in a wide white bowl on a dark table. Low camera angle at 25 degrees, close-up. Direct hard flash lighting with crisp short shadows, specular highlights on the glaze and oil, deep dark background. Focus on the flaking edge of the salmon. 35mm grain, true textures, realistic food photography. No text.",
+    "decisiones": [
+      "Cambio de ángulo a vista baja de 25° y encuadre cerrado: Evita copiar el plano cenital original (error aprendido en 'NO GUSTÓ: La misma foto') y mantiene el plato apoyado en la mesa ('cafe-albor').",
+      "Iluminación con flash directo duro: Tomado de la diapositiva 3 aprobada de 'El Mesón de Cervantes' para realzar los brillos del glaseado, el aceite verde y la textura del salmón.",
+      "Fidelidad estricta de inventario: Aplicando el Principio 1, se conservan únicamente los ingredientes y la vajilla de la foto real sin añadir nada inventado."
+    ]
+  }
+}

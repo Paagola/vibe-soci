@@ -1,0 +1,59 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SALAD INSPIRATION»",
+  "familia": "F6",
+  "mecanismos": [
+    "ANOTACIONES",
+    "FLECHAS_A_MANO",
+    "PLATO_CORTADO_POR_EL_BORDE"
+  ],
+  "capas": [
+    "terrazo claro",
+    "plato blanco cenital enorme cortado por los bordes izquierdo e inferior",
+    "ensalada",
+    "anotaciones en cursiva con flechas a mano",
+    "título fino arriba a la derecha"
+  ],
+  "reticula": "Libre; el plato ocupa ≈ 85 %; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "palo seco geométrico ligero en versalitas",
+      "escala": 4
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "cursiva fina",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#D0D2D2",
+      "rol": "piedra clara"
+    },
+    {
+      "hex": "#BBB7B1",
+      "rol": "piedra"
+    },
+    {
+      "hex": "#8E774B",
+      "rol": "comida (único color)"
+    }
+  ],
+  "foto": "Cenital con luz de día suave y sombra real",
+  "recursos": [
+    {
+      "recurso": "flechas a mano",
+      "funcion": "señalan ingredientes reales"
+    }
+  ],
+  "lectura": [
+    "el plato",
+    "anotaciones",
+    "título"
+  ],
+  "porQueFunciona": "El vacío gris deja mandar al color de la comida; parece la carta del chef.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

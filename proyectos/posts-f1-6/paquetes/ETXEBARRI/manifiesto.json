@@ -1,0 +1,15 @@
+{
+  "receta": "proyectos/posts-f1-6/recetas/etxebarri.json",
+  "prompt": {
+    "archivo": "proyectos/posts-f1-6/paquetes/ETXEBARRI/prompt.txt",
+    "sha256": "6f10d8e3f53bdd7f5973648e488ceaa25744a99c61b27dfb869f1122e1bc70db"
+  },
+  "referencias": [
+    {
+      "orden": 1,
+      "archivo": "1-foto-real-del-plato.jpg",
+      "origen": "etx-real-gamba",
+      "sha256": "16539b7f692c3070d8212c03d2e72d82b727aec48d12aa09731e406ce7ffbb8f"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "meson-post-f4-foto",
+  "local": "meson-de-cervantes",
+  "descripcion": "Foto nueva del salmón para el post F4 (post-22): a ras de mesa a 10°, el 55 % superior oscuro para el titular.",
+  "modelo": "nano_banana_pro",
+  "parametros": {
+    "aspectRatio": "3:4",
+    "imageSize": "2K"
+  },
+  "promptArchivo": "proyectos/posts-f1-6/foto/meson.txt",
+  "referencias": [
+    {
+      "activo": "meson-real-salmon",
+      "etiqueta": "@image1 (real photograph of the dish)",
+      "rol": {
+        "nombre": "foto real del plato",
+        "gobierna": "Solo la comida y la vajilla: los elementos y su recuento.",
+        "noSeCopia": "El encuadre, la luz, el fondo ni el ángulo de la foto subida."
+      }
+    }
+  ],
+  "alteraciones": [
+    "Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, cámara a más de 30° de la foto subida).",
+    "Superficie y fondo libres (decisión del 07/11)."
+  ]
+}

@@ -1,0 +1,56 @@
+{
+ "deDirector": "proyectos/posts-tres-locales/foto/casa-aranda.json",
+ "correcciones": [
+  {
+   "campo": "elementos",
+   "motivo": "en la foto hay cinco churros (uno asoma detrás, arriba a la derecha), no cuatro; el sobre de azúcar lleva impreso el nombre del local y sería texto en la foto",
+   "valor": "five golden crisp fried churros with ridged sides on a small oval scalloped metal tray, one white cup of thick dark hot chocolate on a white saucer with a silver spoon, one tall glass of coffee with milk on a white saucer"
+  },
+  {
+   "campo": "recuento",
+   "motivo": "recuento corregido (cinco churros, sin el sobre)",
+   "valor": "Exactly five churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray and one silver spoon."
+  },
+  {
+   "campo": "camara.objetivoMm",
+   "motivo": "se mantiene el teleobjetivo corto",
+   "valor": 90
+  },
+  {
+   "campo": "camara.apertura",
+   "motivo": "el plato se recorta: tiene que ir nítido entero (observación recorte-nitido-de-arriba-abajo)",
+   "valor": 11
+  },
+  {
+   "campo": "ideaGrafica",
+   "motivo": "fondo liso que contraste con los churros para una máscara limpia (el terracota del director se confundiría con ellos); todo dentro del encuadre con margen",
+   "valor": "the tray of churros and the chocolate cup together as one compact group in the lower half of the frame, the coffee glass just behind them, the whole group fully inside the frame with a clear margin on every side, on a plain seamless pale grey-blue background so it can be cut out cleanly, generous empty space above the group"
+  },
+  {
+   "campo": "luz",
+   "motivo": "quitar el fondo terracota de la luz y pedir nitidez de delante atrás",
+   "valor": "Soft directional studio flash from the upper left, crisp ridges on the churros and a glossy highlight on the chocolate, everything in sharp focus from the front saucer to the back of the glass"
+  },
+  {
+   "campo": "colorDominante",
+   "motivo": "un color dominante, sin el fondo",
+   "valor": "the golden churros and the dark chocolate the only strong colours"
+  }
+ ],
+ "huecos": {
+  "plato": "traditional spanish churros with thick hot chocolate and white coffee",
+  "origen": "from an authentic traditional churrería",
+  "elementos": "five golden crisp fried churros with ridged sides on a small oval scalloped metal tray, one white cup of thick dark hot chocolate on a white saucer with a silver spoon, one tall glass of coffee with milk on a white saucer",
+  "recuento": "Exactly five churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray and one silver spoon.",
+  "camara": {
+   "anguloGrados": 10,
+   "descripcion": "a low-angle studio hero shot at 10 degrees from table level, isolated style",
+   "objetivoMm": 90,
+   "apertura": 11
+  },
+  "ideaGrafica": "the tray of churros and the chocolate cup together as one compact group in the lower half of the frame, the coffee glass just behind them, the whole group fully inside the frame with a clear margin on every side, on a plain seamless pale grey-blue background so it can be cut out cleanly, generous empty space above the group",
+  "luz": "Soft directional studio flash from the upper left, crisp ridges on the churros and a glossy highlight on the chocolate, everything in sharp focus from the front saucer to the back of the glass",
+  "colorDominante": "the golden churros and the dark chocolate the only strong colours"
+ },
+ "prompt": "@image1 is a real photo of traditional spanish churros with thick hot chocolate and white coffee from an authentic traditional churrería. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: five golden crisp fried churros with ridged sides on a small oval scalloped metal tray, one white cup of thick dark hot chocolate on a white saucer with a silver spoon, one tall glass of coffee with milk on a white saucer. Exactly five churros, one cup of hot chocolate, one glass of coffee with milk, two white saucers, one metal tray and one silver spoon. Nothing else added. New composition by a professional food photographer: a low-angle studio hero shot at 10 degrees from table level, isolated style, 90 mm lens at f/11, the tray of churros and the chocolate cup together as one compact group in the lower half of the frame, the coffee glass just behind them, the whole group fully inside the frame with a clear margin on every side, on a plain seamless pale grey-blue background so it can be cut out cleanly, generous empty space above the group. Soft directional studio flash from the upper left, crisp ridges on the churros and a glossy highlight on the chocolate, everything in sharp focus from the front saucer to the back of the glass, the golden churros and the dark chocolate the only strong colours. Photographic realism, no text."
+}

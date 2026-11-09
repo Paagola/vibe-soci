@@ -1,0 +1,57 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«SANDWICH» ×6",
+  "familia": "F2",
+  "mecanismos": [
+    "PATRON_REPETIDO"
+  ],
+  "capas": [
+    "crema plano",
+    "«SANDWICH» seis veces + «OF THE MONTH», grotesca extendida extranegra roja",
+    "sándwich recortado y girado ≈ 10° sobre las filas 3–5",
+    "marca entre filetes",
+    "ORDER NOW y URL"
+  ],
+  "reticula": "Filas a ancho completo; margen ≈ 6 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "grotesca extendida extranegra",
+      "escala": 7
+    },
+    {
+      "rol": "MARCA",
+      "clasificacion": "palo seco",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#FDF4E2",
+      "rol": "fondo crema"
+    },
+    {
+      "hex": "#E11312",
+      "rol": "patrón y texto"
+    },
+    {
+      "hex": "#74641E",
+      "rol": "la lechuga, contraste"
+    }
+  ],
+  "foto": "Recorte lateral girado, sin sombra visible",
+  "recursos": [
+    {
+      "recurso": "repetición",
+      "funcion": "textura y titular a la vez"
+    }
+  ],
+  "lectura": [
+    "el sándwich (rompe el patrón)",
+    "la palabra",
+    "marca"
+  ],
+  "porQueFunciona": "El ritmo del patrón atrapa y solo hay una palabra que leer.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

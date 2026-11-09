@@ -1,0 +1,73 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«Today Special Menu»",
+  "familia": "F9",
+  "mecanismos": [
+    "TIRA_DE_CUADROS",
+    "FORMAS_ORGANICAS",
+    "FLECHAS_A_MANO",
+    "SELLO",
+    "DIBUJOS_O_PEGATINAS"
+  ],
+  "capas": [
+    "crema",
+    "tira de cuadros azul arriba",
+    "semicírculo marino detrás del plato",
+    "hojaldre en plato recortado con sombra",
+    "script retro gruesa",
+    "flecha punteada al producto",
+    "círculo con el precio",
+    "dibujos de galletas",
+    "contacto"
+  ],
+  "reticula": "Central; margen ≈ 7 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "script retro de trazo grueso",
+      "escala": 10
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 2
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#FEF7E6",
+      "rol": "crema"
+    },
+    {
+      "hex": "#0A3C83",
+      "rol": "marino"
+    },
+    {
+      "hex": "#DCA65F",
+      "rol": "hojaldre"
+    }
+  ],
+  "foto": "Recorte con sombra",
+  "recursos": [
+    {
+      "recurso": "flecha punteada",
+      "funcion": "guía al producto"
+    },
+    {
+      "recurso": "semicírculo",
+      "funcion": "base"
+    },
+    {
+      "recurso": "dibujos",
+      "funcion": "tono"
+    }
+  ],
+  "lectura": [
+    "Special",
+    "el hojaldre",
+    "el precio"
+  ],
+  "porQueFunciona": "Retro y ordenado.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}

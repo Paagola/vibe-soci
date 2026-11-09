@@ -1,0 +1,64 @@
+{
+  "esquema": "referencia/ficha@1",
+  "titulo": "«MOCKTAIL Drink Club»",
+  "familia": "F4",
+  "mecanismos": [
+    "LOGOTIPO_TIPOGRAFICO",
+    "TITULAR_EN_EL_AIRE"
+  ],
+  "capas": [
+    "verde profundo con cortinas, flash directo",
+    "copa coupé con cóctel amarillo y cerezas",
+    "«MOCKTAIL» didona condensada rosa a ancho completo",
+    "«Drink Club» script blanca cruzando",
+    "columnas pequeñas de revista",
+    "«GOLDEN HOUR» rosa"
+  ],
+  "reticula": "Portada de revista; columnas pequeñas en las esquinas; margen ≈ 5 %",
+  "tipografia": [
+    {
+      "rol": "TITULAR",
+      "clasificacion": "didona condensada",
+      "escala": 15
+    },
+    {
+      "rol": "SECUNDARIO",
+      "clasificacion": "script",
+      "escala": 8
+    },
+    {
+      "rol": "APOYO",
+      "clasificacion": "palo seco",
+      "escala": 1.8
+    }
+  ],
+  "paleta": [
+    {
+      "hex": "#09221A",
+      "rol": "verde profundo"
+    },
+    {
+      "hex": "#E6B383",
+      "rol": "el cóctel"
+    },
+    {
+      "hex": "#F5A3C7",
+      "rol": "titular rosa (a ojo)"
+    }
+  ],
+  "foto": "Flash directo sobre escena oscura, sombra dura",
+  "recursos": [
+    {
+      "recurso": "estructura de portada de revista",
+      "funcion": "aire premium"
+    }
+  ],
+  "lectura": [
+    "MOCKTAIL",
+    "la copa",
+    "Drink Club"
+  ],
+  "porQueFunciona": "Aire de producto premium; la didona y la script se cruzan.",
+  "analizadaPor": "ESTUDIO_A_MANO",
+  "analizadaEn": "2026-11-07"
+}
