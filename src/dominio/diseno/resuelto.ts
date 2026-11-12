@@ -3,6 +3,7 @@
  * Es reproducible (misma intención y mismos activos → mismo documento) y es lo que pinta el renderizador.
  */
 import type { Fusion, Retoque } from './intencion.js';
+import type { MedidasDeOficio } from './oficio.js';
 import type { Lienzo, Rect } from './reticula.js';
 
 export interface EstiloResuelto {
@@ -11,6 +12,8 @@ export interface EstiloResuelto {
   caso: 'mayusculas' | 'tal-cual';
   tracking: number;
   color: string;
+  /** Rasgos OpenType activados (solo si hay alguno). */
+  rasgos?: string[];
 }
 
 export interface LineaResuelta {
@@ -26,6 +29,39 @@ export interface LineaResuelta {
   fin?: number;
 }
 
+/** Tinta impresa ya resuelta: con su semilla y el color del registro en HEX. */
+export interface TintaResuelta {
+  densidad: number;
+  bordeSeco: number;
+  registro?: { dx: number; dy: number; color: string; opacidad: number };
+  semilla: number;
+}
+
+/** Corte tipográfico en el sistema del bloque: por dónde pasa la línea y cuánto se mueve cada mitad. */
+export interface CorteResuelto {
+  punto: { x: number; y: number };
+  angulo: number;
+  desplazamiento: number;
+  separacion: number;
+}
+
+/** El sujeto con el que se recorta un texto: lo necesario para pintar su máscara en el lienzo. */
+export interface RecorteDeTexto {
+  activo: string;
+  origen: Rect;
+  destino: Rect;
+  giro: number;
+  modo: 'dentro' | 'fuera';
+}
+
+export interface LineaDeSello {
+  texto: string;
+  estilo: EstiloResuelto;
+  tamano: number;
+  /** Línea base respecto al centro del sello (px, positivo hacia abajo), antes de girar. */
+  base: number;
+}
+
 interface BaseResuelta {
   id: string;
   z: number;
@@ -38,7 +74,18 @@ export type CapaResuelta = BaseResuelta &
     | { tipo: 'relleno'; color: string }
     | { tipo: 'degradado'; forma: 'lineal' | 'radial'; rect: Rect; angulo: number; paradas: Array<{ en: number; color: string; opacidad: number }> }
     | { tipo: 'imagen'; activo: string; origen: Rect; destino: Rect; marco: Rect; retoque?: Retoque }
-    | { tipo: 'recorte'; activo: string; origen: Rect; destino: Rect; sujeto: Rect; retoque?: Retoque; bordeSuave: number; contraerBorde: number }
+    | {
+        tipo: 'recorte';
+        activo: string;
+        origen: Rect;
+        /** Dónde va el sujeto sin girar; el giro es alrededor de su centro. */
+        destino: Rect;
+        sujeto: Rect;
+        retoque?: Retoque;
+        bordeSuave: number;
+        contraerBorde: number;
+        giro?: number;
+      }
     | {
         tipo: 'sombra';
         de: string;
@@ -50,6 +97,8 @@ export type CapaResuelta = BaseResuelta &
         rect: Rect;
         activo: string;
         origen: Rect;
+        /** Proyectada: el giro del sujeto, para que la sombra gire con él. */
+        giro?: number;
       }
     | {
         tipo: 'texto';
@@ -64,8 +113,30 @@ export type CapaResuelta = BaseResuelta &
         rotacion: 0 | 90 | -90;
         contorno?: number;
         sangrado: boolean;
+        /** Giro libre (grados), ya incluido en la matriz. */
+        giro?: number;
+        corte?: CorteResuelto;
+        tinta?: TintaResuelta;
+        recorte?: RecorteDeTexto;
       }
-    | { tipo: 'forma'; figura: 'rect' | 'elipse' | 'linea'; rect?: Rect; desde?: { x: number; y: number }; hasta?: { x: number; y: number }; color: string; grosor?: number; discontinua?: [number, number] }
+    | {
+        tipo: 'forma';
+        figura: 'rect' | 'elipse' | 'linea' | 'poligono' | 'mancha';
+        rect?: Rect;
+        desde?: { x: number; y: number };
+        hasta?: { x: number; y: number };
+        puntos?: Array<{ x: number; y: number }>;
+        color: string;
+        grosor?: number;
+        discontinua?: [number, number];
+        radio?: number;
+        giro?: number;
+        /** mancha */
+        lobulos?: number;
+        irregularidad?: number;
+        semilla?: number;
+        tinta?: TintaResuelta;
+      }
     | { tipo: 'circulo-texto'; texto: string; estilo: EstiloResuelto; centro: { x: number; y: number }; radio: number; tamano: number; fondo?: string; giro: number; arco?: number }
     | {
         tipo: 'niveles';
@@ -76,7 +147,65 @@ export type CapaResuelta = BaseResuelta &
         discontinua?: [number, number];
         lineas: Array<{ y: number; x1: number; x2: number; izquierda?: string; derecha?: string }>;
       }
-    | { tipo: 'textura'; recurso: 'grano'; intensidad: number; escala: number; semilla: number }
+    | { tipo: 'textura'; recurso: 'grano' | 'papel'; intensidad: number; escala: number; semilla: number }
+    | {
+        tipo: 'sello';
+        forma: 'circulo' | 'estrella' | 'festoneado' | 'ovalo' | 'pastilla';
+        centro: { x: number; y: number };
+        /** Medio ancho y medio alto de la forma, en px. */
+        radioX: number;
+        radioY: number;
+        puntas: number;
+        profundidad: number;
+        fondo: string;
+        color: string;
+        filete: number;
+        anillo?: { texto: string; estilo: EstiloResuelto; tamano: number; radio: number };
+        lineas: LineaDeSello[];
+        giro: number;
+        sombra?: { dx: number; dy: number; color: string };
+        /** Caja que ocupa ya girado (para las comprobaciones). */
+        caja: Rect;
+        tinta?: TintaResuelta;
+      }
+    | {
+        tipo: 'patron';
+        motivo: 'palabra' | 'puntos' | 'cuadros' | 'rayas';
+        rect: Rect;
+        color: string;
+        giro: number;
+        /** palabra */
+        texto?: string;
+        estilo?: EstiloResuelto;
+        tamano?: number;
+        filas?: number;
+        /** Distancia entre líneas base, en px. */
+        avanceFila?: number;
+        desfase?: number;
+        separacion?: number;
+        contornoAlterno?: number;
+        /** puntos, cuadros y rayas */
+        paso?: number;
+        radios?: [number, number];
+        desvanece?: 'no' | 'arriba' | 'abajo' | 'izquierda' | 'derecha' | 'centro';
+        angulo?: number;
+        tinta?: TintaResuelta;
+      }
+    | {
+        tipo: 'trazo';
+        gesto: 'subrayado' | 'circulo' | 'flecha' | 'tachado';
+        /** Subrayado y tachado: los extremos. Círculo: la caja que rodea. Flecha: cola y punta. Todo en px del lienzo. */
+        desde: { x: number; y: number };
+        hasta: { x: number; y: number };
+        rect?: Rect;
+        curva: number;
+        cabeza: 'abierta' | 'ninguna';
+        color: string;
+        grosor: number;
+        temblor: number;
+        huecos: number;
+        semilla: number;
+      }
   );
 
 /** Nombre del PNG de una capa dentro de la carpeta de la versión (capas/03-titular.png). */
@@ -87,7 +216,27 @@ export function nombreDeCapa(capa: { z: number; id: string }): string {
 export interface Problema {
   gravedad: 'AVISO' | 'ERROR';
   capa?: string;
-  tipo: 'ZONA_SEGURA' | 'SOLAPE' | 'COBERTURA' | 'RESOLUCION' | 'CONTRASTE' | 'TAMANO_MINIMO' | 'SEPARACION' | 'FIDELIDAD' | 'ACTIVO';
+  /**
+   * Los seis últimos son avisos de oficio (F3): no rompen nada, pero señalan lo que delata una pieza de plantilla.
+   * JERARQUIA: no hay salto de escala. DENSIDAD: demasiadas palabras o niveles. VOCES: demasiadas tipografías.
+   * GESTOS: más de un gesto a mano. CRUCE: el titular no toca al producto. TINTA: tinta impresa en un texto pequeño.
+   */
+  tipo:
+    | 'ZONA_SEGURA'
+    | 'SOLAPE'
+    | 'COBERTURA'
+    | 'RESOLUCION'
+    | 'CONTRASTE'
+    | 'TAMANO_MINIMO'
+    | 'SEPARACION'
+    | 'FIDELIDAD'
+    | 'ACTIVO'
+    | 'JERARQUIA'
+    | 'DENSIDAD'
+    | 'VOCES'
+    | 'GESTOS'
+    | 'CRUCE'
+    | 'TINTA';
   mensaje: string;
 }
 
@@ -103,6 +252,8 @@ export interface Resuelto {
     solape: Record<string, number>;
     ampliacion: Record<string, number>;
     contraste: Record<string, number>;
+    /** Medidas de oficio (F3): salto de escala, palabras, voces, gestos y aire. */
+    oficio?: MedidasDeOficio;
   };
   problemas: Problema[];
   activos: Record<string, { id: string; sha256: string; uso: string; tipo: string; alteraciones: string[] }>;

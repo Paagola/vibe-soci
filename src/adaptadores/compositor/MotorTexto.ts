@@ -13,7 +13,12 @@ export interface EstiloMotor {
   tracking: number;
   /** múltiplos del cuerpo */
   interlineado: number;
+  /** Rasgos OpenType que se activan además de los de serie (smcp, onum, swsh…). */
+  rasgos?: string[];
 }
+
+/** Lo que hace falta para medir o trazar una línea. */
+type EstiloDeLinea = Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking' | 'rasgos'>;
 
 /** Medida de una línea a un cuerpo dado, en px. Las coordenadas son relativas al origen de la línea. */
 export interface Medida {
@@ -80,23 +85,42 @@ export class MotorTexto {
     return (fuente.capHeight * tamano) / fuente.unitsPerEm;
   }
 
-  medir(estilo: Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking'>, texto: string, tamano: number): Medida {
+  /** Nombre de la familia de una fuente del catálogo (para contar las voces de una pieza). */
+  familia(fuente: string): string {
+    return this.catalogo.familia(fuente);
+  }
+
+  medir(estilo: EstiloDeLinea, texto: string, tamano: number): Medida {
     const { fuente, ejes } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
-    const clave = `${estilo.fuente}|${JSON.stringify(ejes)}|${estilo.tracking}|${texto}`;
+    const rasgos = estilo.rasgos?.length ? estilo.rasgos : undefined;
+    const clave = `${estilo.fuente}|${JSON.stringify(ejes)}|${estilo.tracking}|${rasgos ? `${rasgos.join(',')}|` : ''}${texto}`;
     let unidades = this.medidas.get(clave);
     if (!unidades) {
-      unidades = medirEnUnidades(fuente, texto, estilo.tracking);
+      unidades = medirEnUnidades(componerLinea(fuente, texto, rasgos), fuente.unitsPerEm, estilo.tracking);
       this.medidas.set(clave, unidades);
     }
     const s = tamano / fuente.unitsPerEm;
     return { ancho: (unidades.maxX - unidades.minX) * s, minX: unidades.minX * s, maxX: unidades.maxX * s, arriba: unidades.arriba * s, abajo: unidades.abajo * s };
   }
 
+  /** Lo que avanza la pluma al escribir un texto (con su espaciado): sirve para repetirlo en fila sin que se pise. */
+  avance(estilo: EstiloDeLinea, texto: string, tamano: number): number {
+    const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
+    const linea = componerLinea(fuente, texto, estilo.rasgos);
+    const unidades = linea.positions.reduce((suma, p) => suma + p.xAdvance + estilo.tracking * fuente.unitsPerEm, 0);
+    return (unidades * tamano) / fuente.unitsPerEm;
+  }
+
+  /** Rasgos OpenType que tiene de verdad una fuente del catálogo. */
+  rasgosDisponibles(fuente: string): string[] {
+    return this.catalogo.fuente(fuente).fuente.availableFeatures ?? [];
+  }
+
   /** Trazo SVG de una línea con su origen en (x, base). */
-  trazar(estilo: Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking'>, texto: string, tamano: number, x: number, base: number): string {
+  trazar(estilo: EstiloDeLinea, texto: string, tamano: number, x: number, base: number): string {
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const s = tamano / fuente.unitsPerEm;
-    const linea = fuente.layout(texto);
+    const linea = componerLinea(fuente, texto, estilo.rasgos);
     let pluma = 0;
     const trazos: string[] = [];
     linea.glyphs.forEach((glifo, i) => {
@@ -111,10 +135,10 @@ export class MotorTexto {
 
   /** Texto repartido alrededor de un círculo completo, con las letras mirando hacia fuera. */
   /** Letras sobre una circunferencia desde `giroGrados` (0 = arriba). Ocupan `arcoGrados` (360 = la vuelta entera). */
-  trazarCircular(estilo: Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking'>, texto: string, tamano: number, cx: number, cy: number, radio: number, giroGrados: number, arcoGrados = 360): string {
+  trazarCircular(estilo: EstiloDeLinea, texto: string, tamano: number, cx: number, cy: number, radio: number, giroGrados: number, arcoGrados = 360): string {
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const s = tamano / fuente.unitsPerEm;
-    const linea = fuente.layout(texto);
+    const linea = componerLinea(fuente, texto, estilo.rasgos);
     const avances = linea.positions.map((p) => (p.xAdvance + estilo.tracking * fuente.unitsPerEm) * s);
     const total = avances.reduce((a, b) => a + b, 0);
     const escala = ((arcoGrados / 360) * 2 * Math.PI * radio) / total;
@@ -320,8 +344,12 @@ export class MotorTexto {
   }
 }
 
-function medirEnUnidades(fuente: Fuente, texto: string, tracking: number): MedidaUnidades {
-  const linea = fuente.layout(texto);
+/** La línea compuesta por la fuente. Sin rasgos pedidos se llama igual que siempre: el resultado no cambia. */
+function componerLinea(fuente: Fuente, texto: string, rasgos?: string[]): ReturnType<Fuente['layout']> {
+  return rasgos?.length ? fuente.layout(texto, rasgos) : fuente.layout(texto);
+}
+
+function medirEnUnidades(linea: ReturnType<Fuente['layout']>, unidadesPorEm: number, tracking: number): MedidaUnidades {
   let pluma = 0;
   let minX = Infinity;
   let maxX = -Infinity;
@@ -336,7 +364,7 @@ function medirEnUnidades(fuente: Fuente, texto: string, tracking: number): Medid
       arriba = Math.max(arriba, caja.maxY + posicion.yOffset);
       abajo = Math.max(abajo, -(caja.minY + posicion.yOffset));
     }
-    pluma += posicion.xAdvance + tracking * fuente.unitsPerEm;
+    pluma += posicion.xAdvance + tracking * unidadesPorEm;
   });
   if (minX === Infinity) return { minX: 0, maxX: 0, arriba: 0, abajo: 0 };
   return { minX, maxX, arriba, abajo };

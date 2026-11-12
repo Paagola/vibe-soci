@@ -21,7 +21,7 @@ export const escaparXml = (texto: string) =>
 
 /** Trazo de todas las líneas de un texto resuelto, en el sistema del bloque. */
 export function trazoDeTexto(motor: MotorTexto, capa: CapaTextoResuelta): string {
-  const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking };
+  const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
   return capa.lineas.map((linea) => motor.trazar(estilo, linea.texto, linea.tamano, linea.x, linea.base)).join('');
 }
 
@@ -34,21 +34,30 @@ export async function alfaDeSvg(svg: string, w: number, h: number): Promise<Uint
 /**
  * Alfa de la máscara del sujeto colocada en el lienzo, a escala `escala`.
  * La máscara se recorta a la zona del sujeto en la imagen original (`origen`) y se lleva a su sitio (`destino`).
+ * Con `giro`, el sujeto va girado alrededor del centro de `destino` (igual que lo pinta el renderizador).
  */
-export async function alfaDelSujeto(rutaMascara: string, origen: Rect, destino: Rect, lienzo: Lienzo, escala: number, anchoImagen: number, altoImagen: number): Promise<Uint8Array> {
+export async function alfaDelSujeto(rutaMascara: string, origen: Rect, destino: Rect, lienzo: Lienzo, escala: number, anchoImagen: number, altoImagen: number, giro = 0): Promise<Uint8Array> {
   const W = Math.round(lienzo.ancho * escala);
   const H = Math.round(lienzo.alto * escala);
-  const w = Math.max(1, Math.round(destino.w * escala));
-  const h = Math.max(1, Math.round(destino.h * escala));
-  const recorte = await sharp(await mascaraAlTamano(rutaMascara, anchoImagen, altoImagen))
+  let w = Math.max(1, Math.round(destino.w * escala));
+  let h = Math.max(1, Math.round(destino.h * escala));
+  let recorte = await sharp(await mascaraAlTamano(rutaMascara, anchoImagen, altoImagen))
     .extract(redondear(origen, anchoImagen, altoImagen))
     .resize(w, h, { fit: 'fill' })
     .extractChannel(0)
     .raw()
     .toBuffer();
+  let x0 = Math.round(destino.x * escala);
+  let y0 = Math.round(destino.y * escala);
+  if (giro !== 0) {
+    const girado = await sharp(recorte, { raw: { width: w, height: h, channels: 1 } }).rotate(giro, { background: '#000000' }).extractChannel(0).raw().toBuffer({ resolveWithObject: true });
+    x0 = Math.round((destino.x + destino.w / 2) * escala - girado.info.width / 2);
+    y0 = Math.round((destino.y + destino.h / 2) * escala - girado.info.height / 2);
+    w = girado.info.width;
+    h = girado.info.height;
+    recorte = girado.data;
+  }
   const lienzoAlfa = new Uint8Array(W * H);
-  const x0 = Math.round(destino.x * escala);
-  const y0 = Math.round(destino.y * escala);
   for (let j = 0; j < h; j++) {
     const y = y0 + j;
     if (y < 0 || y >= H) continue;

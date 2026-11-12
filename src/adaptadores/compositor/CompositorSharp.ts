@@ -2,17 +2,27 @@
  * Compositor por capas con sharp (raster), SVG (vectorial) y fontkit (texto como trazos).
  * Cada capa se pinta sola en un PNG del tamaño del lienzo y se guarda en caché: si una capa no cambia,
  * no se vuelve a pintar. Así cambiar un titular no regenera la foto ni el resto.
+ *
+ * F3 añade capas y tratamientos (sello, patrón, trazo a mano, giro libre, corte, tinta impresa, texto recortado por el
+ * sujeto, duotono y trama): la geometría de cada uno está en su archivo (formas, trazoAMano, tramado, tinta) y aquí
+ * solo se monta y se pinta.
  */
 import { createHash } from 'node:crypto';
-import sharp, { type Blend, type OverlayOptions, type Sharp } from 'sharp';
+import sharp, { type Blend, type Sharp } from 'sharp';
+import { mulberry32 } from '../../dominio/diseno/azar.js';
+import { hexARgb, luminancia } from '../../dominio/diseno/color.js';
 import type { Fusion, Intencion, Retoque } from '../../dominio/diseno/intencion.js';
 import { nombreDeCapa, type CapaResuelta, type Resuelto } from '../../dominio/diseno/resuelto.js';
-import type { Lienzo } from '../../dominio/diseno/reticula.js';
+import type { Lienzo, Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from '../../puertos/Compositor.js';
+import { trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
-import { conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto } from './raster.js';
+import { alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
+import { aplicarTinta, papel } from './tinta.js';
 import type { CatalogoTipografico } from './tipografias.js';
+import { radioDeCampo, tablaDuotono, tramar, tramarLuminancia } from './tramado.js';
+import { trazarGesto } from './trazoAMano.js';
 
 const FUSION_SHARP: Record<Fusion, Blend> = {
   normal: 'over',
@@ -23,6 +33,10 @@ const FUSION_SHARP: Record<Fusion, Blend> = {
   darken: 'darken',
   lighten: 'lighten',
 };
+
+type CapaSello = Extract<CapaResuelta, { tipo: 'sello' }>;
+type CapaPatron = Extract<CapaResuelta, { tipo: 'patron' }>;
+type CapaForma = Extract<CapaResuelta, { tipo: 'forma' }>;
 
 export class CompositorSharp implements Compositor {
   private readonly resolutor: ResolutorDiseno;
@@ -95,8 +109,17 @@ export class CompositorSharp implements Compositor {
 
       case 'recorte': {
         const disponible = activos[capa.activo]!;
-        const recorte = await recortar(disponible, capa.origen, capa.destino.w, capa.destino.h, capa.bordeSuave, capa.contraerBorde, capa.retoque);
-        return conOpacidad(await enLienzo(recorte, capa.destino.x, capa.destino.y, lienzo), capa.opacidad);
+        let recorte = await recortar(disponible, capa.origen, capa.destino.w, capa.destino.h, capa.bordeSuave, capa.contraerBorde, capa.retoque);
+        let x = capa.destino.x;
+        let y = capa.destino.y;
+        if (capa.giro) {
+          // El sujeto gira alrededor de su centro: el lienzo del recorte crece para que no se corte ninguna esquina.
+          const girado = await sharp(recorte).rotate(capa.giro, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer({ resolveWithObject: true });
+          x = capa.destino.x + capa.destino.w / 2 - girado.info.width / 2;
+          y = capa.destino.y + capa.destino.h / 2 - girado.info.height / 2;
+          recorte = girado.data;
+        }
+        return conOpacidad(await enLienzo(recorte, x, y, lienzo), capa.opacidad);
       }
 
       case 'sombra': {
@@ -109,35 +132,37 @@ export class CompositorSharp implements Compositor {
         }
         const disponible = activos[capa.activo]!;
         const margen = Math.ceil(capa.desenfoque * 1.5) + 2;
-        const w = Math.max(1, Math.round(capa.rect.w));
-        const h = Math.max(1, Math.round(capa.rect.h));
+        let w = Math.max(1, Math.round(capa.rect.w));
+        let h = Math.max(1, Math.round(capa.rect.h));
+        let silueta = await alfaRecortado(disponible, capa.origen, w, h);
+        let x = capa.rect.x;
+        let y = capa.rect.y;
+        if (capa.giro) {
+          // La sombra gira con el sujeto.
+          const girada = await sharp(await silueta.png().toBuffer()).rotate(capa.giro, { background: '#000000' }).extractChannel(0).png().toBuffer({ resolveWithObject: true });
+          x = capa.rect.x + capa.rect.w / 2 - girada.info.width / 2;
+          y = capa.rect.y + capa.rect.h / 2 - girada.info.height / 2;
+          w = girada.info.width;
+          h = girada.info.height;
+          silueta = sharp(girada.data);
+        }
         // Primero se agranda el lienzo de la máscara y después se difumina (en pasos separados: sharp tiene un orden fijo).
-        const ampliada = await (await alfaRecortado(disponible, capa.origen, w, h))
-          .extend({ top: margen, bottom: margen, left: margen, right: margen, background: '#000000' })
-          .png()
-          .toBuffer();
+        const ampliada = await silueta.extend({ top: margen, bottom: margen, left: margen, right: margen, background: '#000000' }).png().toBuffer();
         const alfa = await sharp(ampliada).blur(sigma).linear(capa.opacidad, 0).toBuffer();
         const sombra = await sharp({ create: { width: w + 2 * margen, height: h + 2 * margen, channels: 3, background: capa.color } }).joinChannel(alfa).png().toBuffer();
-        return enLienzo(sombra, capa.rect.x - margen, capa.rect.y - margen, lienzo);
+        return enLienzo(sombra, x - margen, y - margen, lienzo);
       }
 
       case 'texto': {
-        const pintura = capa.contorno
-          ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}" stroke-linejoin="round"`
-          : `fill="${capa.estilo.color}"`;
-        return vectorial(lienzo, `<path d="${trazoDeTexto(this.motor, capa)}" transform="matrix(${capa.matriz.join(' ')})" ${pintura} opacity="${capa.opacidad}"/>`);
+        const { cuerpo, definiciones } = this.svgDeTexto(capa, `opacity="${capa.opacidad}"`);
+        let png = await vectorial(lienzo, cuerpo, definiciones);
+        if (capa.tinta) png = await aplicarTinta(png, capa.tinta);
+        if (capa.recorte) png = await this.recortarConSujeto(png, capa.recorte, lienzo, activos);
+        return png;
       }
 
-      case 'forma': {
-        const trazo = capa.grosor
-          ? `fill="none" stroke="${capa.color}" stroke-width="${capa.grosor}"${capa.discontinua ? ` stroke-dasharray="${capa.discontinua.join(' ')}"` : ''}`
-          : `fill="${capa.color}"`;
-        let figura = '';
-        if (capa.figura === 'linea' && capa.desde && capa.hasta) figura = `<line x1="${capa.desde.x}" y1="${capa.desde.y}" x2="${capa.hasta.x}" y2="${capa.hasta.y}" ${trazo}/>`;
-        else if (capa.figura === 'rect' && capa.rect) figura = `<rect x="${capa.rect.x}" y="${capa.rect.y}" width="${capa.rect.w}" height="${capa.rect.h}" ${trazo}/>`;
-        else if (capa.figura === 'elipse' && capa.rect) figura = `<ellipse cx="${capa.rect.x + capa.rect.w / 2}" cy="${capa.rect.y + capa.rect.h / 2}" rx="${capa.rect.w / 2}" ry="${capa.rect.h / 2}" ${trazo}/>`;
-        return vectorial(lienzo, `<g opacity="${capa.opacidad}">${figura}</g>`);
-      }
+      case 'forma':
+        return this.conTinta(await vectorial(lienzo, `<g opacity="${capa.opacidad}">${figura(capa)}</g>`), capa);
 
       case 'circulo-texto': {
         const altura = this.motor.alturaMayusculas(capa.estilo, capa.tamano);
@@ -159,8 +184,174 @@ export class CompositorSharp implements Compositor {
       }
 
       case 'textura':
-        return grano(lienzo, capa.intensidad, capa.escala, capa.semilla);
+        return capa.recurso === 'papel' ? papel(lienzo, capa.intensidad, capa.escala, capa.semilla) : grano(lienzo, capa.intensidad, capa.escala, capa.semilla);
+
+      case 'sello':
+        return this.conTinta(await vectorial(lienzo, this.svgDeSello(capa)), capa);
+
+      case 'patron':
+        return this.conTinta(await this.pintarPatron(capa, lienzo), capa);
+
+      case 'trazo': {
+        const trazados = trazarGesto(capa);
+        return vectorial(lienzo, `<g opacity="${capa.opacidad}" fill="${capa.color}">${trazados.map((d) => `<path d="${d}"/>`).join('')}</g>`);
+      }
     }
+  }
+
+  private async conTinta(png: Buffer, capa: { tinta?: Parameters<typeof aplicarTinta>[1] }): Promise<Buffer> {
+    return capa.tinta ? aplicarTinta(png, capa.tinta) : png;
+  }
+
+  /**
+   * El SVG de un texto: sus trazos con la matriz que lo coloca y lo gira. Con «corte», la palabra va dos veces, cada
+   * mitad recortada por su lado de la línea y desplazada (el recorte viaja con la mitad, así que el canto queda limpio).
+   */
+  private svgDeTexto(capa: CapaTextoResuelta, atributos: string): { cuerpo: string; definiciones: string } {
+    const pintura = capa.contorno
+      ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}" stroke-linejoin="round"`
+      : `fill="${capa.estilo.color}"`;
+    const d = trazoDeTexto(this.motor, capa);
+    const matriz = `matrix(${capa.matriz.join(' ')})`;
+    if (!capa.corte) return { cuerpo: `<path d="${d}" transform="${matriz}" ${pintura} ${atributos}/>`, definiciones: '' };
+
+    const { punto: p, angulo, desplazamiento, separacion } = capa.corte;
+    const a = (angulo * Math.PI) / 180;
+    // u va a lo largo del corte tal como se ve (el eje y de la pantalla baja); n es su perpendicular.
+    const u = { x: Math.cos(a), y: -Math.sin(a) };
+    const n = { x: Math.sin(a), y: Math.cos(a) };
+    const L = 8000;
+    const lado = (signo: number) =>
+      [
+        [p.x - L * u.x, p.y - L * u.y],
+        [p.x + L * u.x, p.y + L * u.y],
+        [p.x + L * u.x + signo * L * n.x, p.y + L * u.y + signo * L * n.y],
+        [p.x - L * u.x + signo * L * n.x, p.y - L * u.y + signo * L * n.y],
+      ]
+        .map(([x, y]) => `${x!.toFixed(1)},${y!.toFixed(1)}`)
+        .join(' ');
+    const mover = (signo: number) => `translate(${((signo * (desplazamiento * u.x + separacion * n.x)) / 2).toFixed(2)} ${((signo * (desplazamiento * u.y + separacion * n.y)) / 2).toFixed(2)})`;
+    const id = `corte-${capa.id}`;
+    return {
+      definiciones: `<clipPath id="${id}-a"><polygon points="${lado(-1)}"/></clipPath><clipPath id="${id}-b"><polygon points="${lado(1)}"/></clipPath>`,
+      cuerpo: `<g transform="${matriz}" ${pintura} ${atributos}><g transform="${mover(-1)}"><g clip-path="url(#${id}-a)"><path d="${d}"/></g></g><g transform="${mover(1)}"><g clip-path="url(#${id}-b)"><path d="${d}"/></g></g></g>`,
+    };
+  }
+
+  /** Deja el texto solo donde está el sujeto («dentro») o solo donde no está («fuera»). */
+  private async recortarConSujeto(png: Buffer, recorte: NonNullable<CapaTextoResuelta['recorte']>, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): Promise<Buffer> {
+    const disponible = activos[recorte.activo]!;
+    if (!disponible.rutaMascara) throw new RangeError(`El activo «${disponible.activo.id}» no tiene máscara: no se puede recortar un texto con él.`);
+    const sujeto = await alfaDelSujeto(disponible.rutaMascara, recorte.origen, recorte.destino, lienzo, 1, disponible.activo.ancho, disponible.activo.alto, recorte.giro);
+    const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    for (let i = 0; i < info.width * info.height; i++) {
+      const s = sujeto[i]!;
+      data[i * 4 + 3] = Math.round((data[i * 4 + 3]! * (recorte.modo === 'dentro' ? s : 255 - s)) / 255);
+    }
+    return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  }
+
+  /** El sello entero: sombra dura, forma, filete, anillo de texto y líneas del centro, todo girado como una pieza. */
+  private svgDeSello(capa: CapaSello): string {
+    const { centro: c } = capa;
+    const giro = `rotate(${capa.giro} ${c.x} ${c.y})`;
+    const contorno = trazadoDeSello(capa.forma, c.x, c.y, capa.radioX, capa.radioY, capa.puntas, capa.profundidad);
+    const partes: string[] = [];
+    // La sombra se desplaza en el lienzo (la luz no gira con la pegatina), pero tiene su misma forma girada.
+    if (capa.sombra) partes.push(`<g transform="translate(${capa.sombra.dx} ${capa.sombra.dy})"><path d="${contorno}" transform="${giro}" fill="${capa.sombra.color}"/></g>`);
+    const dentro: string[] = [`<path d="${contorno}" fill="${capa.fondo}" stroke="${capa.fondo}" stroke-width="2" stroke-linejoin="round"/>`];
+    if (capa.filete > 0) {
+      const conPuntas = capa.forma === 'estrella' || capa.forma === 'festoneado';
+      const filete = conPuntas
+        ? trazadoElipse(c.x, c.y, capa.radioX * (1 - capa.profundidad) - capa.filete * 1.6, capa.radioX * (1 - capa.profundidad) - capa.filete * 1.6)
+        : trazadoDeSello(capa.forma, c.x, c.y, capa.radioX - capa.filete * 2.2, capa.radioY - capa.filete * 2.2, capa.puntas, capa.profundidad);
+      dentro.push(`<path d="${filete}" fill="none" stroke="${capa.color}" stroke-width="${capa.filete}"/>`);
+    }
+    if (capa.anillo) {
+      dentro.push(`<path d="${this.motor.trazarCircular(capa.anillo.estilo, capa.anillo.texto, capa.anillo.tamano, c.x, c.y, capa.anillo.radio, 0)}" fill="${capa.color}"/>`);
+    }
+    for (const linea of capa.lineas) {
+      const medida = this.motor.medir(linea.estilo, linea.texto, linea.tamano);
+      const x = c.x - (medida.minX + medida.maxX) / 2;
+      dentro.push(`<path d="${this.motor.trazar(linea.estilo, linea.texto, linea.tamano, x, c.y + linea.base)}" fill="${capa.color}"/>`);
+    }
+    partes.push(`<g transform="${giro}">${dentro.join('')}</g>`);
+    return `<g opacity="${capa.opacidad}">${partes.join('')}</g>`;
+  }
+
+  private async pintarPatron(capa: CapaPatron, lienzo: Lienzo): Promise<Buffer> {
+    const r = capa.rect;
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    const giro = capa.giro ? ` transform="rotate(${capa.giro} ${cx} ${cy})"` : '';
+    const marco = `<clipPath id="marco"><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/></clipPath>`;
+
+    if (capa.motivo === 'puntos') {
+      // Campo de semitonos: se pinta en raster, punto a punto, y solo dentro de la caja (girada, si lo está).
+      const campo = radioDeCampo(r, capa.paso!, capa.radios!, capa.desvanece!);
+      const a = (-(capa.giro ?? 0) * Math.PI) / 180;
+      const cos = Math.cos(a);
+      const sin = Math.sin(a);
+      const cobertura = tramar(lienzo.ancho, lienzo.alto, { forma: 'punto', paso: capa.paso!, angulo: capa.angulo! + capa.giro }, (x, y) => {
+        // Al sistema de la caja sin girar, para saber si el punto cae dentro.
+        const lx = cx + (x - cx) * cos - (y - cy) * sin;
+        const ly = cy + (x - cx) * sin + (y - cy) * cos;
+        return lx < r.x || lx > r.x + r.w || ly < r.y || ly > r.y + r.h ? 0 : campo(lx, ly);
+      });
+      const [cr, cg, cb] = hexARgb(capa.color);
+      const datos = Buffer.alloc(lienzo.ancho * lienzo.alto * 4);
+      for (let i = 0; i < cobertura.length; i++) {
+        if (cobertura[i] === 0) continue;
+        datos[i * 4] = cr;
+        datos[i * 4 + 1] = cg;
+        datos[i * 4 + 2] = cb;
+        datos[i * 4 + 3] = Math.round(cobertura[i]! * capa.opacidad);
+      }
+      return sharp(datos, { raw: { width: lienzo.ancho, height: lienzo.alto, channels: 4 } }).png().toBuffer();
+    }
+
+    if (capa.motivo === 'cuadros') {
+      // Solo cuadros enteros: la tira se ajusta a un número exacto de ellos, centrada en su caja.
+      const p = capa.paso!;
+      const w = Math.max(p, Math.floor(r.w / p) * p);
+      const h = Math.max(p, Math.floor(r.h / p) * p);
+      const x = r.x + (r.w - w) / 2;
+      const y = r.y + (r.h - h) / 2;
+      const trama = `<pattern id="p" x="${x}" y="${y}" width="${2 * p}" height="${2 * p}" patternUnits="userSpaceOnUse"><rect width="${p}" height="${p}" fill="${capa.color}"/><rect x="${p}" y="${p}" width="${p}" height="${p}" fill="${capa.color}"/></pattern>`;
+      return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#p)"/></g>`, trama);
+    }
+
+    if (capa.motivo === 'rayas') {
+      const p = capa.paso!;
+      const trama = `<pattern id="p" width="${p}" height="${p}" patternUnits="userSpaceOnUse" patternTransform="rotate(${capa.angulo} ${cx} ${cy})"><rect width="${p}" height="${(p * capa.radios![0]).toFixed(2)}" fill="${capa.color}"/></pattern>`;
+      return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="url(#p)"/></g>`, trama);
+    }
+
+    // Palabra repetida: una fila se traza una vez y se reutiliza; las filas giran dentro de la caja, que no gira.
+    const estilo = capa.estilo!;
+    const palabra = capa.texto!;
+    const tamano = capa.tamano!;
+    const avanceFila = capa.avanceFila!;
+    const mayuscula = this.motor.alturaMayusculas(estilo, tamano);
+    const avance = this.motor.avance(estilo, palabra, tamano) + capa.separacion! * this.motor.avance(estilo, ' ', tamano);
+    // Con giro, las filas tienen que cubrir la caja entera aunque vayan torcidas: se pinta su círculo circunscrito.
+    const lado = capa.giro ? Math.hypot(r.w, r.h) : 0;
+    const x0 = capa.giro ? cx - lado / 2 : r.x;
+    const y0 = capa.giro ? cy - lado / 2 : r.y;
+    const ancho = capa.giro ? lado : r.w;
+    const filas = capa.giro ? Math.ceil(lado / avanceFila) + 1 : capa.filas!;
+    const repeticiones = Math.ceil(ancho / avance) + 2;
+    let fila = '';
+    for (let k = 0; k < repeticiones; k++) fila += this.motor.trazar(estilo, palabra, tamano, k * avance, 0);
+    const usos: string[] = [];
+    for (let i = 0; i < filas; i++) {
+      // La mayúscula va centrada en su fila; cada fila arranca desplazada lo que diga «desfase».
+      const base = y0 + i * avanceFila + (avanceFila + mayuscula) / 2;
+      const x = x0 - ((i * capa.desfase! * avance) % avance);
+      const contorno = capa.contornoAlterno && i % 2 === 1;
+      usos.push(`<use href="#fila" x="${x.toFixed(2)}" y="${base.toFixed(2)}" ${contorno ? `fill="none" stroke="${capa.color}" stroke-width="${capa.contornoAlterno}"` : `fill="${capa.color}"`}/>`);
+    }
+    return vectorial(lienzo, `<g opacity="${capa.opacidad}" clip-path="url(#marco)"><g${giro}>${usos.join('')}</g></g>`, `${marco}<path id="fila" d="${fila}"/>`);
   }
 
   private rotulo(capa: Extract<CapaResuelta, { tipo: 'niveles' }>, texto: string, x: number, base: number, alinear: 'izquierda' | 'derecha'): string {
@@ -205,19 +396,23 @@ export class CompositorSharp implements Compositor {
    * el archivo se abra solo en Figma o Illustrator; también están sueltas en capas/.
    * Editable: el texto va como <text> (se cambia si están instaladas las fuentes de recursos/tipografias).
    * Exacto: el texto va como trazos (igual que el PNG, sin depender de las fuentes).
+   * Un texto con tinta impresa o recortado por el sujeto va, en el exacto, como imagen (es lo que se ve); en el
+   * editable sigue siendo texto limpio, que es lo que se puede retocar.
    */
   private svg(resuelto: Resuelto, capas: CapaRenderizada[], modo: 'editable' | 'exacto'): string {
     const { ancho, alto } = resuelto.lienzo;
     const partes = resuelto.capas.map((capa, i) => {
       const fusion = capa.fusion === 'normal' ? '' : ` style="mix-blend-mode:${capa.fusion}"`;
-      if (capa.tipo !== 'texto') {
+      const rasterizado = capa.tipo === 'texto' && modo === 'exacto' && (capa.tinta || capa.recorte);
+      if (capa.tipo !== 'texto' || rasterizado) {
         const datos = capas[i]!.png.toString('base64');
         return `  <image id="${capa.id}" data-archivo="capas/${nombreDeCapa(capa)}" href="data:image/png;base64,${datos}" x="0" y="0" width="${ancho}" height="${alto}"${fusion}/>`;
       }
       const matriz = `matrix(${capa.matriz.join(' ')})`;
       if (modo === 'exacto') {
-        const pintura = capa.contorno ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}"` : `fill="${capa.estilo.color}"`;
-        return `  <path id="${capa.id}" d="${trazoDeTexto(this.motor, capa)}" transform="${matriz}" ${pintura} opacity="${capa.opacidad}"${fusion}/>`;
+        const { cuerpo, definiciones } = this.svgDeTexto(capa, `opacity="${capa.opacidad}"${fusion}`);
+        const marcado = cuerpo.replace(/^<(path|g) /, `<$1 id="${capa.id}" `);
+        return `  ${definiciones ? `<defs>${definiciones}</defs>` : ''}${marcado}`;
       }
       const familia = this.catalogo.familia(capa.estilo.fuente);
       const peso = capa.estilo.ejes.wght ?? 400;
@@ -238,7 +433,9 @@ export class CompositorSharp implements Compositor {
 function claveDe(capa: CapaResuelta, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): string {
   const { z: _z, ...contenido } = capa;
   const activo = 'activo' in capa ? activos[capa.activo]?.activo.sha256 : undefined;
-  return createHash('sha256').update(JSON.stringify({ contenido, lienzo, activo })).digest('hex');
+  // Un texto recortado por el sujeto depende también de la foto de ese sujeto.
+  const sujeto = capa.tipo === 'texto' && capa.recorte ? activos[capa.recorte.activo]?.activo.sha256 : undefined;
+  return createHash('sha256').update(JSON.stringify({ contenido, lienzo, activo, ...(sujeto ? { sujeto } : {}) })).digest('hex');
 }
 
 async function componer(resuelto: Resuelto, capas: CapaRenderizada[], desde: number, hasta: number): Promise<Buffer> {
@@ -254,10 +451,41 @@ function vectorial(lienzo: Lienzo, cuerpo: string, definiciones = ''): Promise<B
   return sharp(Buffer.from(documentoSvg(lienzo, cuerpo, 1, definiciones))).png().toBuffer();
 }
 
+/** La figura de una capa de forma, con su giro alrededor de su centro. */
+function figura(capa: CapaForma): string {
+  const trazo = capa.grosor
+    ? `fill="none" stroke="${capa.color}" stroke-width="${capa.grosor}"${capa.discontinua ? ` stroke-dasharray="${capa.discontinua.join(' ')}"` : ''}`
+    : `fill="${capa.color}"`;
+  let dibujo = '';
+  let centro: { x: number; y: number } | undefined;
+  const centroDe = (r: Rect) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+  if (capa.figura === 'linea' && capa.desde && capa.hasta) {
+    dibujo = `<line x1="${capa.desde.x}" y1="${capa.desde.y}" x2="${capa.hasta.x}" y2="${capa.hasta.y}" ${trazo}/>`;
+    centro = { x: (capa.desde.x + capa.hasta.x) / 2, y: (capa.desde.y + capa.hasta.y) / 2 };
+  } else if (capa.figura === 'rect' && capa.rect) {
+    dibujo = `<rect x="${capa.rect.x}" y="${capa.rect.y}" width="${capa.rect.w}" height="${capa.rect.h}"${capa.radio ? ` rx="${capa.radio}"` : ''} ${trazo}/>`;
+    centro = centroDe(capa.rect);
+  } else if (capa.figura === 'elipse' && capa.rect) {
+    dibujo = `<ellipse cx="${capa.rect.x + capa.rect.w / 2}" cy="${capa.rect.y + capa.rect.h / 2}" rx="${capa.rect.w / 2}" ry="${capa.rect.h / 2}" ${trazo}/>`;
+    centro = centroDe(capa.rect);
+  } else if (capa.figura === 'mancha' && capa.rect) {
+    dibujo = `<path d="${trazadoMancha(capa.rect, capa.lobulos ?? 5, capa.irregularidad ?? 0.35, capa.semilla ?? 7)}" ${trazo}/>`;
+    centro = centroDe(capa.rect);
+  } else if (capa.figura === 'poligono' && capa.puntos) {
+    dibujo = `<path d="${trazadoPoligono(capa.puntos)}" ${trazo}/>`;
+    const xs = capa.puntos.map((p) => p.x);
+    const ys = capa.puntos.map((p) => p.y);
+    centro = { x: (Math.min(...xs) + Math.max(...xs)) / 2, y: (Math.min(...ys) + Math.max(...ys)) / 2 };
+  }
+  return capa.giro && centro ? `<g transform="rotate(${capa.giro} ${centro.x} ${centro.y})">${dibujo}</g>` : dibujo;
+}
+
 /**
  * Ajustes fotográficos suaves: brillo y saturación (modulate), contraste (linear) y calidez (recomb).
  * El punto negro va en una segunda pasada: tiene que aplicarse sobre la foto ya recortada a 0–255
  * (si se combina con el contraste en un solo linear, el contraste lleva el negro por debajo de 0 y el punto negro no llega).
+ * Después, si se piden, el desenfoque y la reproducción a tinta: duotono (dos tintas) o trama de semitonos (una).
+ * La trama sin color de papel devuelve una imagen con transparencia: el papel es lo que haya debajo.
  */
 async function retocar(imagen: Sharp, retoque?: Retoque): Promise<Sharp> {
   if (!retoque) return imagen;
@@ -272,14 +500,44 @@ async function retocar(imagen: Sharp, retoque?: Retoque): Promise<Sharp> {
       [0, 0, 1 - c],
     ]);
   }
-  if (!retoque.puntoNegro) return resultado;
-  // 0 → el color pedido (p. ej. el carbón de la marca) y 255 → 255, canal a canal.
-  const negro = [1, 3, 5].map((i) => parseInt(retoque.puntoNegro!.slice(i, i + 2), 16));
-  const intermedia = await resultado.png().toBuffer();
-  return sharp(intermedia).linear(
-    negro.map((c) => (255 - c) / 255),
-    negro,
-  );
+  if (retoque.puntoNegro) {
+    // 0 → el color pedido (p. ej. el carbón de la marca) y 255 → 255, canal a canal.
+    const negro = [1, 3, 5].map((i) => parseInt(retoque.puntoNegro!.slice(i, i + 2), 16));
+    const intermedia = await resultado.png().toBuffer();
+    resultado = sharp(intermedia).linear(
+      negro.map((c) => (255 - c) / 255),
+      negro,
+    );
+  }
+  if (retoque.desenfoque) resultado = sharp(await resultado.png().toBuffer()).blur(Math.max(0.3, retoque.desenfoque / 2));
+  if (!retoque.tramado && !retoque.duotono) return resultado;
+
+  // Reproducción a tinta: se parte de la foto en grises.
+  const { data: grises, info } = await sharp(await resultado.png().toBuffer()).greyscale().removeAlpha().extractChannel(0).raw().toBuffer({ resolveWithObject: true });
+  const w = info.width;
+  const h = info.height;
+  if (retoque.tramado) {
+    const t = retoque.tramado;
+    const cobertura = tramarLuminancia(new Uint8Array(grises), w, h, w, h, { forma: t.forma, paso: t.paso, angulo: t.angulo });
+    const tinta = hexARgb(t.tinta);
+    const fondo = t.papel ? hexARgb(t.papel) : undefined;
+    const datos = Buffer.alloc(w * h * 4);
+    for (let i = 0; i < w * h; i++) {
+      const c = cobertura[i]! / 255;
+      for (let k = 0; k < 3; k++) datos[i * 4 + k] = fondo ? Math.round(fondo[k]! + (tinta[k]! - fondo[k]!) * c) : tinta[k]!;
+      datos[i * 4 + 3] = fondo ? 255 : cobertura[i]!;
+    }
+    return sharp(datos, { raw: { width: w, height: h, channels: 4 } });
+  }
+  const tabla = tablaDuotono(hexARgb(retoque.duotono!.sombras), hexARgb(retoque.duotono!.luces));
+  const datos = Buffer.alloc(w * h * 3);
+  for (let i = 0; i < w * h; i++) {
+    const v = grises[i]! * 3;
+    datos[i * 3] = tabla[v]!;
+    datos[i * 3 + 1] = tabla[v + 1]!;
+    datos[i * 3 + 2] = tabla[v + 2]!;
+  }
+  return sharp(datos, { raw: { width: w, height: h, channels: 3 } });
 }
 
 async function alfaRecortado(disponible: ActivoDisponible, origen: { x: number; y: number; w: number; h: number }, w: number, h: number): Promise<Sharp> {
@@ -300,14 +558,21 @@ async function recortar(
   const { ancho, alto } = disponible.activo;
   const w = Math.max(1, Math.round(anchoDestino));
   const h = Math.max(1, Math.round(altoDestino));
-  const color = await (await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), retoque)).toBuffer();
+  const retocada = await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), retoque);
   let alfa = await (await alfaRecortado(disponible, origen, w, h)).png().toBuffer();
   if (contraerBorde > 0) {
     // Encoger: se difumina y se vuelve a cortar por arriba de la mitad; el borde entra unos px hacia dentro.
     alfa = await sharp(alfa).blur(Math.max(0.3, contraerBorde)).linear(3, -3 * 170).png().toBuffer();
   }
   if (bordeSuave > 0) alfa = await sharp(alfa).blur(Math.max(0.3, bordeSuave)).png().toBuffer();
-  return sharp(color).joinChannel(alfa).png().toBuffer();
+  // Sin reproducción a tinta, el camino de siempre (el mismo resultado que antes de F3, píxel a píxel).
+  if (!retoque?.tramado && !retoque?.duotono) return sharp(await retocada.toBuffer()).joinChannel(alfa).png().toBuffer();
+  if (!retoque.tramado || retoque.tramado.papel) return sharp(await retocada.removeAlpha().png().toBuffer()).joinChannel(alfa).png().toBuffer();
+  // Trama sin papel: la tinta solo está donde hay punto Y donde está el sujeto.
+  const tramada = await retocada.ensureAlpha().raw().toBuffer();
+  const mascara = await sharp(alfa).extractChannel(0).raw().toBuffer();
+  for (let i = 0; i < w * h; i++) tramada[i * 4 + 3] = Math.round((tramada[i * 4 + 3]! * mascara[i]!) / 255);
+  return sharp(tramada, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
 }
 
 /** Grano de película determinista (misma semilla, mismo grano): gris neutro con un poco de alfa, para fusionar en overlay. */
@@ -326,29 +591,4 @@ async function grano(lienzo: Lienzo, intensidad: number, escala: number, semilla
     datos[i * 4 + 3] = alfa;
   }
   return sharp(datos, { raw: { width: w, height: h, channels: 4 } }).resize(lienzo.ancho, lienzo.alto, { kernel: 'cubic' }).png().toBuffer();
-}
-
-function mulberry32(semilla: number): () => number {
-  let a = semilla >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function hexARgb(hex: string): [number, number, number] {
-  const n = Number.parseInt(hex.slice(1), 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
-/** Luminancia relativa (WCAG 2). */
-function luminancia(r: number, g: number, b: number): number {
-  const canal = (v: number) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b);
 }

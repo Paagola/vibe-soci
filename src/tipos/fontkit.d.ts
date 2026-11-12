@@ -55,6 +55,8 @@ declare module 'fontkit' {
     readonly capHeight: number;
     readonly xHeight: number;
     readonly variationAxes: Record<string, Eje>;
+    /** Rasgos OpenType que tiene la fuente (liga, smcp, swsh, ss01…). */
+    readonly availableFeatures: string[];
     getVariation(ejes: Record<string, number>): Fuente;
     layout(texto: string, features?: string[] | Record<string, boolean>): Linea;
   }

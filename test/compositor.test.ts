@@ -217,7 +217,7 @@ describe('F1 · resolutor', () => {
       capas: [
         { id: 'fondo', tipo: 'relleno', color: '@rojo', opacidad: 1, fusion: 'normal', oculta: false },
         { id: 'ventana', tipo: 'imagen', activo: 'plato', caja: { col: [1, 6], fila: [2, 8] }, enfoque: { x: 0.5, y: 0.5 }, zoom: 1.6, opacidad: 1, fusion: 'normal', oculta: false },
-        { id: 'plato', tipo: 'recorte', activo: 'plato', alineadoCon: 'ventana', sangradoAbajo: 0, bordeSuave: 0.8, contraerBorde: 0, opacidad: 1, fusion: 'normal', oculta: false },
+        { id: 'plato', tipo: 'recorte', activo: 'plato', alineadoCon: 'ventana', sangradoAbajo: 0, bordeSuave: 0.8, contraerBorde: 0, giro: 0, opacidad: 1, fusion: 'normal', oculta: false },
       ],
       relaciones: [],
     });
