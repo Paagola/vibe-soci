@@ -4,7 +4,7 @@
  * También las miniaturas de la biblioteca de referencias del estudio.
  */
 import { stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { Router, type Request, type Response } from 'express';
 import sharp from 'sharp';
 import { rutaDeRecurso, type RecursoDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -24,18 +24,23 @@ const LADOS = new Set([320, 640, 1080]);
 const segmentosDe = (req: Request): string[] => ([] as string[]).concat(req.params.ruta ?? []);
 const rutaValida = (segmentos: string[]) => segmentos.length > 0 && !segmentos.some((s) => s === '..' || s === '.' || s === '');
 const esArchivo = (ruta: string) => stat(ruta).then((info) => info.isFile(), () => false);
+/**
+ * La ruta ya está comprobada (dentro de su carpeta) antes de enviarla. `send` rechaza por defecto cualquier ruta con un
+ * directorio que empiece por punto, y el estudio puede vivir en uno (p. ej. un worktree en .claude/worktrees/).
+ */
+const OPCIONES_ENVIO = { dotfiles: 'allow' as const, headers: { 'Cache-Control': 'no-cache' } };
 
 /** Envía una imagen tal cual o, con ?lado=, reducida a JPEG (para las rejillas y los encargos con fotos de 2K). */
 async function enviar(req: Request, res: Response, ruta: string): Promise<void> {
   if (!(await esArchivo(ruta))) throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe ese archivo.');
-  if (req.query.descargar !== undefined) return res.download(ruta);
+  if (req.query.descargar !== undefined) return res.download(ruta, basename(ruta), { dotfiles: 'allow' });
   const lado = Number(req.query.lado);
   if (LADOS.has(lado) && /\.(jpe?g|png|webp)$/i.test(ruta)) {
     const miniatura = await sharp(ruta).rotate().resize(lado, lado, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 82 }).toBuffer();
     res.set({ 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache' }).send(miniatura);
     return;
   }
-  res.sendFile(ruta, { headers: { 'Cache-Control': 'no-cache' } });
+  res.sendFile(ruta, OPCIONES_ENVIO);
 }
 
 /** Los errores de «no es suyo» de las consultas pasan a 404: no se dice más de lo necesario. */
@@ -64,8 +69,8 @@ export function rutasDeArchivos(estudio: Estudio): Router {
     const ruta = piezas.rutaArchivo(id, segmentos.join('/'));
     if (!(await esArchivo(ruta))) throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe ese archivo.');
 
-    if (req.query.descargar !== undefined) res.download(ruta);
-    else res.sendFile(ruta, { headers: { 'Cache-Control': 'no-cache' } });
+    if (req.query.descargar !== undefined) res.download(ruta, basename(ruta), { dotfiles: 'allow' });
+    else res.sendFile(ruta, OPCIONES_ENVIO);
   });
 
   // ---------------------------------------------------------------- Encargos de la orden única
