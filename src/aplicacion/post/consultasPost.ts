@@ -14,7 +14,7 @@ import { ErrorDeUsuario } from '../../dominio/errores.js';
 import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
-import type { ReferenciaLocal } from '../../dominio/referencia.js';
+import type { FamiliaBiblioteca, ReferenciaLocal } from '../../dominio/referencia.js';
 import { esExtensionDeFoto } from '../../dominio/reglas.js';
 import { describirProblemas } from '../../dominio/validacion.js';
 import type { GaleriaDeDisenos, HojasDeRevision, VersionDeDiseno } from '../../puertos/GaleriaDeDisenos.js';
@@ -155,6 +155,10 @@ export interface DetalleEncargo {
     elegida: ReferenciaLocal | null;
     conImagen: boolean;
     error: string | null;
+    /** Las referencias que el local ya tiene registradas (para elegir una sin salir de la web). */
+    registradas: ResumenReferencia[];
+    /** Las familias de la biblioteca del estudio, con sus posts: de ahí se registra una referencia nueva. */
+    biblioteca: FamiliaBiblioteca[];
   };
   fotoSubida: { disponible: boolean; ancho: number; alto: number; uso: EncargoPost['usoFotoReal']; registrada: boolean };
   propuesta: DetallePropuesta | null;
@@ -162,6 +166,26 @@ export interface DetalleEncargo {
   intentos: DetalleIntento[];
   diseno: DetalleDiseno;
 }
+
+export interface ResumenReferencia {
+  id: string;
+  titulo: string | null;
+  familia: string | null;
+  /** Post de la biblioteca del estudio del que sale, si es de ahí. */
+  deBiblioteca: string | null;
+  conImagen: boolean;
+  /** Si se puede usar ya: con ficha y, si es un enlace, con su imagen. */
+  usable: boolean;
+}
+
+const resumirReferencia = (r: ReferenciaLocal): ResumenReferencia => ({
+  id: r.id,
+  titulo: r.ficha?.titulo ?? null,
+  familia: r.ficha?.familia ?? null,
+  deBiblioteca: r.origen.tipo === 'IMAGEN' ? (r.origen.deBiblioteca ?? null) : null,
+  conImagen: Boolean(r.origen.archivo),
+  usable: Boolean(r.ficha) && !(r.origen.tipo === 'ENLACE' && r.origen.estado === 'PIDE_CAPTURA'),
+});
 
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 const mensajeDe = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -233,6 +257,8 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
   } catch (error) {
     errorReferencia = mensajeDe(error);
   }
+  const registradas = (await deps.referencias.referencias.listar(e.local).catch(() => [])).map(resumirReferencia);
+  const biblioteca = await deps.referencias.biblioteca.familias().catch(() => []);
 
   // ---------------------------------------------------------------- Foto subida y propuesta
   const real = e.activoReal ? await deps.activos.obtener(e.local, e.activoReal).catch(() => null) : null;
@@ -271,7 +297,7 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
   const generador = { nombre: deps.generador.nombre, disponible: disponible.ok, motivo: disponible.ok ? null : disponible.motivo, maxIntentos: MAX_INTENTOS_SEGUIDOS };
 
   const espera = queEspera(e, { estado, errorReferencia, generador, diseno });
-  return { encargo: e, fase: faseDe(e.paso), espera, local, referencia: { estado, elegida, conImagen: Boolean(elegida?.origen.archivo), error: errorReferencia }, fotoSubida, propuesta, generador, intentos, diseno };
+  return { encargo: e, fase: faseDe(e.paso), espera, local, referencia: { estado, elegida, conImagen: Boolean(elegida?.origen.archivo), error: errorReferencia, registradas, biblioteca }, fotoSubida, propuesta, generador, intentos, diseno };
 }
 
 function queEspera(
@@ -429,8 +455,8 @@ export type RecursoDeEncargo =
   | { tipo: 'SUBIDA' }
   /** La imagen de uno de los activos del encargo (la foto real o un intento), o su máscara. */
   | { tipo: 'ACTIVO'; activo: string; mascara?: boolean }
-  /** La imagen de la referencia elegida. */
-  | { tipo: 'REFERENCIA' }
+  /** La imagen de la referencia elegida o, con `id`, la de otra referencia registrada del mismo local. */
+  | { tipo: 'REFERENCIA'; id?: string }
   /** Un archivo de los diseños compuestos o de las hojas de revisión. */
   | { tipo: 'DISENO'; archivo: string };
 
@@ -454,8 +480,10 @@ export async function rutaDeRecurso(deps: DepsConsultasPost, proyecto: string, r
       return activo.rutaMascara;
     }
     case 'REFERENCIA': {
-      if (!e.referencia) throw noEsta('referencia');
-      const referencia = await deps.referencias.referencias.obtener(e.local, e.referencia);
+      const id = recurso.id ?? e.referencia;
+      if (!id) throw noEsta('referencia');
+      if (!(await deps.referencias.referencias.existe(e.local, id))) throw noEsta(`la referencia «${id}»`);
+      const referencia = await deps.referencias.referencias.obtener(e.local, id);
       if (!referencia.origen.archivo) throw noEsta('la imagen de la referencia (el enlace no se pudo leer)');
       return deps.referencias.referencias.rutaArchivo(e.local, referencia.id, referencia.origen.archivo);
     }

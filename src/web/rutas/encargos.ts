@@ -10,7 +10,7 @@ import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
 import { corregirPropuesta } from '../../aplicacion/post/corregirPropuesta.js';
 import { claveDeBorrador, guardarIntencion, recomponerPost, vistaPreviaDelDiseno, type DepsDisenoPost } from '../../aplicacion/post/disenoDelPost.js';
-import { elegirReferencia } from '../../aplicacion/post/elegirReferencia.js';
+import { elegirReferencia, usarReferenciaDeBiblioteca } from '../../aplicacion/post/elegirReferencia.js';
 import { avanzar, leerEncargo, type Accion } from '../../aplicacion/post/ordenPost.js';
 import { presupuestoDeFoto } from '../../aplicacion/post/presupuestoDeFoto.js';
 import type { AlProgresar, Progreso } from '../../aplicacion/progreso.js';
@@ -36,7 +36,8 @@ const CuerpoAvanzar = z
     importar: z.string().optional(),
   })
   .refine((c) => [c.confirmo, c.rechazo, c.importar].filter(Boolean).length <= 1, 'Una sola acción cada vez: confirmar, rechazar o importar.');
-const CuerpoReferencia = z.object({ referencia: z.string().min(1) });
+/** Una referencia ya registrada del local, o un post de la biblioteca del estudio (se registra con su ficha). */
+const CuerpoReferencia = z.union([z.object({ referencia: z.string().min(1) }), z.object({ biblioteca: z.string().min(1) })]);
 const CuerpoPropuesta = z.object({ propuesta: z.unknown() });
 const CuerpoIntencion = z.object({ intencion: z.unknown() });
 
@@ -117,9 +118,9 @@ export function rutasDeEncargos(estudio: Estudio): Router {
 
   rutas.put('/:proyecto/referencia', async (req, res) => {
     const proyecto = proyectoDe(req);
-    const { referencia } = validar(CuerpoReferencia, req.body, 'Elige una referencia.');
+    const cuerpo = validar(CuerpoReferencia, req.body, 'Elige una referencia.');
     const deps = await exigirLibre(estudio, proyecto);
-    const encargo = await elegirReferencia(deps, proyecto, referencia);
+    const encargo = 'biblioteca' in cuerpo ? await usarReferenciaDeBiblioteca(deps, proyecto, cuerpo.biblioteca) : await elegirReferencia(deps, proyecto, cuerpo.referencia);
     res.json({ encargo: { proyecto: encargo.proyecto, referencia: encargo.referencia } });
   });
 

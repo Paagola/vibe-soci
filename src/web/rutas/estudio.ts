@@ -1,7 +1,10 @@
 /** Ajustes del estudio, locales, subidas de fotos, ejemplos y consulta de trabajos. */
+import { readFile, stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import express, { Router } from 'express';
 import { z } from 'zod';
 import { crearLocal } from '../../aplicacion/crearLocal.js';
+import { RAIZ } from '../../config.js';
 import { validar } from '../../dominio/validacion.js';
 import { ErrorHttp } from '../errores.js';
 import type { Estudio } from '../estudio.js';
@@ -24,6 +27,8 @@ export function rutasDelEstudio(estudio: Estudio): Router {
       modelos: { director: config.geminiModelo, directorRespaldo: config.geminiModeloRespaldo ?? null, imagen: config.hfModelo },
       claves: { gemini: Boolean(config.geminiApiKey), higgsfield: Boolean(config.hfKey) },
       limiteImagenesDia: config.limiteImagenesDia,
+      // La foto nueva de la orden única: Gemini de imagen de pago, solo con la facturación activada y con tope.
+      fotoNueva: { modelo: config.geminiModeloImagen, facturacion: config.geminiFacturacion, topeUsd: config.geminiTopeUsd },
     });
   });
 
@@ -33,7 +38,19 @@ export function rutasDelEstudio(estudio: Estudio): Router {
   });
 
   rutas.get('/locales', async (_req, res) => {
-    res.json({ locales: await estudio.deps().locales.listar() });
+    const locales = await estudio.deps().locales.listar();
+    // Sin marcas/<local>/tokens.json el compositor no puede montar el post: se avisa al abrir el encargo.
+    const conTokens = await Promise.all(locales.map((m) => stat(join(RAIZ, 'marcas', m.slug, 'tokens.json')).then(() => true, () => false)));
+    res.json({ locales: locales.map((m, i) => ({ ...m, tokens: conTokens[i] })) });
+  });
+
+  /** Solo en simulado: da de alta el local de la plantilla (plantillas/marca.ejemplo.json) para probar la orden sin datos reales. */
+  rutas.post('/locales/ejemplo', async (_req, res) => {
+    if (!estudio.simulado()) throw new ErrorHttp(409, 'SOLO_SIMULADO', 'El local de ejemplo solo se da de alta en el modo simulado.');
+    const marca = JSON.parse(await readFile(join(estudio.carpetaPlantillas, 'marca.ejemplo.json'), 'utf8')) as { slug: string };
+    const deps = estudio.deps();
+    const local = (await deps.locales.existe(marca.slug)) ? await deps.locales.obtener(marca.slug) : await crearLocal(deps, marca);
+    res.status(201).json({ local });
   });
 
   rutas.post('/locales', async (req, res) => {
