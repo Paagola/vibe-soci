@@ -72,7 +72,7 @@ export async function vistaNuevoLocal() {
           .map(([rol, control]) => ({ rol, descripcion: control.value.trim() })),
       };
       await api('POST', '/locales', { marca, sobrescribir: sobrescribir.checked });
-      location.hash = '#/nueva';
+      location.hash = '#/nuevo';
     } catch (error) {
       reemplazar(errores, bloqueError(error));
     } finally {

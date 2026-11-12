@@ -81,7 +81,7 @@ export async function vistaPieza(id) {
     return h(
       'section',
       { class: 'resumen' },
-      h('p', { class: 'nota' }, h('a', { href: '#/' }, '← Piezas'), ` · ${marca?.nombre ?? pieza.localSlug} · ${nombre(pieza.formato)} de ${pieza.numDiapositivas} · ${nombre(pieza.tipo)}`),
+      h('p', { class: 'nota' }, h('a', { href: '#/piezas' }, '← Piezas'), ` · ${marca?.nombre ?? pieza.localSlug} · ${nombre(pieza.formato)} de ${pieza.numDiapositivas} · ${nombre(pieza.tipo)}`),
       h('h1', {}, pieza.idea),
       Object.values(pieza.condiciones ?? {}).some(Boolean)
         ? h('p', { class: 'nota' }, 'Condiciones: ', Object.entries(pieza.condiciones).map(([k, v]) => `${k}: ${v}`).join(' · '))

@@ -3,23 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Estudio de contenido</title>
+    <title>Estudio · SOCIETY</title>
+    <link rel="preload" href="/fuentes/dynapuff-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fuentes/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/estilos.css" />
     <script type="module" src="/js/app.js"></script>
   </head>
   <body>
+    <div class="franja-simulado" role="status">Modo simulado · nada gasta · todo se guarda aparte, en datos-simulado/</div>
     <header class="cabecera">
-      <a class="marca" href="#/">Estudio de contenido</a>
-      <nav>
-        <a href="#/">Piezas</a>
-        <a href="#/nueva">Nueva pieza</a>
-        <a href="#/local">Nuevo local</a>
+      <a class="marca" href="#/" aria-label="Estudio de contenido, inicio">
+        <span class="marca-logo">estudio</span>
+        <span class="marca-sub">Society · contenido</span>
+      </a>
+      <nav aria-label="Secciones">
+        <a href="#/" data-seccion="posts">Posts</a>
+        <a href="#/nuevo" data-seccion="nuevo">Nuevo post</a>
+        <a href="#/local" data-seccion="local">Nuevo local</a>
+        <a href="#/piezas" data-seccion="piezas" class="antiguo" title="El generador del MVP: Gemini dirige e Higgsfield genera la imagen con el texto dentro">Generador antiguo</a>
       </nav>
-      <label class="interruptor" title="En modo simulado nada gasta: el director y el generador son falsos y las piezas se guardan aparte (datos-simulado/)">
-        <input type="checkbox" id="modo-simulado" />
-        <span>Modo simulado</span>
-      </label>
-      <span id="estado-claves" class="estado-claves"></span>
+      <div class="cabecera-derecha">
+        <span id="estado-claves" class="estado-claves"></span>
+        <label class="interruptor" title="En modo simulado nada gasta: el director, el generador y el revisor son falsos y todo se guarda aparte (datos-simulado/)">
+          <input type="checkbox" id="modo-simulado" />
+          <span>Simulado</span>
+        </label>
+      </div>
     </header>
     <main id="vista" class="vista"></main>
     <div id="avisos" class="avisos" aria-live="polite"></div>

@@ -1,4 +1,4 @@
-// Inicio: piezas, locales y atajos para cargar los ejemplos.
+// Generador antiguo (MVP): piezas, locales y atajos para cargar los ejemplos. Se conserva tal cual.
 import { api } from '../api.js';
 import { conBoton, formatearFecha, h, nombre } from '../ui.js';
 
@@ -24,7 +24,7 @@ export async function vistaInicio() {
     h(
       'div',
       { class: 'titulo-seccion' },
-      h('h1', {}, 'Piezas'),
+      h('div', {}, h('p', { class: 'sobretitulo' }, 'Generador antiguo · MVP'), h('h1', {}, 'Piezas'), h('p', { class: 'entrada' }, 'Gemini dirige e Higgsfield genera la imagen entera, con el texto dentro. Para la foto nueva y el post compuesto, usa «Nuevo post».')),
       h('div', { class: 'acciones' }, h('a', { class: 'boton', href: locales.length ? '#/nueva' : '#/local' }, locales.length ? 'Nueva pieza' : 'Crea antes un local')),
     ),
     piezas.length === 0

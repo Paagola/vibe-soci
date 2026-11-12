@@ -8,6 +8,8 @@ export function h(etiqueta, atributos = {}, ...hijos) {
     if (clave.startsWith('on') && typeof valor === 'function') nodo.addEventListener(clave.slice(2), valor);
     else if (clave === 'class') nodo.className = valor;
     else if (clave === 'style' && typeof valor === 'object') Object.assign(nodo.style, valor);
+    // value siempre como propiedad: en un <textarea> el atributo no rellena nada.
+    else if (clave === 'value') nodo.value = String(valor);
     else if (clave in nodo && typeof valor !== 'string') nodo[clave] = valor;
     else nodo.setAttribute(clave, valor === true ? '' : String(valor));
   }

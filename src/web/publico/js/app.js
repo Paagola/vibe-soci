@@ -1,16 +1,24 @@
-// Arranque del frontend: cabecera (modo simulado y claves) y enrutado por #hash.
+// Arranque del frontend: cabecera (modo simulado y vías) y enrutado por #hash.
 import { api } from './api.js';
 import { avisar, bloqueError, h, reemplazar } from './ui.js';
+import { vistaEncargo } from './vistas/encargo.js';
+import { vistaEncargos } from './vistas/encargos.js';
 import { vistaInicio } from './vistas/inicio.js';
 import { vistaNuevoLocal } from './vistas/local.js';
 import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
+import { vistaNuevoEncargo } from './vistas/nuevoEncargo.js';
 import { vistaPieza } from './vistas/pieza.js';
 
+// [patrón, crear vista, sección de la cabecera que se marca]
 const RUTAS = [
-  [/^#?\/?$/, () => vistaInicio()],
-  [/^#\/local$/, () => vistaNuevoLocal()],
-  [/^#\/nueva$/, () => vistaNuevaPieza()],
-  [/^#\/pieza\/([a-z0-9-]+)$/, (id) => vistaPieza(id)],
+  [/^#?\/?$/, () => vistaEncargos(), 'posts'],
+  [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
+  [/^#\/encargo\/([a-z0-9-]+)$/, (proyecto) => vistaEncargo(proyecto), 'posts'],
+  [/^#\/local$/, () => vistaNuevoLocal(), 'local'],
+  // El generador antiguo (MVP): se conserva tal cual.
+  [/^#\/piezas$/, () => vistaInicio(), 'piezas'],
+  [/^#\/nueva$/, () => vistaNuevaPieza(), 'piezas'],
+  [/^#\/pieza\/([a-z0-9-]+)$/, (id) => vistaPieza(id), 'piezas'],
 ];
 
 /** Cada vista devuelve {nodo, salir?}. `salir` deja de consultar trabajos al cambiar de pantalla. */
@@ -18,20 +26,22 @@ let vistaActual;
 
 async function enrutar() {
   vistaActual?.salir?.();
+  vistaActual = undefined;
   const contenedor = document.getElementById('vista');
   const ruta = RUTAS.find(([patron]) => patron.test(location.hash));
   if (!ruta) {
     location.hash = '#/';
     return;
   }
-  const [patron, crear] = ruta;
+  const [patron, crear, seccion] = ruta;
+  document.querySelectorAll('.cabecera nav a').forEach((a) => a.classList.toggle('activo', a.dataset.seccion === seccion));
   reemplazar(contenedor, h('p', { class: 'cargando' }, 'Cargando…'));
   try {
     vistaActual = await crear(...(location.hash.match(patron)?.slice(1) ?? []));
     reemplazar(contenedor, vistaActual.nodo);
     window.scrollTo(0, 0);
   } catch (error) {
-    reemplazar(contenedor, bloqueError(error), h('p', {}, h('a', { href: '#/' }, 'Volver a las piezas')));
+    reemplazar(contenedor, bloqueError(error), h('p', {}, h('a', { href: '#/' }, 'Volver a los posts')));
   }
 }
 
@@ -43,14 +53,15 @@ async function iniciarCabecera() {
   const pintar = (simulado) => {
     interruptor.checked = simulado;
     document.body.classList.toggle('simulado', simulado);
+    const { fotoNueva } = estudio;
     reemplazar(
       claves,
       simulado
-        ? 'Nada gasta: director y generador falsos'
+        ? 'Director, generador y revisor simulados'
         : [
             estudio.claves.gemini ? `Director: ${estudio.modelos.director}` : 'Sin clave de Gemini',
             ' · ',
-            estudio.claves.higgsfield ? `Imágenes: ${estudio.modelos.imagen}` : 'Sin clave de Higgsfield (vía manual)',
+            fotoNueva?.facturacion ? `Foto nueva: ${fotoNueva.modelo} (tope ${fotoNueva.topeUsd} USD)` : 'Foto nueva: sin facturación (importar a mano)',
           ],
     );
   };
@@ -60,8 +71,8 @@ async function iniciarCabecera() {
     try {
       const { simulado } = await api('PUT', '/estudio', { simulado: interruptor.checked });
       pintar(simulado);
-      avisar(simulado ? 'Modo simulado: nada gasta y sus piezas se guardan aparte.' : 'Modo real: el director y la generación usan tus claves.');
-      // Cada modo tiene sus propias piezas: se vuelve a la lista para no seguir en una pieza del otro modo.
+      avisar(simulado ? 'Modo simulado: nada gasta y todo se guarda aparte.' : 'Modo real: el director y la foto nueva usan tus claves y sus topes.');
+      // Cada modo tiene sus propios encargos y piezas: se vuelve a la lista para no seguir en uno del otro modo.
       if (location.hash === '' || location.hash === '#/') enrutar();
       else location.hash = '#/';
     } catch (error) {
