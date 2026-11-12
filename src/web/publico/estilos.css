@@ -108,6 +108,7 @@ body.simulado .franja-simulado {
 .cabecera nav a:hover { background: var(--piedra); }
 .cabecera nav a.activo { background: var(--tinta); color: var(--papel); }
 .cabecera nav a.antiguo { color: var(--gris); font-weight: 600; }
+.cabecera nav a.antiguo.activo { color: var(--papel); }
 .cabecera-derecha { margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .estado-claves { font-size: 0.8rem; color: var(--gris); max-width: 30rem; }
 
@@ -238,6 +239,7 @@ textarea.codigo { font-family: var(--mono); font-size: 0.8rem; line-height: 1.45
 .vacio h2 { margin-bottom: 0.4rem; }
 .vacio .acciones { justify-content: center; }
 .locales { padding-left: 1.2rem; }
+.rejilla + h2, .vacio + h2 { margin-top: 1.8rem; }
 
 /* Las cinco fases, para el estado vacío */
 .recorrido { list-style: none; padding: 0; margin: 1.4rem auto 0.4rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; max-width: 900px; text-align: left; }
