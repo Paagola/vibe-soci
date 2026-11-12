@@ -27,6 +27,9 @@ interface Plan {
   diapositivas: Array<{ intencion: string }>;
 }
 
+/** Donde se componen los borradores (`borrador: true`): una carpeta por proyecto, que se sobrescribe cada vez. */
+export const CARPETA_DE_BORRADORES = join(tmpdir(), 'estudio-contenido-borradores');
+
 export class ComponedorProyectos implements ComponedorDePiezas {
   constructor(
     private readonly raiz: string,
@@ -38,7 +41,7 @@ export class ComponedorProyectos implements ComponedorDePiezas {
     const proyecto = resolve(this.raiz, rutaProyecto);
     const plan = JSON.parse(await readFile(join(proyecto, 'plan.json'), 'utf8')) as Plan;
     const slug = basename(proyecto);
-    const salida = opciones.borrador ? join(tmpdir(), 'estudio-contenido-borradores', slug) : join(this.carpetaDatos, 'disenos', slug);
+    const salida = opciones.borrador ? join(CARPETA_DE_BORRADORES, slug) : join(this.carpetaDatos, 'disenos', slug);
     if (opciones.borrador) await rm(salida, { recursive: true, force: true });
 
     const catalogo = new CatalogoTipografico(join(this.raiz, 'recursos', 'tipografias'));

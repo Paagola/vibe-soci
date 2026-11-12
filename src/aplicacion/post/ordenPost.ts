@@ -70,13 +70,13 @@ const ETIQUETA_REAL = '@image1 (real photograph of the dish)';
 export const rutaEncargo = (deps: DepsPost, proyecto: string) => join(deps.proyectos, proyecto, 'post.json');
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 
-async function leerEncargo(deps: DepsPost, proyecto: string): Promise<EncargoPost> {
-  const ruta = rutaEncargo(deps, proyecto);
+export async function leerEncargo(deps: Pick<DepsPost, 'proyectos'>, proyecto: string): Promise<EncargoPost> {
+  const ruta = join(deps.proyectos, proyecto, 'post.json');
   if (!(await existe(ruta))) throw new ErrorDeUsuario(`No existe el encargo «${proyecto}». Créalo con: npm run post -- nuevo ${proyecto} --local … --foto … --plato "…" --referencia …`);
   return EncargoPost.parse(JSON.parse(await readFile(ruta, 'utf8')));
 }
 
-async function guardarEncargo(deps: DepsPost, e: EncargoPost): Promise<void> {
+export async function guardarEncargo(deps: DepsPost, e: EncargoPost): Promise<void> {
   await mkdir(join(deps.proyectos, e.proyecto), { recursive: true });
   await writeFile(rutaEncargo(deps, e.proyecto), `${JSON.stringify(EncargoPost.parse(e), null, 2)}\n`);
 }
@@ -105,8 +105,13 @@ export async function crearEncargo(
   return encargo;
 }
 
+export interface OpcionesAvance {
+  /** Se llama justo antes de ejecutar cada paso: para que la capa de entrada (la web) enseñe por dónde va. */
+  alEmpezarPaso?: (paso: PasoPost, encargo: EncargoPost) => void;
+}
+
 /** Avanza el encargo hasta la siguiente parada o bloqueo. */
-export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion = {}): Promise<ResultadoAvance> {
+export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion = {}, opciones: OpcionesAvance = {}): Promise<ResultadoAvance> {
   let e = await leerEncargo(deps, proyecto);
   const mensajes: string[] = [];
   const nota = (texto: string) => {
@@ -126,6 +131,7 @@ export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion =
       return { encargo: e, mensajes, parada: 'HECHO' };
     }
     const accionAhora = usada ? {} : accion;
+    opciones.alEmpezarPaso?.(paso, e);
     const r = await PASOS[paso](deps, e, accionAhora, nota);
     if (r.usaAccion) usada = true;
     e = r.encargo;
@@ -419,7 +425,8 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   },
 };
 
-function peticion(e: EncargoPost, rutaReal: string, prompt: string, n: number): PeticionFoto {
+/** La petición que la orden manda al generador para el intento `n` (también sirve para estimar su coste antes de autorizarlo). */
+export function peticion(e: EncargoPost, rutaReal: string, prompt: string, n: number): PeticionFoto {
   return { id: `${e.proyecto}-foto-${n}`, prompt, referencias: [{ ruta: rutaReal, etiqueta: ETIQUETA_REAL }], aspectRatio: ASPECTO, tamano: TAMANO };
 }
 

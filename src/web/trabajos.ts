@@ -1,5 +1,5 @@
 /**
- * Trabajos en segundo plano (conceptos, plan, generar, corregir).
+ * Trabajos en segundo plano (conceptos, plan, generar, corregir y los avances de un encargo de la orden única).
  * Viven en memoria: si se recarga la página siguen corriendo y la vista los recupera.
  * Los avisos de deps.avisar se asocian al trabajo en curso con AsyncLocalStorage.
  */
@@ -9,7 +9,7 @@ import type { AlProgresar, Progreso } from '../aplicacion/progreso.js';
 import { describirError, ErrorHttp, type ErrorApi } from './errores.js';
 import { restanteMs, type Medias } from './estimacion.js';
 
-export type TipoTrabajo = 'CONCEPTOS' | 'PLAN' | 'GENERAR' | 'CORREGIR';
+export type TipoTrabajo = 'CONCEPTOS' | 'PLAN' | 'GENERAR' | 'CORREGIR' | 'ENCARGO';
 export type EstadoTrabajo = 'EN_CURSO' | 'TERMINADO' | 'ERROR';
 /** Cada modo tiene sus propias piezas: el mismo id puede existir en los dos sin ser la misma pieza. */
 export type ModoTrabajo = 'REAL' | 'SIMULADO';
@@ -17,6 +17,7 @@ export type ModoTrabajo = 'REAL' | 'SIMULADO';
 export interface Trabajo {
   id: string;
   tipo: TipoTrabajo;
+  /** A quién pertenece: el id de la pieza o, en la orden única, «encargo:<proyecto>». No puede tener dos trabajos a la vez. */
   piezaId: string;
   modo: ModoTrabajo;
   estado: EstadoTrabajo;
@@ -88,7 +89,7 @@ export class RegistroTrabajos {
       const paso = `${progreso.mensaje}|${progreso.pasosRestantes.director}|${progreso.pasosRestantes.tandas}`;
       if (paso !== pasoAnterior) {
         pasoAnterior = paso;
-        trabajo.finEstimadoEn = this.ahora() + restanteMs(progreso.pasosRestantes, medias);
+        trabajo.finEstimadoEn = this.ahora() + restanteMs(progreso.pasosRestantes, medias) + (progreso.otrosMs ?? 0);
       }
     };
 

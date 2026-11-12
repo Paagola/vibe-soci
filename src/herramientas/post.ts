@@ -17,24 +17,9 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { ComponedorProyectos } from '../adaptadores/compositor/ComponedorProyectos.js';
-import { ObtenedorEnlacesHttp } from '../adaptadores/enlaces/ObtenedorEnlacesHttp.js';
-import { AlmacenActivosFicheros } from '../adaptadores/ficheros/AlmacenActivosFicheros.js';
-import { AlmacenLocalesFicheros } from '../adaptadores/ficheros/AlmacenLocalesFicheros.js';
-import { AlmacenPiezasFicheros } from '../adaptadores/ficheros/AlmacenPiezasFicheros.js';
-import { AlmacenReferenciasFicheros } from '../adaptadores/ficheros/AlmacenReferenciasFicheros.js';
-import { BibliotecaDeReferenciasFicheros } from '../adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
-import { BibliotecaFicheros } from '../adaptadores/ficheros/BibliotecaFicheros.js';
-import { PiezasHechasFicheros } from '../adaptadores/ficheros/PiezasHechasFicheros.js';
-import { ClienteGemini } from '../adaptadores/gemini/ClienteGemini.js';
-import { DirectorFotoGemini } from '../adaptadores/gemini/DirectorFotoGemini.js';
-import { GeneradorFotoGemini } from '../adaptadores/gemini/GeneradorFotoGemini.js';
-import { registradorDeUso } from '../adaptadores/gemini/registroUso.js';
-import { RevisorVisualGemini } from '../adaptadores/gemini/RevisorVisualGemini.js';
-import { SegmentadorVision } from '../adaptadores/imagen/SegmentadorVision.js';
-import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../adaptadores/simulado/FotoSimulada.js';
 import { avanzar, crearEncargo, type DepsPost } from '../aplicacion/post/ordenPost.js';
 import { RAIZ, leerConfig } from '../config.js';
+import { crearDepsPost } from '../contenedorPost.js';
 import { ErrorDeUsuario } from '../dominio/errores.js';
 
 const { values, positionals } = parseArgs({
@@ -54,55 +39,11 @@ const { values, positionals } = parseArgs({
 
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 
+/** Los adaptadores los elige contenedorPost.ts, que comparte con la web. Aquí, en simulado, los locales y las referencias son los reales. */
 async function construirDeps(simulado: boolean, proyecto: string): Promise<DepsPost> {
   const config = leerConfig();
-  const datos = simulado ? config.carpetaDatosSimulado : config.carpetaDatos;
-  const localesReales = join(config.carpetaDatos, 'locales');
-  const biblioteca = new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(config.carpetaBiblioteca, 'referencias'));
-  const referencias = {
-    piezas: new AlmacenPiezasFicheros(join(config.carpetaDatos, 'piezas')),
-    piezasHechas: new PiezasHechasFicheros(join(RAIZ, 'proyectos')),
-    locales: new AlmacenLocalesFicheros(localesReales),
-    referencias: new AlmacenReferenciasFicheros(localesReales),
-    biblioteca,
-    enlaces: new ObtenedorEnlacesHttp(),
-    leerArchivo: async () => {
-      throw new Error('la orden no registra referencias');
-    },
-    ahora: () => new Date().toISOString(),
-  };
-  const comunes = {
-    raiz: RAIZ,
-    proyectos: simulado ? join(config.carpetaDatosSimulado, 'proyectos') : join(RAIZ, 'proyectos'),
-    activos: new AlmacenActivosFicheros(join(datos, 'locales')),
-    referencias,
-    componedor: new ComponedorProyectos(RAIZ, datos),
-    ahora: () => new Date().toISOString(),
-  };
-  if (simulado) {
-    return { ...comunes, director: new DirectorFotoSimulado(), generador: new GeneradorFotoSimulado(), revisor: new RevisorVisualSimulado(), segmentador: new SegmentadorSimulado() };
-  }
-  if (!config.geminiApiKey) throw new ErrorDeUsuario('Falta GEMINI_API_KEY en .env (o usa --simular).');
-  const modelos = [config.geminiModelo, ...(config.geminiModeloRespaldo ? [config.geminiModeloRespaldo] : [])];
-  const cliente = (motivo: string) =>
-    new ClienteGemini(config.geminiApiKey as string, modelos, {
-      avisar: (m) => console.error(`  aviso: ${m}`),
-      alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion),
-    });
-  return {
-    ...comunes,
-    director: new DirectorFotoGemini(cliente('director-foto'), await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia(), modelos),
-    generador: new GeneradorFotoGemini({
-      apiKey: config.geminiApiKey,
-      modelo: config.geminiModeloImagen,
-      facturacion: config.geminiFacturacion,
-      topeUsd: config.geminiTopeUsd,
-      carpetaDatos: config.carpetaDatos,
-      origen: `orden-post:${proyecto}`,
-    }),
-    revisor: new RevisorVisualGemini(cliente('comprobacion-salida'), modelos),
-    segmentador: new SegmentadorVision(RAIZ),
-  };
+  if (!simulado && !config.geminiApiKey) throw new ErrorDeUsuario('Falta GEMINI_API_KEY en .env (o usa --simular).');
+  return crearDepsPost(config, { simular: simulado, proyecto, datosDeReferencia: 'REALES', avisar: (m) => console.error(`  aviso: ${m}`) });
 }
 
 async function principal(): Promise<void> {

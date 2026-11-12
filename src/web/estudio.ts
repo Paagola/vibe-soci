@@ -4,8 +4,10 @@
  */
 import { join } from 'node:path';
 import type { Dependencias } from '../aplicacion/dependencias.js';
+import type { DepsDisenoPost } from '../aplicacion/post/disenoDelPost.js';
 import type { Config } from '../config.js';
 import { crearContenedor } from '../contenedor.js';
+import { crearDepsPost, gastoDeFotos, type GastoDeFotos } from '../contenedorPost.js';
 import { DirectorCronometrado, Estimador } from './estimacion.js';
 import { AlmacenSubidas } from './subidas.js';
 import { RegistroTrabajos } from './trabajos.js';
@@ -14,6 +16,14 @@ export interface Estudio {
   config: Config;
   /** Dependencias del modo activo. Un trabajo las fija al lanzarse. */
   deps(): Dependencias;
+  /**
+   * Dependencias de la orden única (de la foto subida al post exportado) en el modo activo.
+   * En simulado todo es del modo, como en el resto de la web: locales, referencias, proyectos y activos van en datos-simulado/.
+   * `proyecto` solo sirve para apuntar el gasto del generador.
+   */
+  post(proyecto?: string): Promise<DepsDisenoPost>;
+  /** Gasto real en fotos nuevas frente al tope del código (solo lee el registro). */
+  gastoDeFotos(): Promise<GastoDeFotos>;
   simulado(): boolean;
   cambiarModo(simulado: boolean): void;
   registro: RegistroTrabajos;
@@ -51,6 +61,8 @@ export function crearEstudio(config: Config, opciones: OpcionesEstudio): Estudio
   return {
     config,
     deps: () => (simulado ? simuladas : real),
+    post: (proyecto = 'web') => crearDepsPost(config, { simular: simulado, proyecto, avisar, datosDeReferencia: 'DEL_MODO' }),
+    gastoDeFotos: () => gastoDeFotos(config),
     simulado: () => simulado,
     cambiarModo: (valor) => {
       simulado = valor;

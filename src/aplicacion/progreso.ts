@@ -10,6 +10,8 @@ export interface Progreso {
   total: number;
   /** Pasos que quedan, contando el actual: llamadas al director y tandas de imágenes. */
   pasosRestantes: { director: number; tandas: number };
+  /** Tiempo de lo que queda y no es ni director ni imágenes (p. ej. componer el diseño), en ms. */
+  otrosMs?: number;
 }
 
 export type AlProgresar = (progreso: Progreso) => void;
