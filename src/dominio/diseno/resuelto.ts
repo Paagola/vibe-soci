@@ -45,7 +45,7 @@ export interface CorteResuelto {
   separacion: number;
 }
 
-/** El sujeto con el que se recorta un texto: lo necesario para pintar su máscara en el lienzo. */
+/** El sujeto con el que se recorta una capa (texto, forma o patrón): lo necesario para pintar su máscara en el lienzo. */
 export interface RecorteDeTexto {
   activo: string;
   origen: Rect;
@@ -136,6 +136,7 @@ export type CapaResuelta = BaseResuelta &
         irregularidad?: number;
         semilla?: number;
         tinta?: TintaResuelta;
+        recorte?: RecorteDeTexto;
       }
     | { tipo: 'circulo-texto'; texto: string; estilo: EstiloResuelto; centro: { x: number; y: number }; radio: number; tamano: number; fondo?: string; giro: number; arco?: number }
     | {
@@ -190,6 +191,7 @@ export type CapaResuelta = BaseResuelta &
         desvanece?: 'no' | 'arriba' | 'abajo' | 'izquierda' | 'derecha' | 'centro';
         angulo?: number;
         tinta?: TintaResuelta;
+        recorte?: RecorteDeTexto;
       }
     | {
         tipo: 'trazo';

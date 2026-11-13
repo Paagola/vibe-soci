@@ -268,6 +268,98 @@
         ]
       },
       "nota": "Tipografía de marca de Café Albor (textos)."
+    },
+    {
+      "id": "noto-serif-display",
+      "familia": "Noto Serif Display",
+      "archivo": "noto-serif-display/NotoSerifDisplay[wdth,wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/notoserifdisplay",
+      "descargada": "2026-11-13",
+      "clasificacion": [
+        "didona",
+        "serif",
+        "condensada",
+        "alto-contraste",
+        "display",
+        "variable"
+      ],
+      "ejes": {
+        "wght": [
+          100,
+          900
+        ],
+        "wdth": [
+          62.5,
+          100
+        ]
+      },
+      "nota": "La didona condensada que faltaba (post-11 «HIGH STEAKS», post-22 «MOCKTAIL»): con wdth 62,5 es estrecha y de alto contraste. Tiene versalitas (smcp) y cifras elzevirianas (onum)."
+    },
+    {
+      "id": "instrument-serif",
+      "familia": "Instrument Serif",
+      "archivo": "instrument-serif/InstrumentSerif-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/instrumentserif",
+      "descargada": "2026-11-13",
+      "clasificacion": [
+        "serif",
+        "editorial",
+        "condensada",
+        "display"
+      ],
+      "nota": "Serif editorial estrecha, de contraste medio: la voz «literaria» para el nombre de un plato en caja baja."
+    },
+    {
+      "id": "instrument-serif-italica",
+      "familia": "Instrument Serif",
+      "archivo": "instrument-serif/InstrumentSerif-Italic.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/instrumentserif",
+      "descargada": "2026-11-13",
+      "clasificacion": [
+        "serif",
+        "italica",
+        "editorial",
+        "display"
+      ],
+      "nota": "Itálica para la frase corta que acompaña a un titular de palo seco."
+    },
+    {
+      "id": "sacramento",
+      "familia": "Sacramento",
+      "archivo": "sacramento/Sacramento-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/sacramento",
+      "descargada": "2026-11-13",
+      "clasificacion": [
+        "script",
+        "monolineal",
+        "manuscrita"
+      ],
+      "nota": "La manuscrita monolineal que faltaba (post-11 «Dishes at»): trazo fino y uniforme, sin florituras."
+    },
+    {
+      "id": "caveat",
+      "familia": "Caveat",
+      "archivo": "caveat/Caveat[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/caveat",
+      "descargada": "2026-11-13",
+      "clasificacion": [
+        "manuscrita",
+        "rotulador",
+        "anotacion",
+        "variable"
+      ],
+      "ejes": {
+        "wght": [
+          400,
+          700
+        ]
+      },
+      "nota": "Letra de rotulador para la tercera voz: una anotación corta junto a una flecha a mano. Nunca para un dato esencial ni para un texto largo."
     }
   ]
 }

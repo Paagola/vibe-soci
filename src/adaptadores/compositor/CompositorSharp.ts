@@ -157,14 +157,11 @@ export class CompositorSharp implements Compositor {
 
       case 'texto': {
         const { cuerpo, definiciones } = this.svgDeTexto(capa, `opacity="${capa.opacidad}"`);
-        let png = await vectorial(lienzo, cuerpo, definiciones);
-        if (capa.tinta) png = await aplicarTinta(png, capa.tinta);
-        if (capa.recorte) png = await this.recortarConSujeto(png, capa.recorte, lienzo, activos);
-        return png;
+        return this.acabar(await vectorial(lienzo, cuerpo, definiciones), capa, lienzo, activos);
       }
 
       case 'forma':
-        return this.conTinta(await vectorial(lienzo, `<g opacity="${capa.opacidad}">${figura(capa)}</g>`), capa);
+        return this.acabar(await vectorial(lienzo, `<g opacity="${capa.opacidad}">${figura(capa)}</g>`), capa, lienzo, activos);
 
       case 'circulo-texto': {
         const altura = this.motor.alturaMayusculas(capa.estilo, capa.tamano);
@@ -192,7 +189,7 @@ export class CompositorSharp implements Compositor {
         return this.conTinta(await vectorial(lienzo, this.svgDeSello(capa)), capa);
 
       case 'patron':
-        return this.conTinta(await this.pintarPatron(capa, lienzo), capa);
+        return this.acabar(await this.pintarPatron(capa, lienzo), capa, lienzo, activos);
 
       case 'trazo': {
         const trazados = trazarGesto(capa);
@@ -203,6 +200,12 @@ export class CompositorSharp implements Compositor {
 
   private async conTinta(png: Buffer, capa: { tinta?: Parameters<typeof aplicarTinta>[1] }): Promise<Buffer> {
     return capa.tinta ? aplicarTinta(png, capa.tinta) : png;
+  }
+
+  /** Los dos acabados que comparten texto, forma y patrón: la tinta impresa y el recorte por la silueta del sujeto. */
+  private async acabar(png: Buffer, capa: { tinta?: Parameters<typeof aplicarTinta>[1]; recorte?: CapaTextoResuelta['recorte'] }, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): Promise<Buffer> {
+    const entintada = await this.conTinta(png, capa);
+    return capa.recorte ? this.recortarConSujeto(entintada, capa.recorte, lienzo, activos) : entintada;
   }
 
   /**
@@ -317,10 +320,12 @@ export class CompositorSharp implements Compositor {
       const p = capa.paso!;
       const w = Math.max(p, Math.floor(r.w / p) * p);
       const h = Math.max(p, Math.floor(r.h / p) * p);
-      const x = r.x + (r.w - w) / 2;
-      const y = r.y + (r.h - h) / 2;
-      const trama = `<pattern id="p" x="${x}" y="${y}" width="${2 * p}" height="${2 * p}" patternUnits="userSpaceOnUse"><rect width="${p}" height="${p}" fill="${capa.color}"/><rect x="${p}" y="${p}" width="${p}" height="${p}" fill="${capa.color}"/></pattern>`;
-      return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#p)"/></g>`, trama);
+      const x = Math.round(r.x + (r.w - w) / 2);
+      const y = Math.round(r.y + (r.h - h) / 2);
+      // Cada cuadro se dibuja a mano, en píxeles enteros: un <pattern> de SVG deja una costura fina entre baldosas.
+      let d = '';
+      for (let j = 0; j < h / p; j++) for (let i = j % 2; i < w / p; i += 2) d += `M${x + i * p} ${y + j * p}h${p}v${p}h${-p}z`;
+      return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><path d="${d}" fill="${capa.color}"${capa.giro ? '' : ' shape-rendering="crispEdges"'}/></g>`);
     }
 
     if (capa.motivo === 'rayas') {
@@ -430,8 +435,8 @@ export class CompositorSharp implements Compositor {
 function claveDe(capa: CapaResuelta, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): string {
   const { z: _z, ...contenido } = capa;
   const activo = 'activo' in capa ? activos[capa.activo]?.activo.sha256 : undefined;
-  // Un texto recortado por el sujeto depende también de la foto de ese sujeto.
-  const sujeto = capa.tipo === 'texto' && capa.recorte ? activos[capa.recorte.activo]?.activo.sha256 : undefined;
+  // Una capa recortada por el sujeto depende también de la foto de ese sujeto.
+  const sujeto = 'recorte' in capa && capa.recorte ? activos[capa.recorte.activo]?.activo.sha256 : undefined;
   return createHash('sha256').update(JSON.stringify({ contenido, lienzo, activo, ...(sujeto ? { sujeto } : {}) })).digest('hex');
 }
 

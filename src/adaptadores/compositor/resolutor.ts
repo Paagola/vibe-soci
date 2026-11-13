@@ -7,7 +7,7 @@ import type { Activo } from '../../dominio/activos.js';
 import { semillaDe } from '../../dominio/diseno/azar.js';
 import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque, Tinta } from '../../dominio/diseno/intencion.js';
 import { medirOficio, problemasDeOficio } from '../../dominio/diseno/oficio.js';
-import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, Resuelto, TintaResuelta } from '../../dominio/diseno/resuelto.js';
+import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, RecorteDeTexto, Resuelto, TintaResuelta } from '../../dominio/diseno/resuelto.js';
 import { alinearEn, dentroDe, lienzoDe, rectDeCaja, zonaSegura, type Lienzo, type Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
 import { radioInterior } from './formas.js';
@@ -184,10 +184,8 @@ export class ResolutorDiseno {
               problemas.push({ gravedad: 'AVISO', capa: capa.id, tipo: 'TINTA', mensaje: `«${capa.id}» pide tinta impresa con mayúsculas de ${menor.toFixed(0)} px: por debajo de ${ALTURA_MINIMA_PARA_TINTA} px rompe la lectura, así que se pinta limpio.` });
             } else resuelta.tinta = marcas;
           }
-          if (capa.recortarCon) {
-            const sujeto = this.recorteDe(resueltas, capa.recortarCon.sujeto, capa.id);
-            resuelta.recorte = { activo: sujeto.activo, origen: sujeto.origen, destino: sujeto.destino, giro: sujeto.giro ?? 0, modo: capa.recortarCon.modo };
-          }
+          const silueta = this.siluetaDe(resueltas, capa);
+          if (silueta) resuelta.recorte = silueta;
           resueltas.set(capa.id, resuelta);
           break;
         }
@@ -210,6 +208,7 @@ export class ResolutorDiseno {
             ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
             ...(capa.figura === 'mancha' ? { lobulos: capa.lobulos, irregularidad: capa.irregularidad, semilla: semilla(capa) } : {}),
             ...conTinta(tinta(capa, relleno)),
+            ...conRecorte(this.siluetaDe(resueltas, capa)),
           });
           break;
         }
@@ -254,7 +253,10 @@ export class ResolutorDiseno {
           resueltas.set(capa.id, this.resolverSello(capa, comun, lienzo, estilo, color, texto, tinta(capa, color(capa.fondo))));
           break;
         case 'patron':
-          resueltas.set(capa.id, this.resolverPatron(capa, comun, capa.caja ? rect(capa.caja) : { x: 0, y: 0, w: lienzo.ancho, h: lienzo.alto }, estilo, color, texto, tinta(capa, color(capa.color))));
+          resueltas.set(capa.id, {
+            ...this.resolverPatron(capa, comun, capa.caja ? rect(capa.caja) : { x: 0, y: 0, w: lienzo.ancho, h: lienzo.alto }, estilo, color, texto, tinta(capa, color(capa.color))),
+            ...conRecorte(this.siluetaDe(resueltas, capa)),
+          });
           break;
         case 'trazo':
           // Un trazo acompaña a un texto o señala al sujeto: se coloca cuando los dos tienen ya su sitio definitivo.
@@ -384,7 +386,7 @@ export class ResolutorDiseno {
       utilX = radio - capa.anillo.tamano * 0.4;
       utilY = utilX;
     }
-    const lineas = this.encajarEnSello(capa, estilo, color, texto, utilX * (alargado ? 0.88 : 0.92), utilY * (alargado ? 0.8 : 0.92));
+    const lineas = this.encajarEnSello(capa, estilo, color, texto, utilX * (alargado ? 0.9 : 0.92), utilY * (alargado ? 0.8 : 0.92));
     const giro = (capa.giro * Math.PI) / 180;
     const medioAncho = Math.abs(radioX * Math.cos(giro)) + Math.abs(radioY * Math.sin(giro));
     const medioAlto = Math.abs(radioX * Math.sin(giro)) + Math.abs(radioY * Math.cos(giro));
@@ -438,9 +440,10 @@ export class ResolutorDiseno {
         y = base + (huecos[i] ?? 0);
         const tamano = alturas[i]! / d.capRatio;
         const ancho = this.motor.medir({ fuente: d.e.fuente, ejes: d.e.ejes, tracking: d.e.tracking, ...(d.e.rasgos.length ? { rasgos: d.e.rasgos } : {}) }, d.texto, tamano).ancho;
-        // El ancho disponible es la cuerda de la elipse a la altura más alejada del centro de las dos de la línea.
+        // El ancho disponible es la cuerda de la forma a la altura más alejada del centro de las dos de la línea:
+        // en una pastilla los lados son rectos y solo se pierden los extremos redondos; en el resto es una elipse.
         const lejos = Math.max(Math.abs(arriba), Math.abs(base));
-        const cuerda = lejos >= ry ? 0 : 2 * rx * Math.sqrt(1 - (lejos / ry) ** 2);
+        const cuerda = lejos >= ry ? 0 : capa.forma === 'pastilla' ? 2 * (rx - ry + Math.sqrt(ry * ry - lejos * lejos)) : 2 * rx * Math.sqrt(1 - (lejos / ry) ** 2);
         return { d, tamano, base, cabe: ancho <= cuerda };
       });
     };
@@ -545,6 +548,13 @@ export class ResolutorDiseno {
     const [, , , , ex, ey] = texto.matriz;
     const fin = linea.fin ?? linea.x + linea.ancho;
     return { x: ex + fin + ancla.separacion * mayuscula, y: ey + linea.base - ancla.elevacion * mayuscula - h, w, h };
+  }
+
+  /** La silueta del sujeto con el que se recorta una capa («recortarCon»), si lo pide. */
+  private siluetaDe(resueltas: Map<string, CapaResuelta>, capa: { id: string; recortarCon?: { sujeto: string; modo: 'dentro' | 'fuera' } }): RecorteDeTexto | undefined {
+    if (!capa.recortarCon) return undefined;
+    const sujeto = this.recorteDe(resueltas, capa.recortarCon.sujeto, capa.id);
+    return { activo: sujeto.activo, origen: sujeto.origen, destino: sujeto.destino, giro: sujeto.giro ?? 0, modo: capa.recortarCon.modo };
   }
 
   private recorteDe(resueltas: Map<string, CapaResuelta>, id: string, quien: string): CapaRecorteResuelta {
@@ -690,6 +700,8 @@ export class ResolutorDiseno {
         const b = abajo.c.caja;
         const compartenColumna = a.x < b.x + b.w && b.x < a.x + a.w;
         if (!compartenColumna) continue;
+        // La misma palabra dos veces en el mismo sitio (rellena fuera del sujeto y en contorno dentro) es un solo bloque.
+        if (arriba.c.texto === abajo.c.texto && Math.abs(a.x - b.x) < 2 && Math.abs(a.y - b.y) < 2) continue;
         const hueco = b.y - (a.y + a.h);
         const minimo = SEPARACION_MINIMA_EN_CUERPOS * Math.min(arriba.cuerpo, abajo.cuerpo);
         if (hueco < minimo) {
@@ -735,6 +747,7 @@ function resolverTinta(tinta: Tinta | undefined, color: (valor: Color) => string
 }
 
 const conTinta = (tinta: TintaResuelta | undefined) => (tinta ? { tinta } : {});
+const conRecorte = (recorte: RecorteDeTexto | undefined) => (recorte ? { recorte } : {});
 
 export function resolverColor(intencion: Intencion, valor: Color): string {
   if (!valor.startsWith('@')) return valor.toUpperCase();

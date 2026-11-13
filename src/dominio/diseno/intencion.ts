@@ -208,6 +208,12 @@ export const Corte = z.object({
 });
 export type Corte = z.infer<typeof Corte>;
 
+/**
+ * La capa solo se pinta donde está el sujeto («dentro») o donde no está («fuera»). El sujeto es un recorte; para el
+ * de una foto a sangre se pone un recorte alineado con ella y con opacidad 0, que no se pinta y presta su silueta.
+ */
+export const RecortarCon = z.object({ sujeto: Id, modo: z.enum(['dentro', 'fuera']) });
+
 export const CapaTexto = z.object({
   ...base,
   tipo: z.literal('texto'),
@@ -234,11 +240,10 @@ export const CapaTexto = z.object({
   corte: Corte.optional(),
   tinta: Tinta.optional(),
   /**
-   * El texto solo se pinta donde está el sujeto («dentro») o donde no está («fuera»).
    * - «fuera» sobre una foto a sangre: la palabra queda detrás del plato sin tener que recortarlo.
    * - «dentro» con `contorno`: el titular pasa a contorno al cruzar el producto (post-19, «BEST COFFEE EVER»).
    */
-  recortarCon: z.object({ sujeto: Id, modo: z.enum(['dentro', 'fuera']) }).optional(),
+  recortarCon: RecortarCon.optional(),
 });
 
 export const CapaForma = z.object({
@@ -265,6 +270,8 @@ export const CapaForma = z.object({
   irregularidad: z.number().min(0).max(1).default(0.35),
   semilla: z.number().int().optional(),
   tinta: Tinta.optional(),
+  /** «fuera»: un bloque de color que queda detrás del plato de una foto a sangre. */
+  recortarCon: RecortarCon.optional(),
 });
 
 /** Texto alrededor de un círculo (sello). */
@@ -386,6 +393,8 @@ export const CapaPatron = z.object({
   /** puntos y rayas: ángulo de la trama. */
   angulo: z.number().default(45),
   tinta: Tinta.optional(),
+  /** «fuera»: el patrón queda detrás del plato de una foto a sangre. */
+  recortarCon: RecortarCon.optional(),
 });
 
 /**
