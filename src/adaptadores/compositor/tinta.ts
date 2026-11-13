@@ -43,11 +43,15 @@ export async function aplicarTinta(png: Buffer, tinta: TintaResuelta): Promise<B
 
   // 1. Canto reseco: el borde de la tinta se vuelve a cortar con un umbral que tiembla, y dentro quedan poros.
   if (tinta.bordeSeco > 0) {
-    const difuso = await sharp(Buffer.from(alfa), { raw: { width: w, height: h, channels: 1 } }).blur(2.2).raw().toBuffer();
+    // extractChannel: tras un desenfoque sharp devuelve tres canales aunque la entrada tenga uno.
+    // El desenfoque es corto para que un trazo fino (un contorno de 3 px) sobreviva al nuevo corte.
+    const difuso = await sharp(Buffer.from(alfa), { raw: { width: w, height: h, channels: 1 } }).blur(1.3).extractChannel(0).raw().toBuffer();
     const medio = ruidoDeValor(tinta.semilla ^ 0x1b873593);
+    const largo = ruidoDeValor(tinta.semilla ^ 0x7feb352d);
     const fino = ruidoDeValor(tinta.semilla ^ 0x85ebca6b);
-    const amplitud = Math.min(110, tinta.bordeSeco * 255 * 7);
-    const poro = 1 - tinta.bordeSeco * 3.5;
+    const amplitud = Math.min(100, tinta.bordeSeco * 255 * 4.2);
+    // Los poros son pocos y pequeños: con un 3 % de canto reseco, en torno a un píxel de cada 300.
+    const poro = 1 - tinta.bordeSeco * 0.9;
     for (let y = y0; y <= y1; y++) {
       for (let x = x0; x <= x1; x++) {
         const i = y * w + x;
@@ -56,9 +60,11 @@ export async function aplicarTinta(png: Buffer, tinta: TintaResuelta): Promise<B
           alfa[i] = 0;
           continue;
         }
-        const umbral = 127.5 + (medio(x / 7, y / 7) - 0.5) * 2 * amplitud;
-        let a = Math.max(0, Math.min(1, (b - umbral) / 28 + 0.5)) * 255;
-        if (a > 200 && fino(x / 1.7, y / 1.7) > poro) a *= 0.3;
+        // El canto no se rompe igual en todas partes: hay tramos limpios y tramos resecos.
+        const zona = 0.35 + 0.65 * largo(x / 90, y / 90);
+        const umbral = 127.5 + (medio(x / 5, y / 5) - 0.5) * 2 * amplitud * zona;
+        let a = Math.max(0, Math.min(1, (b - umbral) / 60 + 0.5)) * 255;
+        if (a > 200 && fino(x / 1.3, y / 1.3) > poro) a *= 0.5;
         alfa[i] = a;
       }
     }
@@ -73,7 +79,7 @@ export async function aplicarTinta(png: Buffer, tinta: TintaResuelta): Promise<B
       for (let x = x0; x <= x1; x++) {
         const i = y * w + x;
         if (alfa[i] === 0) continue;
-        const falta = 0.5 * ancho(x / 120, y / 120) + 0.25 * mediano(x / 38, y / 38) + 0.25 * grano(x / 1.4, y / 1.4);
+        const falta = 0.55 * ancho(x / 140, y / 140) + 0.3 * mediano(x / 36, y / 36) + 0.15 * grano(x / 1.4, y / 1.4);
         alfa[i] = alfa[i]! * (1 - tinta.densidad * falta);
       }
     }
@@ -112,33 +118,41 @@ export async function aplicarTinta(png: Buffer, tinta: TintaResuelta): Promise<B
 }
 
 /**
- * Papel sin estucar: moteado suave a dos escalas y fibras cortas. Es una capa casi blanca pensada para fusionar en
- * «multiply»: oscurece muy poco y de forma desigual, que es lo que le quita a un color plano el aspecto de pantalla.
+ * Papel sin estucar: un moteado suave a tres escalas y fibras cortas. Es una capa de gris neutro (128) pensada para
+ * fusionar en «soft-light»: aclara y oscurece muy poco y de forma desigual, sin cambiar el color medio de la marca.
+ * Es lo que le quita a un color plano el aspecto de pantalla. Con «overlay» se nota más.
  */
 export async function papel(lienzo: { ancho: number; alto: number }, intensidad: number, escala: number, semilla: number): Promise<Buffer> {
   const w = lienzo.ancho;
   const h = lienzo.alto;
-  const nube = ruidoDeValor(semilla);
-  const mota = ruidoDeValor(semilla ^ 0x9e3779b9);
-  const sombra = new Float32Array(w * h);
+  // Cada escala de ruido va girada un ángulo distinto: así no se ve la rejilla del ruido.
+  const capas = [
+    { ruido: ruidoDeValor(semilla), tamano: 260 * escala, peso: 0.5, angulo: 0.5 },
+    { ruido: ruidoDeValor(semilla ^ 0x9e3779b9), tamano: 90 * escala, peso: 0.3, angulo: 1.9 },
+    { ruido: ruidoDeValor(semilla ^ 0x632be59b), tamano: 31 * escala, peso: 0.2, angulo: 3.3 },
+  ].map((c) => ({ ...c, cos: Math.cos(c.angulo), sin: Math.sin(c.angulo) }));
+  const tono = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) sombra[y * w + x] = 0.6 * nube(x / (150 * escala), y / (150 * escala)) + 0.4 * mota(x / (22 * escala), y / (22 * escala));
+    for (let x = 0; x < w; x++) {
+      let v = 0;
+      for (const c of capas) v += c.peso * c.ruido((x * c.cos - y * c.sin) / c.tamano + 31.7, (x * c.sin + y * c.cos) / c.tamano + 11.3);
+      tono[y * w + x] = v - 0.5;
+    }
   }
   // Fibras: trazos cortos y finos en cualquier dirección, unas más oscuras y otras más claras que el papel.
   const azar = mulberry32(semilla ^ 0x7f4a7c15);
-  const fibras = Math.round((w * h) / 2600);
+  const fibras = Math.round((w * h) / 5200);
   for (let f = 0; f < fibras; f++) {
     let x = azar() * w;
     let y = azar() * h;
-    const angulo = azar() * Math.PI * 2;
-    const largo = (5 + azar() * 22) * escala;
-    const peso = (azar() - 0.35) * 0.9;
-    const giro = (azar() - 0.5) * 0.08;
-    let a = angulo;
+    let a = azar() * Math.PI * 2;
+    const largo = (6 + azar() * 20) * escala;
+    const peso = (azar() - 0.4) * 0.5;
+    const giro = (azar() - 0.5) * 0.06;
     for (let s = 0; s < largo; s++) {
       const xi = Math.round(x);
       const yi = Math.round(y);
-      if (xi >= 0 && xi < w && yi >= 0 && yi < h) sombra[yi * w + xi] = sombra[yi * w + xi]! + peso;
+      if (xi >= 0 && xi < w && yi >= 0 && yi < h) tono[yi * w + xi] = tono[yi * w + xi]! + peso * Math.sin((Math.PI * s) / largo);
       a += giro;
       x += Math.cos(a);
       y += Math.sin(a);
@@ -146,7 +160,7 @@ export async function papel(lienzo: { ancho: number; alto: number }, intensidad:
   }
   const datos = Buffer.alloc(w * h * 4);
   for (let i = 0; i < w * h; i++) {
-    const v = Math.max(0, Math.min(255, Math.round(255 - intensidad * 255 * Math.max(0, sombra[i]!))));
+    const v = Math.max(0, Math.min(255, Math.round(128 + tono[i]! * 255 * intensidad * 1.6)));
     datos[i * 4] = v;
     datos[i * 4 + 1] = v;
     datos[i * 4 + 2] = v;

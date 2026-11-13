@@ -77,7 +77,8 @@ export function medirOficio(capas: CapaResuelta[], lienzo: Lienzo, medir: Medido
   let textos = 0;
 
   for (const capa of capas) {
-    if (capa.opacidad <= 0) continue;
+    // Un recorte invisible sigue contando: es la silueta del sujeto de una foto a sangre, que sí se ve.
+    if (capa.opacidad <= 0 && capa.tipo !== 'recorte') continue;
     switch (capa.tipo) {
       case 'texto': {
         for (const linea of capa.lineas) alturas.push(medir.alturaMayusculas(capa.estilo, linea.tamano));

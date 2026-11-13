@@ -108,6 +108,8 @@ export class CompositorSharp implements Compositor {
       }
 
       case 'recorte': {
+        // Un recorte invisible solo presta su silueta a otras capas (el sujeto de una foto a sangre): no hay nada que pintar.
+        if (capa.opacidad <= 0) return vectorial(lienzo, '');
         const disponible = activos[capa.activo]!;
         let recorte = await recortar(disponible, capa.origen, capa.destino.w, capa.destino.h, capa.bordeSuave, capa.contraerBorde, capa.retoque);
         let x = capa.destino.x;
@@ -327,31 +329,26 @@ export class CompositorSharp implements Compositor {
       return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="url(#p)"/></g>`, trama);
     }
 
-    // Palabra repetida: una fila se traza una vez y se reutiliza; las filas giran dentro de la caja, que no gira.
+    // Palabra repetida: una fila se traza una vez y se reutiliza. La caja gira con sus filas, que así nunca quedan
+    // cortadas por arriba ni por abajo; para un patrón girado que llene el lienzo, la caja se da más grande que él.
     const estilo = capa.estilo!;
     const palabra = capa.texto!;
     const tamano = capa.tamano!;
     const avanceFila = capa.avanceFila!;
     const mayuscula = this.motor.alturaMayusculas(estilo, tamano);
     const avance = this.motor.avance(estilo, palabra, tamano) + capa.separacion! * this.motor.avance(estilo, ' ', tamano);
-    // Con giro, las filas tienen que cubrir la caja entera aunque vayan torcidas: se pinta su círculo circunscrito.
-    const lado = capa.giro ? Math.hypot(r.w, r.h) : 0;
-    const x0 = capa.giro ? cx - lado / 2 : r.x;
-    const y0 = capa.giro ? cy - lado / 2 : r.y;
-    const ancho = capa.giro ? lado : r.w;
-    const filas = capa.giro ? Math.ceil(lado / avanceFila) + 1 : capa.filas!;
-    const repeticiones = Math.ceil(ancho / avance) + 2;
+    const repeticiones = Math.ceil(r.w / avance) + 2;
     let fila = '';
     for (let k = 0; k < repeticiones; k++) fila += this.motor.trazar(estilo, palabra, tamano, k * avance, 0);
     const usos: string[] = [];
-    for (let i = 0; i < filas; i++) {
+    for (let i = 0; i < capa.filas!; i++) {
       // La mayúscula va centrada en su fila; cada fila arranca desplazada lo que diga «desfase».
-      const base = y0 + i * avanceFila + (avanceFila + mayuscula) / 2;
-      const x = x0 - ((i * capa.desfase! * avance) % avance);
+      const base = r.y + i * avanceFila + (avanceFila + mayuscula) / 2;
+      const x = r.x - ((i * capa.desfase! * avance) % avance);
       const contorno = capa.contornoAlterno && i % 2 === 1;
       usos.push(`<use href="#fila" x="${x.toFixed(2)}" y="${base.toFixed(2)}" ${contorno ? `fill="none" stroke="${capa.color}" stroke-width="${capa.contornoAlterno}"` : `fill="${capa.color}"`}/>`);
     }
-    return vectorial(lienzo, `<g opacity="${capa.opacidad}" clip-path="url(#marco)"><g${giro}>${usos.join('')}</g></g>`, `${marco}<path id="fila" d="${fila}"/>`);
+    return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><g clip-path="url(#marco)">${usos.join('')}</g></g>`, `${marco}<path id="fila" d="${fila}"/>`);
   }
 
   private rotulo(capa: Extract<CapaResuelta, { tipo: 'niveles' }>, texto: string, x: number, base: number, alinear: 'izquierda' | 'derecha'): string {

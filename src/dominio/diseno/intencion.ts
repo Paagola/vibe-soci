@@ -310,7 +310,7 @@ export const CapaNiveles = z.object({
 export const CapaTextura = z.object({
   ...base,
   tipo: z.literal('textura'),
-  /** `grano`: grano de película. `papel`: la fibra y el moteado de un papel sin estucar (para fusionar en multiply). */
+  /** `grano`: grano de película (para «overlay»). `papel`: la fibra y el moteado de un papel sin estucar (para «soft-light»). */
   recurso: z.enum(['grano', 'papel']),
   intensidad: z.number().min(0).max(1).default(0.08),
   /** Tamaño del grano en px. */
