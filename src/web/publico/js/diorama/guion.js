@@ -8,7 +8,7 @@
 // - Lo nuevo que llega en cada consulta se añade al final de la línea de tiempo: la escena «cuenta» lo que ha pasado
 //   desde la consulta anterior, en orden y con su duración de escena (el simulado tarda milisegundos; el real, minutos).
 // - Al abrir, NO se repite el pasado: el material aparece donde está ahora. Sin encargos, reposo.
-import { ORDEN, PUESTOS, PUESTO_DE_PASO, REPOSO, sitioDeEntrega } from './plano.js';
+import { ORDEN, PUESTOS, PUESTO_DE_PASO, REPOSO, ruta, sitioDeEntrega } from './plano.js';
 
 export const VELOCIDAD = 0.8; // m/s del corredor
 export const DURACION = Object.freeze({ dejar: 0.75, recoger: 0.75, coger: 1.1, mostrar: 1.8, agente: 2.8, maquina: 2.6, bandeja: 0.9, prueba: 2.2, girar: 0.35 });
@@ -56,6 +56,7 @@ export function visitasDe(encargo) {
   const pasos = pasosDelRecorrido(encargo);
   const visitas = [];
   let comprobaciones = 0;
+  let generadas = 0; // número del intento de foto al que pertenece el material desde GENERAR
   const intentos = encargo.intentos ?? [];
   const disenos = encargo.diseno?.propuestas ?? 0;
   pasos.forEach((paso, i) => {
@@ -72,17 +73,22 @@ export function visitasDe(encargo) {
       case 'CONFIRMAR_ELEMENTOS':
         return visitas.push({ puesto, accion: 'mostrar', sale: null });
       case 'GENERAR':
-        return visitas.push({ puesto, accion: 'procesar', sale: 'fotoNueva' });
+        generadas++;
+        return visitas.push({ puesto, accion: 'procesar', sale: 'fotoNueva', n: generadas });
       case 'COMPROBAR': {
         const final = intentos[comprobaciones++]?.final ?? 'PENDIENTE';
-        if (final === 'PENDIENTE') return visitas.push({ puesto, accion: 'procesar', sale: 'fotoNueva', sella: false });
-        return visitas.push({ puesto, accion: 'procesar', sale: final === 'DESCARTA' ? 'fotoMal' : 'fotoOk', sella: true, veredicto: final });
+        if (final === 'PENDIENTE') return visitas.push({ puesto, accion: 'procesar', sale: 'fotoNueva', sella: false, n: generadas });
+        // RECHAZADA es la decisión posterior de la persona: el sello del revisor fue el de la comprobación (pasó).
+        return visitas.push({ puesto, accion: 'procesar', sale: final === 'DESCARTA' ? 'fotoMal' : 'fotoOk', sella: true, veredicto: final === 'RECHAZADA' ? 'PASA' : final, n: generadas });
       }
       case 'CONFIRMAR_FOTO':
         // Si después vuelve al generador (o a la parada 1), la persona la rechazó: sale con la cruz roja.
-        return visitas.push({ puesto, accion: 'mostrar', sale: siguiente && ORDEN.indexOf(siguiente) < ORDEN.indexOf('CONFIRMAR_FOTO') ? 'fotoMal' : null, rechazada: Boolean(siguiente && ORDEN.indexOf(siguiente) < ORDEN.indexOf('CONFIRMAR_FOTO')) });
+        {
+          const rechazada = Boolean(siguiente && ORDEN.indexOf(siguiente) < ORDEN.indexOf('CONFIRMAR_FOTO'));
+          return visitas.push({ puesto, accion: 'mostrar', sale: rechazada ? 'fotoMal' : null, rechazada, ...(rechazada ? { veredicto: 'RECHAZADA' } : {}), n: generadas });
+        }
       case 'MASCARA':
-        return visitas.push({ puesto, accion: 'procesar', sale: 'recorte' });
+        return visitas.push({ puesto, accion: 'procesar', sale: 'recorte', n: generadas });
       case 'INTENCION':
         // Con dos propuestas, la primera no pasó la prueba en el compositor y se le devolvió UNA vez.
         if (disenos >= 2 && (!ultima || encargo.trabajo?.estado !== 'EN_CURSO')) {
@@ -136,6 +142,8 @@ export class Guion {
     this.claves = [];
     this.pendiente = null; // cómo terminar la última visita cuando llegue lo siguiente
     this.firmaFinal = '';
+    this.n = 0; // intento de foto del material que lleva el corredor
+    this.veredicto = null; // sello que lleva ese material
     this.otros = 0;
     this.extra = { modo: 'reposo' };
     this.t = t;
@@ -235,12 +243,13 @@ export class Guion {
 
   andarHasta(destino) {
     const { t, en, mano } = this.cursor;
-    const d = distancia(en, destino);
-    if (d < 0.02) {
+    if (distancia(en, destino) < 0.02) {
       if (Math.abs(destino.yaw - en.yaw) > 0.05) this.push({ tipo: 'girar', t0: t, t1: t + DURACION.girar, en, hasta: destino, mano });
       return;
     }
-    this.push({ tipo: 'andar', t0: t, t1: t + DURACION.girar + d / VELOCIDAD, desde: en, hasta: destino, en, mano });
+    // Por las calles del loft (plano.ruta), no en línea recta: así no atraviesa muebles ni el jardín.
+    const { puntos, largo } = ruta(en, destino);
+    this.push({ tipo: 'andar', t0: t, t1: t + DURACION.girar + largo / VELOCIDAD, desde: en, hasta: destino, puntos, largo, en, mano, n: this.n, veredicto: this.veredicto });
   }
 
   anadir(visita, final) {
@@ -266,16 +275,21 @@ export class Guion {
     const tipoPuesto = PUESTOS[visita.puesto].tipo;
     const trabajando = final?.modo === 'trabajando';
     const espera = final?.modo === 'espera';
-    const comun = { puesto: visita.puesto, visita: visita.clave, error: final?.error ?? null, aviso: final?.aviso ?? null };
+    const veredictoPrevio = this.veredicto;
+    const n = visita.n ?? this.n;
+    const comun = { puesto: visita.puesto, visita: visita.clave, error: final?.error ?? null, aviso: final?.aviso ?? null, n, veredicto: visita.veredicto ?? (visita.sale ? null : this.veredicto) };
+    this.n = n;
+    if (visita.sale) this.veredicto = visita.veredicto ?? null;
 
     if (visita.accion === 'mostrar') {
       const { t, en, mano } = this.cursor;
-      this.push({ tipo: 'mostrar', t0: t, t1: abierta ? Infinity : t + DURACION.mostrar, minimo: DURACION.mostrar, en, mano, ...(visita.sale && !abierta ? { manoFin: visita.sale } : {}), ...comun, espera: abierta ? !trabajando : true, rechazada: visita.rechazada });
+      this.push({ tipo: 'mostrar', t0: t, t1: abierta ? Infinity : t + DURACION.mostrar, minimo: DURACION.mostrar, en, mano, ...(visita.sale && !abierta ? { manoFin: visita.sale, veredictoFin: visita.veredicto ?? null } : {}), ...comun, veredicto: veredictoPrevio, espera: abierta ? !trabajando : true, rechazada: visita.rechazada });
       if (abierta) {
         this.pendiente = (v = visita) => {
           // La persona decidió: si la rechazó, sale con la cruz (y vuelve atrás en las visitas siguientes).
           const s = this.segmentos.at(-1);
-          if (v.sale) Object.assign(s, { manoFin: v.sale, rechazada: v.rechazada });
+          if (v.sale) Object.assign(s, { manoFin: v.sale, rechazada: v.rechazada, veredictoFin: v.veredicto ?? null });
+          if (v.sale) this.veredicto = v.veredicto ?? this.veredicto;
           this.cursor.mano = v.sale ?? this.cursor.mano;
         };
       }

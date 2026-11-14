@@ -37,13 +37,13 @@
       if (p.get('ancho')) document.documentElement.style.setProperty('--ancho', `${Number(p.get('ancho'))}px`);
       const qa = p.get('qa');
       const hueco = document.getElementById('diorama');
-      const diorama = montarDiorama(hueco, { manual: Boolean(qa), maxDpr: Number(p.get('dpr') ?? 1.5) });
+      const diorama = montarDiorama(hueco, { manual: Boolean(qa), maxDpr: Number(p.get('dpr') ?? 1.5), ...(p.has('hora') ? { hora: Number(p.get('hora')) } : {}) });
       window.__montaje = diorama;
 
       if (qa) {
         const escena = await diorama.cargar();
         // Mismo orden que en vivo: cada estado se aplica cuando el anterior ya llegó a su sitio, más un respiro.
-        const marcas = programar(escena.guion, DEMO);
+        const marcas = programar(escena, DEMO);
         window.__diorama = {
           THREE: escena.THREE,
           scene: escena.scene,

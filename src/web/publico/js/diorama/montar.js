@@ -15,7 +15,7 @@ const ESTILO = `
 .diorama-raiz canvas{display:block;width:100%;height:100%;outline:none;touch-action:none;cursor:grab}
 .diorama-raiz canvas:active{cursor:grabbing}
 .diorama-raiz canvas:focus-visible{box-shadow:inset 0 0 0 2px #1033ef}
-.diorama-controles{position:absolute;top:8px;right:8px;display:flex;gap:6px;opacity:.55;transition:opacity .2s}
+.diorama-controles{position:absolute;bottom:14px;right:14px;display:flex;gap:6px;opacity:.6;transition:opacity .2s;z-index:3}
 .diorama-raiz:hover .diorama-controles,.diorama-controles:focus-within{opacity:1}
 .diorama-controles button{width:32px;height:32px;border-radius:10px;border:1px solid rgb(255 255 255 / .16);background:rgb(16 18 28 / .72);color:#f2f1ec;display:grid;place-items:center;cursor:pointer;padding:0}
 .diorama-controles button:hover{background:rgb(16 18 28 / .92)}
@@ -42,6 +42,8 @@ export function montarDiorama(contenedor, opciones = {}) {
     fpsMax = 30,
     maxDpr = 1.5,
     sombras = true,
+    /** Hora del día para la luz de ambiente (por defecto, la del navegador). Solo para QA. */
+    hora = new Date().getHours(),
     movimientoReducido = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,
     /** Para QA: carga ya, sin esperar a que se vea, y no pide estado (se lo da quien llama). */
     manual = false,
@@ -95,12 +97,12 @@ export function montarDiorama(contenedor, opciones = {}) {
   async function cargar() {
     cargando ??= import('./escena.js').then(({ crearEscena }) => {
       if (destruido) return null;
-      escena = crearEscena(lienzo, { maxDpr, sombras });
+      escena = crearEscena(lienzo, { maxDpr, sombras, hora, alCargarImagen: () => dibujarSiQuieto() });
       ajustar();
       escena.activarOrbita(() => {
         if (pausado || !activo()) dibujarAhora();
       });
-      if (ultimoEstado) escena.guion.actualizar(ultimoEstado, reloj);
+      if (ultimoEstado) escena.actualizar(ultimoEstado, reloj);
       dibujarAhora();
       return escena;
     });
@@ -130,6 +132,10 @@ export function montarDiorama(contenedor, opciones = {}) {
     medidas.msDibujo += performance.now() - t0;
   }
 
+  function dibujarSiQuieto() {
+    if (escena && (pausado || !activo() || !frame)) dibujarAhora();
+  }
+
   function bucle(ahora) {
     frame = 0;
     if (!activo() || pausado || !escena) return;
@@ -155,17 +161,21 @@ export function montarDiorama(contenedor, opciones = {}) {
     if (manual || !activo()) return;
     try {
       const estado = await obtenerEstado();
+      escena?.ponerConexion(true);
       aplicarEstado(estado);
     } catch (error) {
-      linea.textContent = `Sin datos del estudio (${error.message ?? error})`;
+      // Desconexión: la oficina lo cuenta en la recepción (rótulo y piloto en rojo) y deja de fingir actividad.
+      escena?.ponerConexion(false);
+      linea.textContent = `Sin conexión con el estudio (${error.message ?? error})`;
+      dibujarSiQuieto();
     }
   }
   function aplicarEstado(estado, t = reloj) {
     ultimoEstado = estado;
     linea.textContent = resumen(estado);
     if (!escena) return false;
-    const cambio = escena.guion.actualizar(estado, t);
-    if (cambio && (pausado || !activo())) dibujarAhora();
+    const cambio = escena.actualizar(estado, t);
+    dibujarSiQuieto();
     return cambio;
   }
   function programarSondeo() {

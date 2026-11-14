@@ -1,7 +1,9 @@
-// Paleta y materiales del diorama (preset stroked-toon del kit Diorama: colores planos, cuatro escalones de sombra y
-// contorno de tinta). Los colores de marca son los de SOCIETY; el amarillo se reserva SIEMPRE para lo que espera a la
-// persona (la señal de las paradas), como en la interfaz. Ningún otro objeto de la escena es amarillo, salvo la
-// estrella de la sudadera de la mascota, que es parte de su identidad.
+// Paleta y materiales del loft (preset stroked-toon del kit Diorama: MeshToonMaterial con cuatro escalones y contorno
+// de tinta). Marca SOCIETY + paleta secundaria por zonas (DESIGN.md):
+// - fotografía: neutros cálidos, negro, azul y madera;   - laboratorio: azul petróleo, azul, gris y blanco;
+// - dirección creativa: terracota, crema, madera;          - jardín: verdes variados;
+// - composición: madera, grafito y colores de impresión;   - zonas comunes: cálidos y materiales naturales.
+// El AMARILLO se reserva para lo que espera a la persona (paradas); la única excepción es la estrella de la mascota.
 import * as THREE from 'three';
 
 export const COLOR = Object.freeze({
@@ -9,57 +11,83 @@ export const COLOR = Object.freeze({
   azulHondo: 0x0b25b0,
   amarillo: 0xf5c518,
   tinta: 0x151515,
-  papel: 0xf2f1ec,
-  losa: 0xf7f6f1,
-  pasillo: 0xe6e3da,
-  mesa: 0xd8d2c4,
-  mesaCanto: 0xbfb6a3,
-  pata: 0x4a4a52,
-  maquina: 0xeceae4,
-  maquinaOscura: 0x3b3d46,
+  // Arquitectura
+  suelo: 0xd7d1c4,
+  sueloJunta: 0xc3bcae,
+  hormigon: 0xbab5ab,
+  hormigonOscuro: 0x8f8a80,
+  pared: 0xeee7da,
+  cristal: 0xb9dde3,
+  marco: 0x34363d,
+  // Maderas y naturales
+  madera: 0xc99a68,
+  maderaClara: 0xe0bd8c,
+  maderaOscura: 0x8a5a38,
+  crema: 0xf1e6cf,
+  arena: 0xdcc8a0,
+  blancoCalido: 0xf7f2e8,
+  corcho: 0xc6955c,
+  // Zonas
+  petroleo: 0x1f5f6b,
+  petroleoClaro: 0x4a909b,
+  terracota: 0xc65f3e,
+  naranja: 0xe9893b,
+  salvia: 0x9fb89b,
+  bosque: 0x2f6a45,
+  oliva: 0x7a8a3d,
+  hoja: 0x4f8f50,
+  hojaClara: 0x86b56c,
+  hojaOscura: 0x2d5a3a,
+  tierra: 0x5a4130,
+  // Técnicos
+  grafito: 0x34363d,
+  metal: 0x6b6f78,
+  metalClaro: 0xa9adb5,
   blanco: 0xfbfbf8,
-  gris: 0xa9a7a0,
-  corcho: 0xc89a62,
-  madera: 0xb98b5b,
+  gris: 0xa8a69f,
+  maquina: 0xeceae4,
   verde: 0x24a148,
   rojo: 0xe0413a,
-  lampara: 0x6f8dff,
+  lampara: 0x8fb0ff,
+  calida: 0xffd8a0,
   pantalon: 0x2a2a31,
+  // Impresión (cian, magenta y el rojo de la tinta)
+  cian: 0x1aa6c9,
+  magenta: 0xc23a7a,
 });
 
-/** Crea los materiales a partir del helper del kit (`look.toon` / `look.flat`). */
+/** Crea los materiales a partir del helper del kit (`look.toon` / `look.flat`). Un material por color: se comparten. */
 export function crearMateriales(look) {
   const t = (c, o) => look.toon(c, o);
-  return {
-    losa: t(COLOR.losa),
-    losaCanto: t(COLOR.azul),
-    pasillo: t(COLOR.pasillo, { outline: false }),
-    marca: t(COLOR.gris, { outline: false }),
-    mesa: t(COLOR.mesa),
-    mesaCanto: t(COLOR.mesaCanto),
-    pata: t(COLOR.pata),
-    maquina: t(COLOR.maquina),
-    maquinaOscura: t(COLOR.maquinaOscura),
-    azul: t(COLOR.azul),
-    azulHondo: t(COLOR.azulHondo),
-    blanco: t(COLOR.blanco),
-    tinta: t(COLOR.tinta),
-    gris: t(COLOR.gris),
-    corcho: t(COLOR.corcho),
-    madera: t(COLOR.madera),
-    verde: t(COLOR.verde),
-    rojo: t(COLOR.rojo),
-    amarillo: t(COLOR.amarillo),
-    pantalon: t(COLOR.pantalon),
-    // Lámpara de «trabajando»: un cristal que se enciende (emisivo), sin halo plano (regla FLAT_GLOW del kit).
+  const m = {};
+  for (const [nombre, c] of Object.entries(COLOR)) m[nombre] = t(c);
+  Object.assign(m, {
+    // Lo que no lleva contorno: suelos, juntas, alfombras, láminas y superficies planas de lectura.
+    sueloPlano: t(COLOR.suelo, { outline: false }),
+    juntas: t(COLOR.sueloJunta, { outline: false }),
+    alfombra: t(COLOR.arena, { outline: false }),
+    alfombraTerracota: t(COLOR.terracota, { outline: false }),
+    cespedPlano: t(COLOR.hoja, { outline: false }),
+    tierraPlana: t(COLOR.tierra, { outline: false }),
+    // Cristal estilizado: un tinte claro, sin contorno (las cristaleras se leen por sus marcos).
+    cristal: look.flat(COLOR.cristal, { transparent: true, opacity: 0.22, depthWrite: false }),
+    cristalNoche: look.flat(0x1b2a4a, { transparent: true, opacity: 0.55, depthWrite: false }),
+    // Luces de actividad: un cristal que se enciende (emisivo plano), nunca un halo plano (regla FLAT_GLOW del kit).
     lamparaApagada: t(0x9aa3c4),
     lamparaEncendida: look.flat(COLOR.lampara),
-    // Sombra de contacto: plano sin contorno (el OutlineEffect lee material.userData.outlineParameters).
+    calidaEncendida: look.flat(COLOR.calida),
+    pantallaApagada: look.flat(0x1b1f2b),
+    pantallaEncendida: look.flat(0x3a64ff),
+    pilotoVerde: look.flat(0x3ddc84),
+    pilotoRojo: look.flat(0xff5a4f),
+    amarilloLuz: look.flat(COLOR.amarillo),
+    papel: look.flat(COLOR.blancoCalido),
     sombra: look.flat(0x000000, { transparent: true, opacity: 0.16, depthWrite: false }),
-  };
+  });
+  return m;
 }
 
-// ---------------------------------------------------------------- Texturas pintadas (lo que viaja de mano en mano)
+// ---------------------------------------------------------------- Texturas pintadas (solo lo que NO es una imagen real)
 
 const cache = new Map();
 
@@ -76,190 +104,137 @@ function lienzo(clave, ancho, alto, pintar) {
   cache.set(clave, tex);
   return tex;
 }
+export function liberarTexturasPintadas() {
+  for (const t of cache.values()) t.dispose();
+  cache.clear();
+}
 
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
-
-/** La foto del plato: la subida (de lado, con prisa) o la nueva (cenital, limpia). */
-function pintarFoto(g, w, h, nueva) {
-  g.fillStyle = '#fbfbf8';
-  g.fillRect(0, 0, w, h);
-  const m = w * 0.07;
-  g.fillStyle = nueva ? '#2b2420' : '#8d8577';
-  g.fillRect(m, m, w - 2 * m, h - 2 * m * 2.2);
-  const cx = w / 2;
-  const cy = m + (h - 2 * m * 2.2) / 2;
-  g.save();
-  if (!nueva) {
-    g.translate(cx, cy + h * 0.04);
-    g.scale(1, 0.55);
-    g.rotate(-0.15);
-  } else {
-    g.translate(cx, cy);
-  }
-  g.fillStyle = '#f4f1ea';
-  g.beginPath();
-  g.arc(0, 0, w * 0.3, 0, Math.PI * 2);
-  g.fill();
-  g.fillStyle = '#e0613a';
-  g.beginPath();
-  g.ellipse(0, 0, w * 0.17, w * 0.12, 0.4, 0, Math.PI * 2);
-  g.fill();
-  g.fillStyle = '#f2a33a';
-  g.beginPath();
-  g.ellipse(w * 0.05, -w * 0.03, w * 0.07, w * 0.05, 0.2, 0, Math.PI * 2);
-  g.fill();
-  g.fillStyle = '#4c8a3f';
-  g.beginPath();
-  g.ellipse(-w * 0.08, w * 0.05, w * 0.04, w * 0.025, -0.5, 0, Math.PI * 2);
-  g.fill();
-  g.restore();
-}
-
-function sello(g, w, h, ok) {
-  g.save();
-  g.lineWidth = w * 0.06;
-  g.lineCap = 'round';
-  g.strokeStyle = ok ? hex(COLOR.verde) : hex(COLOR.rojo);
-  g.beginPath();
-  if (ok) {
-    g.moveTo(w * 0.62, h * 0.8);
-    g.lineTo(w * 0.72, h * 0.89);
-    g.lineTo(w * 0.9, h * 0.7);
-  } else {
-    g.moveTo(w * 0.25, h * 0.15);
-    g.lineTo(w * 0.75, h * 0.62);
-    g.moveTo(w * 0.75, h * 0.15);
-    g.lineTo(w * 0.25, h * 0.62);
-  }
-  g.stroke();
-  g.restore();
-}
-
 function lineas(g, x, y, ancho, n, paso, color = '#7b7a74') {
   g.fillStyle = color;
   for (let i = 0; i < n; i++) g.fillRect(x, y + i * paso, ancho * (i % 3 === 2 ? 0.6 : 1), paso * 0.35);
 }
 
-/** Textura de cada clase de material. */
+/**
+ * Papeles de trabajo que no son imágenes (la propuesta del director de foto y la intención de diseño son JSON):
+ * se pintan como hojas genéricas, sin fingir un contenido concreto.
+ */
 export function texturaDe(tipo) {
   switch (tipo) {
-    case 'ficha':
-      return lienzo('ficha', 128, 160, (g, w, h) => {
-        g.fillStyle = '#fbfbf8';
-        g.fillRect(0, 0, w, h);
-        g.fillStyle = hex(COLOR.azul);
-        g.fillRect(w * 0.1, h * 0.08, w * 0.8, h * 0.45);
-        g.fillStyle = '#fbfbf8';
-        g.beginPath();
-        g.arc(w * 0.5, h * 0.3, w * 0.18, 0, Math.PI * 2);
-        g.fill();
-        lineas(g, w * 0.1, h * 0.62, w * 0.8, 4, h * 0.08);
-      });
-    case 'foto':
-      return lienzo('foto', 128, 160, (g, w, h) => pintarFoto(g, w, h, false));
     case 'propuesta':
-      return lienzo('propuesta', 128, 160, (g, w, h) => {
-        g.fillStyle = '#fbfbf8';
+      return lienzo('propuesta', 192, 256, (g, w, h) => {
+        g.fillStyle = '#fbfaf5';
         g.fillRect(0, 0, w, h);
         g.strokeStyle = '#151515';
         g.lineWidth = 3;
-        g.strokeRect(w * 0.12, h * 0.08, w * 0.42, h * 0.3);
+        g.strokeRect(w * 0.12, h * 0.08, w * 0.4, h * 0.26);
         g.beginPath();
-        g.moveTo(w * 0.33, h * 0.12);
-        g.lineTo(w * 0.33, h * 0.34);
+        g.moveTo(w * 0.32, h * 0.12);
+        g.lineTo(w * 0.32, h * 0.3);
         g.stroke();
-        lineas(g, w * 0.6, h * 0.1, w * 0.3, 4, h * 0.07);
-        lineas(g, w * 0.12, h * 0.46, w * 0.78, 6, h * 0.08);
-      });
-    case 'fotoNueva':
-      return lienzo('fotoNueva', 128, 160, (g, w, h) => pintarFoto(g, w, h, true));
-    case 'fotoOk':
-      return lienzo('fotoOk', 128, 160, (g, w, h) => {
-        pintarFoto(g, w, h, true);
-        sello(g, w, h, true);
-      });
-    case 'fotoMal':
-      return lienzo('fotoMal', 128, 160, (g, w, h) => {
-        pintarFoto(g, w, h, true);
-        sello(g, w, h, false);
-      });
-    case 'recorte':
-      return lienzo('recorte', 128, 160, (g, w, h) => {
-        g.fillStyle = '#fbfbf8';
-        g.fillRect(0, 0, w, h);
-        g.save();
-        g.setLineDash([7, 5]);
-        g.strokeStyle = '#151515';
-        g.lineWidth = 3;
-        g.beginPath();
-        g.ellipse(w / 2, h * 0.42, w * 0.33, w * 0.33, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.restore();
-        g.fillStyle = '#e0613a';
-        g.beginPath();
-        g.ellipse(w / 2, h * 0.42, w * 0.17, w * 0.12, 0.4, 0, Math.PI * 2);
-        g.fill();
-        lineas(g, w * 0.12, h * 0.82, w * 0.76, 2, h * 0.07);
+        lineas(g, w * 0.6, h * 0.1, w * 0.3, 4, h * 0.06);
+        lineas(g, w * 0.12, h * 0.42, w * 0.78, 8, h * 0.065);
       });
     case 'boceto':
-      return lienzo('boceto', 128, 160, (g, w, h) => {
-        g.fillStyle = '#fbfbf8';
+      return lienzo('boceto', 192, 256, (g, w, h) => {
+        g.fillStyle = '#fbfaf5';
         g.fillRect(0, 0, w, h);
-        g.fillStyle = '#d9d6cf';
-        g.fillRect(w * 0.1, h * 0.36, w * 0.8, h * 0.56);
-        g.fillStyle = '#e0613a';
+        g.strokeStyle = '#3b3b3b';
+        g.lineWidth = 2;
+        g.setLineDash([6, 4]);
+        g.strokeRect(w * 0.1, h * 0.36, w * 0.8, h * 0.56);
+        g.setLineDash([]);
         g.beginPath();
         g.arc(w * 0.5, h * 0.64, w * 0.2, 0, Math.PI * 2);
-        g.fill();
+        g.stroke();
         g.fillStyle = '#151515';
-        g.fillRect(w * 0.1, h * 0.08, w * 0.7, h * 0.12);
-        g.fillRect(w * 0.1, h * 0.24, w * 0.4, h * 0.05);
+        g.fillRect(w * 0.1, h * 0.08, w * 0.7, h * 0.1);
+        g.fillRect(w * 0.1, h * 0.22, w * 0.4, h * 0.04);
       });
     case 'pruebaMal':
-      return lienzo('pruebaMal', 128, 160, (g, w, h) => {
+      return lienzo('pruebaMal', 192, 256, (g, w, h) => {
         g.drawImage(texturaDe('boceto').image, 0, 0);
         g.strokeStyle = hex(COLOR.rojo);
-        g.lineWidth = 5;
+        g.lineWidth = 6;
         g.beginPath();
-        g.ellipse(w * 0.45, h * 0.15, w * 0.42, h * 0.11, 0, 0, Math.PI * 2);
+        g.ellipse(w * 0.45, h * 0.13, w * 0.42, h * 0.1, 0, 0, Math.PI * 2);
         g.stroke();
         g.beginPath();
         g.moveTo(w * 0.8, h * 0.3);
-        g.lineTo(w * 0.66, h * 0.52);
+        g.lineTo(w * 0.62, h * 0.52);
         g.stroke();
       });
-    case 'post':
-      return lienzo('post', 128, 160, (g, w, h) => {
-        g.fillStyle = '#2b2420';
+    case 'carpeta':
+      return lienzo('carpeta', 192, 256, (g, w, h) => {
+        g.fillStyle = hex(COLOR.maderaClara);
         g.fillRect(0, 0, w, h);
-        g.fillStyle = '#f4f1ea';
-        g.beginPath();
-        g.arc(w * 0.5, h * 0.62, w * 0.34, 0, Math.PI * 2);
-        g.fill();
-        g.fillStyle = '#e0613a';
-        g.beginPath();
-        g.ellipse(w * 0.5, h * 0.62, w * 0.19, w * 0.13, 0.4, 0, Math.PI * 2);
-        g.fill();
-        g.fillStyle = '#fbfbf8';
-        g.font = `900 ${Math.round(h * 0.15)}px "Nunito", system-ui, sans-serif`;
-        g.fillText('BRASA', w * 0.1, h * 0.2);
-        g.fillStyle = hex(COLOR.azul);
-        g.fillRect(w * 0.1, h * 0.26, w * 0.36, h * 0.04);
+        g.fillStyle = '#fbfaf5';
+        g.fillRect(w * 0.12, h * 0.1, w * 0.76, h * 0.8);
+        lineas(g, w * 0.2, h * 0.2, w * 0.6, 8, h * 0.08);
       });
     default:
       return null;
   }
 }
 
-/** Letrero pintado: la señal de la parada («TE TOCA») y la nube de aviso («503», «!»…). */
-export function texturaLetrero(texto, { fondo = COLOR.amarillo, tinta = COLOR.tinta, ancho = 256, alto = 128, tamano = 0.5 } = {}) {
-  return lienzo(`letrero:${texto}:${fondo}:${ancho}x${alto}`, ancho, alto, (g, w, h) => {
-    g.fillStyle = hex(fondo);
-    g.fillRect(0, 0, w, h);
+/** El sello del revisor sobre la foto: el veredicto REAL de la comprobación (PASA, DESCARTA, REVISAR, RECHAZADA). */
+export function texturaSello(veredicto) {
+  return lienzo(`sello:${veredicto}`, 256, 128, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    const color = veredicto === 'DESCARTA' || veredicto === 'RECHAZADA' ? hex(COLOR.rojo) : veredicto === 'REVISAR' ? hex(COLOR.naranja) : hex(COLOR.verde);
+    g.save();
+    g.translate(w / 2, h / 2);
+    g.rotate(-0.12);
+    g.strokeStyle = color;
+    g.lineWidth = 9;
+    g.strokeRect(-w * 0.44, -h * 0.36, w * 0.88, h * 0.72);
+    g.fillStyle = color;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.font = `900 ${Math.round(h * 0.42)}px "Nunito", system-ui, sans-serif`;
+    g.fillText(veredicto, 0, h * 0.03);
+    g.restore();
+  });
+}
+
+/** Letrero pintado: la señal de la parada («TE TOCA»), la nube de aviso, rótulos del loft. */
+export function texturaLetrero(texto, { fondo = COLOR.amarillo, tinta = COLOR.tinta, ancho = 256, alto = 128, tamano = 0.5, fuente = 'Nunito', peso = 900 } = {}) {
+  return lienzo(`letrero:${texto}:${fondo}:${tinta}:${ancho}x${alto}:${fuente}`, ancho, alto, (g, w, h) => {
+    if (fondo === null) g.clearRect(0, 0, w, h);
+    else {
+      g.fillStyle = hex(fondo);
+      g.fillRect(0, 0, w, h);
+    }
     g.fillStyle = hex(tinta);
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.font = `900 ${Math.round(h * tamano)}px "Nunito", system-ui, sans-serif`;
+    g.font = `${peso} ${Math.round(h * tamano)}px "${fuente}", system-ui, sans-serif`;
     g.fillText(texto, w / 2, h * 0.54);
+  });
+}
+
+/** Pizarra con una lista de textos reales (los platos de los encargos abiertos), escrita a mano. */
+export function texturaPizarra(titulo, lineasTexto) {
+  const clave = `pizarra:${titulo}:${lineasTexto.join('|')}`;
+  return lienzo(clave, 512, 320, (g, w, h) => {
+    g.fillStyle = '#f9f8f3';
+    g.fillRect(0, 0, w, h);
+    g.fillStyle = hex(COLOR.azul);
+    g.font = `800 34px "Nunito", system-ui, sans-serif`;
+    g.fillText(titulo, 24, 48);
+    g.font = `700 26px "Nunito", system-ui, sans-serif`;
+    lineasTexto.slice(0, 6).forEach((l, i) => {
+      g.fillStyle = ['#151515', hex(COLOR.terracota), hex(COLOR.petroleo)][i % 3];
+      g.fillText(`· ${l.length > 30 ? `${l.slice(0, 29)}…` : l}`, 30, 98 + i * 38);
+    });
+    if (!lineasTexto.length) {
+      g.fillStyle = '#9a978f';
+      g.fillText('(sin encargos abiertos)', 30, 98);
+    }
+    // Notas adhesivas (ambiente; sin texto inventado).
+    for (const [x, y, c] of [[w - 130, 24, '#9fd3c7'], [w - 90, 120, '#f2b8a2'], [w - 150, 210, '#c9d98f']]) {
+      g.fillStyle = c;
+      g.fillRect(x, y, 84, 72);
+    }
   });
 }

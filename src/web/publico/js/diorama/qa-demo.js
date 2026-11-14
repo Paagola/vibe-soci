@@ -43,11 +43,12 @@ export const DEMO = [
  * Aplica los estados en orden: cada uno 2,5 s después de que la escena llegue al segmento abierto del anterior.
  * Devuelve las marcas de tiempo (para congelar fotogramas): cuándo se aplicó cada estado y los momentos clave.
  */
-export function programar(guion, demo = DEMO) {
+export function programar(escena, demo = DEMO) {
+  const guion = escena.guion;
   const marcas = {};
   let t = 0;
   for (const [nombre, est] of demo) {
-    guion.actualizar(est, t);
+    escena.actualizar(est, t);
     marcas[nombre] = t;
     const abierto = guion.segmentos.at(-1);
     t = (Number.isFinite(abierto.t0) ? Math.max(abierto.t0, t) : t) + 2.5;
