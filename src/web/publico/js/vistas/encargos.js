@@ -87,7 +87,7 @@ export function vacioDePosts(locales, estudio) {
   return h(
     'div',
     { class: 'vacio' },
-    h('img', { class: 'vacio-mascota', src: '/img/mascota-movil.png', alt: '', width: '247', height: '320' }),
+    h('img', { class: 'vacio-mascota', src: '/img/mascota/lapiz.webp', alt: '', width: '435', height: '640' }),
     h('h2', {}, 'Aún no hay posts'),
     h('p', { class: 'nota' }, 'Sube la foto de un plato y la orden hace el resto, parándose donde hace falta tu ojo:'),
     h(

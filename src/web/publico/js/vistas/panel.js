@@ -36,11 +36,11 @@ export async function vistaPanel() {
     ),
     h(
       'div',
-      { class: 'inicio-rejilla' },
+      { class: `inicio-rejilla${vacio ? '' : ' con-cifras'}` },
       h(
         'div',
         { class: 'inicio-principal' },
-        vacio ? bienvenida(panel, estudio) : teToca(encargos),
+        vacio ? bienvenida(panel, estudio) : [cifras(encargos), teToca(encargos)],
         h('div', { class: 'inicio-par' }, porFase(encargos, modo), comprobaciones(panel.comprobaciones, modo)),
         locales(panel.locales, modo),
         gasto(panel.gasto),
@@ -51,46 +51,58 @@ export async function vistaPanel() {
   return { nodo, salir: diorama.salir };
 }
 
-// ---------------------------------------------------------------- Te toca (el foco de la pantalla, bloque oscuro)
+// ---------------------------------------------------------------- Cifras (una tarjeta saturada, el foco) y lo que te toca
 
-function teToca(encargos) {
+function cifras(encargos) {
   const pendientes = encargos.filter((e) => estadoDePaso(e.paso, e).clase === 'chip-toca');
-  const enMarcha = encargos.filter((e) => e.paso !== 'HECHO' && !pendientes.includes(e)).length;
+  const listos = encargos.filter((e) => e.paso === 'HECHO').length;
+  const enMarcha = encargos.length - pendientes.length - listos;
+  const kpi = (clase, rotulo, cifra, detalle, ...extra) =>
+    h('section', { class: `kpi ${clase}` }, ...extra, h('p', { class: 'kpi-rotulo' }, rotulo), h('p', { class: 'kpi-cifra' }, nf(cifra)), h('p', { class: 'kpi-detalle' }, detalle));
   return h(
-    'section',
-    { class: 'te-toca' },
-    h(
-      'div',
-      { class: 'te-toca-cifra' },
-      h('p', { class: 'sobretitulo' }, 'Te toca'),
-      h('p', { class: 'cifra-grande' }, String(pendientes.length)),
-      h('p', {}, pendientes.length === 1 ? 'encargo espera tu decisión' : 'encargos esperan tu decisión'),
-      enMarcha ? h('p', { class: 'te-toca-nota' }, `${enMarcha} más en marcha, hasta su próxima parada.`) : null,
+    'div',
+    { class: 'kpis' },
+    kpi(
+      'kpi-foco',
+      'Te toca',
+      pendientes.length,
+      pendientes.length ? h('a', { href: '#/posts' }, pendientes.length === 1 ? 'Un encargo espera tu decisión' : 'Encargos que esperan tu decisión') : 'Nada te espera ahora',
+      // La mascota 3D asomada, agarrada al borde de la tarjeta (como los personajes de la referencia).
+      h('img', { class: 'kpi-mascota', src: '/img/mascota/asomado.webp', alt: '', width: '490', height: '480' }),
     ),
-    pendientes.length
-      ? h(
-          'ol',
-          { class: 'te-toca-lista' },
-          pendientes.slice(0, 4).map((e) =>
-            h(
-              'li',
-              {},
-              h(
-                'a',
-                { href: `#/encargo/${e.proyecto}` },
-                e.miniatura ? h('img', { src: e.miniatura, alt: '', loading: 'lazy' }) : h('span', { class: 'sin-imagen' }),
-                h('span', { class: 'te-toca-texto' }, h('b', {}, e.plato), h('span', {}, `${e.nombreLocal ?? e.local} · ${estadoDePaso(e.paso, e).texto}`)),
-                h('span', { class: 'boton-ir' }, FLECHA()),
-              ),
-            ),
-          ),
-          pendientes.length > 4 ? h('li', { class: 'te-toca-mas' }, h('a', { href: '#/posts' }, `Ver los ${pendientes.length}`)) : null,
-        )
-      : h('p', { class: 'te-toca-nada' }, 'Nada te espera ahora. Los encargos siguen solos hasta su próxima parada.'),
+    kpi('', 'En marcha', enMarcha, 'Siguen solos hasta su próxima parada'),
+    kpi('', 'Posts listos', listos, `De ${nf(encargos.length)} encargo${encargos.length === 1 ? '' : 's'} en total`),
   );
 }
 
-/** Sin encargos: la bienvenida, con la mascota y el grafiti como acento y la única acción amarilla. */
+function teToca(encargos) {
+  const pendientes = encargos.filter((e) => estadoDePaso(e.paso, e).clase === 'chip-toca');
+  if (!pendientes.length) return null;
+  return h(
+    'section',
+    { class: 'tarjeta-dato' },
+    cabeza('Esperan tu decisión', pendientes.length > 4 ? h('a', { href: '#/posts' }, `Ver los ${pendientes.length}`) : null),
+    h(
+      'ol',
+      { class: 'lista-toca' },
+      pendientes.slice(0, 4).map((e) =>
+        h(
+          'li',
+          {},
+          h(
+            'a',
+            { href: `#/encargo/${e.proyecto}` },
+            e.miniatura ? h('img', { src: e.miniatura, alt: '', loading: 'lazy' }) : h('span', { class: 'sin-imagen' }),
+            h('span', { class: 'lista-toca-texto' }, h('b', {}, e.plato), h('span', {}, `${e.nombreLocal ?? e.local} · ${estadoDePaso(e.paso, e).texto}`)),
+            h('span', { class: 'boton-ir' }, FLECHA()),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/** Sin encargos: la bienvenida, con la mascota 3D del lápiz y la única acción amarilla. */
 function bienvenida(panel, estudio) {
   const ejemplo = (evento) =>
     conBoton(evento.currentTarget, async () => {
@@ -115,7 +127,7 @@ function bienvenida(panel, estudio) {
         !conLocal ? h('a', { class: `boton ${estudio.simulado ? 'secundario' : 'primario'}`, href: '#/local' }, 'Dar de alta un local') : null,
       ),
     ),
-    h('img', { class: 'bienvenida-mascota', src: '/img/mascota-movil.png', alt: '', width: '247', height: '320' }),
+    h('img', { class: 'bienvenida-mascota', src: '/img/mascota/lapiz.webp', alt: '', width: '435', height: '640' }),
   );
 }
 
