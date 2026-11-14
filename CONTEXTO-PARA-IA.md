@@ -12,7 +12,8 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
 1. **Generador antiguo (web, MVP).** Gemini dirige e Higgsfield (API) genera la imagen entera, con el texto dentro. Hay que conservarlo.
 2. **Vía nueva (F1–F1.6, en pruebas).** La IA hace solo la foto, sin texto, y un compositor propio (sharp, SVG y fontkit) pinta una **intención de diseño** escrita en JSON.
    - Hoy es una cadena de herramientas de línea de comandos que maneja una persona o una IA en conversación.
-   - **La orden única (`npm run post`, 09/11)** va de la foto subida al post exportado, con dos paradas para confirmar. Está probada en simulado. La generación real espera a que se active la facturación de Gemini, y la intención de diseño la sigue escribiendo una persona (F3).
+   - **La orden única (`npm run post`, 09/11)** va de la foto subida al post exportado, con dos paradas para confirmar. Está probada en simulado. La generación real espera a que se active la facturación de Gemini.
+   - **F3 (14/11, rama de trabajo):** la intención la escribe el director de diseño (Gemini) desde la ficha de la referencia y el mapa de la foto; el código comprueba que no inventa, la compila y la pinta en borrador. Si no pasa, la orden deja un borrador y se para como antes.
 
 ## Reglas vigentes (09/11/2026)
 
@@ -63,7 +64,8 @@ Es un estudio local (Node 24, TypeScript, zod y sharp, con puertos y adaptadores
   - `src/herramientas/generarGeminiImagen.ts`: API de Gemini, que da 429 sin facturación;
   - `src/herramientas/importarManual.ts`: importa lo generado por el MCP.
 - **Diseño:**
-  - `src/dominio/diseno/`: esquemas de la intención;
+  - `src/dominio/diseno/`: esquemas de la intención; `propuesta.ts` (el dialecto del director y su compilación), `mapaDeFoto.ts`, `oficio.ts`, `color.ts`;
+  - `src/aplicacion/diseno/proponerDiseno.ts`, `src/adaptadores/gemini/DirectorDisenoGemini.ts`; criterios en `diseno/f3/INVESTIGACION.md`;
   - `src/adaptadores/compositor/`;
   - `src/herramientas/carrusel.ts`.
 - **Comprobación de salida:** `src/dominio/comprobacionSalida.ts`, `src/adaptadores/gemini/RevisorVisualGemini.ts` y `npm run comprobar-foto`. Implementada; la calibración con Gemini real está pendiente.

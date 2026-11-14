@@ -1,6 +1,6 @@
 # Estado del proyecto `estudio-contenido` (documento vivo)
 
-**Última actualización: 09/11/2026, por la noche.** Este es el único documento que dice el estado vigente. Los informes de fase (`FASE-0`, `FASE-1`, `BENCHMARK`, `METODO-SOCIETY`, `POSTS-F1-6`, F1, F1.5 y la propuesta) son históricos: si algo de ellos choca con este, vale este.
+**Última actualización: 14/11/2026 (F3, en la rama de trabajo). Antes: 09/11/2026, por la noche.** Este es el único documento que dice el estado vigente. Los informes de fase (`FASE-0`, `FASE-1`, `BENCHMARK`, `METODO-SOCIETY`, `POSTS-F1-6`, F1, F1.5 y la propuesta) son históricos: si algo de ellos choca con este, vale este.
 
 **Cómo leer las marcas de cada dato:**
 - **[comprobado]**: ejecutado o medido el 09/11.
@@ -38,6 +38,23 @@
 
 **Comprobaciones de cierre:** `npm run typecheck` limpio y `npm test` con **155 de 155** [comprobado]. No se ha generado ninguna foto ni se ha gastado nada en esta tanda.
 
+### 0c. F3, del 11 al 14/11: el director escribe la intención (en una rama de trabajo, sin fusionar)
+
+| Qué | Resultado | Commit |
+|---|---|---|
+| Esquema de intención y compositor ampliados | Giro libre, sello, patrón, trazo a mano, corte tipográfico, tinta impresa, texto recortado por el sujeto, duotono, trama, papel, manchas, rasgos OpenType, cuatro fuentes OFL nuevas y medidas de oficio con sus avisos. Las 21 intenciones de `proyectos/` se pintan idénticas, píxel a píxel | `08d5b83`, `65c4414`, `40b05c3` |
+| De dónde sale cada criterio y cada número | `diseno/f3/INVESTIGACION.md`; ampliado el 14/11 con el mapa de la foto, el color y el director, y con la comprobación de las fuentes | este commit |
+| **Paso agéntico F3** | **Hecho y probado en simulado.** En INTENCION, la orden mide la foto (mapa en la retícula, sin visión), el director escribe una propuesta corta (`dominio/diseno/propuesta.ts`), el código comprueba que cada texto consta en los datos, la compila en una intención, la pinta en borrador y, si falla, se la devuelve una vez. Solo pasa a `intenciones/post.json` si no queda ningún error; si no, deja el borrador y se para, como antes | este commit |
+| Prueba real con Gemini (tier gratuito, **0 USD**), sobre la foto aprobada de DAK (`dak-post-f2-foto-mcp-3`) y ref-post-09, fuera de `proyectos/` y sin tocar `datos/` | 3 ejecuciones. **1.ª:** los textos pasaron la comprobación de datos; el código rechazó las dos propuestas (anotación encima de la burger, contraste, texto en la fila 1) → `diseno/f3/img/director-gemini-dak-1-rechazada.jpg`. Arreglado después: regla de filas en el compilador, aviso CRUCE, instrucciones. **2.ª:** ningún modelo respondió en 90 s. **3.ª:** la segunda propuesta **pasa** → `diseno/f3/img/director-gemini-dak-3-pasa.jpg` [comprobado] | este commit |
+
+**Lo que dice la prueba real (3 ejecuciones, 1 foto: un indicio, no una medida):**
+- **Lo comprobable funciona:** ningún texto inventado pasó; los fallos de colocación los cazó el compositor y la segunda propuesta los corrigió.
+- **El diseño que pasa es correcto pero de plantilla:** titular arriba y burger debajo. El aviso CRUCE lo señala, pero llega en la última vuelta y no se corrige. El DAK v007 hecho a mano está muy por encima.
+- **Coste por propuesta:** unas 8 000 fichas de entrada, de 600 a 1 000 de salida y de 3 000 a 4 800 de razonamiento por llamada, con 2 llamadas por pieza.
+- **Tiempo por propuesta:** unos 150 s. 3.8 Flash no respondió en ninguna de las 3 ejecuciones (90 s de espera, y después pasa al respaldo). El respaldo que se pide, `gemini-3.5-flash`, responde como `gemini-3.6-flash` (`modelVersion`).
+
+**Comprobaciones:** `npm run typecheck` limpio y `npm test` con **219 de 219** [comprobado, 14/11].
+
 ---
 
 ## 1. Objetivo del producto
@@ -60,7 +77,7 @@
 | F1.5 · dirección de arte | Hecho (etiqueta `f1_5`); la FASE 0 de F1.6 lo dio por fallido | `diseno/f1_5/INFORME-F1.5.md` | — |
 | F1.6 · referencia obligatoria, foto nueva, benchmark, 4 posts y arreglos | Hecho (etiqueta `f1_6` y 4 commits del 09/11) | Este documento | Lo de §12 |
 | **Orden única de punta a punta** | **Hecha el 09/11 y probada en simulado** | `npm run post`, `test/orden-post.test.ts`, `src/aplicacion/post/ordenPost.ts` | Usarla de verdad (facturación) y la intención automática (F3) |
-| **Siguiente · F3: el director escribe la intención** desde la ficha de la referencia | Es lo que hoy obliga a parar en INTENCION | — | Todo |
+| **F3: el director escribe la intención** desde la ficha de la referencia y el mapa de la foto | **Primera versión hecha (14/11): probada en simulado y 3 veces con Gemini real; una propuesta real pasa** (§0c) | `test/director-diseno.test.ts`, `src/aplicacion/diseno/proponerDiseno.ts` | Que pase con oficio, no de plantilla; calibrar con tu juicio |
 | F4 (pantallas web) y F5 (crítico visual) | No empezadas. La comprobación de salida (§9) es la primera pieza de F5 | `PROPUESTA.md` §13 (histórico) | — |
 
 ---
@@ -334,7 +351,7 @@ Son piezas de prueba (no consta ningún contrato) y la de Etxebarri, además, no
 |---|---|---|---|---|
 | 1 | **Activar la facturación de Gemini** y poner `GEMINI_FACTURACION=si`, más un presupuesto con alertas en Google Cloud. Después, **un primer post real con la orden**: un local ya conocido y su foto, sin gastar en nada más | Lo tuyo, 15 min; la prueba, 1 h | Unos 0,15–0,45 USD (1–2 intentos más la revisión) | **Sí:** la activación es tuya |
 | 2 | **Calibrar la comprobación de salida** con Gemini real: los 14 casos pendientes y las teselas en V3D y S3. Reanuda sola (`proyectos/prueba-comprobacion-salida/`) | Medio día | 0 si vuelve la cuota gratuita; céntimos si ya hay facturación | No |
-| 3 | **F3: el director escribe la intención** desde la ficha de la referencia, para que la orden no se pare en INTENCION | 3–5 días | 0 (texto) | No |
+| 3 | **F3: el director escribe la intención.** Primera versión hecha (§0c). Falta: que salgan piezas con oficio y no de plantilla (aviso CRUCE), mirar varios renders reales contigo y calibrar los umbrales | 1–2 días | 0 en el tier gratuito (unas 8 000 fichas de entrada por propuesta) | No |
 | 4 | Puerta de entrada mejor: hoy confirmas la lista que propone el director; falta que el dueño la corrija desde una pantalla | Medio día en línea de comandos | 0 | No |
 | 5 | Capacidades del compositor que faltan | 1–2 días | 0 | No |
 | 6 | Pantallas web (F4), con la orden única por debajo | Varios días | 0 | **Sí** |
