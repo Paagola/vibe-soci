@@ -503,7 +503,113 @@ summary { cursor: pointer; font-weight: 800; }
 .hojas a { display: block; }
 .hojas img { width: 100%; border-radius: 12px; display: block; box-shadow: inset 0 0 0 1px var(--linea); }
 
+/* ================================================================ Inicio: panel de control */
+.inicio-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) var(--ancho-diorama, 380px); gap: 1.2rem; align-items: start; }
+.inicio-principal { min-width: 0; display: flex; flex-direction: column; gap: 1.2rem; }
+.inicio-principal > section { margin: 0; }
+.inicio-par { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem; }
+.inicio-par > section { margin: 0; }
+
+/* Tarjeta de dato: título, el dato y, al pie, de dónde sale (diapositiva 17: estado visible y origen de cada dato). */
+.tarjeta-dato { display: flex; flex-direction: column; gap: 1rem; }
+.tarjeta-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.2rem 1rem; }
+.tarjeta-cabeza .nota { margin: 0; }
+.fuente { margin: auto 0 0; padding-top: 0.75rem; border-top: 1px solid var(--linea); font-size: 0.78rem; font-weight: 600; color: var(--texto-3); }
+.vacio-dato { margin: 0; padding: 1.2rem; border-radius: var(--radio-bloque); background: var(--hundido); text-align: center; }
+
+/* Te toca: el foco de la pantalla, el único bloque oscuro (como el «Elevator pitch» de la presentación). */
+.te-toca { display: grid; grid-template-columns: minmax(10rem, 0.8fr) minmax(0, 2fr); gap: 1.4rem 2rem; align-items: start; background: var(--tinta); color: var(--blanco); padding: 1.6rem 1.7rem; border-radius: 28px; box-shadow: var(--sombra-alta); }
+.te-toca .sobretitulo { color: rgb(255 255 255 / 0.72); }
+.te-toca-cifra p { margin: 0; font-weight: 700; color: rgb(255 255 255 / 0.85); }
+.cifra-grande { font-family: var(--fuente-titulos); font-weight: 700; font-size: 4.2rem; line-height: 1; color: var(--blanco) !important; margin: 0.1rem 0 0.35rem !important; font-variant-numeric: tabular-nums; }
+.te-toca-nota { margin-top: 0.8rem !important; font-size: 0.86rem; font-weight: 600 !important; color: rgb(255 255 255 / 0.72) !important; }
+.te-toca-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.te-toca-lista a { display: flex; align-items: center; gap: 0.85rem; padding: 0.55rem 0.6rem 0.55rem 0.55rem; border-radius: 18px; background: rgb(255 255 255 / 0.07); color: var(--blanco); text-decoration: none; transition: background 0.15s; }
+.te-toca-lista a:hover { background: rgb(255 255 255 / 0.13); }
+.te-toca-lista img, .te-toca-lista .sin-imagen { flex: none; width: 48px; height: 48px; border-radius: 12px; object-fit: cover; background: rgb(255 255 255 / 0.1); }
+.te-toca-texto { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.te-toca-texto b { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.te-toca-texto span { font-size: 0.86rem; font-weight: 600; color: rgb(255 255 255 / 0.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.te-toca .boton-ir { background: var(--blanco); color: var(--tinta); }
+.te-toca-mas a { justify-content: center; font-weight: 800; background: none; }
+.te-toca-nada { margin: 0; align-self: center; padding: 1.1rem 1.2rem; border-radius: 18px; background: rgb(255 255 255 / 0.07); font-weight: 600; color: rgb(255 255 255 / 0.85); }
+
+/* Bienvenida (sin encargos): la mascota y el grafiti como acento puntual. */
+.bienvenida { position: relative; overflow: hidden; display: flex; align-items: center; gap: 1rem; min-height: 15rem; padding: 1.8rem 2rem; border-radius: 28px;
+  background: linear-gradient(90deg, var(--blanco) 52%, rgb(255 255 255 / 0.55) 75%, rgb(255 255 255 / 0.2)), url('/img/pared.jpg') right center / 46% auto no-repeat, var(--blanco); }
+.bienvenida-texto { max-width: 30rem; position: relative; }
+.bienvenida-texto h2 { font-size: 1.6rem; margin-bottom: 0.5rem; }
+.bienvenida-texto > p:not(.sobretitulo) { margin: 0; color: var(--texto-2); font-weight: 600; }
+.bienvenida-mascota { position: relative; margin-left: auto; width: 150px; height: auto; flex: none; }
+
+/* Barras de «Encargos por fase» */
+.barras { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+.barras li { display: grid; grid-template-columns: 6.2rem minmax(0, 1fr) 2rem; align-items: center; gap: 0.75rem; font-weight: 700; font-size: 0.9rem; color: var(--texto-2); }
+.barras b { font-family: var(--fuente-titulos); font-size: 1.05rem; text-align: right; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.barras-pista, .progreso-pista { display: block; height: 10px; border-radius: 999px; background: var(--hundido); box-shadow: inset 0 0 0 1px var(--linea); overflow: hidden; }
+.barras-relleno, .progreso-relleno { display: block; height: 100%; border-radius: 999px; background: var(--azul); min-width: 0; }
+
+/* Reparto de la comprobación de salida (estados con su color semántico, no acentos) */
+.reparto { display: flex; gap: 3px; height: 14px; border-radius: 999px; overflow: hidden; }
+.reparto span { min-width: 6px; }
+.reparto-pasa { background: var(--positivo); }
+.reparto-revisar { background: #d6a100; }
+.reparto-descarta { background: var(--alerta); }
+.reparto-rechazada { background: #8c877e; }
+.reparto-pendiente { background: #cfcbc2; }
+.leyenda { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: 0.4rem 1rem; font-size: 0.88rem; font-weight: 700; color: var(--texto-2); }
+.leyenda li { display: flex; align-items: center; gap: 0.5rem; }
+.leyenda li.cero { color: var(--texto-3); font-weight: 600; }
+.leyenda i { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+.leyenda b { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--tinta); }
+
+/* Locales */
+.tabla-locales td:first-child b { display: block; }
+.tabla-locales td small { color: var(--texto-3); font-weight: 600; }
+.progreso { display: grid; grid-template-columns: minmax(5rem, 1fr) auto; align-items: center; gap: 0.7rem; min-width: 10rem; }
+.progreso b { font-variant-numeric: tabular-nums; font-weight: 800; }
+
+/* Gasto */
+.tarjeta-dato { container-type: inline-size; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+@container (min-width: 880px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container (max-width: 420px) { .tiles { grid-template-columns: minmax(0, 1fr); } }
+.tabla-desliza { overflow-x: auto; margin: 0 -0.25rem; padding: 0 0.25rem; }
+.tile { margin: 0; padding: 1rem 1.05rem; border-radius: var(--radio-bloque); background: var(--hundido); display: flex; flex-direction: column; gap: 0.15rem; }
+.tile p { margin: 0; }
+.tile-titulo { font-weight: 800; font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--texto-3); }
+.tile-valor { font-family: var(--fuente-titulos); font-weight: 700; font-size: 1.6rem; line-height: 1.15; margin-top: 0.2rem !important; font-variant-numeric: tabular-nums; }
+.tile-detalle { font-size: 0.84rem; font-weight: 600; color: var(--texto-2); }
+.tile-origen { margin-top: auto !important; padding-top: 0.45rem; font-size: 0.74rem; color: var(--texto-3); }
+
+/* Hueco del diorama (lo pinta js/diorama/; aquí, la columna y su reposo) */
+.panel-diorama { position: sticky; top: 1rem; height: calc(100vh - 2rem); min-height: 26rem; max-height: 56rem; border-radius: 28px; background: var(--blanco); box-shadow: var(--sombra); overflow: hidden; display: flex; flex-direction: column; }
+.diorama-lienzo { position: relative; flex: 1; min-height: 0; display: grid; place-items: end start;
+  /* Reposo: una retícula isométrica muy suave que se desvanece hacia arriba. */
+  background:
+    linear-gradient(180deg, var(--blanco) 8%, rgb(255 255 255 / 0) 60%),
+    repeating-linear-gradient(30deg, rgb(16 51 239 / 0.07) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(150deg, rgb(16 51 239 / 0.07) 0 1px, transparent 1px 28px),
+    var(--hundido); }
+.panel-diorama.con-diorama .diorama-lienzo { background: var(--hundido); display: block; }
+.panel-diorama.con-diorama .diorama-reposo { display: none; }
+.diorama-reposo { padding: 1.3rem 1.4rem; }
+.diorama-titulo { margin: 0 0 0.25rem; font-family: var(--fuente-titulos); font-weight: 700; font-size: 1.1rem; }
+.diorama-reposo .nota { margin: 0; max-width: 18rem; font-weight: 600; }
+
 /* ================================================================ Tamaños intermedios */
+@media (max-width: 1440px) {
+  :root { --ancho-diorama: 340px; }
+}
+/* Por debajo, el diorama se oculta: el contenido principal manda. */
+@media (max-width: 1200px) {
+  .inicio-rejilla { grid-template-columns: minmax(0, 1fr); }
+  .panel-diorama { display: none; }
+}
+@media (max-width: 1000px) {
+  .inicio-par { grid-template-columns: minmax(0, 1fr); }
+  .te-toca { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 1280px) {
   :root { --ancho-lateral: 220px; }
   .encargo-rejilla, .resultado, .editor, .dos-columnas { grid-template-columns: minmax(0, 1fr); }

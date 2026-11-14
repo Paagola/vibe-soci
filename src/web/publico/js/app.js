@@ -8,11 +8,12 @@ import { vistaInicio } from './vistas/inicio.js';
 import { vistaNuevoLocal } from './vistas/local.js';
 import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
 import { vistaNuevoEncargo } from './vistas/nuevoEncargo.js';
+import { vistaPanel } from './vistas/panel.js';
 import { vistaPieza } from './vistas/pieza.js';
 
 // [patrón, crear vista, sección del panel lateral que se marca]
 const RUTAS = [
-  [/^#?\/?$/, () => vistaEncargos(), 'inicio'],
+  [/^#?\/?$/, () => vistaPanel(), 'inicio'],
   [/^#\/posts$/, () => vistaEncargos(), 'posts'],
   [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
   [/^#\/encargo\/([a-z0-9-]+)$/, (proyecto) => vistaEncargo(proyecto), 'posts'],

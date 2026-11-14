@@ -5,6 +5,7 @@ import { describirError, ErrorHttp } from './errores.js';
 import type { Estudio } from './estudio.js';
 import { rutasDeArchivos } from './rutas/archivos.js';
 import { rutasDeEncargos } from './rutas/encargos.js';
+import { rutasDelPanel } from './rutas/panel.js';
 import { rutasDelEstudio } from './rutas/estudio.js';
 import { rutasDePiezas } from './rutas/piezas.js';
 
@@ -17,6 +18,7 @@ export function crearApp(estudio: Estudio): express.Express {
   app.use('/api', rutasDelEstudio(estudio));
   app.use('/api/piezas', rutasDePiezas(estudio));
   app.use('/api/encargos', rutasDeEncargos(estudio));
+  app.use('/api', rutasDelPanel(estudio));
   app.use('/api', () => {
     throw new ErrorHttp(404, 'NO_ENCONTRADO', 'Esa ruta de la API no existe.');
   });
