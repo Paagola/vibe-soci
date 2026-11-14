@@ -78,7 +78,7 @@ export async function vistaEncargo(proyecto) {
       h(
         'div',
         {},
-        h('p', { class: 'miga' }, h('a', { href: '#/' }, '← Posts'), ` · ${local?.nombre ?? encargo.local}`),
+        h('p', { class: 'miga' }, h('a', { href: '#/posts' }, '← Posts'), ` · ${local?.nombre ?? encargo.local}`),
         h('h1', {}, encargo.plato),
         h(
           'div',

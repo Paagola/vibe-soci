@@ -10,7 +10,7 @@
     <script type="module" src="/js/app.js"></script>
   </head>
   <body>
-    <!-- Panel lateral fijo: la navegación del estudio, en cristal sobre la pared. En móvil, la navegación pasa a la barra de pestañas de abajo (la de S05). -->
+    <!-- Panel lateral fijo con las secciones agrupadas. En móvil, la navegación pasa a la barra de pestañas de abajo. -->
     <aside class="panel-lateral" aria-label="Estudio">
       <a class="marca" href="#/" aria-label="Estudio de contenido, inicio">
         <span class="marca-logo">estudio</span>
@@ -18,26 +18,35 @@
       </a>
 
       <nav class="navegacion" aria-label="Secciones">
-        <p class="nav-titulo">Orden única</p>
-        <a href="#/" data-seccion="posts">
+        <p class="nav-titulo">Panel</p>
+        <a href="#/" data-seccion="inicio" class="nav-inicio">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1Z" /></svg>
+          <span class="nav-texto">Inicio</span>
+        </a>
+        <a href="#/posts" data-seccion="posts" class="nav-posts">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></svg>
           <span class="nav-texto">Posts</span>
+          <span class="nav-cuenta" id="nav-pendientes" hidden></span>
         </a>
+
+        <p class="nav-titulo">Crear</p>
         <a href="#/nuevo" data-seccion="nuevo" class="nav-crear">
           <span class="icono-crear" aria-hidden="true"><svg class="icono" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></span>
           <span class="nav-texto">Nuevo post</span>
         </a>
-        <a href="#/local" data-seccion="local">
+        <a href="#/local" data-seccion="local" class="nav-local">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5V19a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5" /><path d="M3 9.5 4.8 4.7A1 1 0 0 1 5.7 4h12.6a1 1 0 0 1 .9.7L21 9.5a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z" /><path d="M10 20v-5h4v5" /></svg>
           <span class="nav-texto">Nuevo local</span>
         </a>
-        <p class="nav-titulo">Otras herramientas</p>
+
+        <p class="nav-titulo">Herramientas</p>
         <a href="#/piezas" data-seccion="piezas" class="antiguo" title="El generador del MVP: Gemini dirige e Higgsfield genera la imagen con el texto dentro">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5" /><path d="M3.5 3.5v5h5" /><path d="M12 7.5V12l3 2" /></svg>
           <span class="nav-texto">Generador antiguo</span>
         </a>
       </nav>
 
+      <!-- El modo del estudio: lo que cambia si se gasta o no. Siempre a la vista. -->
       <div class="panel-pie">
         <div class="franja-simulado" role="status"><b>Modo simulado</b> Nada gasta; todo se guarda aparte, en datos-simulado/</div>
         <label class="interruptor" title="En modo simulado nada gasta: el director, el generador y el revisor son falsos y todo se guarda aparte (datos-simulado/)">
