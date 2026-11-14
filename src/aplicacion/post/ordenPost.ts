@@ -428,11 +428,12 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
             const r = await disenarIntencion(deps, deps.disenador, e, marca, tokens);
             await writeFile(
               archivoPropuesta,
-              `${JSON.stringify({ director: deps.disenador.director.nombre, fecha: deps.ahora(), propuesta: r.propuesta, problemas: r.problemas, avisos: r.avisos, intentos: r.intentos, mapa: { sujeto: r.mapa.sujeto, libres: r.mapa.libres, vivo: r.mapa.vivo } }, null, 2)}\n`,
+              `${JSON.stringify({ director: deps.disenador.director.nombre, critico: deps.disenador.critico?.nombre ?? null, fecha: deps.ahora(), propuesta: r.propuesta, problemas: r.problemas, avisos: r.avisos, critica: r.critica ?? null, intentos: r.intentos, mapa: { sujeto: r.mapa.sujeto, libres: r.mapa.libres, vivo: r.mapa.vivo } }, null, 2)}\n`,
             );
             if (r.intencion && r.problemas.length === 0) {
               await writeFile(intencion, `${JSON.stringify(r.intencion, null, 2)}\n`);
-              nota(`Intención escrita por ${deps.disenador.director.nombre} (${r.intentos.length} propuesta(s))${r.avisos.length ? `, con avisos: ${r.avisos.join(' | ')}` : ''}.`);
+              const critica = r.critica ? ` Crítica visual: ${r.critica.llega ? 'llega al oficio de la referencia' : `no llega (${r.critica.motivos.join('; ')})`}${r.critica.adoptada ? '; se adopta su corrección' : ''}.` : '';
+              nota(`Intención escrita por ${deps.disenador.director.nombre} (${r.intentos.length} propuesta(s))${r.avisos.length ? `, con avisos: ${r.avisos.join(' | ')}` : ''}.${critica}`);
               return { encargo: ir(e, 'COMPONER') };
             }
             if (r.intencion) await writeFile(borrador, `${JSON.stringify(r.intencion, null, 2)}\n`);
@@ -522,9 +523,11 @@ async function probarIntencion(deps: DepsPost, e: EncargoPost, rutaTokens: strin
   try {
     const pieza = await deps.componedor.componer(carpeta, { borrador: true, etiqueta: 'propuesta' });
     const problemas = pieza.diapositivas.flatMap((d) => d.problemas);
+    const png = pieza.diapositivas[0]?.png;
     return {
       errores: problemas.filter((p) => p.gravedad === 'ERROR').map((p) => `${p.tipo}: ${p.mensaje}`),
       avisos: problemas.filter((p) => p.gravedad === 'AVISO').map((p) => `${p.tipo}: ${p.mensaje}`),
+      ...(png ? { png } : {}),
     };
   } catch (error) {
     if (error instanceof RangeError) return { errores: [`El compositor no puede resolverla: ${error.message}`], avisos: [] };

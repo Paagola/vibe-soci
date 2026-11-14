@@ -44,3 +44,16 @@ export interface DirectorDeDiseno {
   /** `problemasPrevios`: lo que falló en la propuesta anterior (vacío la primera vez). */
   proponer(encargo: EncargoDeDiseno, problemasPrevios: string[]): Promise<PropuestaDeDiseno>;
 }
+
+/** Lo que dice la crítica visual: si la pieza llega al oficio de la referencia y, si no, la propuesta corregida. */
+export interface CriticaDeDiseno {
+  llega: boolean;
+  motivos: string[];
+  propuesta?: PropuestaDeDiseno;
+}
+
+/** Mira la pieza pintada junto a la referencia: lo que solo se ve (el oficio), no lo que se mide. */
+export interface CriticoDeDiseno {
+  readonly nombre: string;
+  criticar(encargo: EncargoDeDiseno, propuesta: PropuestaDeDiseno, pieza: string): Promise<CriticaDeDiseno>;
+}
