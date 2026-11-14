@@ -130,5 +130,18 @@ describe('API web · procesos para el diorama (simulado, solo lectura)', () => {
     assert.equal(e.fotoElegida, true);
     assert.ok(e.diseno.propuestas >= 1 && e.diseno.propuestas <= 2, JSON.stringify(e.diseno));
     assert.equal(e.diseno.pasa, true);
+
+    // Las imágenes reales del encargo para las estaciones de la oficina: cada ruta sirve una miniatura de verdad.
+    const imagenes = [e.imagenes.subida, e.imagenes.referencia, ...e.imagenes.intentos.map((i: { url: string }) => i.url), e.imagenes.mascara, e.imagenes.post];
+    assert.equal(imagenes.filter(Boolean).length, 6, JSON.stringify(e.imagenes));
+    for (const url of imagenes) {
+      const r = await fetch(`${base}${url}`);
+      assert.equal(r.status, 200, url);
+      assert.match(r.headers.get('content-type') ?? '', /^image\//, url);
+    }
+    assert.ok(e.recorrido.every((r: { nota: string }) => typeof r.nota === 'string'));
+    // El post terminado entra en la exposición de la galería.
+    const { galeria } = await procesos();
+    assert.deepEqual(galeria.map((g: { proyecto: string }) => g.proyecto), [proyecto]);
   });
 });

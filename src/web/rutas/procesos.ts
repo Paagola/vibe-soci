@@ -9,16 +9,20 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Router } from 'express';
-import { listarEncargos } from '../../aplicacion/post/consultasPost.js';
+import { listarEncargos, resumirEncargos } from '../../aplicacion/post/consultasPost.js';
 import type { EncargoPost, PasoPost } from '../../dominio/post.js';
 import type { Estudio } from '../estudio.js';
 import type { VistaTrabajo } from '../trabajos.js';
-import { claveDeEncargo } from './encargos.js';
+import { baseDeEncargo, claveDeEncargo, urlDePortada } from './encargos.js';
 
 /** Los encargos más recientes que se mandan (la escena enseña uno; el resto solo cuenta). */
 const MAX_ENCARGOS = 12;
 /** Las últimas notas del historial que hacen falta para reconstruir el recorrido del material. */
 const MAX_RECORRIDO = 80;
+/** Posts terminados que se mandan para la exposición de la galería. */
+const MAX_GALERIA = 8;
+/** Lado de las miniaturas: texturas pequeñas para la escena (las sirve /archivos con ?lado=). */
+const LADO = 320;
 
 export interface ProcesoTrabajo {
   estado: VistaTrabajo['estado'];
@@ -45,8 +49,19 @@ export interface ProcesoEncargo {
   fotoElegida: boolean;
   /** Las propuestas que hizo el director de diseño (1, o 2 si se le devolvió) y si la última quedó con problemas. Null si aún no hubo. */
   diseno: { propuestas: number; pasa: boolean } | null;
-  /** Por qué pasos ha ido el encargo, en orden (del historial). */
-  recorrido: Array<{ fecha: string; paso: PasoPost }>;
+  /** Por qué pasos ha ido el encargo, en orden (del historial), con la nota real de cada uno. */
+  recorrido: Array<{ fecha: string; paso: PasoPost; nota: string }>;
+  /**
+   * Las imágenes REALES del encargo, en miniatura, para las estaciones de la oficina. Solo las que constan en el encargo;
+   * una ruta puede contestar 404 si el archivo ya no está (p. ej. una referencia de enlace sin captura).
+   */
+  imagenes: {
+    subida: string;
+    referencia: string | null;
+    intentos: Array<{ n: number; url: string }>;
+    mascara: string | null;
+    post: string | null;
+  };
   trabajo: ProcesoTrabajo | null;
 }
 
@@ -54,6 +69,8 @@ export interface EstadoProcesos {
   modo: 'REAL' | 'SIMULADO';
   ahora: number;
   encargos: ProcesoEncargo[];
+  /** Los posts terminados más recientes (su miniatura real), para la exposición de la galería de entrega. */
+  galeria: Array<{ proyecto: string; plato: string; url: string }>;
 }
 
 export function rutasDeProcesos(estudio: Estudio): Router {
@@ -70,6 +87,9 @@ export async function estadoDeProcesos(estudio: Estudio): Promise<EstadoProcesos
   const encargos = (await listarEncargos(deps)).slice(0, MAX_ENCARGOS);
   const nombres = new Map((await deps.referencias.locales.listar().catch(() => [])).map((m) => [m.slug, m.nombre]));
   const modo = simulado ? 'SIMULADO' : 'REAL';
+  // Las portadas (el post compuesto, si lo hay) salen de la misma consulta que usa la lista de Posts.
+  const resumenes = await resumirEncargos(deps).catch(() => []);
+  const postDe = new Map(resumenes.filter((r) => r.portada?.tipo === 'DISENO').map((r) => [r.proyecto, `${urlDePortada(r.proyecto, r.portada!)}?lado=${LADO}`]));
   return {
     modo,
     ahora: Date.now(),
@@ -88,11 +108,22 @@ export async function estadoDeProcesos(estudio: Estudio): Promise<EstadoProcesos
           intentos: e.intentos.map((i) => ({ n: i.n, final: i.final })),
           fotoElegida: Boolean(e.fotoElegida),
           diseno: await propuestasDeDiseno(join(deps.proyectos, e.proyecto)),
-          recorrido: e.historial.slice(-MAX_RECORRIDO).map((h) => ({ fecha: h.fecha, paso: h.paso })),
+          recorrido: e.historial.slice(-MAX_RECORRIDO).map((h) => ({ fecha: h.fecha, paso: h.paso, nota: h.nota.slice(0, 220) })),
+          imagenes: {
+            subida: `${baseDeEncargo(e.proyecto)}subida?lado=${LADO}`,
+            referencia: e.referencia ? `${baseDeEncargo(e.proyecto)}referencia?lado=${LADO}` : null,
+            intentos: e.intentos.map((i) => ({ n: i.n, url: `${baseDeEncargo(e.proyecto)}activos/${encodeURIComponent(i.activo)}?lado=${LADO}` })),
+            mascara: e.fotoElegida ? `${baseDeEncargo(e.proyecto)}activos/${encodeURIComponent(e.fotoElegida)}?mascara&lado=${LADO}` : null,
+            post: postDe.get(e.proyecto) ?? null,
+          },
           trabajo: trabajo ? resumirTrabajo(estudio.registro.vista(trabajo)) : null,
         };
       }),
     ),
+    galeria: resumenes
+      .filter((r) => r.paso === 'HECHO' && postDe.has(r.proyecto))
+      .slice(0, MAX_GALERIA)
+      .map((r) => ({ proyecto: r.proyecto, plato: r.plato, url: postDe.get(r.proyecto)! })),
   };
 }
 
