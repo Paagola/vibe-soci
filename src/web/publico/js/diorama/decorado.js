@@ -3,6 +3,7 @@
 // estado que le da el guion (trabajando o no, y en qué punto del trabajo). Ninguna pieza guarda estado entre fotogramas.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { STAND, mixPose } from './kit/poses.js';
 import { crearMascota, ponerPose } from './mascota.js';
 import { texturaDe, texturaLetrero, COLOR } from './materiales.js';
@@ -25,6 +26,49 @@ function pon(padre, geo, mat, x, y, z, o = {}) {
   m.receiveShadow = o.recibe ?? true;
   padre.add(m);
   return m;
+}
+
+/** Marca lo que se mueve, cambia de material o se esconde: la fusión de lo estático no lo toca. */
+function vivo(o) {
+  o.userData.vivo = true;
+  return o;
+}
+
+/**
+ * Fusiona la geometría estática del decorado por material (y por si proyecta sombra): de ~900 llamadas de dibujo por
+ * fotograma a unas pocas decenas en lo fijo. Lo marcado con `vivo` (y todo lo que cuelga de ello) se queda como está.
+ */
+export function fusionarEstaticos(raiz) {
+  raiz.updateMatrixWorld(true);
+  const inversa = new THREE.Matrix4().copy(raiz.matrixWorld).invert();
+  const grupos = new Map();
+  const quitar = [];
+  const visitar = (o) => {
+    if (o.userData.vivo) return;
+    if (o.isMesh && o.visible) {
+      const clave = `${o.material.uuid}|${o.castShadow}|${o.receiveShadow}`;
+      if (!grupos.has(clave)) grupos.set(clave, { material: o.material, sombra: o.castShadow, recibe: o.receiveShadow, geos: [] });
+      let geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+      for (const nombre of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv'].includes(nombre)) geo.deleteAttribute(nombre);
+      if (!geo.attributes.uv) geo.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 2), 2));
+      if (!geo.attributes.normal) geo.computeVertexNormals();
+      geo.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inversa, o.matrixWorld));
+      grupos.get(clave).geos.push(geo);
+      quitar.push(o);
+    }
+    for (const hijo of o.children) visitar(hijo);
+  };
+  visitar(raiz);
+  for (const o of quitar) o.removeFromParent();
+  for (const { material, sombra, recibe, geos } of grupos.values()) {
+    const malla = new THREE.Mesh(mergeGeometries(geos, false), material);
+    malla.castShadow = sombra;
+    malla.receiveShadow = recibe;
+    malla.name = 'fusion';
+    raiz.add(malla);
+    geos.forEach((x) => x.dispose());
+  }
+  return grupos.size;
 }
 
 const suave = (k) => k * k * (3 - 2 * k);
@@ -63,7 +107,7 @@ function lampara(padre, m, x, z) {
   cabeza.rotation.x = 0.7;
   grupo.add(cabeza);
   pon(cabeza, g('pantalla', () => new THREE.CylinderGeometry(0.035, 0.07, 0.08, 18, 1, true)), m.azul, 0, 0, 0);
-  const bombilla = pon(cabeza, g('bombilla', () => new THREE.SphereGeometry(0.03, 12, 8)), m.lamparaApagada, 0, -0.025, 0, { sombra: false });
+  const bombilla = vivo(pon(cabeza, g('bombilla', () => new THREE.SphereGeometry(0.03, 12, 8)), m.lamparaApagada, 0, -0.025, 0, { sombra: false }));
   return {
     poner(encendida) {
       bombilla.material = encendida ? m.lamparaEncendida : m.lamparaApagada;
@@ -73,7 +117,7 @@ function lampara(padre, m, x, z) {
 
 /** Una tarjeta del material (foto, propuesta, boceto…): papel con grosor, contorno y la imagen pintada encima. */
 export function crearTarjeta(m, ancho = 0.2, alto = 0.25) {
-  const grupo = new THREE.Group();
+  const grupo = vivo(new THREE.Group());
   const base = pon(grupo, caja(ancho, 0.012, alto, 0.004), m.blanco, 0, 0.006, 0);
   const cara = new THREE.Mesh(g(`cara:${ancho}:${alto}`, () => new THREE.PlaneGeometry(ancho * 0.94, alto * 0.94)), new THREE.MeshBasicMaterial({ color: 0xffffff }));
   cara.material.userData.outlineParameters = { visible: false };
@@ -133,6 +177,7 @@ function poseSobreMesa(t, fase, { mano = 0, cabeza = 0.35, izquierda = null } = 
 
 function operario(padre, m, fase) {
   const o = crearMascota(m, { nombre: 'operario', halo: false });
+  vivo(o.grupo);
   o.grupo.position.set(0, 0, -(X_OPERARIO - X_MESA));
   padre.add(o.grupo);
   o.fase = fase;
@@ -296,14 +341,14 @@ function puestoGenerador(m) {
   cuerpo.add(ojo);
   pon(ojo, g('aroOjo', () => new THREE.TorusGeometry(0.14, 0.025, 10, 28)), m.maquinaOscura, 0, 0, 0, { rot: [Math.PI / 2, 0, 0] });
   pon(ojo, cil(0.125, 0.125, 0.012, 28), m.maquinaOscura, 0, -0.005, 0, { sombra: false });
-  const brillo = pon(ojo, cil(0.07, 0.07, 0.014, 24), m.lamparaApagada, 0, 0.004, 0, { sombra: false });
+  const brillo = vivo(pon(ojo, cil(0.07, 0.07, 0.014, 24), m.lamparaApagada, 0, 0.004, 0, { sombra: false }));
   // Manivela (gira mientras trabaja) y placa.
   const manivela = new THREE.Group();
   manivela.position.set(0.46, 0.3, 0.15);
   manivela.rotation.z = -Math.PI / 2;
   cuerpo.add(manivela);
   pon(manivela, cil(0.035, 0.035, 0.03, 14), m.maquinaOscura, 0, 0.015, 0);
-  const brazo = new THREE.Group();
+  const brazo = vivo(new THREE.Group());
   brazo.position.y = 0.035;
   manivela.add(brazo);
   pon(brazo, caja(0.025, 0.02, 0.12, 0.006), m.azul, 0, 0, 0.05);
@@ -315,7 +360,7 @@ function puestoGenerador(m) {
   cuerpo.add(flash);
   pon(flash, caja(0.06, 0.12, 0.06, 0.01), m.maquinaOscura, 0, 0.06, 0);
   pon(flash, caja(0.2, 0.12, 0.05, 0.015), m.maquina, 0, 0.17, 0.02, { rot: [-0.3, 0, 0] });
-  const bombilla = pon(flash, cil(0.07, 0.07, 0.01, 18), m.lamparaApagada, 0, 0.17, 0.05, { rot: [Math.PI / 2 - 0.3, 0, 0], sombra: false });
+  const bombilla = vivo(pon(flash, cil(0.07, 0.07, 0.01, 18), m.lamparaApagada, 0, 0.17, 0.05, { rot: [Math.PI / 2 - 0.3, 0, 0], sombra: false }));
   return {
     grupo,
     entrada: new THREE.Vector3(0, 0.875, 0.06),
@@ -324,7 +369,6 @@ function puestoGenerador(m) {
       brillo.material = trabajando && Math.sin(t * 6) > -0.2 ? m.lamparaEncendida : m.lamparaApagada;
       bombilla.material = trabajando && k > 0.8 && k < 0.88 ? m.lamparaEncendida : m.lamparaApagada;
       brazo.rotation.y = trabajando ? t * 4.5 : 0;
-      cuerpo.position.x = trabajando ? 0.004 * Math.sin(t * 31) : 0;
     },
   };
 }
@@ -340,7 +384,7 @@ function puestoMascara(m) {
   pon(cuerpo, caja(0.82, 0.04, 0.52, 0.015), m.azul, 0, 0.09, 0);
   pon(cuerpo, caja(0.72, 0.02, 0.44, 0.008), m.maquinaOscura, 0, ALTO_MESA - 0.01, 0);
   for (const sx of [-1, 1]) pon(cuerpo, caja(0.03, 0.03, 0.46, 0.008), m.gris, sx * 0.37, ALTO_MESA + 0.01, 0);
-  const portico = new THREE.Group();
+  const portico = vivo(new THREE.Group());
   cuerpo.add(portico);
   for (const sx of [-1, 1]) pon(portico, caja(0.05, 0.12, 0.06, 0.01), m.maquinaOscura, sx * 0.37, ALTO_MESA + 0.08, 0);
   pon(portico, caja(0.78, 0.045, 0.06, 0.012), m.azul, 0, ALTO_MESA + 0.15, 0);
@@ -349,7 +393,7 @@ function puestoMascara(m) {
   portico.add(cabezal);
   pon(cabezal, caja(0.07, 0.07, 0.09, 0.01), m.maquina, 0, 0, 0);
   pon(cabezal, g('cuchilla', () => new THREE.ConeGeometry(0.012, 0.09, 8)), m.maquinaOscura, 0, -0.07, 0, { rot: [Math.PI, 0, 0] });
-  const piloto = pon(cuerpo, cil(0.025, 0.025, 0.01, 12), m.lamparaApagada, 0.401, ALTO_MESA - 0.12, 0.12, { rot: [0, 0, Math.PI / 2], sombra: false });
+  const piloto = vivo(pon(cuerpo, cil(0.025, 0.025, 0.01, 12), m.lamparaApagada, 0.401, ALTO_MESA - 0.12, 0.12, { rot: [0, 0, Math.PI / 2], sombra: false }));
   // Recortes de otros trabajos en el suelo (detalle de uso).
   pon(grupo, caja(0.06, 0.004, 0.05, 0.002), m.blanco, 0.48, 0.004, 0.2, { rot: [0, 0.6, 0], sombra: false });
   pon(grupo, caja(0.05, 0.004, 0.04, 0.002), m.blanco, 0.42, 0.004, 0.28, { rot: [0, -0.3, 0], sombra: false });
@@ -381,18 +425,18 @@ function puestoCompositor(m) {
   pon(cuerpo, caja(0.5, 0.02, 0.4, 0.008), m.maquinaOscura, 0, ALTO_MESA - 0.01, 0);
   for (const sx of [-1, 1]) pon(cuerpo, cil(0.03, 0.03, 0.62, 12), m.maquinaOscura, sx * 0.3, ALTO_MESA + 0.31, -0.12);
   pon(cuerpo, caja(0.72, 0.1, 0.14, 0.02), m.azul, 0, ALTO_MESA + 0.62, -0.12);
-  const platina = new THREE.Group();
+  const platina = vivo(new THREE.Group());
   cuerpo.add(platina);
   pon(platina, cil(0.018, 0.018, 0.3, 8), m.gris, 0, ALTO_MESA + 0.45, -0.02);
   pon(platina, caja(0.36, 0.05, 0.3, 0.012), m.maquinaOscura, 0, ALTO_MESA + 0.3, 0.0);
   // Volante en la cara +X.
-  const volante = new THREE.Group();
+  const volante = vivo(new THREE.Group());
   volante.position.set(0.47, ALTO_MESA + 0.32, -0.12);
   volante.rotation.z = -Math.PI / 2;
   cuerpo.add(volante);
   pon(volante, g('volante', () => new THREE.TorusGeometry(0.13, 0.014, 8, 26)), m.rojo, 0, 0, 0, { rot: [Math.PI / 2, 0, 0] });
   for (let i = 0; i < 3; i++) pon(volante, caja(0.012, 0.012, 0.26, 0.004), m.maquinaOscura, 0, 0, 0, { rot: [0, (i * Math.PI) / 3, 0] });
-  const piloto = pon(cuerpo, g('piloto', () => new THREE.SphereGeometry(0.03, 12, 8)), m.lamparaApagada, 0.3, ALTO_MESA + 0.7, -0.12, { sombra: false });
+  const piloto = vivo(pon(cuerpo, g('piloto', () => new THREE.SphereGeometry(0.03, 12, 8)), m.lamparaApagada, 0.3, ALTO_MESA + 0.7, -0.12, { sombra: false }));
   // Pila de pliegos impresos a un lado (detalle de uso).
   for (let i = 0; i < 4; i++) pon(cuerpo, caja(0.2, 0.01, 0.25, 0.003), m.blanco, -0.62, 0.01 + i * 0.012, 0.05 + (i % 2) * 0.01, { rot: [0, 0.05 * i, 0] });
   return {
@@ -490,7 +534,7 @@ function puestoSalida(m) {
 
 /** Letrero amarillo de «te toca» en su poste: aparece con un rebote cuando el encargo espera a la persona. */
 export function crearSenal(m) {
-  const grupo = new THREE.Group();
+  const grupo = vivo(new THREE.Group());
   const cuerpo = new THREE.Group();
   grupo.add(cuerpo);
   pon(cuerpo, cil(0.018, 0.018, 1.25, 8), m.maquinaOscura, 0, 0.625, 0);
@@ -522,7 +566,7 @@ export function crearSenal(m) {
 
 /** Nube de aviso sobre un puesto: un fallo real (503, tiempo agotado…) o un reintento. Texto de cara a la cámara. */
 export function crearNube(m) {
-  const grupo = new THREE.Group();
+  const grupo = vivo(new THREE.Group());
   const bolas = new THREE.Group();
   grupo.add(bolas);
   for (const [x, y, r] of [[0, 0, 0.17], [-0.17, -0.03, 0.12], [0.17, -0.02, 0.13], [-0.08, 0.1, 0.12], [0.09, 0.09, 0.12]]) pon(bolas, g(`nube:${r}`, () => new THREE.SphereGeometry(r, 16, 10)), m.blanco, x, y, 0, { esc: [1, 0.85, 0.7], sombra: false });
@@ -550,7 +594,7 @@ export function crearNube(m) {
 
 function parada(m) {
   const grupo = new THREE.Group();
-  const placa = pon(grupo, caja(0.9, 0.03, 0.9, 0.06), m.gris, 0, 0.015, 0, { sombra: false });
+  const placa = vivo(pon(grupo, caja(0.9, 0.03, 0.9, 0.06), m.gris, 0, 0.015, 0, { sombra: false }));
   // Una mano dibujada en el suelo: aquí actúa la persona.
   const mano = new THREE.Group();
   mano.position.y = 0.032;

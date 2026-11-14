@@ -6,7 +6,7 @@ import { updateCamera } from './kit/camera.js';
 import { createDioramaOrbit } from './kit/orbit.js';
 import { STAND, mixPose, walkPose } from './kit/poses.js';
 import { createStrokedToon } from './kit/stroked-toon.js';
-import { crearDecorado, crearTarjeta } from './decorado.js';
+import { crearDecorado, crearTarjeta, fusionarEstaticos } from './decorado.js';
 import { DURACION, Guion } from './guion.js';
 import { crearMateriales } from './materiales.js';
 import { crearMascota, ponerPose, ZANCADA } from './mascota.js';
@@ -97,6 +97,8 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true } = {}) {
 
   const decorado = crearDecorado(m);
   scene.add(decorado.grupo);
+  // Lo fijo se fusiona por material después de calcular los sitios del material (spotMundo), que ya no cambian.
+  decorado.fusiones = fusionarEstaticos(decorado.grupo);
   const { puestos } = decorado;
 
   const corredor = crearMascota(m, { nombre: 'corredor', halo: false });
@@ -203,7 +205,8 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true } = {}) {
     const rotulo = s.error ?? (s.trabajando ? s.aviso : null);
     if (rotulo && s.puesto && local > 0.2) {
       const marco = marcoDePuesto(s.puesto);
-      decorado.nube.grupo.position.set(marco.x, 1.85, marco.z);
+      decorado.nube.grupo.position.set(marco.x, 1.95, marco.z);
+      decorado.nube.grupo.scale.setScalar(1.5);
       decorado.nube.poner({ visible: true, rotulo, error: Boolean(s.error), t, camara: camera });
     } else decorado.nube.poner({ visible: false });
 

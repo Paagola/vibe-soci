@@ -52,8 +52,8 @@
           entities: escena.entities,
           guion: escena.guion,
           marcas,
-          freeze(t) { diorama.congelar(t); },
-          draw(t) { diorama.congelar(t); },
+          freeze(t) { diorama.congelar(t, false); },
+          draw(t) { diorama.congelar(t, false); },
         };
         diorama.congelar(Number(p.get('t') ?? 0));
         window.__dioramaReady = true;

@@ -251,12 +251,12 @@ export function montarDiorama(contenedor, opciones = {}) {
     cargar,
     aplicarEstado,
     /** Congela la escena en `t` (segundos de escena) y dibuja de inmediato. */
-    congelar(t) {
+    congelar(t, recolocar = true) {
       pausado = true;
       parar();
       reloj = t;
       if (escena) {
-        escena.orbit?.reset();
+        if (recolocar) escena.orbit?.reset();
         escena.dibujar(t);
       }
     },
