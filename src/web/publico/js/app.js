@@ -1,18 +1,19 @@
 // Arranque del frontend: panel lateral (secciones, modo simulado y vías) y enrutado por #hash.
 import { api } from './api.js';
-import { iniciarCristal } from './cristal.js';
+import { estadoDePaso } from './orden.js';
 import { avisar, bloqueError, h, reemplazar } from './ui.js';
 import { vistaEncargo } from './vistas/encargo.js';
-import { vistaEncargos } from './vistas/encargos.js';
 import { vistaInicio } from './vistas/inicio.js';
 import { vistaNuevoLocal } from './vistas/local.js';
 import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
 import { vistaNuevoEncargo } from './vistas/nuevoEncargo.js';
+import { vistaPanel } from './vistas/panel.js';
 import { vistaPieza } from './vistas/pieza.js';
 
 // [patrón, crear vista, sección del panel lateral que se marca]
 const RUTAS = [
-  [/^#?\/?$/, () => vistaEncargos(), 'posts'],
+  [/^#?\/?$/, () => vistaPanel(), 'inicio'],
+  [/^#\/posts$/, () => vistaEncargo(), 'posts'],
   [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
   [/^#\/encargo\/([a-z0-9-]+)$/, (proyecto) => vistaEncargo(proyecto), 'posts'],
   [/^#\/local$/, () => vistaNuevoLocal(), 'local'],
@@ -47,7 +48,22 @@ async function enrutar() {
     reemplazar(contenedor, vistaActual.nodo);
     window.scrollTo(0, 0);
   } catch (error) {
-    reemplazar(contenedor, bloqueError(error), h('p', {}, h('a', { href: '#/' }, 'Volver a los posts')));
+    reemplazar(contenedor, bloqueError(error), h('p', {}, h('a', { href: '#/' }, 'Volver al inicio')));
+  }
+  actualizarPendientes();
+}
+
+/** El número junto a «Posts»: los encargos que esperan una decisión tuya en este modo. */
+async function actualizarPendientes() {
+  const marca = document.getElementById('nav-pendientes');
+  try {
+    const { encargos } = await api('GET', '/encargos');
+    const pendientes = encargos.filter((e) => estadoDePaso(e.paso, e).clase === 'chip-toca').length;
+    marca.hidden = pendientes === 0;
+    marca.textContent = String(pendientes);
+    marca.title = `${pendientes} esperan tu decisión`;
+  } catch {
+    marca.hidden = true;
   }
 }
 
@@ -78,7 +94,7 @@ async function iniciarCabecera() {
       const { simulado } = await api('PUT', '/estudio', { simulado: interruptor.checked });
       pintar(simulado);
       avisar(simulado ? 'Modo simulado: nada gasta y todo se guarda aparte.' : 'Modo real: el director y la foto nueva usan tus claves y sus topes.');
-      // Cada modo tiene sus propios encargos y piezas: se vuelve a la lista para no seguir en uno del otro modo.
+      // Cada modo tiene sus propios encargos y piezas: se vuelve al inicio para no seguir en uno del otro modo.
       if (location.hash === '' || location.hash === '#/') enrutar();
       else location.hash = '#/';
     } catch (error) {
@@ -89,7 +105,5 @@ async function iniciarCabecera() {
 }
 
 window.addEventListener('hashchange', enrutar);
-// La lente del filo del panel lateral (refracción del cristal líquido).
-iniciarCristal(document.querySelector('.panel-lateral'));
 iniciarCabecera().catch((error) => avisar(`No puedo hablar con el servidor: ${error.message}`, 'error'));
 enrutar();

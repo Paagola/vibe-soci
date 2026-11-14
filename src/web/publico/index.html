@@ -3,50 +3,61 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Estudio · SOCIETY</title>
-    <link rel="preload" href="/fuentes/dynapuff-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <meta name="color-scheme" content="dark" />
+    <title>Estudio de contenido</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='10' fill='%231033ef'/%3E%3Cpath d='M16 7c.9 5.6 3.4 8.1 9 9-5.6.9-8.1 3.4-9 9-.9-5.6-3.4-8.1-9-9 5.6-.9 8.1-3.4 9-9Z' fill='%23fff'/%3E%3C/svg%3E" />
     <link rel="preload" href="/fuentes/nunito-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/estilos.css" />
+    <!-- three.js r170 vendorizado para el diorama del panel (js/diorama/, se carga solo cuando el hueco se ve). -->
+    <script type="importmap">{ "imports": { "three": "/vendor/three/three.module.min.js", "three/addons/": "/vendor/three/addons/" } }</script>
     <script type="module" src="/js/app.js"></script>
   </head>
   <body>
-    <!-- Panel lateral fijo: la navegación del estudio, en cristal sobre la pared. En móvil, la navegación pasa a la barra de pestañas de abajo (la de S05). -->
+    <!-- Barra lateral estrecha, solo iconos (el nombre de cada sección sale al pasar o al enfocar). En móvil, barra de pestañas abajo. -->
     <aside class="panel-lateral" aria-label="Estudio">
-      <a class="marca" href="#/" aria-label="Estudio de contenido, inicio">
-        <span class="marca-logo">estudio</span>
-        <span class="marca-sub">Society · contenido</span>
+      <a class="isotipo" href="#/" aria-label="Estudio de contenido, inicio">
+        <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#1033ef" /><path d="M16 7c.9 5.6 3.4 8.1 9 9-5.6.9-8.1 3.4-9 9-.9-5.6-3.4-8.1-9-9 5.6-.9 8.1-3.4 9-9Z" fill="#fff" /></svg>
       </a>
 
       <nav class="navegacion" aria-label="Secciones">
-        <p class="nav-titulo">Orden única</p>
-        <a href="#/" data-seccion="posts">
+        <a href="#/" data-seccion="inicio" class="nav-inicio">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1Z" /></svg>
+          <span class="nav-texto">Inicio</span>
+        </a>
+        <a href="#/posts" data-seccion="posts" class="nav-posts">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2" /><rect x="13.5" y="3.5" width="7" height="7" rx="2" /><rect x="3.5" y="13.5" width="7" height="7" rx="2" /><rect x="13.5" y="13.5" width="7" height="7" rx="2" /></svg>
           <span class="nav-texto">Posts</span>
+          <span class="nav-cuenta" id="nav-pendientes" hidden></span>
         </a>
+        <span class="nav-separador" aria-hidden="true"></span>
         <a href="#/nuevo" data-seccion="nuevo" class="nav-crear">
           <span class="icono-crear" aria-hidden="true"><svg class="icono" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg></span>
           <span class="nav-texto">Nuevo post</span>
         </a>
-        <a href="#/local" data-seccion="local">
+        <a href="#/local" data-seccion="local" class="nav-local">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5V19a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-8.5" /><path d="M3 9.5 4.8 4.7A1 1 0 0 1 5.7 4h12.6a1 1 0 0 1 .9.7L21 9.5a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0Z" /><path d="M10 20v-5h4v5" /></svg>
           <span class="nav-texto">Nuevo local</span>
         </a>
-        <p class="nav-titulo">Otras herramientas</p>
-        <a href="#/piezas" data-seccion="piezas" class="antiguo" title="El generador del MVP: Gemini dirige e Higgsfield genera la imagen con el texto dentro">
+        <span class="nav-separador" aria-hidden="true"></span>
+        <a href="#/piezas" data-seccion="piezas" class="antiguo">
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5" /><path d="M3.5 3.5v5h5" /><path d="M12 7.5V12l3 2" /></svg>
           <span class="nav-texto">Generador antiguo</span>
         </a>
       </nav>
+    </aside>
 
-      <div class="panel-pie">
-        <div class="franja-simulado" role="status"><b>Modo simulado</b> Nada gasta; todo se guarda aparte, en datos-simulado/</div>
+    <!-- Barra superior: el producto a la izquierda y, siempre a la vista, el modo (lo que decide si se gasta). -->
+    <header class="barra-superior">
+      <p class="producto"><b>Estudio</b> <span>de contenido</span></p>
+      <div class="modo">
+        <div class="franja-simulado" role="status"><b>Simulado</b> <span>nada gasta · todo va a datos-simulado/</span></div>
+        <span id="estado-claves" class="estado-claves"></span>
         <label class="interruptor" title="En modo simulado nada gasta: el director, el generador y el revisor son falsos y todo se guarda aparte (datos-simulado/)">
           <input type="checkbox" id="modo-simulado" />
           <span>Simulado</span>
         </label>
-        <span id="estado-claves" class="estado-claves"></span>
       </div>
-    </aside>
+    </header>
 
     <main id="vista" class="vista"></main>
     <div id="avisos" class="avisos" aria-live="polite"></div>

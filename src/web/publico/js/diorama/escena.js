@@ -361,6 +361,8 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true } = {}) {
     orbit?.dispose();
     look.dispose();
     renderer.dispose();
+    // El hueco se vuelve a montar en cada pantalla: se suelta el contexto WebGL para no acumularlos.
+    renderer.forceContextLoss();
     scene.traverse((o) => o.geometry?.dispose?.());
   }
 

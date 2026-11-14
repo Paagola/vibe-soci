@@ -21,7 +21,7 @@ const ESTILO = `
 .diorama-controles button:hover{background:rgb(16 18 28 / .92)}
 .diorama-controles button:focus-visible{outline:2px solid #1033ef;outline-offset:2px}
 .diorama-controles svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.diorama-estado{position:absolute;left:10px;bottom:8px;margin:0;font:600 11px/1.3 Nunito,system-ui,sans-serif;color:rgb(242 241 236 / .62);pointer-events:none;max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.diorama-estado{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 `;
 
 const ICONO = {
@@ -35,9 +35,27 @@ const porDefecto = () => fetch('/api/procesos', { headers: { Accept: 'applicatio
   return r.json();
 });
 
+/**
+ * El estado que necesita la escena es el de GET /api/procesos (con el recorrido de cada encargo). Si quien monta da un
+ * `obtenerEstado` que no lo trae (p. ej. el resumen de /api/encargos + /api/panel del hueco), se usa /api/procesos a
+ * partir de la primera consulta, para no pedir dos veces lo mismo.
+ */
+function estadoConRecorrido(obtener) {
+  if (obtener === porDefecto) return porDefecto;
+  let propio = true;
+  return async () => {
+    if (!propio) return porDefecto();
+    const estado = await obtener();
+    const encargos = estado?.encargos;
+    if (Array.isArray(encargos) && encargos.every((e) => Array.isArray(e.recorrido))) return estado;
+    propio = false;
+    return porDefecto();
+  };
+}
+
 export function montarDiorama(contenedor, opciones = {}) {
   const {
-    obtenerEstado = porDefecto,
+    obtenerEstado: obtenerDado = porDefecto,
     intervaloMs = 2000,
     fpsMax = 30,
     maxDpr = 1.5,
@@ -46,6 +64,7 @@ export function montarDiorama(contenedor, opciones = {}) {
     /** Para QA: carga ya, sin esperar a que se vea, y no pide estado (se lo da quien llama). */
     manual = false,
   } = opciones;
+  const obtenerEstado = estadoConRecorrido(obtenerDado);
 
   if (!document.getElementById('diorama-estilo')) {
     const estilo = document.createElement('style');
@@ -247,6 +266,10 @@ export function montarDiorama(contenedor, opciones = {}) {
     },
     reiniciarMedidas() {
       Object.assign(medidas, { fotogramas: 0, msDibujo: 0, desde: performance.now() });
+    },
+    /** El contrato del hueco del panel (diorama-hueco.js) lo llama así al cambiar de pantalla. */
+    desmontar() {
+      this.destruir();
     },
     destruir() {
       destruido = true;
