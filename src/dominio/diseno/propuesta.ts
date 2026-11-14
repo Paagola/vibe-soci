@@ -56,7 +56,7 @@ const CapaFoto = z.object({
   tratamiento: z.enum(['natural', 'duotono', 'trama', 'desenfocada']).optional().describe('La foto del plato va «natural». Los otros, para una foto que acompaña.'),
   tinta: Token.optional().describe('duotono y trama: la tinta.'),
   papel: Token.optional().describe('duotono: el color de las luces. trama: el del papel (sin él, se ve lo de debajo).'),
-  velo: z.enum(['no', 'arriba', 'abajo']).optional().describe('Oscurece ese lado de la foto para que se lea un texto. Solo si hace falta.'),
+  velo: z.enum(['no', 'arriba', 'abajo', 'ambos']).optional().describe('Oscurece ese lado de la foto (o los dos) para que se lea un texto. Solo si hace falta.'),
   colorVelo: Token.optional(),
 });
 
@@ -90,6 +90,8 @@ const CapaTexto = z.object({
   tinta: NivelDeTinta.optional(),
   registro: Token.optional().describe('Segunda impresión desplazada, en este color.'),
   corte: z.boolean().optional().describe('La palabra partida en dos mitades que se deslizan. Solo si el plato también se parte o se corta.'),
+  plano: z.enum(['fondo', 'frente']).optional().describe('relacion «aparte»: «fondo» lo pinta por debajo de los demás textos (un acento que el titular pisa).'),
+  entre: z.array(z.number().int().min(1).max(FILAS)).length(2).optional().describe('relacion «detras»: filas entre las que se puede mover al ajustar cuánto lo tapa el plato.'),
 });
 
 const Plano = z.enum(['fondo', 'frente']).describe('fondo: por detrás del plato. frente: por delante.');
@@ -166,15 +168,70 @@ const CapaTextura = z.object({
 export const CapaPropuesta = z.discriminatedUnion('tipo', [CapaFondo, CapaFoto, CapaPlato, CapaTexto, CapaPatron, CapaSello, CapaAnotacion, CapaTrazo, CapaForma, CapaTextura]);
 export type CapaPropuesta = z.infer<typeof CapaPropuesta>;
 
-export const PropuestaDeDiseno = z.object({
+/**
+ * F3.1 (14/11): el director ya no coloca. Elige un MECANISMO editorial, los textos, el énfasis y unos pocos parámetros;
+ * el código coloca las capas a partir del mapa de la foto (dominio/diseno/mecanismos.ts), con el salto de escala, el
+ * contraste y el cruce con el plato resueltos por construcción. La maqueta capa a capa («capas») sigue existiendo para
+ * escribirla a mano o en pruebas, pero no se le pide al modelo: es justo lo que hacía mal (elegía tamaños prudentes y
+ * lo apilaba todo «aparte»).
+ */
+export const Mecanismo = z
+  .enum(['TITULAR_DETRAS', 'TITULAR_CON_ACENTO', 'ANOTACIONES'])
+  .describe(
+    'TITULAR_DETRAS: el titular, monumental, a todo lo ancho, con el plato tapando su parte baja (o alta). ' +
+      'TITULAR_CON_ACENTO: lo mismo, más una palabra o dos en una voz de acento (manuscrita o didona) que se apoya en el titular, escalonada: es el mecanismo de las referencias con un titular de florituras. ' +
+      'ANOTACIONES: el titular grande en la zona libre y de una a tres anotaciones a mano con flecha que señalan elementos reales del plato.',
+  );
+export type Mecanismo = z.infer<typeof Mecanismo>;
+
+export const Composicion = z.object({
+  mecanismo: Mecanismo,
+  titular: Id.describe('Clave de «textos» del titular: corto (de una a tres palabras se leen monumentales).'),
+  acento: Id.optional().describe('TITULAR_CON_ACENTO: clave del texto en la voz de acento (una a tres palabras, de los datos).'),
+  apoyo: Id.optional().describe('Clave de una línea de apoyo pequeña (opcional).'),
+  firma: Id.optional().describe('Clave de la firma: el nombre del local (opcional).'),
+  lado: z.enum(['arriba', 'abajo']).optional().describe('Dónde va el titular respecto al plato. Sin él, donde haya más aire.'),
+  sangra: z.boolean().optional().describe('El titular se sale por los dos bordes (más tensión; se corta en el canto).'),
+  tinta: NivelDeTinta.optional().describe('Tinta del titular.'),
+  sello: z
+    .object({ lineas: z.array(Id).min(1).max(2).describe('Claves de «textos»: un dato real corto (p. ej. un año que conste).') })
+    .optional()
+    .describe('Sello con un dato real, donde quepa. Opcional.'),
+  anotaciones: z
+    .array(z.object({ texto: Id, apunta: Fraccion.describe('Punto del plato al que señala: 0,0 su esquina de arriba a la izquierda; 1,1 la de abajo a la derecha.') }))
+    .max(3)
+    .optional()
+    .describe('ANOTACIONES: de una a tres. Con los otros mecanismos, una como mucho.'),
+});
+export type Composicion = z.infer<typeof Composicion>;
+
+const BasePropuesta = z.object({
   idea: z.string().min(12).max(280).describe('La idea en una frase: de qué hecho del plato o del local nace la pieza.'),
   foco: z.enum(['PLATO', 'TITULAR']).describe('Lo único que manda en la pieza.'),
   seToma: z.array(z.string().min(3).max(140)).max(4).describe('Qué se toma de la referencia (oficio: jerarquía, mecanismo, tratamiento).'),
   noSeCopia: z.array(z.string().min(3).max(140)).max(4).describe('Qué no se copia de la referencia (sus textos, su marca, su plato).'),
   textos: z.array(TextoPropuesto).min(1).max(7),
-  capas: z.array(CapaPropuesta).min(2).max(16).describe('De fondo a frente.'),
+  excepcion: z
+    .string()
+    .min(10)
+    .max(240)
+    .optional()
+    .describe('Solo si a propósito la pieza no cruza el plato o no tiene salto de escala: por qué. Lo lee una persona.'),
 });
+
+/** Lo que escribe el director (el modelo): sin capas. */
+export const PropuestaDelDirector = BasePropuesta.extend({ composicion: Composicion });
+export type PropuestaDelDirector = z.infer<typeof PropuestaDelDirector>;
+
+/** Una propuesta: con «composicion» (coloca el código) o con «capas» (maqueta escrita a mano). */
+export const PropuestaDeDiseno = BasePropuesta.extend({
+  composicion: Composicion.optional(),
+  capas: z.array(CapaPropuesta).min(2).max(16).optional().describe('De fondo a frente.'),
+}).refine((p) => Boolean(p.composicion) !== Boolean(p.capas), 'Una propuesta lleva «composicion» (coloca el código) o «capas» (maqueta a mano), no las dos ni ninguna.');
 export type PropuestaDeDiseno = z.infer<typeof PropuestaDeDiseno>;
+
+/** La propuesta ya colocada, capa a capa: lo que compila compilarIntencion. */
+export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas'> & { capas: CapaPropuesta[] };
 
 // ------------------------------------------------------------------ Hechos y comprobación de los textos
 
@@ -371,6 +428,15 @@ function aFracciones(celdas: Celdas, sangra = false): { x: number; y: number; w:
   return { x: r4(x), y: r4(r.y / LIENZO.alto), w: r4(w), h: r4(r.h / LIENZO.alto) };
 }
 
+/** Entre qué alturas puede moverse un texto «detras»: sus filas «entre», y nunca fuera de la zona segura (salvo si sangra). */
+function zonaDe(entre: number[] | undefined, sangra: boolean | undefined): { zona?: { desde: number; hasta: number } } {
+  if (!entre) return sangra ? {} : { zona: ZONA_SEGURA_VERTICAL };
+  const r = aFracciones({ col: [1, 1], fila: [entre[0]!, entre[1]!] });
+  const desde = sangra ? r.y : Math.max(r.y, ZONA_SEGURA_VERTICAL.desde);
+  const hasta = sangra ? r4(r.y + r.h) : Math.min(r4(r.y + r.h), ZONA_SEGURA_VERTICAL.hasta);
+  return { zona: { desde, hasta } };
+}
+
 /** Un texto que toca la fila 1 o la 16 se sale de la zona segura (márgenes más el recorte de 4:5). */
 const fueraDeZonaSegura = (c: Celdas) => Math.min(c.fila[0]!, c.fila[1]!) <= 1 || Math.max(c.fila[0]!, c.fila[1]!) >= FILAS;
 
@@ -386,7 +452,7 @@ export interface Compilacion {
  * intención. Comprueba lo que se puede comprobar sin pintar (que las voces, los colores y los textos existen, que lo que
  * depende de la máscara tenga máscara) y deja para el compositor lo que hay que medir.
  */
-export function compilarIntencion(p: PropuestaDeDiseno, c: ContextoDeCompilacion): Compilacion {
+export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compilacion {
   const problemas: string[] = [];
   const claves = new Set(p.textos.map((t) => t.clave));
   const color = (token: string, donde: string): string => {
@@ -465,15 +531,16 @@ export function compilarIntencion(p: PropuestaDeDiseno, c: ContextoDeCompilacion
         });
         if (x.velo && x.velo !== 'no') {
           const tono = color(x.colorVelo ?? '@', 'velo de la foto');
-          const abajo = x.velo === 'abajo';
-          poner(Plano3.FOTO, {
-            id: idLibre('velo'),
-            tipo: 'degradado',
-            forma: 'lineal',
-            caja: abajo ? { x: 0, y: 0.55, w: 1, h: 0.45 } : { x: 0, y: 0, w: 1, h: 0.45 },
-            angulo: 90,
-            paradas: abajo ? [{ en: 0, color: tono, opacidad: 0 }, { en: 1, color: tono, opacidad: 0.86 }] : [{ en: 0, color: tono, opacidad: 0.86 }, { en: 1, color: tono, opacidad: 0 }],
-          });
+          for (const abajo of x.velo === 'ambos' ? [false, true] : [x.velo === 'abajo']) {
+            poner(Plano3.FOTO, {
+              id: idLibre('velo'),
+              tipo: 'degradado',
+              forma: 'lineal',
+              caja: abajo ? { x: 0, y: 0.55, w: 1, h: 0.45 } : { x: 0, y: 0, w: 1, h: 0.45 },
+              angulo: 90,
+              paradas: abajo ? [{ en: 0, color: tono, opacidad: 0 }, { en: 1, color: tono, opacidad: 0.86 }] : [{ en: 0, color: tono, opacidad: 0.86 }, { en: 1, color: tono, opacidad: 0 }],
+            });
+          }
         }
         // La silueta del plato de una foto a sangre: no se pinta, pero deja que los textos se relacionen con él.
         if (natural && x.encuadre === 'sangre' && sujetoFantasma && !usados.has('plato')) {
@@ -529,7 +596,7 @@ export function compilarIntencion(p: PropuestaDeDiseno, c: ContextoDeCompilacion
         const relacion = haySujeto ? x.relacion : 'aparte';
         if (x.relacion !== 'aparte' && !haySujeto) problemas.push(`${donde}: la relación «${x.relacion}» necesita el plato recortado o una foto a sangre con máscara.`);
         if (relacion === 'aparte') {
-          poner(Plano3.FRENTE, { id: x.id, ...comun });
+          poner(x.plano === 'fondo' ? Plano3.DETRAS : Plano3.FRENTE, { id: x.id, ...comun });
           if (haySujeto) noSolapar.push(x.id);
           relaciones.push({ tipo: 'contrasteMinimo', texto: x.id, ratio: x.ajuste === 'fijo' ? 4.5 : 3 });
         } else if (relacion === 'delante') {
@@ -541,7 +608,7 @@ export function compilarIntencion(p: PropuestaDeDiseno, c: ContextoDeCompilacion
           // También con la silueta de una foto a sangre: «cruza» solo pedía un mínimo, y un titular tapado casi entero
           // pasaba sin aviso. «detras» lo sube o lo baja hasta que el plato tape entre el 20 y el 45 % de su franja
           // más tapada, que es lo que decide si se lee. Sin salirse de la zona segura al moverlo (si no se puede, avisa).
-          relaciones.push({ tipo: 'detras', texto: x.id, sujeto: 'plato', cobertura: [0.2, 0.45], ...(x.sangra ? {} : { zona: ZONA_SEGURA_VERTICAL }) });
+          relaciones.push({ tipo: 'detras', texto: x.id, sujeto: 'plato', cobertura: [0.2, 0.45], ...zonaDe(x.entre, x.sangra) });
           if (relacion === 'contorno') {
             const { tinta: _sinTinta, ...limpio } = comun as Record<string, unknown>;
             poner(Plano3.FRENTE, { id: idLibre(`${x.id}-contorno`), ...limpio, contorno: 3, recortarCon: { sujeto: 'plato', modo: 'dentro' }, opacidad: 0.92 });

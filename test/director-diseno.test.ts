@@ -18,7 +18,7 @@ import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFi
 import { ClienteGemini } from '../src/adaptadores/gemini/ClienteGemini.js';
 import { DirectorDisenoGemini } from '../src/adaptadores/gemini/DirectorDisenoGemini.js';
 import { MedidorDeFotoSharp } from '../src/adaptadores/imagen/MedidorDeFotoSharp.js';
-import { DirectorDisenoSimulado, titularDeLaNota } from '../src/adaptadores/simulado/DisenoSimulado.js';
+import { CriticoDisenoSimulado, DirectorDisenoSimulado, titularDeLaNota } from '../src/adaptadores/simulado/DisenoSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
 import { avisoDeCruce, coloresDisponibles, proponerDiseno, vocesDisponibles } from '../src/aplicacion/diseno/proponerDiseno.js';
 import { avanzar, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
@@ -27,7 +27,7 @@ import { registrarReferencia } from '../src/aplicacion/referencias/registrarRefe
 import { RAIZ } from '../src/config.js';
 import { Intencion, Tokens } from '../src/dominio/diseno/intencion.js';
 import { construirMapa, mapaEnTexto, rectangulosLibres, type MapaDeFoto } from '../src/dominio/diseno/mapaDeFoto.js';
-import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, PropuestaDeDiseno, type ContextoDeCompilacion, type HechosDeLaPieza } from '../src/dominio/diseno/propuesta.js';
+import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, PropuestaDeDiseno, type ContextoDeCompilacion, type HechosDeLaPieza, type Maqueta } from '../src/dominio/diseno/propuesta.js';
 import { Marca } from '../src/dominio/modelos.js';
 import type { ActivoDisponible } from '../src/puertos/Compositor.js';
 import type { MedidorDeFoto } from '../src/puertos/DirectorDeDiseno.js';
@@ -42,8 +42,11 @@ const hechos: HechosDeLaPieza = {
 };
 
 /** Una propuesta con casi todo lo nuevo: foto a sangre con el titular detrás del plato, sello, anotación con flecha. */
-function propuestaRica(): PropuestaDeDiseno {
-  return PropuestaDeDiseno.parse({
+/** Una maqueta escrita capa a capa (sin mecanismo): la sigue compilando compilarIntencion. */
+const maqueta = (x: unknown): Maqueta => PropuestaDeDiseno.parse(x) as Maqueta;
+
+function propuestaRica(): Maqueta {
+  return maqueta({
     idea: 'La gamba asoma por delante de su nombre, como sale de la brasa.',
     foco: 'PLATO',
     seToma: ['El producto tapa parte de la palabra grande.'],
@@ -63,6 +66,12 @@ function propuestaRica(): PropuestaDeDiseno {
       { tipo: 'texto', id: 'firma', texto: 'firma', voz: 'firma', caja: { col: [1, 12], fila: [15, 15] }, ajuste: 'fijo', tamano: 34, color: '@hueso', relacion: 'aparte' },
     ],
   });
+}
+
+/** Una propuesta como la escribe ahora el director: mecanismo y textos, sin capas. */
+function conMecanismo(): PropuestaDeDiseno {
+  const { capas: _c, ...base } = propuestaRica();
+  return PropuestaDeDiseno.parse({ ...base, composicion: { mecanismo: 'TITULAR_DETRAS', titular: 'titular', apoyo: 'brasa', firma: 'firma', anotaciones: [{ texto: 'sal', apunta: { x: 0.4, y: 0.6 } }] } });
 }
 
 const contexto = (cambios: Partial<ContextoDeCompilacion> = {}): ContextoDeCompilacion => ({
@@ -131,7 +140,7 @@ describe('F3 · de la propuesta a la intención', () => {
 
   it('dice lo que no se puede hacer: color o voz fuera de la lista, plato recortado sin máscara, sin decir qué toma de la referencia', () => {
     const p = propuestaRica();
-    const mal = PropuestaDeDiseno.parse({
+    const mal = maqueta({
       ...p,
       seToma: [],
       capas: [...p.capas.slice(0, 2), { tipo: 'plato', caja: { col: [2, 11], fila: [5, 12] }, ancho: 0.7 }, { tipo: 'texto', id: 'x', texto: 'titular', voz: 'didona', caja: { col: [1, 12], fila: [3, 5] }, ajuste: 'ancho', color: '@oro', relacion: 'aparte' }],
@@ -146,14 +155,14 @@ describe('F3 · de la propuesta a la intención', () => {
   it('un texto en la fila 1 o la 16 se sale de la zona segura (salvo un titular que sangra)', () => {
     const p = propuestaRica();
     const capas = p.capas.map((c) => (c.tipo === 'texto' && c.id === 'firma' ? { ...c, caja: { col: [1, 12], fila: [16, 16] } } : c));
-    assert.match(compilarIntencion(PropuestaDeDiseno.parse({ ...p, capas }), contexto()).problemas.join(), /filas 1 y 16/);
+    assert.match(compilarIntencion(maqueta({ ...p, capas }), contexto()).problemas.join(), /filas 1 y 16/);
     const sangra = p.capas.map((c) => (c.tipo === 'texto' && c.id === 'titular' ? { ...c, caja: { col: [1, 12], fila: [1, 5] }, sangra: true } : c));
-    assert.deepEqual(compilarIntencion(PropuestaDeDiseno.parse({ ...p, capas: sangra }), contexto()).problemas, []);
+    assert.deepEqual(compilarIntencion(maqueta({ ...p, capas: sangra }), contexto()).problemas, []);
   });
 
   it('avisa si ningún texto toca al plato (titular encima y foto debajo: la plantilla)', () => {
     const p = propuestaRica();
-    const apilada = PropuestaDeDiseno.parse({ ...p, capas: p.capas.filter((c) => c.tipo !== 'anotacion').map((c) => (c.tipo === 'texto' ? { ...c, relacion: 'aparte' } : c)) });
+    const apilada = maqueta({ ...p, capas: p.capas.filter((c) => c.tipo !== 'anotacion').map((c) => (c.tipo === 'texto' ? { ...c, relacion: 'aparte' } : c)) });
     assert.match(avisoDeCruce(apilada, true) ?? '', /^CRUCE/);
     assert.equal(avisoDeCruce(apilada, false), undefined, 'sin máscara no se le puede pedir');
     assert.equal(avisoDeCruce(p, true), undefined);
@@ -246,17 +255,68 @@ describe('F3 · el caso de uso: colores, voces y reintento', () => {
     assert.ok(r.intencion.tokens.colores.plato, 'y el color medido también');
   });
 
-  it('un aviso de oficio se devuelve una vez; si sigue, se apunta y no impide componer', async () => {
-    const director = new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]);
-    let vueltas = 0;
-    const r = await proponerDiseno(
-      { director, medidor, probar: async () => (vueltas++, { errores: [], avisos: ['JERARQUIA: No hay salto de escala.'] }) },
+  it('el salto de escala y el cruce son obligatorios si la foto lo permite, salvo una excepción razonada', async () => {
+    const jerarquia = { errores: [], avisos: ['JERARQUIA: No hay salto de escala.'] };
+    let r = await proponerDiseno(
+      { director: new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]), medidor, probar: async () => jerarquia },
       { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens, referencia: { id: 'ref-post-30' } },
     );
-    assert.equal(vueltas, 2);
-    assert.equal(director.encargos.length, 2);
+    assert.match(r.problemas.join(), /^JERARQUIA: .*obligatorio/);
+    const conExcepcion = maqueta({ ...propuestaRica(), excepcion: 'El dato del origen pesa tanto como el plato: es a propósito.' });
+    r = await proponerDiseno(
+      { director: new DirectorDisenoSimulado([conExcepcion, conExcepcion]), medidor, probar: async () => jerarquia },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens, referencia: { id: 'ref-post-30' } },
+    );
     assert.deepEqual(r.problemas, []);
-    assert.deepEqual(r.avisos, ['JERARQUIA: No hay salto de escala.']);
+    assert.deepEqual(r.avisos, ['JERARQUIA: No hay salto de escala.'], 'con la razón escrita, vuelve a ser un aviso');
+    // Sin máscara no se puede exigir: queda en aviso.
+    r = await proponerDiseno(
+      { director: new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]), medidor, probar: async () => jerarquia },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto: { ...foto, rutaMascara: undefined } as unknown as ActivoDisponible, hechos, tokensMarca: tokens, referencia: { id: 'ref-post-30' } },
+    );
+    assert.ok(!r.problemas.some((x) => /JERARQUIA/.test(x)));
+  });
+
+  it('lo que el código sabe arreglar (contraste, escala) lo arregla sin volver a llamar al director', async () => {
+    const director = new DirectorDisenoSimulado();
+    const pruebas: Intencion[] = [];
+    const r = await proponerDiseno(
+      {
+        director,
+        medidor,
+        probar: async (i) => {
+          pruebas.push(i);
+          return pruebas.length === 1 ? { errores: ['CONTRASTE: «firma» tiene un contraste de 1.4:1 con su fondo en su peor zona; se pide al menos 4.5:1.'], avisos: [] } : { errores: [], avisos: [] };
+        },
+      },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens },
+    );
+    assert.deepEqual(r.problemas, []);
+    assert.equal(director.encargos.length, 1, 'una sola llamada al director');
+    assert.match(r.intentos[0]!.arreglos.join(), /velo abajo y tinta @hueso para «firma»/);
+    assert.ok(r.intencion!.capas.some((c) => c.id.startsWith('velo')), 'la segunda prueba lleva el velo');
+  });
+
+  it('la crítica visual mira la pieza pintada y su corrección se adopta solo si pasa todo lo medible', async () => {
+    const corregida = { ...(await new DirectorDisenoSimulado().proponer({ hechos } as never)), composicion: { mecanismo: 'TITULAR_DETRAS' as const, titular: 'titular', firma: 'firma', sangra: true } };
+    const critico = new CriticoDisenoSimulado([{ llega: false, motivos: ['El titular no tiene tensión: que sangre.'], propuesta: corregida }]);
+    const r = await proponerDiseno(
+      { director: new DirectorDisenoSimulado(), critico, medidor, probar: async () => ({ errores: [], avisos: [], png: '/pieza.png' }) },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens },
+    );
+    assert.deepEqual(critico.piezas, ['/pieza.png']);
+    assert.deepEqual(r.critica, { llega: false, motivos: ['El titular no tiene tensión: que sangre.'], adoptada: true });
+    assert.equal(r.intentos.at(-1)?.origen, 'critica');
+    assert.equal(r.propuesta?.composicion?.sangra, true);
+    // Si la corrección no pasa, se queda la pieza que ya pasaba y la crítica se apunta como aviso.
+    const inventa = { ...corregida, textos: corregida.textos.map((t) => ({ ...t, texto: `${t.texto} casera` })) };
+    const r2 = await proponerDiseno(
+      { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado([{ llega: false, motivos: ['Falta tensión.'], propuesta: inventa }]), medidor, probar: async () => ({ errores: [], avisos: [], png: '/p.png' }) },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens },
+    );
+    assert.equal(r2.critica?.adoptada, false);
+    assert.deepEqual(r2.problemas, []);
+    assert.ok(r2.avisos.includes('CRITICA: Falta tensión.'));
   });
 
   it('el titular simulado sale literal de la nota, sin acabar en una palabra gramatical', () => {
@@ -271,7 +331,7 @@ describe('F3 · director de diseño con Gemini (fetch falso)', () => {
     const cuerpos: Array<{ systemInstruction: { parts: Array<{ text: string }> }; contents: Array<{ parts: Array<{ text?: string; inlineData?: { data: string } }> }> }> = [];
     const fetchFalso: typeof fetch = async (_url, init) => {
       cuerpos.push(JSON.parse(String(init?.body)));
-      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(propuestaRica()) }] } }] }), { status: 200 });
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(conMecanismo()) }] } }] }), { status: 200 });
     };
     const director = new DirectorDisenoGemini(new ClienteGemini('k', ['m'], { fetch: fetchFalso, dormir: async () => {} }), ['m']);
     const mapa = construirMapa(fotoSintetica());
@@ -281,7 +341,9 @@ describe('F3 · director de diseño con Gemini (fetch falso)', () => {
     );
     assert.equal(p.textos[0]?.clave, 'titular');
     const cuerpo = cuerpos[0]!;
-    assert.match(cuerpo.systemInstruction.parts[0]!.text, /"capas"/, 'el esquema del dialecto va en las instrucciones');
+    assert.match(cuerpo.systemInstruction.parts[0]!.text, /"composicion"/, 'el esquema del dialecto va en las instrucciones');
+    assert.match(cuerpo.systemInstruction.parts[0]!.text, /TITULAR_CON_ACENTO/);
+    assert.doesNotMatch(cuerpo.systemInstruction.parts[0]!.text, /"capas"/, 'el modelo ya no escribe capas');
     const partes = cuerpo.contents[0]!.parts;
     const texto = partes[0]!.text ?? '';
     assert.match(texto, /PLATO \(nota del dueño\): «Gamba roja de Palamós/);

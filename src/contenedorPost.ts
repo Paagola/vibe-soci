@@ -26,7 +26,7 @@ import { registradorDeUso } from './adaptadores/gemini/registroUso.js';
 import { RevisorVisualGemini } from './adaptadores/gemini/RevisorVisualGemini.js';
 import { MedidorDeFotoSharp } from './adaptadores/imagen/MedidorDeFotoSharp.js';
 import { SegmentadorVision } from './adaptadores/imagen/SegmentadorVision.js';
-import { DirectorDisenoSimulado } from './adaptadores/simulado/DisenoSimulado.js';
+import { CriticoDisenoSimulado, DirectorDisenoSimulado } from './adaptadores/simulado/DisenoSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from './adaptadores/simulado/FotoSimulada.js';
 import type { DepsDisenoPost } from './aplicacion/post/disenoDelPost.js';
 import type { DepsReferencias } from './aplicacion/referencias/dependencias.js';
@@ -114,7 +114,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       generador: new GeneradorFotoSimulado(),
       revisor: new RevisorVisualSimulado(),
       segmentador: new SegmentadorSimulado(),
-      disenador: { director: new DirectorDisenoSimulado(), medidor, describirFuente },
+      disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado(), medidor, describirFuente },
     };
   }
 
@@ -135,8 +135,13 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     revisor: geminiApiKey ? new RevisorVisualGemini(cliente(geminiApiKey, 'comprobacion-salida'), modelos) : revisorSinClave,
     segmentador: new SegmentadorVision(RAIZ),
     // Sin clave no hay director de diseño: INTENCION deja el borrador y se para, como antes de F3.
-    ...(geminiApiKey ? { disenador: { director: new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos), medidor, describirFuente } } : {}),
+    ...(geminiApiKey ? { disenador: { ...disenadorGemini(new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos)), medidor, describirFuente } } : {}),
   };
+}
+
+/** El mismo adaptador hace de director y de crítico: comparten las instrucciones fijas (y el prefijo que la API reutiliza). */
+function disenadorGemini(gemini: DirectorDisenoGemini) {
+  return { director: gemini, critico: gemini };
 }
 
 /** «anybody: grotesca, variable, ultracondensada, display»: cómo es cada fuente, para describírsela al director. */

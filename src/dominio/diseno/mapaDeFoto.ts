@@ -50,7 +50,7 @@ export interface EntradaDeMapa {
 }
 
 /** Una celda cuenta como del sujeto a partir de esta ocupación. */
-const OCUPACION_DE_SUJETO = 0.12;
+export const OCUPACION_DE_SUJETO = 0.12;
 /** Una celda está «tranquila» si su detalle no pasa de esta fracción del máximo de la foto. */
 const DETALLE_TRANQUILO = 0.3;
 
