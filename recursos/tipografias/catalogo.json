@@ -360,6 +360,62 @@
         ]
       },
       "nota": "Letra de rotulador para la tercera voz: una anotación corta junto a una flecha a mano. Nunca para un dato esencial ni para un texto largo."
+    },
+    {
+      "id": "bebas-neue",
+      "familia": "Bebas Neue",
+      "archivo": "bebas-neue/BebasNeue-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/bebasneue",
+      "descargada": "2026-11-14",
+      "clasificacion": [
+        "grotesca",
+        "condensada",
+        "display",
+        "solo-mayusculas"
+      ],
+      "nota": "Tipografía de marca de Torre de Vega (datos/locales/torre-de-vega/marca.json). Títulos. Solo tiene mayúsculas."
+    },
+    {
+      "id": "lora",
+      "familia": "Lora",
+      "archivo": "lora/Lora[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/lora",
+      "descargada": "2026-11-14",
+      "clasificacion": [
+        "serif",
+        "variable",
+        "texto"
+      ],
+      "ejes": {
+        "wght": [
+          400,
+          700
+        ]
+      },
+      "nota": "Tipografía de marca de Torre de Vega (datos/locales/torre-de-vega/marca.json). Textos."
+    },
+    {
+      "id": "montserrat",
+      "familia": "Montserrat",
+      "archivo": "montserrat/Montserrat[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/montserrat",
+      "descargada": "2026-11-14",
+      "clasificacion": [
+        "geometrica",
+        "variable",
+        "texto",
+        "versalitas"
+      ],
+      "ejes": {
+        "wght": [
+          100,
+          900
+        ]
+      },
+      "nota": "Tipografía de marca de Torre de Vega (datos/locales/torre-de-vega/marca.json). Rótulos."
     }
   ]
 }
