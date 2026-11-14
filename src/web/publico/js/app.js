@@ -3,7 +3,6 @@ import { api } from './api.js';
 import { estadoDePaso } from './orden.js';
 import { avisar, bloqueError, h, reemplazar } from './ui.js';
 import { vistaEncargo } from './vistas/encargo.js';
-import { vistaEncargos } from './vistas/encargos.js';
 import { vistaInicio } from './vistas/inicio.js';
 import { vistaNuevoLocal } from './vistas/local.js';
 import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
@@ -14,7 +13,7 @@ import { vistaPieza } from './vistas/pieza.js';
 // [patrón, crear vista, sección del panel lateral que se marca]
 const RUTAS = [
   [/^#?\/?$/, () => vistaPanel(), 'inicio'],
-  [/^#\/posts$/, () => vistaEncargos(), 'posts'],
+  [/^#\/posts$/, () => vistaEncargo(), 'posts'],
   [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
   [/^#\/encargo\/([a-z0-9-]+)$/, (proyecto) => vistaEncargo(proyecto), 'posts'],
   [/^#\/local$/, () => vistaNuevoLocal(), 'local'],

@@ -1,59 +1,84 @@
-// Posts: los encargos de la orden única, del más reciente al más antiguo, con lo que le toca a la persona en cada uno.
+// La lista de encargos (columna izquierda de Posts, al estilo lista + detalle) y el estado vacío de Posts.
 import { api } from '../api.js';
 import { estadoDePaso, fasesMini } from '../orden.js';
-import { conBoton, formatearFecha, h } from '../ui.js';
+import { conBoton, formatearFecha, h, reemplazar } from '../ui.js';
 
-export async function vistaEncargos() {
-  const [{ encargos }, { locales }, estudio] = await Promise.all([api('GET', '/encargos'), api('GET', '/locales'), api('GET', '/estudio')]);
-  const pendientes = encargos.filter((e) => estadoDePaso(e.paso, e).clase === 'chip-toca').length;
+const FILTROS = [
+  ['TODOS', 'Todos', () => true],
+  ['TOCA', 'Te toca', (e) => estadoDePaso(e.paso, e).clase === 'chip-toca'],
+  ['LISTOS', 'Listos', (e) => e.paso === 'HECHO'],
+];
 
-  const nodo = h(
-    'div',
-    {},
-    h(
-      'div',
-      { class: 'cabeza-pantalla' },
-      h(
-        'div',
-        {},
-        h('p', { class: 'sobretitulo' }, 'Orden única'),
-        h('h1', {}, 'Posts'),
-        h('p', { class: 'entrada' }, 'De la foto que sube el local con prisa a un post de estudio: foto nueva del mismo plato y diseño sobre una referencia. La orden se para dos veces para que confirmes.'),
+/**
+ * La columna con los encargos y sus filtros en píldora (Todos / Te toca / Listos, con su cuenta).
+ * `actualizar(encargos, seleccionado)` la vuelve a pintar sin perder el filtro elegido.
+ */
+export function listaDeEncargos() {
+  let filtro = 'TODOS';
+  let ultimo = { encargos: [], seleccionado: null };
+  const pildoras = h('div', { class: 'pildoras', role: 'tablist', 'aria-label': 'Filtrar los encargos' });
+  const filas = h('ol', { class: 'lista-encargos' });
+  const nodo = h('section', { class: 'columna-lista', 'aria-label': 'Encargos' }, h('header', { class: 'columna-lista-cabeza' }, h('h2', {}, 'Encargos'), pildoras), filas);
+
+  const pintar = () => {
+    const { encargos, seleccionado } = ultimo;
+    reemplazar(
+      pildoras,
+      FILTROS.map(([id, nombre, pasa]) =>
+        h(
+          'button',
+          {
+            type: 'button',
+            role: 'tab',
+            'aria-selected': String(id === filtro),
+            onclick: () => {
+              filtro = id;
+              pintar();
+            },
+          },
+          nombre,
+          h('span', { class: 'pildora-cuenta' }, String(encargos.filter(pasa).length)),
+        ),
       ),
-      // Sin posts, la acción primaria está en el estado vacío: un solo botón amarillo por pantalla.
-      encargos.length ? h('div', { class: 'acciones' }, pendientes ? h('span', { class: 'chip chip-toca' }, `${pendientes} esperan tu decisión`) : null, botonNuevo(locales)) : null,
-    ),
-    encargos.length === 0 ? vacio(locales, estudio) : h('div', { class: 'rejilla' }, encargos.map(tarjeta)),
-  );
-  return { nodo };
+    );
+    const visibles = encargos.filter(FILTROS.find(([id]) => id === filtro)[2]);
+    reemplazar(
+      filas,
+      visibles.length
+        ? visibles.map((e) => {
+            const estado = estadoDePaso(e.paso, e);
+            return h(
+              'li',
+              {},
+              h(
+                'a',
+                { class: `fila-encargo${e.proyecto === seleccionado ? ' elegida' : ''}`, href: `#/encargo/${e.proyecto}`, 'aria-current': e.proyecto === seleccionado ? 'true' : undefined },
+                e.miniatura ? h('img', { src: e.miniatura, alt: '', loading: 'lazy' }) : h('span', { class: 'sin-imagen' }),
+                h(
+                  'span',
+                  { class: 'fila-texto' },
+                  h('b', {}, e.plato),
+                  h('span', {}, `${e.nombreLocal ?? e.local} · ${formatearFecha(e.actualizadoEn)}`),
+                  h('span', { class: 'fila-estado' }, fasesMini(e.fase, h), h('span', { class: `chip ${estado.clase}`, title: estado.texto }, estado.texto)),
+                ),
+              ),
+            );
+          })
+        : h('li', { class: 'nota lista-vacia' }, 'Ninguno en este filtro.'),
+    );
+  };
+
+  return {
+    nodo,
+    actualizar: (encargos, seleccionado) => {
+      ultimo = { encargos, seleccionado };
+      pintar();
+    },
+  };
 }
 
-function botonNuevo(locales) {
-  return h('a', { class: 'boton primario', href: locales.length ? '#/nuevo' : '#/local' }, locales.length ? 'Nuevo post' : 'Crea antes un local');
-}
-
-function tarjeta(e) {
-  const estado = estadoDePaso(e.paso, e);
-  return h(
-    'a',
-    { class: 'tarjeta tarjeta-pieza tarjeta-encargo', href: `#/encargo/${e.proyecto}` },
-    h('div', { class: 'portada' }, e.miniatura ? h('img', { src: e.miniatura, alt: '', loading: 'lazy' }) : h('div', { class: 'sin-imagen' }), h('span', { class: `chip ${estado.clase}` }, estado.texto)),
-    h(
-      'div',
-      { class: 'tarjeta-cuerpo' },
-      h('p', { class: 'idea' }, e.plato),
-      h('p', { class: 'nota' }, `${e.nombreLocal ?? e.local} · ${formatearFecha(e.actualizadoEn)}`),
-      h(
-        'div',
-        { class: 'estado' },
-        fasesMini(e.fase, h),
-        h('span', { class: 'chips' }, e.referencia ? h('span', { class: 'chip', title: 'Referencia elegida' }, e.referencia) : null, e.intentos ? h('span', { class: 'chip', title: 'Fotos nuevas hechas' }, `${e.intentos} foto${e.intentos === 1 ? '' : 's'}`) : null),
-      ),
-    ),
-  );
-}
-
-function vacio(locales, estudio) {
+/** Sin encargos: la mascota, las cinco fases y una sola acción amarilla. */
+export function vacioDePosts(locales, estudio) {
   const ejemplo = (evento) =>
     conBoton(evento.currentTarget, async () => {
       await api('POST', '/locales/ejemplo');
@@ -62,7 +87,6 @@ function vacio(locales, estudio) {
   return h(
     'div',
     { class: 'vacio' },
-    // La mascota de SOCIETY, como en el estado vacío S05 del prototipo final («Crea tu primera pieza»).
     h('img', { class: 'vacio-mascota', src: '/img/mascota-movil.png', alt: '', width: '247', height: '320' }),
     h('h2', {}, 'Aún no hay posts'),
     h('p', { class: 'nota' }, 'Sube la foto de un plato y la orden hace el resto, parándose donde hace falta tu ojo:'),
@@ -78,9 +102,9 @@ function vacio(locales, estudio) {
     h(
       'div',
       { class: 'acciones' },
-      locales.length ? botonNuevo(locales) : null,
+      locales.length ? h('a', { class: 'boton primario', href: '#/nuevo' }, 'Nuevo post') : null,
       !locales.length && estudio.simulado ? h('button', { class: 'primario', onclick: ejemplo }, 'Usar el local de ejemplo') : null,
-      !locales.length ? h('a', { class: 'boton secundario', href: '#/local' }, 'Dar de alta un local') : null,
+      !locales.length ? h('a', { class: `boton ${estudio.simulado ? 'secundario' : 'primario'}`, href: '#/local' }, 'Dar de alta un local') : null,
     ),
     !locales.length && estudio.simulado ? h('p', { class: 'nota' }, 'El local de ejemplo es el de plantillas/marca.ejemplo.json, solo en el modo simulado.') : null,
   );

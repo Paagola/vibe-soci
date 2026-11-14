@@ -1,13 +1,39 @@
-// Un encargo de la orden única: las cinco fases, el panel de lo que toca ahora y, al lado, la foto, la referencia y el historial.
+// Posts: lista + detalle. A la izquierda, los encargos; a la derecha, el elegido con su recorrido como línea de tiempo
+// (subida → referencia → elementos → foto → diseño → post) y, debajo, el panel de lo que toca ahora.
 // Cada avance es un trabajo en segundo plano que corre hasta la siguiente parada; la vista lo sigue aunque se recargue.
 import { api, seguirTrabajo } from '../api.js';
 import { panelDeTrabajo } from '../componentes.js';
-import { FASES, indiceDeFase, urlsDe, usd } from '../orden.js';
+import { huecoDiorama } from '../diorama-hueco.js';
+import { estadoDePaso, FASES, indiceDeFase, urlsDe, usd } from '../orden.js';
 import { avisar, conBoton, formatearFecha, h, reemplazar } from '../ui.js';
+import { listaDeEncargos, vacioDePosts } from './encargos.js';
 import { panelDeEspera } from './paneles.js';
 
-export async function vistaEncargo(proyecto) {
-  const nodo = h('div', { class: 'encargo' });
+/** `elegido` viene de #/encargo/<proyecto>; en #/posts se abre el primero que te toca (o el más reciente). */
+export async function vistaEncargo(elegido) {
+  const [{ encargos }, { locales }, estudio] = await Promise.all([api('GET', '/encargos'), api('GET', '/locales'), api('GET', '/estudio')]);
+  const proyecto = elegido ?? (encargos.find((e) => estadoDePaso(e.paso, e).clase === 'chip-toca') ?? encargos[0])?.proyecto;
+
+  const cabeceraDePagina = h(
+    'div',
+    { class: 'cabeza-pantalla' },
+    h('div', {}, h('p', { class: 'sobretitulo' }, 'Orden única'), h('h1', {}, 'Posts'), h('p', { class: 'entrada' }, 'De la foto que sube el local a un post de estudio, con dos paradas para que confirmes.')),
+    // Aquí la acción principal es la de la parada del encargo: «Nuevo post» va en blanco para no competir con ella.
+    encargos.length ? h('div', { class: 'acciones' }, h('a', { class: 'boton secundario', href: locales.length ? '#/nuevo' : '#/local' }, locales.length ? 'Nuevo post' : 'Crea antes un local')) : null,
+  );
+  if (!proyecto) return { nodo: h('div', {}, cabeceraDePagina, vacioDePosts(locales, estudio)) };
+
+  const lista = listaDeEncargos();
+  const detalle = h('div', { class: 'detalle' });
+  const diorama = huecoDiorama();
+  const nodo = h(
+    'div',
+    { class: `pagina-posts ${elegido ? 'con-eleccion' : 'sin-eleccion'}` },
+    cabeceraDePagina,
+    h('div', { class: 'maestro' }, lista.nodo, detalle, diorama.nodo),
+  );
+  lista.actualizar(encargos, proyecto);
+
   const panelTrabajo = h('div', { class: 'panel-trabajo' });
   const urls = urlsDe(proyecto);
   let d;
@@ -15,7 +41,9 @@ export async function vistaEncargo(proyecto) {
   let fuera = false;
 
   async function recargar() {
-    d = await api('GET', `/encargos/${proyecto}`);
+    const [detalleNuevo, resumen] = await Promise.all([api('GET', `/encargos/${proyecto}`), api('GET', '/encargos')]);
+    d = detalleNuevo;
+    lista.actualizar(resumen.encargos, proyecto);
     pintar();
   }
 
@@ -35,7 +63,7 @@ export async function vistaEncargo(proyecto) {
   async function seguir(trabajo) {
     if (siguiendo === trabajo.id) return;
     siguiendo = trabajo.id;
-    nodo.classList.add('ocupada');
+    detalle.classList.add('ocupada');
     reemplazar(panelTrabajo, panelDeTrabajo(trabajo));
     try {
       const final = await seguirTrabajo(trabajo.id, (t) => reemplazar(panelTrabajo, panelDeTrabajo(t)), () => fuera);
@@ -65,103 +93,137 @@ export async function vistaEncargo(proyecto) {
     const enCurso = d.trabajo?.estado === 'EN_CURSO';
     // Un fallo del último trabajo se queda a la vista hasta la siguiente acción: dice qué ha pasado y por qué.
     if (!enCurso && siguiendo === null) reemplazar(panelTrabajo, d.trabajo?.estado === 'ERROR' ? panelDeTrabajo(d.trabajo) : null);
-    reemplazar(nodo, cabecera(), pasos(), panelTrabajo, h('div', { class: 'encargo-rejilla' }, h('div', {}, panelDeEspera(ctx)), lateral()));
-    nodo.classList.toggle('ocupada', enCurso);
+    reemplazar(detalle, cabecera(), lineaDeTiempo(), panelTrabajo, panelDeEspera(ctx), historial());
+    detalle.classList.toggle('ocupada', enCurso);
     if (enCurso) seguir(d.trabajo);
   }
 
+  // ---------------------------------------------------------------- Cabecera del encargo elegido
+
   function cabecera() {
-    const { encargo, local } = d;
+    const { encargo, local, intentos, generador } = d;
+    const estado = estadoDePaso(encargo.paso, { bloqueado: Boolean(encargo.bloqueo), trabajoEnCurso: d.trabajo?.estado === 'EN_CURSO' });
+    const gastado = intentos.reduce((suma, intento) => suma + intento.costeUsd, 0);
     return h(
-      'div',
-      { class: 'cabeza-pantalla' },
+      'section',
+      { class: 'detalle-cabeza' },
       h(
         'div',
-        {},
-        h('p', { class: 'miga' }, h('a', { href: '#/posts' }, '← Posts'), ` · ${local?.nombre ?? encargo.local}`),
-        h('h1', {}, encargo.plato),
+        { class: 'detalle-titulo' },
+        h('p', { class: 'miga' }, h('a', { href: '#/posts', class: 'volver' }, '← Encargos'), h('span', {}, local?.nombre ?? encargo.local)),
+        h('h2', {}, encargo.plato),
         h(
           'div',
           { class: 'chips' },
-          h('span', { class: 'chip mono', title: 'Nombre del encargo (carpeta del proyecto)' }, encargo.proyecto),
+          h('span', { class: `chip ${estado.clase}` }, estado.texto),
           encargo.simulado ? h('span', { class: 'chip chip-azul' }, 'Simulado') : null,
           encargo.usoFotoReal === 'SOLO_PRUEBA_COMPOSICION' ? h('span', { class: 'chip chip-revisar', title: 'La foto subida no es del local: no se publica' }, 'Foto solo para probar') : null,
-          h('span', { class: 'nota' }, `Creado el ${formatearFecha(encargo.creadoEn)}`),
+          h('span', { class: 'chip mono', title: 'Nombre del encargo (carpeta del proyecto)' }, encargo.proyecto),
         ),
+      ),
+      // Estado visible: lo gastado en este encargo y con qué, y cuándo se creó.
+      h(
+        'dl',
+        { class: 'detalle-datos' },
+        h('div', {}, h('dt', {}, 'Fotos nuevas'), h('dd', {}, String(intentos.length))),
+        h('div', {}, h('dt', {}, 'Gasto'), h('dd', {}, usd(gastado))),
+        h('div', {}, h('dt', {}, 'Generador'), h('dd', {}, generador.nombre)),
+        h('div', {}, h('dt', {}, 'Creado'), h('dd', {}, formatearFecha(encargo.creadoEn))),
       ),
     );
   }
 
-  function pasos() {
+  // ---------------------------------------------------------------- Línea de tiempo (Cardiology): hitos conectados
+
+  function lineaDeTiempo() {
     const actual = indiceDeFase(d.fase);
     const terminado = d.fase === 'RESULTADO';
-    return h(
+    // El hito 0 es la foto subida (siempre hecha); los demás son las cinco fases de la orden.
+    const hitos = [{ id: 'SUBIDA', nombre: 'Foto subida' }, ...FASES].map((fase, i) => {
+      const f = i - 1;
+      const estado = i === 0 || terminado || f < actual ? 'hecho' : f === actual ? 'actual' : 'pendiente';
+      return { ...fase, estado, ...contenidoDelHito(fase.id) };
+    });
+    const indiceActual = hitos.findIndex((x) => x.estado === 'actual');
+    const avance = (indiceActual === -1 ? hitos.length - 1 : indiceActual) / (hitos.length - 1);
+    const linea = h(
       'ol',
-      { class: 'pasos', 'aria-label': 'Fases del post' },
-      FASES.map((fase, i) => {
-        const clase = terminado || i < actual ? 'hecho' : i === actual ? 'actual' : '';
-        return h(
+      { class: 'linea-tiempo' },
+      hitos.map((x) =>
+        h(
           'li',
-          { class: `paso ${clase}`, 'aria-current': i === actual ? 'step' : undefined },
-          h('span', { class: 'paso-numero' }, clase === 'hecho' ? '✓' : String(i + 1)),
-          h('span', { class: 'paso-nombre' }, fase.nombre),
-          fase.parada ? h('span', { class: 'paso-parada' }, `■ ${fase.parada}`) : null,
-        );
-      }),
+          { class: `hito hito-${x.estado}`, 'aria-current': x.estado === 'actual' ? 'step' : undefined },
+          h('span', { class: 'hito-punto', 'aria-hidden': 'true' }, x.estado === 'hecho' ? '✓' : ''),
+          h('span', { class: 'hito-nombre' }, x.nombre, x.parada ? h('small', {}, x.parada) : null),
+          h(
+            'div',
+            { class: 'hito-tarjeta' },
+            x.imagen ? h('a', { href: x.enlace ?? x.imagen, target: '_blank', class: 'hito-imagen' }, h('img', { src: x.imagen, alt: x.alt ?? '', loading: 'lazy' })) : h('span', { class: 'hito-imagen hito-sin-imagen', 'aria-hidden': 'true' }),
+            h('p', {}, x.texto),
+          ),
+        ),
+      ),
+    );
+    // La parte azul de la línea llega hasta el hito actual (una propiedad CSS: no va por el objeto style de h()).
+    linea.style.setProperty('--avance', String(avance));
+    return h(
+      'section',
+      { class: 'recorrido-encargo' },
+      h('header', { class: 'tarjeta-cabeza' }, h('h2', {}, 'Recorrido'), h('p', { class: 'nota' }, terminado ? 'Post terminado' : `Ahora: ${FASES[actual]?.nombre ?? ''}`)),
+      linea,
     );
   }
 
-  function lateral() {
-    const { encargo, fotoSubida, referencia, intentos, generador } = d;
-    const elegida = referencia.elegida;
-    const gastado = intentos.reduce((suma, intento) => suma + intento.costeUsd, 0);
-    const historial = [...encargo.historial].reverse();
+  /** Lo que se sabe de cada hito: su imagen (si la hay) y una línea de estado. Nada inventado. */
+  function contenidoDelHito(id) {
+    const { encargo, fotoSubida, referencia, propuesta, intentos, diseno } = d;
+    switch (id) {
+      case 'SUBIDA':
+        return fotoSubida.disponible ? { imagen: urls.subida(320), enlace: urls.subida(), alt: 'Foto subida por el local', texto: `${fotoSubida.ancho} × ${fotoSubida.alto} px` } : { texto: 'No está disponible' };
+      case 'REFERENCIA': {
+        const elegida = referencia.elegida;
+        if (!encargo.referencia) return { texto: 'Sin elegir' };
+        return { ...(elegida && referencia.conImagen ? { imagen: urls.referencia(320), enlace: urls.referencia(), alt: 'Referencia elegida' } : {}), texto: elegida?.ficha ? `${elegida.ficha.familia} · ${encargo.referencia}` : encargo.referencia };
+      }
+      case 'ELEMENTOS':
+        if (!propuesta) return { texto: 'Esperando al director' };
+        if (!propuesta.valida) return { texto: 'Propuesta por corregir' };
+        return { texto: propuesta.toma?.otra ? 'Otra toma propuesta' : 'Misma toma: revisar' };
+      case 'FOTO': {
+        if (!intentos.length) return { texto: 'Sin fotos nuevas' };
+        const foto = intentos.find((i) => i.elegida) ?? intentos.at(-1);
+        const veredictos = { PASA: 'pasa', DESCARTA: 'descartada', REVISAR: 'a revisar', RECHAZADA: 'rechazada', PENDIENTE: 'sin comprobar' };
+        return {
+          ...(foto.disponible ? { imagen: urls.activo(foto.activo, 320), enlace: urls.activo(foto.activo), alt: `Foto nueva, intento ${foto.n}` } : {}),
+          texto: `${foto.elegida ? 'Elegida' : `Intento ${foto.n}`} · ${veredictos[foto.final] ?? foto.final}`,
+        };
+      }
+      case 'DISENO':
+        if (!diseno.intencion) return { texto: 'Sin intención todavía' };
+        return { texto: diseno.intencion.esBorrador ? 'Borrador de intención' : `Intención v${diseno.intencion.version ?? '?'}${diseno.intencion.valida ? '' : ' · no válida'}` };
+      case 'RESULTADO': {
+        const version = diseno.versiones.find((v) => v.version === diseno.vigente) ?? diseno.versiones.at(-1);
+        if (!version) return { texto: 'Sin componer' };
+        const archivo = version.exportadas.find((x) => x.proporcion === '4:5')?.archivo ?? version.exportadas[0]?.archivo ?? version.diseno;
+        return { imagen: urls.diseno(archivo, { lado: 320, sello: version.compuestaEn }), enlace: urls.diseno(archivo), alt: `Post, versión ${version.version}`, texto: `Versión ${version.version}${version.version === diseno.vigente ? ' · vigente' : ''}` };
+      }
+      default:
+        return { texto: '' };
+    }
+  }
+
+  // ---------------------------------------------------------------- Historial (plegado: es consulta, no foco)
+
+  function historial() {
+    const entradas = [...d.encargo.historial].reverse();
     return h(
-      'aside',
-      { class: 'lateral' },
+      'section',
+      { class: 'detalle-historial' },
       h(
-        'section',
+        'details',
         {},
-        h('h3', {}, 'Foto subida', fotoSubida.disponible ? h('span', { class: 'nota' }, `${fotoSubida.ancho} × ${fotoSubida.alto}`) : null),
-        fotoSubida.disponible ? h('a', { href: urls.subida(), target: '_blank' }, h('img', { src: urls.subida(640), alt: 'Foto subida por el local' })) : h('p', { class: 'nota' }, 'No está disponible.'),
-      ),
-      encargo.fotoElegida
-        ? h('section', {}, h('h3', {}, 'Foto nueva elegida'), h('a', { href: urls.activo(encargo.fotoElegida), target: '_blank' }, h('img', { src: urls.activo(encargo.fotoElegida, 640), alt: 'Foto nueva confirmada' })))
-        : null,
-      h(
-        'section',
-        {},
-        h('h3', {}, 'Referencia', encargo.referencia ? h('span', { class: 'chip' }, encargo.referencia) : null),
-        elegida && referencia.conImagen ? h('a', { href: urls.referencia(), target: '_blank' }, h('img', { src: urls.referencia(640), alt: 'Referencia elegida' })) : null,
-        elegida?.ficha
-          ? h('dl', { class: 'datos' }, h('dt', {}, 'Familia'), h('dd', {}, elegida.ficha.familia), h('dt', {}, 'Ficha'), h('dd', {}, elegida.ficha.titulo))
-          : h('p', { class: 'nota' }, encargo.referencia ? 'Sin ficha todavía.' : 'Sin elegir.'),
-        h('p', { class: 'nota' }, 'Se toma su oficio; nunca sus textos ni sus marcas.'),
-      ),
-      h(
-        'section',
-        {},
-        h('h3', {}, 'Gasto'),
-        h(
-          'dl',
-          { class: 'datos' },
-          h('dt', {}, 'Fotos nuevas'),
-          h('dd', {}, String(intentos.length)),
-          h('dt', {}, 'Coste'),
-          h('dd', {}, usd(gastado)),
-          h('dt', {}, 'Generador'),
-          h('dd', {}, generador.nombre),
-        ),
-      ),
-      h(
-        'section',
-        {},
-        h('h3', {}, 'Historial', h('span', { class: 'nota' }, String(historial.length))),
-        h(
-          'ol',
-          { class: 'historial' },
-          historial.map((entrada) => h('li', {}, h('time', { datetime: entrada.fecha }, formatearFecha(entrada.fecha)), entrada.nota)),
-        ),
+        h('summary', {}, 'Historial ', h('span', { class: 'nota' }, `${entradas.length} notas`)),
+        h('ol', { class: 'historial' }, entradas.map((entrada) => h('li', {}, h('time', { datetime: entrada.fecha }, formatearFecha(entrada.fecha)), entrada.nota))),
       ),
     );
   }
@@ -171,6 +233,7 @@ export async function vistaEncargo(proyecto) {
     nodo,
     salir: () => {
       fuera = true;
+      diorama.salir();
     },
   };
 }
