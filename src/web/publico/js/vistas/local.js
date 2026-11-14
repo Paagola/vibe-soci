@@ -83,13 +83,19 @@ export async function vistaNuevoLocal() {
   const nodo = h(
     'form',
     { class: 'formulario', onsubmit: enviar },
+    h('p', { class: 'sobretitulo' }, 'Locales'),
     h('h1', {}, 'Nuevo local'),
-    h('p', { class: 'nota' }, 'Cuanto más concreta sea la marca, menos genérico será el resultado. Nada de colores genéricos: usa los del local.'),
-    campo('Nombre del local', nombre),
-    campo('Identificador corto', slug, 'Solo minúsculas, números y guiones.'),
-    campo('Ciudad o zona', ciudad),
-    campo('Descripción breve', descripcion),
-    campo('Tono (de 1 a 5 palabras, separadas por comas)', tonos),
+    h('p', { class: 'entrada' }, 'Cuanto más concreta sea la marca, menos genérico será el resultado. Nada de colores genéricos: usa los del local.'),
+    h(
+      'fieldset',
+      {},
+      h('legend', {}, 'El local'),
+      campo('Nombre del local', nombre),
+      campo('Identificador corto', slug, 'Solo minúsculas, números y guiones.'),
+      campo('Ciudad o zona', ciudad),
+      campo('Descripción breve', descripcion),
+      campo('Tono (de 1 a 5 palabras, separadas por comas)', tonos),
+    ),
     h(
       'fieldset',
       {},
@@ -101,7 +107,7 @@ export async function vistaNuevoLocal() {
     h('fieldset', {}, h('legend', {}, 'Tipografías (opcionales)'), campo('Títulos', titulos), campo('Textos', textos), campo('Rótulo', rotulo)),
     h('label', { class: 'casilla' }, sobrescribir, ' Reemplazar si ya existe un local con ese identificador'),
     errores,
-    h('div', { class: 'acciones' }, h('button', { type: 'submit' }, 'Guardar local')),
+    h('div', { class: 'acciones' }, h('button', { type: 'submit', class: 'primario' }, 'Guardar local')),
   );
   return { nodo };
 }

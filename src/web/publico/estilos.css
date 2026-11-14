@@ -174,7 +174,8 @@ section, .tarjeta { background: var(--blanco); border-radius: var(--radio-tarjet
 .titulo-seccion { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
 .titulo-seccion .acciones { margin: 0; }
 .sobretitulo { font-weight: 800; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--texto-3); margin: 0 0 0.35rem; }
-.entrada { color: var(--texto-2); font-size: 1rem; font-weight: 600; max-width: 46rem; margin: 0.45rem 0 0; }
+.entrada { color: var(--texto-2); font-size: 1rem; font-weight: 600; max-width: 46rem; margin: 0.45rem 0 1.5rem; }
+.cabeza-pantalla .entrada { margin-bottom: 0; }
 .nota { color: var(--texto-3); font-size: 0.88rem; }
 .cargando { color: var(--texto-3); font-weight: 700; }
 .cargando::before { content: ''; display: inline-block; width: 0.9rem; height: 0.9rem; margin-right: 0.5rem; vertical-align: -0.1rem; border: 2px solid rgb(16 51 239 / 0.18); border-top-color: var(--azul); border-radius: 50%; animation: girar 0.8s linear infinite; }
@@ -436,7 +437,7 @@ summary { cursor: pointer; font-weight: 800; }
 .hito-hecho .hito-punto { background: var(--azul); box-shadow: none; }
 .hito-actual .hito-punto { background: var(--tinta); box-shadow: 0 0 0 5px rgb(21 21 21 / 0.12); }
 .hito-nombre { margin-top: 0.55rem; font-weight: 800; font-size: 0.86rem; line-height: 1.2; }
-.hito-nombre small { display: block; margin-top: 0.1rem; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--azul); }
+.hito-nombre small { display: block; margin-top: 0.1rem; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--azul); }
 .hito-pendiente .hito-nombre { color: var(--texto-3); }
 .hito-tarjeta { flex: 1; width: 100%; margin-top: 0.6rem; padding: 0.45rem; border-radius: 16px; background: var(--hundido); }
 .hito-actual .hito-tarjeta { background: var(--blanco); box-shadow: inset 0 0 0 2px var(--tinta); }
@@ -463,6 +464,8 @@ summary { cursor: pointer; font-weight: 800; }
   display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem;
 }
 .barra-acciones .empuja { margin-left: auto; }
+/* Sobre cristal, el texto secundario sube un tono: medido, el gris terciario se quedaba en 4,3:1 sobre una foto clara. */
+.barra-acciones .nota { color: var(--texto-2); }
 
 .dos-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.2rem; align-items: start; }
 .bloque { border-radius: var(--radio-bloque); padding: 0.95rem 1.05rem; background: var(--hundido); margin-bottom: 1rem; }
@@ -696,7 +699,7 @@ summary { cursor: pointer; font-weight: 800; }
   .navegacion a.nav-crear:not(.activo) .icono-crear { width: 50px; height: 48px; border-radius: 24px; margin: 0; }
   .navegacion a.nav-crear.activo { padding: 0 0.8rem 0 0.4rem; }
   .icono-crear .icono { width: 20px; height: 20px; }
-  .nav-cuenta { position: absolute; top: 4px; right: 2px; min-width: 1.15rem; height: 1.15rem; font-size: 0.66rem; padding: 0 0.25rem; }
+  .nav-cuenta { position: absolute; top: 4px; right: 2px; min-width: 1.2rem; height: 1.2rem; font-size: 0.7rem; padding: 0 0.25rem; }
   .navegacion a.activo .nav-cuenta { position: static; }
 
   .vista { padding: 1.1rem 1rem calc(110px + env(safe-area-inset-bottom)); }
