@@ -1,5 +1,6 @@
-// Arranque del frontend: cabecera (modo simulado y vías) y enrutado por #hash.
+// Arranque del frontend: panel lateral (secciones, modo simulado y vías) y enrutado por #hash.
 import { api } from './api.js';
+import { iniciarCristal } from './cristal.js';
 import { avisar, bloqueError, h, reemplazar } from './ui.js';
 import { vistaEncargo } from './vistas/encargo.js';
 import { vistaEncargos } from './vistas/encargos.js';
@@ -9,7 +10,7 @@ import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
 import { vistaNuevoEncargo } from './vistas/nuevoEncargo.js';
 import { vistaPieza } from './vistas/pieza.js';
 
-// [patrón, crear vista, sección de la cabecera que se marca]
+// [patrón, crear vista, sección del panel lateral que se marca]
 const RUTAS = [
   [/^#?\/?$/, () => vistaEncargos(), 'posts'],
   [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
@@ -34,7 +35,12 @@ async function enrutar() {
     return;
   }
   const [patron, crear, seccion] = ruta;
-  document.querySelectorAll('.cabecera nav a').forEach((a) => a.classList.toggle('activo', a.dataset.seccion === seccion));
+  document.querySelectorAll('.navegacion a').forEach((a) => {
+    const activo = a.dataset.seccion === seccion;
+    a.classList.toggle('activo', activo);
+    if (activo) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
   reemplazar(contenedor, h('p', { class: 'cargando' }, 'Cargando…'));
   try {
     vistaActual = await crear(...(location.hash.match(patron)?.slice(1) ?? []));
@@ -83,5 +89,7 @@ async function iniciarCabecera() {
 }
 
 window.addEventListener('hashchange', enrutar);
+// La lente del filo del panel lateral (refracción del cristal líquido).
+iniciarCristal(document.querySelector('.panel-lateral'));
 iniciarCabecera().catch((error) => avisar(`No puedo hablar con el servidor: ${error.message}`, 'error'));
 enrutar();

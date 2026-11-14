@@ -62,6 +62,8 @@ function vacio(locales, estudio) {
   return h(
     'div',
     { class: 'vacio' },
+    // La mascota de SOCIETY, como en el estado vacío S05 del prototipo final («Crea tu primera pieza»).
+    h('img', { class: 'vacio-mascota', src: '/img/mascota-movil.png', alt: '', width: '247', height: '320' }),
     h('h2', {}, 'Aún no hay posts'),
     h('p', { class: 'nota' }, 'Sube la foto de un plato y la orden hace el resto, parándose donde hace falta tu ojo:'),
     h(
