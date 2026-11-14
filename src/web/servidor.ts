@@ -7,6 +7,7 @@ import { rutasDeArchivos } from './rutas/archivos.js';
 import { rutasDeEncargos } from './rutas/encargos.js';
 import { rutasDelEstudio } from './rutas/estudio.js';
 import { rutasDePiezas } from './rutas/piezas.js';
+import { rutasDeProcesos } from './rutas/procesos.js';
 
 const CARPETA_PUBLICA = fileURLToPath(new URL('./publico/', import.meta.url));
 
@@ -17,6 +18,7 @@ export function crearApp(estudio: Estudio): express.Express {
   app.use('/api', rutasDelEstudio(estudio));
   app.use('/api/piezas', rutasDePiezas(estudio));
   app.use('/api/encargos', rutasDeEncargos(estudio));
+  app.use('/api/procesos', rutasDeProcesos(estudio));
   app.use('/api', () => {
     throw new ErrorHttp(404, 'NO_ENCONTRADO', 'Esa ruta de la API no existe.');
   });
