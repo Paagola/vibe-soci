@@ -73,6 +73,7 @@ export function montarDiorama(contenedor, opciones = {}) {
   contenedor.append(raiz);
 
   let escena = null;
+  let interaccion = null;
   let cargando = null;
   let visible = false;
   let pestanaVisible = document.visibilityState !== 'hidden';
@@ -95,13 +96,17 @@ export function montarDiorama(contenedor, opciones = {}) {
   }
 
   async function cargar() {
-    cargando ??= import('./escena.js').then(({ crearEscena }) => {
+    cargando ??= Promise.all([import('./escena.js'), import('./interaccion.js')]).then(([{ crearEscena }, { crearInteraccion }]) => {
       if (destruido) return null;
       escena = crearEscena(lienzo, { maxDpr, sombras, hora, alCargarImagen: () => dibujarSiQuieto() });
       ajustar();
-      escena.activarOrbita(() => {
-        if (pausado || !activo()) dibujarAhora();
-      });
+      escena.activarOrbita(
+        () => {
+          if (pausado || !activo()) dibujarAhora();
+        },
+        (e) => interaccion?.alPulsar(e),
+      );
+      interaccion = crearInteraccion({ raiz, lienzo, escena, redibujar: () => dibujarSiQuieto() });
       if (ultimoEstado) escena.actualizar(ultimoEstado, reloj);
       dibujarAhora();
       return escena;
@@ -128,6 +133,7 @@ export function montarDiorama(contenedor, opciones = {}) {
     if (!escena) return;
     const t0 = performance.now();
     escena.dibujar(movimientoReducido && pausado ? tiempoFijo() : reloj);
+    interaccion?.colocar();
     medidas.fotogramas++;
     medidas.msDibujo += performance.now() - t0;
   }
@@ -175,6 +181,7 @@ export function montarDiorama(contenedor, opciones = {}) {
     linea.textContent = resumen(estado);
     if (!escena) return false;
     const cambio = escena.actualizar(estado, t);
+    if (cambio) interaccion?.refrescar();
     dibujarSiQuieto();
     return cambio;
   }
@@ -228,6 +235,8 @@ export function montarDiorama(contenedor, opciones = {}) {
     } else arrancar();
   });
   botonCamara.addEventListener('click', () => {
+    interaccion?.cerrar(false);
+    escena?.salirDeVistaLibre();
     escena?.orbit?.reset();
     dibujarAhora();
   });
@@ -269,6 +278,7 @@ export function montarDiorama(contenedor, opciones = {}) {
       observador.disconnect();
       tamanoObs.disconnect();
       document.removeEventListener('visibilitychange', alCambiarPestana);
+      interaccion?.destruir();
       escena?.liberar();
       raiz.remove();
     },

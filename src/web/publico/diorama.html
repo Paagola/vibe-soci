@@ -52,6 +52,13 @@
           entities: escena.entities,
           guion: escena.guion,
           marcas,
+          /** Cámara de depuración para los primeros planos del QA: posición y objetivo. */
+          view(pos, objetivo) {
+            const c = escena.camera;
+            c.position.set(...pos);
+            escena.orbit.controls.target.set(...objetivo);
+            escena.orbit.controls.update();
+          },
           freeze(t) { diorama.congelar(t, false); },
           draw(t) { diorama.congelar(t, false); },
         };

@@ -77,7 +77,7 @@ function olivo(padre, m) {
     [[0.05, 1.75, 0.03], [0.05, 2.2, -0.35], [0.0, 2.55, -0.45]],
   ];
   for (const b of brazos) tronco(g, m.maderaOscura, b, 0.065, 0.035);
-  const verdes = [m.oliva, m.salvia, m.hoja, m.oliva];
+  const verdes = [m.olivaCopa, m.salviaCopa, m.hojaCopa, m.olivaCopa];
   const centros = [[0.7, 2.4, 0.25], [-0.65, 2.45, -0.3], [0.0, 2.65, -0.45], [0.1, 2.5, 0.1], [0.35, 2.7, -0.15], [-0.3, 2.65, 0.15]];
   centros.forEach(([x, y, z], i) => {
     for (let k = 0; k < 4; k++) {
@@ -98,9 +98,9 @@ function ficus(padre, m) {
   for (let k = 0; k < 9; k++) {
     const a = (k / 9) * Math.PI * 2;
     const s = 0.34 + r() * 0.12;
-    pon(g, blob(0.36, 1), k % 3 ? m.bosque : m.hoja, Math.cos(a) * 0.32, 1.85 + (k % 3) * 0.22 + r() * 0.1, Math.sin(a) * 0.32, { esc: [s / 0.36, (s * 0.85) / 0.36, s / 0.36] });
+    pon(g, blob(0.36, 1), k % 3 ? m.bosqueCopa : m.hojaCopa, Math.cos(a) * 0.32, 1.85 + (k % 3) * 0.22 + r() * 0.1, Math.sin(a) * 0.32, { esc: [s / 0.36, (s * 0.85) / 0.36, s / 0.36] });
   }
-  pon(g, blob(0.4, 1), m.bosque, 0, 2.45, 0);
+  pon(g, blob(0.4, 1), m.bosqueCopa, 0, 2.45, 0);
   return g;
 }
 
@@ -210,7 +210,7 @@ function hierbas(padre, m, x, z, n, semilla) {
 function arbusto(padre, m, x, y, z, s, mat) {
   const g = grupo(padre, x, y, z);
   pon(g, blob(0.22, 1), mat, 0, 0.16 * s, 0, { esc: [s, s * 0.75, s] });
-  pon(g, blob(0.16, 1), m.hojaClara, 0.12 * s, 0.22 * s, 0.04, { esc: [s, s * 0.8, s] });
+  pon(g, blob(0.16, 1), m.hojaClaraCopa, 0.12 * s, 0.22 * s, 0.04, { esc: [s, s * 0.8, s] });
   return g;
 }
 
@@ -220,7 +220,7 @@ function jardinVertical(padre, m, ancho, alto) {
   padre.add(g);
   pon(g, caja(ancho, alto, 0.08, 0.02), m.maderaOscura, 0, 0, 0);
   const r = aleatorio(7.7);
-  const verdes = [m.hoja, m.bosque, m.hojaClara, m.salvia, m.oliva];
+  const verdes = [m.hojaCopa, m.bosqueCopa, m.hojaClaraCopa, m.salviaCopa, m.olivaCopa];
   for (let y = -alto / 2 + 0.12; y < alto / 2 - 0.05; y += 0.16) {
     for (let x = -ancho / 2 + 0.12; x < ancho / 2 - 0.05; x += 0.17) {
       const s = 0.09 + r() * 0.05;
@@ -238,7 +238,7 @@ function colgante(padre, m, x, y, z, largo, semilla) {
   const g = vivo(grupo(padre, x, y, z));
   const r = aleatorio(semilla);
   pon(g, cil(0.09, 0.07, 0.12, 12), m.crema, 0, -0.06, 0);
-  for (let i = 0; i < largo; i++) pon(g, blob(0.045, 0), i % 3 ? m.hoja : m.hojaClara, (r() - 0.5) * 0.08, -0.12 - i * 0.075, (r() - 0.5) * 0.08, { esc: [1.1, 0.7, 0.5], rot: [0, r() * 3, 0.4] });
+  for (let i = 0; i < largo; i++) pon(g, blob(0.045, 0), i % 3 ? m.hojaCopa : m.hojaClaraCopa, (r() - 0.5) * 0.08, -0.12 - i * 0.075, (r() - 0.5) * 0.08, { esc: [1.1, 0.7, 0.5], rot: [0, r() * 3, 0.4] });
   const fase = semilla * 1.3;
   return { grupo: g, animar: (t) => (g.rotation.z = 0.03 * Math.sin(t * 0.7 + fase)) };
 }
@@ -247,8 +247,10 @@ export function crearVegetacion(m) {
   const raiz = new THREE.Group();
   raiz.name = 'vegetacion';
   const animados = [];
+  const ocultables = [];
   for (const v of VEGETACION) {
-    const arbol = ESPECIES[v.especie](raiz, m);
+    const arbol = vivo(ESPECIES[v.especie](raiz, m));
+    ocultables.push(arbol);
     arbol.position.set(v.x, v.especie === 'olivo' ? 0 : 0, v.z);
     arbol.name = v.especie;
   }
@@ -257,11 +259,15 @@ export function crearVegetacion(m) {
   hierbas(raiz, m, j.x0 + 0.5, j.z0 + 0.45, 10, 11);
   hierbas(raiz, m, j.x1 - 0.55, j.z1 - 0.5, 9, 12);
   hierbas(raiz, m, j.x0 + 0.6, j.z1 - 0.55, 8, 13);
-  arbusto(raiz, m, j.x1 - 0.6, 0.22, j.z0 + 0.5, 1.2, m.bosque);
-  arbusto(raiz, m, j.x0 + 1.4, 0.22, j.z1 - 0.4, 1.0, m.hoja);
-  arbusto(raiz, m, -0.2, 0.22, j.z0 + 0.35, 0.9, m.salvia);
+  arbusto(raiz, m, j.x1 - 0.6, 0.22, j.z0 + 0.5, 1.2, m.bosqueCopa);
+  arbusto(raiz, m, j.x0 + 1.4, 0.22, j.z1 - 0.4, 1.0, m.hojaCopa);
+  arbusto(raiz, m, -0.2, 0.22, j.z0 + 0.35, 0.9, m.salviaCopa);
   // Colgantes de la pérgola.
-  [[j.x0 + 0.6, j.z0 + 0.2, 9], [j.x0 + 2.2, j.z1 - 0.2, 12], [j.x1 - 1.3, j.z0 + 0.2, 10], [j.x1 - 0.4, j.z1 - 0.2, 8]].forEach(([x, z, n], i) => animados.push(colgante(raiz, m, x, 2.8, z, n, i + 1)));
+  [[j.x0 + 0.6, j.z0 + 0.2, 9], [j.x0 + 2.2, j.z1 - 0.2, 12], [j.x1 - 1.3, j.z0 + 0.2, 10], [j.x1 - 0.4, j.z1 - 0.2, 8]].forEach(([x, z, n], i) => {
+    const c = colgante(raiz, m, x, 2.8, z, n, i + 1);
+    animados.push(c);
+    ocultables.push(c.grupo);
+  });
   // Jardín vertical en la pared izquierda, junto al rincón del café.
   const jv = jardinVertical(raiz, m, JARDIN_VERTICAL.ancho, JARDIN_VERTICAL.alto);
   jv.position.set(JARDIN_VERTICAL.x, JARDIN_VERTICAL.y, JARDIN_VERTICAL.z);
@@ -270,7 +276,7 @@ export function crearVegetacion(m) {
   for (const { x, z, ancho, fondo } of JARDINERAS) {
     const jar = grupo(raiz, x, 0, z);
     pon(jar, caja(ancho, 0.36, fondo, 0.03), m.grafito, 0, 0.18, 0);
-    for (let k = 0; k < 4; k++) pon(jar, blob(0.12, 1), [m.hoja, m.bosque, m.hojaClara, m.salvia][k], -ancho / 2 + 0.13 + (k * (ancho - 0.26)) / 3, 0.42, 0, { esc: [1, 0.8, 1] });
+    for (let k = 0; k < 4; k++) pon(jar, blob(0.12, 1), [m.hojaCopa, m.bosqueCopa, m.hojaClaraCopa, m.salviaCopa][k], -ancho / 2 + 0.13 + (k * (ancho - 0.26)) / 3, 0.42, 0, { esc: [1, 0.8, 1] });
   }
-  return { grupo: raiz, animar: (t) => animados.forEach((a) => a.animar(t)) };
+  return { grupo: raiz, ocultables, animar: (t) => animados.forEach((a) => a.animar(t)) };
 }

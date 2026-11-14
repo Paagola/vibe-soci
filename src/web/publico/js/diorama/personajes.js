@@ -44,7 +44,7 @@ function materialesDe(m, look, p) {
     top: t(p.top),
     bottom: t(p.bottom),
     shoe: t(p.zapato),
-    mats: { leather: m.maderaOscura, eye: m.tinta, mouth: t(0x9b4b4b), bone: m.blancoCalido, glass: m.grafito, steelDark: m.grafito, paper: m.blancoCalido, roseDeep: t(0xb0535e) },
+    mats: { leather: m.maderaOscura, eye: m.tinta, mouth: t(0x9b4b4b), bone: m.blancoCalido, glass: m.cristal, steelDark: m.grafito, paper: m.blancoCalido, roseDeep: t(0xb0535e) },
   };
 }
 

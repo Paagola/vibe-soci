@@ -54,7 +54,7 @@ export const PUESTOS = Object.freeze({
   directorFoto: {
     paso: 'PROPUESTA', tipo: 'agente', zona: 'fotografia', nombre: 'Director de fotografía',
     funcion: 'Gemini mira la foto subida y propone la toma nueva: cámara, luz, encuadre y la lista de elementos que hay que conservar.',
-    centro: P(-3.85, -4.05, FRENTE), entrega: P(-3.15, -3.42, ATRAS), operario: P(-3.35, -4.72, FRENTE), ocupa: [rect(-5.9, -6.25, -2.75, -3.72)],
+    centro: P(-3.85, -4.05, FRENTE), entrega: P(-2.42, -4.05, IZQUIERDA), operario: P(-3.35, -4.72, FRENTE), ocupa: [rect(-5.9, -6.25, -2.75, -3.72)],
   },
   parada1: {
     paso: 'CONFIRMAR_ELEMENTOS', tipo: 'parada', zona: 'fotografia', nombre: 'Parada 1 · mesa de presentación',
@@ -69,7 +69,7 @@ export const PUESTOS = Object.freeze({
   revisor: {
     paso: 'COMPROBAR', tipo: 'agente', zona: 'laboratorio', nombre: 'Revisor visual',
     funcion: 'Comprueba que la foto nueva conserva todos los elementos del plato, su número y su anatomía, y que no añade nada.',
-    centro: P(2.75, -4.05, FRENTE), entrega: P(3.1, -3.42, ATRAS), operario: P(2.75, -4.72, FRENTE), ocupa: [rect(1.35, -6.25, 4.25, -3.72)],
+    centro: P(2.75, -4.05, FRENTE), entrega: P(1.65, -4.05, DERECHA), operario: P(2.75, -4.72, FRENTE), ocupa: [rect(1.9, -6.25, 4.25, -3.72)],
   },
   parada2: {
     paso: 'CONFIRMAR_FOTO', tipo: 'parada', zona: 'laboratorio', nombre: 'Parada 2 · foto ampliada',
@@ -133,11 +133,11 @@ export const PILARES = Object.freeze([P(-5.0, -3.15), P(4.3, -3.15), P(-3.42, 3.
 /** La red de calles por las que se camina: nodos y tramos. Las entregas se enganchan a su nodo más cercano. */
 export const CALLES = Object.freeze({
   nodos: {
-    F0: P(-7.45, -2.05), F1: P(-4.45, -2.05), F2: P(-2.85, -2.05), F3: P(-0.55, -2.05), F4: P(3.5, -2.05), F45: P(4.3, -2.05), F5: P(5.58, -2.05), F6: P(6.45, -2.05),
+    F0: P(-7.45, -2.05), F1: P(-4.45, -2.05), F2: P(-2.85, -2.05), F3: P(-0.55, -2.05), F25: P(1.65, -2.05), F4: P(3.5, -2.05), F45: P(4.3, -2.05), F5: P(5.58, -2.05), F6: P(6.45, -2.05),
     D0: P(-7.45, 2.6), D1: P(-4.45, 2.6), D2: P(-1.55, 2.6), D3: P(2.05, 2.6), D4: P(4.3, 2.6), D5: P(5.45, 2.6),
   },
   tramos: [
-    ['F0', 'F1'], ['F1', 'F2'], ['F2', 'F3'], ['F3', 'F4'], ['F4', 'F45'], ['F45', 'F5'], ['F5', 'F6'],
+    ['F0', 'F1'], ['F1', 'F2'], ['F2', 'F3'], ['F3', 'F25'], ['F25', 'F4'], ['F4', 'F45'], ['F45', 'F5'], ['F5', 'F6'],
     ['D0', 'D1'], ['D1', 'D2'], ['D2', 'D3'], ['D3', 'D4'], ['D4', 'D5'],
     ['F0', 'D0'], ['F1', 'D1'], ['F45', 'D4'],
   ],

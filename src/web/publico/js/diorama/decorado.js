@@ -125,6 +125,15 @@ export function crearDecorado(m, look, { hora } = {}) {
   const nube = crearNube(m);
   escena.add(nube.grupo);
 
+  // Los árboles y la arquitectura que pueden tapar un primer plano no se fusionan: se ocultan uno a uno si estorban.
+  // Dentro de cada uno sí se fusiona lo suyo (un árbol = pocas mallas).
+  const ocultables = [...arquitectura.ocultables, ...vegetacion.ocultables];
+  for (const o of ocultables) {
+    if (o.isMesh) continue; // una malla suelta ya es una sola llamada de dibujo
+    o.userData.vivo = false;
+    fusionarEstaticos(o);
+    o.userData.vivo = true;
+  }
   const fusiones = fusionarEstaticos(escena);
-  return { grupo: escena, puestos, profesionales, senal, nube, vegetacion, comunes, arquitectura, fusiones };
+  return { grupo: escena, puestos, profesionales, senal, nube, vegetacion, comunes, arquitectura, ocultables, fusiones };
 }
