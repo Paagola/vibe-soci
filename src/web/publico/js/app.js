@@ -7,12 +7,15 @@ import { vistaInicio } from './vistas/inicio.js';
 import { vistaNuevoLocal } from './vistas/local.js';
 import { vistaNuevaPieza } from './vistas/nuevaPieza.js';
 import { vistaNuevoEncargo } from './vistas/nuevoEncargo.js';
+import { vistaOficina } from './vistas/oficina.js';
 import { vistaPanel } from './vistas/panel.js';
 import { vistaPieza } from './vistas/pieza.js';
 
 // [patrón, crear vista, sección del panel lateral que se marca]
 const RUTAS = [
-  [/^#?\/?$/, () => vistaPanel(), 'inicio'],
+  // La oficina 3D es la portada; el resumen de cifras de antes sigue en #/resumen.
+  [/^#?\/?$/, () => vistaOficina(), 'inicio'],
+  [/^#\/resumen$/, () => vistaPanel(), 'resumen'],
   [/^#\/posts$/, () => vistaEncargo(), 'posts'],
   [/^#\/nuevo$/, () => vistaNuevoEncargo(), 'nuevo'],
   [/^#\/encargo\/([a-z0-9-]+)$/, (proyecto) => vistaEncargo(proyecto), 'posts'],
@@ -36,6 +39,7 @@ async function enrutar() {
     return;
   }
   const [patron, crear, seccion] = ruta;
+  document.body.classList.toggle('en-oficina', seccion === 'inicio');
   document.querySelectorAll('.navegacion a').forEach((a) => {
     const activo = a.dataset.seccion === seccion;
     a.classList.toggle('activo', activo);

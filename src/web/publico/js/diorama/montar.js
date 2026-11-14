@@ -1,4 +1,4 @@
-// montarDiorama(contenedor, { obtenerEstado }): la vista isométrica del estudio para un hueco lateral del panel.
+// montarDiorama(contenedor, { obtenerEstado }): la oficina 3D del estudio (la portada, a pantalla completa).
 //
 // Este módulo es ligero a propósito: no importa three.js. La escena (three.js r170 vendorizado, ~690 KB) se carga
 // con import() solo cuando el hueco se ve en pantalla. Después:
@@ -35,27 +35,9 @@ const porDefecto = () => fetch('/api/procesos', { headers: { Accept: 'applicatio
   return r.json();
 });
 
-/**
- * El estado que necesita la escena es el de GET /api/procesos (con el recorrido de cada encargo). Si quien monta da un
- * `obtenerEstado` que no lo trae (p. ej. el resumen de /api/encargos + /api/panel del hueco), se usa /api/procesos a
- * partir de la primera consulta, para no pedir dos veces lo mismo.
- */
-function estadoConRecorrido(obtener) {
-  if (obtener === porDefecto) return porDefecto;
-  let propio = true;
-  return async () => {
-    if (!propio) return porDefecto();
-    const estado = await obtener();
-    const encargos = estado?.encargos;
-    if (Array.isArray(encargos) && encargos.every((e) => Array.isArray(e.recorrido))) return estado;
-    propio = false;
-    return porDefecto();
-  };
-}
-
 export function montarDiorama(contenedor, opciones = {}) {
   const {
-    obtenerEstado: obtenerDado = porDefecto,
+    obtenerEstado = porDefecto,
     intervaloMs = 2000,
     fpsMax = 30,
     maxDpr = 1.5,
@@ -64,7 +46,6 @@ export function montarDiorama(contenedor, opciones = {}) {
     /** Para QA: carga ya, sin esperar a que se vea, y no pide estado (se lo da quien llama). */
     manual = false,
   } = opciones;
-  const obtenerEstado = estadoConRecorrido(obtenerDado);
 
   if (!document.getElementById('diorama-estilo')) {
     const estilo = document.createElement('style');
@@ -267,7 +248,7 @@ export function montarDiorama(contenedor, opciones = {}) {
     reiniciarMedidas() {
       Object.assign(medidas, { fotogramas: 0, msDibujo: 0, desde: performance.now() });
     },
-    /** El contrato del hueco del panel (diorama-hueco.js) lo llama así al cambiar de pantalla. */
+    /** La vista de la oficina (vistas/oficina.js) lo llama así al cambiar de pantalla. */
     desmontar() {
       this.destruir();
     },

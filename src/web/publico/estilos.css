@@ -383,7 +383,6 @@ summary { cursor: pointer; font-weight: 800; }
 
 /* Posts: lista a la izquierda y el encargo elegido a la derecha. */
 .maestro { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 1.1rem; align-items: start; }
-.maestro > .panel-diorama { display: none; }
 .columna-lista { position: sticky; top: 1rem; margin: 0; padding: 1.15rem 0.75rem 0.75rem; max-height: calc(100vh - 2rem); display: flex; flex-direction: column; }
 .columna-lista-cabeza h2 { padding: 0 0.5rem; }
 .pildoras { display: flex; gap: 4px; padding: 4px; margin: 0.75rem 0 0.6rem; border-radius: 999px; background: var(--hundido); }
@@ -528,7 +527,7 @@ summary { cursor: pointer; font-weight: 800; }
 .hojas img { width: 100%; border-radius: 12px; display: block; }
 
 /* ================================================================ Inicio: panel de control */
-.inicio-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) var(--ancho-diorama, 380px); gap: 1.1rem; align-items: start; }
+.inicio-rejilla { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.1rem; align-items: start; }
 .inicio-principal { min-width: 0; display: flex; flex-direction: column; gap: 1.1rem; }
 .inicio-principal > section { margin: 0; }
 .inicio-par { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.1rem; }
@@ -538,7 +537,6 @@ summary { cursor: pointer; font-weight: 800; }
 .kpis { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 1.1rem; padding-top: var(--hueco-mascota); }
 /* Sitio para la mascota por encima de la fila; la columna del diorama empieza a la altura de las tarjetas. */
 .inicio-rejilla { --hueco-mascota: 4.4rem; }
-.inicio-rejilla.con-cifras > .panel-diorama { margin-top: var(--hueco-mascota); }
 .kpi { position: relative; margin: 0; padding: 1.3rem 1.4rem 1.2rem; display: flex; flex-direction: column; gap: 0.15rem; min-height: 9.5rem; }
 .kpi p { margin: 0; }
 .kpi-rotulo { font-weight: 800; font-size: 0.86rem; color: var(--texto-2); }
@@ -613,32 +611,12 @@ summary { cursor: pointer; font-weight: 800; }
 .tile-detalle { font-size: 0.84rem; font-weight: 600; color: var(--texto-2); }
 .tile-origen { margin-top: auto !important; padding-top: 0.45rem; font-size: 0.74rem; color: var(--texto-3); }
 
-/* La columna del diorama: panel oscuro propio, de la misma familia (lo pinta js/diorama/). */
-.panel-diorama { position: sticky; top: 1rem; height: calc(100vh - 2rem); min-height: 26rem; max-height: 56rem; border-radius: 26px; background: #0b1020; box-shadow: inset 0 0 0 1px var(--linea), var(--sombra); overflow: hidden; display: flex; flex-direction: column; }
-.diorama-lienzo { position: relative; flex: 1; min-height: 0; display: grid; place-items: start;
-  background:
-    linear-gradient(180deg, #0b1020 14%, rgb(11 16 32 / 0) 60%),
-    repeating-linear-gradient(30deg, rgb(139 156 255 / 0.07) 0 1px, transparent 1px 28px),
-    repeating-linear-gradient(150deg, rgb(139 156 255 / 0.07) 0 1px, transparent 1px 28px),
-    #0b1020; }
-.panel-diorama.con-diorama .diorama-lienzo { background: #0b1020; display: block; }
-.panel-diorama.con-diorama .diorama-reposo { display: none; }
-.diorama-reposo { padding: 1.3rem 1.4rem; }
-.diorama-titulo { margin: 0 0 0.25rem; font-weight: 800; font-size: 1.05rem; }
-.diorama-reposo .nota { margin: 0; max-width: 18rem; font-weight: 600; }
-
 /* ================================================================ Tamaños */
-@media (max-width: 1440px) { :root { --ancho-diorama: 340px; } }
-@media (min-width: 1680px) {
-  .maestro { grid-template-columns: 300px minmax(0, 1fr) 360px; }
-  .maestro > .panel-diorama { display: flex; }
-}
 @media (max-width: 1280px) {
   .resultado, .editor, .dos-columnas { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 1200px) {
   .inicio-rejilla { grid-template-columns: minmax(0, 1fr); }
-  .inicio-rejilla > .panel-diorama { display: none; }
 }
 @media (max-width: 1100px) {
   .maestro { grid-template-columns: minmax(0, 1fr); }
@@ -695,3 +673,13 @@ summary { cursor: pointer; font-weight: 800; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* ================================================================ La oficina (portada): el mundo 3D a pantalla completa */
+/* La escena ocupa todo el viewport; la barra de iconos y la del modo flotan encima, translúcidas. */
+body.en-oficina { overflow: hidden; }
+body.en-oficina .vista { position: fixed; inset: 0; max-width: none; padding: 0; }
+.oficina { position: absolute; inset: 0; background: radial-gradient(120% 90% at 60% 40%, #121a33 0%, #090c16 70%); }
+body.en-oficina .panel-lateral { background: rgb(9 12 22 / 0.55); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border-right-color: rgb(255 255 255 / 0.05); }
+body.en-oficina .barra-superior { position: fixed; z-index: 15; top: 0.9rem; right: 1rem; padding: 0.45rem 0.6rem 0.45rem 1rem; border-radius: 999px; background: rgb(9 12 22 / 0.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06); }
+body.en-oficina .barra-superior .producto { display: none; }
+.oficina-error { position: absolute; left: calc(var(--ancho-lateral) + 2rem); bottom: 2rem; color: var(--texto-2); }

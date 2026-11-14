@@ -1,7 +1,6 @@
 // Inicio: el panel de control del estudio. Solo datos reales del modo activo (encargos, locales, comprobaciones) y los
 // registros de gasto; lo que no consta no se pinta, o se dice que no hay. Cada tarjeta dice de dónde sale su dato.
 import { api } from '../api.js';
-import { huecoDiorama } from '../diorama-hueco.js';
 import { estadoDePaso, FASES, indiceDeFase } from '../orden.js';
 import { conBoton, h } from '../ui.js';
 
@@ -19,7 +18,6 @@ const FLECHA = () => {
 
 export async function vistaPanel() {
   const [{ encargos }, panel, estudio] = await Promise.all([api('GET', '/encargos'), api('GET', '/panel'), api('GET', '/estudio')]);
-  const diorama = huecoDiorama();
   const hoy = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const modo = panel.modo === 'SIMULADO' ? 'modo simulado' : 'modo real';
   const vacio = encargos.length === 0;
@@ -45,10 +43,9 @@ export async function vistaPanel() {
         locales(panel.locales, modo),
         gasto(panel.gasto),
       ),
-      diorama.nodo,
     ),
   );
-  return { nodo, salir: diorama.salir };
+  return { nodo };
 }
 
 // ---------------------------------------------------------------- Cifras (una tarjeta saturada, el foco) y lo que te toca

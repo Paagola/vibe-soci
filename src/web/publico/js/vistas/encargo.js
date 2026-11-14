@@ -3,7 +3,6 @@
 // Cada avance es un trabajo en segundo plano que corre hasta la siguiente parada; la vista lo sigue aunque se recargue.
 import { api, seguirTrabajo } from '../api.js';
 import { panelDeTrabajo } from '../componentes.js';
-import { huecoDiorama } from '../diorama-hueco.js';
 import { estadoDePaso, FASES, indiceDeFase, urlsDe, usd } from '../orden.js';
 import { avisar, conBoton, formatearFecha, h, reemplazar } from '../ui.js';
 import { listaDeEncargos, vacioDePosts } from './encargos.js';
@@ -25,12 +24,11 @@ export async function vistaEncargo(elegido) {
 
   const lista = listaDeEncargos();
   const detalle = h('div', { class: 'detalle' });
-  const diorama = huecoDiorama();
   const nodo = h(
     'div',
     { class: `pagina-posts ${elegido ? 'con-eleccion' : 'sin-eleccion'}` },
     cabeceraDePagina,
-    h('div', { class: 'maestro' }, lista.nodo, detalle, diorama.nodo),
+    h('div', { class: 'maestro' }, lista.nodo, detalle),
   );
   lista.actualizar(encargos, proyecto);
 
@@ -233,7 +231,6 @@ export async function vistaEncargo(elegido) {
     nodo,
     salir: () => {
       fuera = true;
-      diorama.salir();
     },
   };
 }
