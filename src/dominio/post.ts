@@ -4,6 +4,9 @@
  *
  *   REFERENCIA → FOTO_REAL → PROPUESTA → [CONFIRMAR_ELEMENTOS] → GENERAR → COMPROBAR → [CONFIRMAR_FOTO]
  *   → MASCARA → INTENCION → COMPONER → HECHO
+ *
+ * Desde F3, INTENCION la escribe el director de diseño (aplicacion/diseno/proponerDiseno.ts); si no hay director o
+ * su propuesta no pasa las comprobaciones, deja un borrador y se para, como antes.
  */
 import { z } from 'zod';
 import type { VeredictoFinal } from './comprobacionSalida.js';
@@ -39,6 +42,8 @@ export const EncargoPost = z.object({
   usoFotoReal: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).default('PUBLICABLE'),
   /** Id de la referencia registrada con `npm run referencia` (obligatoria en las 5 primeras piezas). */
   referencia: z.string().optional(),
+  /** F3: el encargo permite UN titular creativo (una palabra de acción o sensorial que no es un dato). Por defecto, no. */
+  titularCreativo: z.boolean().default(false),
   /** Con director, generador, revisor y máscara simulados: no gasta ni llama a nada. Los datos van aparte. */
   simulado: z.boolean().default(false),
   paso: PasoPost.default('REFERENCIA'),

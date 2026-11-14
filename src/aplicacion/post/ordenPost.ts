@@ -9,7 +9,9 @@
  *   COMPROBAR        comprobación de salida automática; DESCARTA → otro intento; 2 seguidos → se para
  *   CONFIRMAR_FOTO   ■ parada: confirmas la foto (o la rechazas con motivo)
  *   MASCARA          la máscara del sujeto
- *   INTENCION        la intención de diseño (la escribe una persona hasta F3; si falta, deja un borrador y se para)
+ *   INTENCION        la intención de diseño: la escribe el director de diseño (F3) desde la ficha de la referencia y el
+ *                    mapa de la foto, y pasa a post.json solo si cumple todo lo comprobable; si no hay director o no
+ *                    pasa, deja un borrador y se para (la escribe una persona)
  *   COMPONER         compositor, exportación 3:4 y 4:5, hojas de revisión
  *   HECHO            el plan se marca como pieza (cuenta para el umbral de 5)
  *
@@ -17,11 +19,15 @@
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { extname, join, relative, resolve } from 'node:path';
 import sharp from 'sharp';
 import { Activo } from '../../dominio/activos.js';
-import { Intencion } from '../../dominio/diseno/intencion.js';
-import { ErrorDeUsuario } from '../../dominio/errores.js';
+import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
+import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
+import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
+import type { Marca } from '../../dominio/modelos.js';
+import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
 import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
@@ -45,6 +51,11 @@ export interface DepsPost {
   revisor: RevisorVisual;
   segmentador: Segmentador;
   componedor: ComponedorDePiezas;
+  /**
+   * F3: el director de diseño y el medidor de la foto. Sin ellos, INTENCION deja un borrador y se para (la escribe una
+   * persona). La prueba en el compositor la pone la orden, con el mismo componedor.
+   */
+  disenador?: Omit<DepsProponerDiseno, 'probar'>;
   ahora: () => string;
 }
 
@@ -83,7 +94,16 @@ export async function guardarEncargo(deps: DepsPost, e: EncargoPost): Promise<vo
 
 export async function crearEncargo(
   deps: DepsPost,
-  datos: { proyecto: string; local: string; plato: string; foto: string; referencia?: string; usoFotoReal?: 'PUBLICABLE' | 'SOLO_PRUEBA_COMPOSICION'; simulado?: boolean },
+  datos: {
+    proyecto: string;
+    local: string;
+    plato: string;
+    foto: string;
+    referencia?: string;
+    usoFotoReal?: 'PUBLICABLE' | 'SOLO_PRUEBA_COMPOSICION';
+    simulado?: boolean;
+    titularCreativo?: boolean;
+  },
 ): Promise<EncargoPost> {
   if (await existe(rutaEncargo(deps, datos.proyecto))) throw new ErrorDeUsuario(`El encargo «${datos.proyecto}» ya existe: continúa con npm run post -- ${datos.proyecto}`);
   if (!(await existe(resolve(deps.raiz, datos.foto)))) throw new ErrorDeUsuario(`No encuentro la foto «${datos.foto}».`);
@@ -98,6 +118,7 @@ export async function crearEncargo(
     usoFotoReal: datos.usoFotoReal ?? 'PUBLICABLE',
     ...(datos.referencia ? { referencia: datos.referencia } : {}),
     simulado: datos.simulado ?? false,
+    titularCreativo: datos.titularCreativo ?? false,
     creadoEn: ahora,
     historial: [{ fecha: ahora, paso: 'REFERENCIA', nota: 'encargo creado' }],
   });
@@ -393,16 +414,40 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     }
     const intencion = join(carpeta, 'intenciones', 'post.json');
     if (!(await existe(intencion))) {
+      await mkdir(join(carpeta, 'intenciones'), { recursive: true });
       const borrador = join(carpeta, 'intenciones', 'post.borrador.json');
-      if (!(await existe(borrador))) {
-        await mkdir(join(carpeta, 'intenciones'), { recursive: true });
-        const marca = await deps.referencias.locales.obtener(e.local);
-        await writeFile(borrador, `${JSON.stringify(intencionBorrador(e, marca.nombre), null, 2)}\n`);
+      const marca = await deps.referencias.locales.obtener(e.local);
+      let motivo = 'no hay director de diseño';
+      // F3: la escribe el director. Una propuesta solo pasa a post.json si cumple todo lo comprobable.
+      if (deps.disenador) {
+        const archivoPropuesta = join(carpeta, 'intenciones', 'post.propuesta.json');
+        if (await existe(archivoPropuesta)) {
+          motivo = `ya hay una propuesta del director que no pasó (${relative(deps.raiz, archivoPropuesta)}); bórrala para pedir otra`;
+        } else {
+          try {
+            const r = await disenarIntencion(deps, deps.disenador, e, marca, tokens);
+            await writeFile(
+              archivoPropuesta,
+              `${JSON.stringify({ director: deps.disenador.director.nombre, fecha: deps.ahora(), propuesta: r.propuesta, problemas: r.problemas, avisos: r.avisos, intentos: r.intentos, mapa: { sujeto: r.mapa.sujeto, libres: r.mapa.libres, vivo: r.mapa.vivo } }, null, 2)}\n`,
+            );
+            if (r.intencion && r.problemas.length === 0) {
+              await writeFile(intencion, `${JSON.stringify(r.intencion, null, 2)}\n`);
+              nota(`Intención escrita por ${deps.disenador.director.nombre} (${r.intentos.length} propuesta(s))${r.avisos.length ? `, con avisos: ${r.avisos.join(' | ')}` : ''}.`);
+              return { encargo: ir(e, 'COMPONER') };
+            }
+            if (r.intencion) await writeFile(borrador, `${JSON.stringify(r.intencion, null, 2)}\n`);
+            motivo = `la propuesta del director no pasa las comprobaciones: ${r.problemas.join(' | ')}`;
+          } catch (error) {
+            if (!(error instanceof ErrorDeServicio || error instanceof ErrorDeUsuario)) throw error;
+            motivo = `el director de diseño no ha podido responder (${error.message})`;
+          }
+        }
       }
-      nota('Falta la intención de diseño: hay un borrador.');
+      if (!(await existe(borrador))) await writeFile(borrador, `${JSON.stringify(intencionBorrador(e, marca.nombre), null, 2)}\n`);
+      nota(`Falta la intención de diseño: ${motivo}. Hay un borrador.`);
       return {
         encargo: e,
-        parar: `FALTA LA INTENCIÓN DE DISEÑO (la escribe una persona hasta que el director lo haga, F3). Parte de la ficha de la referencia ${e.referencia ?? ''} y del borrador ${relative(deps.raiz, borrador)}; guárdala como ${relative(deps.raiz, intencion)} y vuelve a lanzar la orden.`,
+        parar: `FALTA LA INTENCIÓN DE DISEÑO: ${motivo}. Parte de la ficha de la referencia ${e.referencia ?? ''} y del borrador ${relative(deps.raiz, borrador)}; guárdala como ${relative(deps.raiz, intencion)} y vuelve a lanzar la orden.`,
       };
     }
     Intencion.parse(JSON.parse(await readFile(intencion, 'utf8')));
@@ -424,6 +469,68 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     return { encargo: ir(e, 'HECHO') };
   },
 };
+
+/** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. */
+async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {
+  const foto = await deps.activos.obtener(e.local, e.fotoElegida as string);
+  const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? 'foto/propuesta.json'), 'utf8')) as { propuesta: unknown };
+  const propuestaFoto = PropuestaFotoNueva.parse(guardada.propuesta);
+  const hechos: HechosDeLaPieza = {
+    plato: e.plato,
+    elementos: propuestaFoto.descripcion.elementos.map((x) => ({ nombre: x.nombre, estado: x.estado, recuento: x.recuento })),
+    local: {
+      nombre: marca.nombre,
+      ciudad: marca.ciudad,
+      descripcion: marca.descripcion,
+      tonos: marca.tonos,
+      ...(marca.instagram ? { instagram: marca.instagram } : {}),
+      ...(marca.web ? { web: marca.web } : {}),
+    },
+  };
+  let referencia: EntradaDiseno['referencia'];
+  if (e.referencia) {
+    const r = await deps.referencias.referencias.obtener(e.local, e.referencia);
+    const imagen = r.origen.archivo;
+    referencia = { id: r.id, ...(r.ficha ? { ficha: r.ficha } : {}), ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}) };
+  }
+  const tokensMarca = Tokens.parse(JSON.parse(await readFile(rutaTokens, 'utf8')));
+  return proponerDiseno(
+    { ...disenador, probar: (intencion) => probarIntencion(deps, e, rutaTokens, intencion) },
+    {
+      id: 'post',
+      version: 1,
+      titulo: `${marca.nombre} · ${cortarPorPalabras(e.plato, 60)}`,
+      marca: e.local,
+      foto,
+      hechos,
+      tokensMarca,
+      ...(referencia ? { referencia } : {}),
+      titularCreativo: e.titularCreativo,
+    },
+  );
+}
+
+/**
+ * Compone la intención en borrador (carpeta temporal, se sobrescribe) y devuelve lo que dice el compositor:
+ * los ERROR (y los fallos de resolución) impiden usarla; los AVISO se le devuelven al director.
+ */
+async function probarIntencion(deps: DepsPost, e: EncargoPost, rutaTokens: string, intencion: Intencion): Promise<PruebaDeIntencion> {
+  const carpeta = join(tmpdir(), 'estudio-contenido-propuestas', `${e.simulado ? 'simulado' : 'real'}--${e.proyecto}`);
+  await mkdir(carpeta, { recursive: true });
+  await writeFile(join(carpeta, 'plan.json'), `${JSON.stringify({ nota: `Prueba de la propuesta del director para ${e.proyecto}.`, local: e.local, marca: rutaTokens, diapositivas: [{ intencion: 'intencion.json' }] }, null, 2)}\n`);
+  await writeFile(join(carpeta, 'intencion.json'), `${JSON.stringify(intencion, null, 2)}\n`);
+  try {
+    const pieza = await deps.componedor.componer(carpeta, { borrador: true, etiqueta: 'propuesta' });
+    const problemas = pieza.diapositivas.flatMap((d) => d.problemas);
+    return {
+      errores: problemas.filter((p) => p.gravedad === 'ERROR').map((p) => `${p.tipo}: ${p.mensaje}`),
+      avisos: problemas.filter((p) => p.gravedad === 'AVISO').map((p) => `${p.tipo}: ${p.mensaje}`),
+    };
+  } catch (error) {
+    if (error instanceof RangeError) return { errores: [`El compositor no puede resolverla: ${error.message}`], avisos: [] };
+    throw error;
+  }
+}
 
 /** La petición que la orden manda al generador para el intento `n` (también sirve para estimar su coste antes de autorizarlo). */
 export function peticion(e: EncargoPost, rutaReal: string, prompt: string, n: number): PeticionFoto {

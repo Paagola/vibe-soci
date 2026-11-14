@@ -1,0 +1,378 @@
+/**
+ * F3 · El director de diseño: mapa de la foto, comprobación de los textos frente a los hechos, compilación de la
+ * propuesta a intención, el caso de uso con su reintento, el adaptador de Gemini (con un fetch falso) y la orden única
+ * de punta a punta con el director simulado y el compositor de verdad. Sin red ni gasto.
+ */
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { after, before, describe, it } from 'node:test';
+import sharp from 'sharp';
+import { ComponedorProyectos } from '../src/adaptadores/compositor/ComponedorProyectos.js';
+import { AlmacenActivosFicheros } from '../src/adaptadores/ficheros/AlmacenActivosFicheros.js';
+import { AlmacenLocalesFicheros } from '../src/adaptadores/ficheros/AlmacenLocalesFicheros.js';
+import { AlmacenReferenciasFicheros } from '../src/adaptadores/ficheros/AlmacenReferenciasFicheros.js';
+import { BibliotecaDeReferenciasFicheros } from '../src/adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
+import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFicheros.js';
+import { ClienteGemini } from '../src/adaptadores/gemini/ClienteGemini.js';
+import { DirectorDisenoGemini } from '../src/adaptadores/gemini/DirectorDisenoGemini.js';
+import { MedidorDeFotoSharp } from '../src/adaptadores/imagen/MedidorDeFotoSharp.js';
+import { DirectorDisenoSimulado, titularDeLaNota } from '../src/adaptadores/simulado/DisenoSimulado.js';
+import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
+import { avisoDeCruce, coloresDisponibles, proponerDiseno, vocesDisponibles } from '../src/aplicacion/diseno/proponerDiseno.js';
+import { avanzar, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
+import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
+import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
+import { RAIZ } from '../src/config.js';
+import { Intencion, Tokens } from '../src/dominio/diseno/intencion.js';
+import { construirMapa, mapaEnTexto, rectangulosLibres, type MapaDeFoto } from '../src/dominio/diseno/mapaDeFoto.js';
+import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, PropuestaDeDiseno, type ContextoDeCompilacion, type HechosDeLaPieza } from '../src/dominio/diseno/propuesta.js';
+import { Marca } from '../src/dominio/modelos.js';
+import type { ActivoDisponible } from '../src/puertos/Compositor.js';
+import type { MedidorDeFoto } from '../src/puertos/DirectorDeDiseno.js';
+
+const FOTO = join(RAIZ, 'plantillas', 'fotos', 'gamba-roja-de-palamos.png');
+const PLATO = 'Gamba roja de Palamós a la brasa con sal gruesa';
+
+const hechos: HechosDeLaPieza = {
+  plato: PLATO,
+  elementos: [{ nombre: 'gamba roja', estado: 'entera, a la brasa', recuento: 2 }],
+  local: { nombre: 'Asador Etxebarri', ciudad: 'Axpe (Bizkaia)', descripcion: 'Asador de brasa con leña en la plaza de Axpe.', tonos: ['sobrio', 'fuego'] },
+};
+
+/** Una propuesta con casi todo lo nuevo: foto a sangre con el titular detrás del plato, sello, anotación con flecha. */
+function propuestaRica(): PropuestaDeDiseno {
+  return PropuestaDeDiseno.parse({
+    idea: 'La gamba asoma por delante de su nombre, como sale de la brasa.',
+    foco: 'PLATO',
+    seToma: ['El producto tapa parte de la palabra grande.'],
+    noSeCopia: ['Sus textos y su marca.'],
+    textos: [
+      { clave: 'titular', texto: 'GAMBA\nROJA', fuente: 'PLATO', cita: 'Gamba roja' },
+      { clave: 'brasa', texto: 'A la brasa', fuente: 'PLATO', cita: 'a la brasa' },
+      { clave: 'sal', texto: 'sal gruesa', fuente: 'PLATO', cita: 'sal gruesa' },
+      { clave: 'firma', texto: 'Asador Etxebarri · Axpe', fuente: 'MARCA', cita: 'Asador Etxebarri' },
+    ],
+    capas: [
+      { tipo: 'fondo', color: '@carbon' },
+      { tipo: 'foto', encuadre: 'sangre', velo: 'abajo', colorVelo: '@carbon' },
+      { tipo: 'texto', id: 'titular', texto: 'titular', voz: 'frase', caja: { col: [1, 12], fila: [3, 8] }, ajuste: 'ancho', color: '@hueso', relacion: 'detras', tinta: 'impresa' },
+      { tipo: 'sello', forma: 'circulo', centro: { x: 0.8, y: 0.2 }, radio: 0.14, fondo: '@hueso', color: '@carbon', lineas: [{ texto: 'brasa', voz: 'firma' }] },
+      { tipo: 'anotacion', id: 'nota', texto: 'sal', voz: 'anotacion', caja: { col: [1, 4], fila: [13, 14] }, apunta: { x: 0.4, y: 0.6 }, color: '@hueso' },
+      { tipo: 'texto', id: 'firma', texto: 'firma', voz: 'firma', caja: { col: [1, 12], fila: [15, 15] }, ajuste: 'fijo', tamano: 34, color: '@hueso', relacion: 'aparte' },
+    ],
+  });
+}
+
+const contexto = (cambios: Partial<ContextoDeCompilacion> = {}): ContextoDeCompilacion => ({
+  id: 'post',
+  version: 1,
+  titulo: 'Prueba',
+  marca: 'asador-etxebarri',
+  foto: 'foto-1',
+  tieneMascara: true,
+  colores: { carbon: '#111111', hueso: '#EDE7DD' },
+  voces: ['frase', 'firma', 'anotacion'],
+  vocesDeEstudio: {},
+  coloresMedidos: {},
+  conReferencia: true,
+  ...cambios,
+});
+
+describe('F3 · los textos solo dicen lo que consta', () => {
+  it('acepta citas literales y palabras de los datos (singular y plural)', () => {
+    assert.deepEqual(problemasDeTextos(propuestaRica().textos, hechos), []);
+  });
+
+  it('rechaza una palabra que no consta, una cifra inventada y una cita que no está en su fuente', () => {
+    const p = problemasDeTextos(
+      [
+        { clave: 'a', texto: 'Gamba casera', fuente: 'PLATO', cita: 'Gamba' },
+        { clave: 'b', texto: '3 gambas', fuente: 'RECUENTO', cita: '3 gamba roja' },
+        { clave: 'c', texto: 'Axpe', fuente: 'PLATO', cita: 'Axpe' },
+      ],
+      hechos,
+    );
+    assert.ok(p.some((x) => /casera/.test(x)), 'palabra sin respaldo');
+    assert.ok(p.some((x) => /cifra que no consta \(3\)/.test(x)), 'el recuento confirmado es 2, no 3');
+    assert.ok(p.some((x) => /no está en la nota del dueño/.test(x)), 'Axpe es de la marca, no de la nota');
+  });
+
+  it('el titular creativo solo si el encargo lo permite, corto y sin reclamos; nada del post de referencia', () => {
+    const creativo = [{ clave: 't', texto: 'Crujiente', fuente: 'CREATIVO' as const, cita: '' }];
+    assert.match(problemasDeTextos(creativo, hechos).join(), /no lo permite/);
+    assert.deepEqual(problemasDeTextos(creativo, hechos, { titularCreativo: true }), []);
+    assert.match(problemasDeTextos([{ clave: 't', texto: 'Lo mejor', fuente: 'CREATIVO', cita: '' }], hechos, { titularCreativo: true }).join(), /afirma algo que no consta/);
+    const ficha = { titulo: '«SANDWICH» ×6', capas: ['crema plano', '«SANDWICH» seis veces + «OF THE MONTH»', 'ORDER NOW y URL'] };
+    const deReferencia = palabrasDeLaFicha(ficha);
+    assert.ok(deReferencia.includes('sandwich') && deReferencia.includes('order'));
+    assert.match(problemasDeTextos([{ clave: 't', texto: 'Sandwich', fuente: 'CREATIVO', cita: '' }], hechos, { titularCreativo: true, palabrasDeReferencia: deReferencia }).join(), /post de referencia/);
+  });
+});
+
+describe('F3 · de la propuesta a la intención', () => {
+  it('compila una propuesta rica en una intención válida, con la silueta del plato y las relaciones medibles', () => {
+    const c = compilarIntencion(propuestaRica(), contexto());
+    assert.deepEqual(c.problemas, []);
+    const i = Intencion.parse(c.intencion);
+    const ids = i.capas.map((x) => x.id);
+    const fantasma = i.capas.find((x) => x.id === 'plato');
+    assert.equal(fantasma?.tipo, 'recorte');
+    assert.equal(fantasma?.opacidad, 0, 'la silueta del plato no se pinta');
+    const titular = i.capas.find((x) => x.id === 'titular');
+    assert.equal(titular?.tipo === 'texto' && titular.recortarCon?.modo, 'fuera', 'detrás del plato de la foto a sangre');
+    assert.ok(titular?.tipo === 'texto' && titular.tinta && titular.tinta.densidad > 0, 'la tinta «impresa» trae los márgenes de INVESTIGACION.md');
+    assert.ok(ids.indexOf('foto') < ids.indexOf('titular') && ids.indexOf('titular') < ids.indexOf('firma'), 'se pinta por planos');
+    assert.ok(i.capas.some((x) => x.tipo === 'trazo' && x.gesto === 'flecha'), 'la anotación lleva su flecha');
+    assert.ok(i.relaciones.some((r) => r.tipo === 'detras' && r.texto === 'titular'), 'detrás de la silueta: la cobertura se mide y se corrige para que se lea');
+    assert.ok(i.relaciones.some((r) => r.tipo === 'noSolapar' && r.textos.includes('firma') && r.textos.includes('nota')));
+  });
+
+  it('dice lo que no se puede hacer: color o voz fuera de la lista, plato recortado sin máscara, sin decir qué toma de la referencia', () => {
+    const p = propuestaRica();
+    const mal = PropuestaDeDiseno.parse({
+      ...p,
+      seToma: [],
+      capas: [...p.capas.slice(0, 2), { tipo: 'plato', caja: { col: [2, 11], fila: [5, 12] }, ancho: 0.7 }, { tipo: 'texto', id: 'x', texto: 'titular', voz: 'didona', caja: { col: [1, 12], fila: [3, 5] }, ajuste: 'ancho', color: '@oro', relacion: 'aparte' }],
+    });
+    const problemas = compilarIntencion(mal, contexto({ tieneMascara: false })).problemas.join(' | ');
+    assert.match(problemas, /«seToma»/);
+    assert.match(problemas, /no tiene máscara/);
+    assert.match(problemas, /«@oro» no está en la lista/);
+    assert.match(problemas, /«didona» no está en la lista/);
+  });
+
+  it('un texto en la fila 1 o la 16 se sale de la zona segura (salvo un titular que sangra)', () => {
+    const p = propuestaRica();
+    const capas = p.capas.map((c) => (c.tipo === 'texto' && c.id === 'firma' ? { ...c, caja: { col: [1, 12], fila: [16, 16] } } : c));
+    assert.match(compilarIntencion(PropuestaDeDiseno.parse({ ...p, capas }), contexto()).problemas.join(), /filas 1 y 16/);
+    const sangra = p.capas.map((c) => (c.tipo === 'texto' && c.id === 'titular' ? { ...c, caja: { col: [1, 12], fila: [1, 5] }, sangra: true } : c));
+    assert.deepEqual(compilarIntencion(PropuestaDeDiseno.parse({ ...p, capas: sangra }), contexto()).problemas, []);
+  });
+
+  it('avisa si ningún texto toca al plato (titular encima y foto debajo: la plantilla)', () => {
+    const p = propuestaRica();
+    const apilada = PropuestaDeDiseno.parse({ ...p, capas: p.capas.filter((c) => c.tipo !== 'anotacion').map((c) => (c.tipo === 'texto' ? { ...c, relacion: 'aparte' } : c)) });
+    assert.match(avisoDeCruce(apilada, true) ?? '', /^CRUCE/);
+    assert.equal(avisoDeCruce(apilada, false), undefined, 'sin máscara no se le puede pedir');
+    assert.equal(avisoDeCruce(p, true), undefined);
+  });
+});
+
+/** Una foto sintética: arriba oscura y lisa, un plato claro y con detalle en el centro, abajo clara y lisa. */
+function fotoSintetica(ancho = 120, alto = 160) {
+  const rgb = new Uint8Array(ancho * alto * 3);
+  const mascara = new Uint8Array(ancho * alto);
+  for (let y = 0; y < alto; y++) {
+    for (let x = 0; x < ancho; x++) {
+      const i = y * ancho + x;
+      const enPlato = (x - ancho / 2) ** 2 / (ancho * 0.3) ** 2 + (y - alto / 2) ** 2 / (alto * 0.15) ** 2 <= 1;
+      const v = enPlato ? ((x + y) % 2 ? 230 : 120) : y < alto / 2 ? 20 : 235;
+      rgb.set(enPlato ? [v, 40, 30] : [v, v, v], i * 3);
+      mascara[i] = enPlato ? 255 : 0;
+    }
+  }
+  return { ancho, alto, rgb, mascara };
+}
+
+describe('F3 · mapa de la foto', () => {
+  it('sitúa el plato, encuentra zonas libres fuera de él (oscura arriba, clara abajo) y el color del plato', () => {
+    const m = construirMapa(fotoSintetica());
+    assert.ok(m.sujeto);
+    assert.ok(m.sujeto.col[0] >= 2 && m.sujeto.col[1] <= 11 && m.sujeto.fila[0] >= 4 && m.sujeto.fila[1] <= 13, JSON.stringify(m.sujeto));
+    assert.ok(m.libres.length >= 2);
+    for (const z of m.libres) assert.ok(z.fila[1] < m.sujeto.fila[0] || z.fila[0] > m.sujeto.fila[1] || z.col[1] < m.sujeto.col[0] || z.col[0] > m.sujeto.col[1], 'una zona libre no pisa el plato');
+    assert.ok(m.libres.some((z) => z.luz < 0.3) && m.libres.some((z) => z.luz > 0.7));
+    assert.ok(m.vivo, 'el rojo del plato es el acento candidato');
+    const texto = mapaEnTexto(m);
+    assert.match(texto, /#/);
+    assert.match(texto, /Zonas libres para texto/);
+  });
+
+  it('el mayor rectángulo libre se busca entero y no se pisan entre sí', () => {
+    const libre = Array.from({ length: 4 * 4 }, (_, i) => i % 4 !== 3); // la última columna ocupada
+    assert.deepEqual(rectangulosLibres(libre, 4, 4, 2), [{ col: [1, 3], fila: [1, 4] }]);
+  });
+
+  it('el medidor de sharp encuadra la foto y la máscara como caerán a sangre', async () => {
+    const carpeta = await mkdtemp(join(tmpdir(), 'estudio-mapa-'));
+    try {
+      const s = fotoSintetica(300, 400);
+      await sharp(Buffer.from(s.rgb), { raw: { width: 300, height: 400, channels: 3 } }).png().toFile(join(carpeta, 'foto.png'));
+      // La máscara a la mitad de resolución: el medidor la lleva al tamaño de la foto.
+      await sharp(Buffer.from(s.mascara), { raw: { width: 300, height: 400, channels: 1 } }).resize(150, 200).png().toFile(join(carpeta, 'mascara.png'));
+      const foto = { activo: { id: 'f', ancho: 300, alto: 400 }, ruta: join(carpeta, 'foto.png'), rutaMascara: join(carpeta, 'mascara.png') } as unknown as ActivoDisponible;
+      const m = await new MedidorDeFotoSharp().medir(foto);
+      assert.equal(m.ocupacion.length, 12 * 16);
+      assert.ok(m.sujeto && m.sujeto.area > 0.05 && m.sujeto.area < 0.25, JSON.stringify(m.sujeto));
+    } finally {
+      await rm(carpeta, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('F3 · el caso de uso: colores, voces y reintento', () => {
+  const mapa: MapaDeFoto = construirMapa(fotoSintetica());
+  const medidor: MedidorDeFoto = { medir: async () => mapa };
+  const tokens = Tokens.parse({ colores: { carbon: '#111111', hueso: '#EDE7DD' }, estilos: { frase: { fuente: 'league-gothic', color: '@hueso' }, firma: { fuente: 'plex-mono', color: '@hueso' } } });
+  const foto = { activo: { id: 'foto-1' }, ruta: FOTO, rutaMascara: '/m.png' } as unknown as ActivoDisponible;
+
+  it('añade el color del plato y la voz manuscrita del estudio, sin repetir lo que la marca ya tiene', () => {
+    const { colores, coloresMedidos } = coloresDisponibles(tokens, mapa);
+    assert.ok(colores.some((c) => c.token === 'plato'));
+    assert.ok('plato' in coloresMedidos && !('carbon' in coloresMedidos));
+    const { voces, vocesDeEstudio } = vocesDisponibles(tokens, colores);
+    assert.deepEqual(voces.map((v) => v.id), ['frase', 'firma', 'anotacion']);
+    assert.equal(vocesDeEstudio.anotacion?.fuente, 'caveat');
+    const conManuscrita = Tokens.parse({ ...tokens, estilos: { ...tokens.estilos, pincel: { fuente: 'kaushan-script', color: '@hueso' } } });
+    assert.ok(!('anotacion' in vocesDisponibles(conManuscrita, colores).vocesDeEstudio), 'si la marca ya tiene manuscrita, no se añade otra');
+  });
+
+  it('si la primera propuesta inventa, se le devuelve con los problemas y la segunda pasa', async () => {
+    const inventa = PropuestaDeDiseno.parse({ ...propuestaRica(), textos: propuestaRica().textos.map((t) => (t.clave === 'brasa' ? { ...t, texto: 'Brasa de encina' } : t)) });
+    const director = new DirectorDisenoSimulado([inventa, propuestaRica()]);
+    const pruebas: Intencion[] = [];
+    const r = await proponerDiseno(
+      { director, medidor, probar: async (i) => (pruebas.push(i), { errores: [], avisos: [] }) },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens, referencia: { id: 'ref-post-30' } },
+    );
+    assert.equal(r.intentos.length, 2);
+    assert.match(r.intentos[0]!.problemas.join(), /encina/);
+    assert.deepEqual(r.problemas, []);
+    assert.ok(r.intencion);
+    assert.equal(pruebas.length, 1, 'solo se prueba en el compositor lo que pasa las comprobaciones del dominio');
+    assert.ok(r.intencion.tokens.estilos.anotacion, 'la voz del estudio va en la intención');
+    assert.ok(r.intencion.tokens.colores.plato, 'y el color medido también');
+  });
+
+  it('un aviso de oficio se devuelve una vez; si sigue, se apunta y no impide componer', async () => {
+    const director = new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]);
+    let vueltas = 0;
+    const r = await proponerDiseno(
+      { director, medidor, probar: async () => (vueltas++, { errores: [], avisos: ['JERARQUIA: No hay salto de escala.'] }) },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens, referencia: { id: 'ref-post-30' } },
+    );
+    assert.equal(vueltas, 2);
+    assert.equal(director.encargos.length, 2);
+    assert.deepEqual(r.problemas, []);
+    assert.deepEqual(r.avisos, ['JERARQUIA: No hay salto de escala.']);
+  });
+
+  it('el titular simulado sale literal de la nota, sin acabar en una palabra gramatical', () => {
+    assert.equal(titularDeLaNota(PLATO), 'Gamba roja');
+    assert.equal(titularDeLaNota('Croquetas de jamón'), 'Croquetas de jamón');
+    assert.equal(titularDeLaNota('Manhattan Tower: brioche, tres carnes'), 'Manhattan Tower');
+  });
+});
+
+describe('F3 · director de diseño con Gemini (fetch falso)', () => {
+  it('manda el esquema en las instrucciones fijas, los hechos y el mapa en el mensaje, dos imágenes pequeñas, y valida la respuesta', async () => {
+    const cuerpos: Array<{ systemInstruction: { parts: Array<{ text: string }> }; contents: Array<{ parts: Array<{ text?: string; inlineData?: { data: string } }> }> }> = [];
+    const fetchFalso: typeof fetch = async (_url, init) => {
+      cuerpos.push(JSON.parse(String(init?.body)));
+      return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(propuestaRica()) }] } }] }), { status: 200 });
+    };
+    const director = new DirectorDisenoGemini(new ClienteGemini('k', ['m'], { fetch: fetchFalso, dormir: async () => {} }), ['m']);
+    const mapa = construirMapa(fotoSintetica());
+    const p = await director.proponer(
+      { hechos, foto: FOTO, mapa, colores: [{ token: 'carbon', hex: '#111111', papel: 'de la marca' }], voces: [{ id: 'frase', descripcion: 'League Gothic' }], titularCreativo: false, referencia: { id: 'ref-post-30', imagen: FOTO } },
+      ['un problema anterior'],
+    );
+    assert.equal(p.textos[0]?.clave, 'titular');
+    const cuerpo = cuerpos[0]!;
+    assert.match(cuerpo.systemInstruction.parts[0]!.text, /"capas"/, 'el esquema del dialecto va en las instrucciones');
+    const partes = cuerpo.contents[0]!.parts;
+    const texto = partes[0]!.text ?? '';
+    assert.match(texto, /PLATO \(nota del dueño\): «Gamba roja de Palamós/);
+    assert.match(texto, /Mapa de la foto/);
+    assert.match(texto, /@carbon #111111/);
+    assert.match(texto, /un problema anterior/);
+    const imagenes = partes.filter((x) => x.inlineData);
+    assert.equal(imagenes.length, 2);
+    for (const img of imagenes) {
+      const meta = await sharp(Buffer.from(img.inlineData!.data, 'base64')).metadata();
+      assert.ok(Math.max(meta.width ?? 0, meta.height ?? 0) <= 512);
+    }
+  });
+});
+
+describe('F3 · la orden única con el director de diseño (simulado) y el compositor de verdad', () => {
+  let carpeta: string;
+  let refs: DepsReferencias;
+  const deps = (director: DirectorDisenoSimulado): DepsPost => ({
+    raiz: RAIZ,
+    proyectos: join(carpeta, 'proyectos'),
+    activos: new AlmacenActivosFicheros(join(carpeta, 'datos', 'locales')),
+    referencias: refs,
+    director: new DirectorFotoSimulado(),
+    generador: new GeneradorFotoSimulado(),
+    revisor: new RevisorVisualSimulado(),
+    segmentador: new SegmentadorSimulado(),
+    componedor: new ComponedorProyectos(RAIZ, join(carpeta, 'datos')),
+    disenador: { director, medidor: new MedidorDeFotoSharp() },
+    ahora: () => '2026-11-14T10:00:00.000Z',
+  });
+
+  before(async () => {
+    carpeta = await mkdtemp(join(tmpdir(), 'estudio-f3-orden-'));
+    const locales = new AlmacenLocalesFicheros(join(carpeta, 'locales'));
+    await locales.guardar(Marca.parse(JSON.parse(await readFile(join(RAIZ, 'plantillas', 'marca.ejemplo.json'), 'utf8'))));
+    refs = {
+      piezas: { listar: async () => [] } as unknown as DepsReferencias['piezas'],
+      piezasHechas: new PiezasHechasFicheros(join(carpeta, 'proyectos')),
+      locales,
+      referencias: new AlmacenReferenciasFicheros(join(carpeta, 'locales')),
+      biblioteca: new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(RAIZ, 'biblioteca', 'referencias')),
+      enlaces: { obtener: async () => ({ estado: 'PIDE_CAPTURA', motivo: 'x' }) },
+      leerArchivo: (ruta) => readFile(ruta),
+      ahora: () => '2026-11-14T10:00:00.000Z',
+    };
+    await registrarReferencia(refs, { local: 'asador-etxebarri', id: 'ref-post-30', deBiblioteca: 'post-30' });
+  });
+  after(() => rm(carpeta, { recursive: true, force: true }));
+
+  async function hastaIntencion(d: DepsPost, proyecto: string) {
+    await crearEncargo(d, { proyecto, local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true });
+    await avanzar(d, proyecto);
+    await avanzar(d, proyecto, { confirmo: true });
+    return avanzar(d, proyecto, { confirmo: true });
+  }
+
+  it('ya no se para en INTENCION: el director la escribe, pasa las comprobaciones y la pieza se compone', async () => {
+    const director = new DirectorDisenoSimulado();
+    const d = deps(director);
+    const r = await hastaIntencion(d, 'gamba-f3');
+    assert.equal(r.parada, 'HECHO', r.parada);
+    assert.ok(r.mensajes.some((m) => /Intención escrita por director de diseño simulado/.test(m)), r.mensajes.join('\n'));
+    const enviado = director.encargos[0]!;
+    assert.equal(enviado.referencia?.ficha?.familia, 'F7', 'el director recibe la ficha de la referencia');
+    assert.ok(enviado.mapa.sujeto, 'y el mapa de la foto, con el plato de la máscara');
+    const intencion = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'gamba-f3', 'intenciones', 'post.json'), 'utf8')));
+    assert.equal(intencion.textos.titular, 'Gamba roja');
+    await stat(join(carpeta, 'proyectos', 'gamba-f3', 'intenciones', 'post.propuesta.json'));
+    await stat(join(carpeta, 'datos', 'disenos', 'gamba-f3', 'post', 'v001', 'exportadas', '4x5.jpg'));
+  });
+
+  it('la propuesta rica (detrás del plato, sello, anotación con flecha, tinta) se compone sin errores', async () => {
+    const d = deps(new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]));
+    const r = await hastaIntencion(d, 'gamba-rica');
+    assert.equal(r.parada, 'HECHO', r.parada);
+    const resuelto = JSON.parse(await readFile(join(carpeta, 'datos', 'disenos', 'gamba-rica', 'post', 'v001', 'resuelto.json'), 'utf8'));
+    assert.deepEqual(resuelto.problemas.filter((p: { gravedad: string }) => p.gravedad === 'ERROR'), []);
+    assert.ok(resuelto.medidas.oficio, 'el documento resuelto lleva las medidas de oficio');
+  });
+
+  it('si la propuesta no pasa, deja el borrador y la propuesta, se para, y no vuelve a llamar al director al relanzar', async () => {
+    const inventa = PropuestaDeDiseno.parse({ ...propuestaRica(), textos: propuestaRica().textos.map((t) => (t.clave === 'brasa' ? { ...t, texto: 'Brasa de encina' } : t)) });
+    const director = new DirectorDisenoSimulado([inventa, inventa]);
+    const d = deps(director);
+    let r = await hastaIntencion(d, 'gamba-mal');
+    assert.equal(r.encargo.paso, 'INTENCION');
+    assert.match(r.parada, /FALTA LA INTENCIÓN DE DISEÑO: la propuesta del director no pasa.*encina/);
+    await stat(join(carpeta, 'proyectos', 'gamba-mal', 'intenciones', 'post.borrador.json'));
+    r = await avanzar(d, 'gamba-mal');
+    assert.equal(director.encargos.length, 2, 'relanzar no gasta otra llamada');
+    assert.match(r.parada, /ya hay una propuesta del director que no pasó/);
+  });
+});

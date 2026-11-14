@@ -146,23 +146,18 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.deepEqual(d.intentos.map((i: { final: string }) => i.final), ['RECHAZADA', 'PASA']);
     await avanzar(proyecto, { confirmo: 'CONFIRMAR_FOTO' });
 
-    // Diseño: la orden deja un borrador de intención y se para; vista previa sin guardar; guardar compone.
+    // Diseño (F3): el director de diseño (simulado) escribe la intención y la orden compone sin pararse.
     d = await detalle(proyecto);
-    assert.equal(d.espera.tipo, 'INTENCION');
-    assert.equal(d.diseno.intencion.esBorrador, true);
+    assert.equal(d.espera.tipo, 'HECHO');
+    assert.equal(d.diseno.intencion.esBorrador, false);
     const intencion = d.diseno.intencion.contenido;
-    const vista = await pedir('POST', `/api/encargos/${proyecto}/vista-previa`, { intencion });
+    // La persona puede seguir afinando: vista previa sin guardar.
+    const vista = await pedir('POST', `/api/encargos/${proyecto}/vista-previa`, { intencion: { ...intencion, version: 2 } });
     assert.equal(vista.status, 200, JSON.stringify(vista.datos));
     assert.deepEqual(vista.datos.vista.errores, []);
     assert.equal((await archivo(`${vista.datos.vista.base}${vista.datos.vista.diseno}`)).status, 200);
 
-    const guardada = await pedir('PUT', `/api/encargos/${proyecto}/intencion`, { intencion });
-    assert.equal(guardada.status, 202, JSON.stringify(guardada.datos));
-    assert.equal((await esperar(guardada.datos.trabajo)).estado, 'TERMINADO');
-
     // Resultado: el post compuesto y exportado a 3:4 y 4:5, que sale como portada en la lista.
-    d = await detalle(proyecto);
-    assert.equal(d.espera.tipo, 'HECHO');
     assert.equal(d.diseno.vigente, 1);
     const [version] = d.diseno.versiones;
     assert.deepEqual(version.exportadas.map((x: { proporcion: string }) => x.proporcion), ['3:4', '4:5']);

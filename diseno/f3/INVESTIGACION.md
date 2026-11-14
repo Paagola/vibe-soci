@@ -86,12 +86,49 @@ para producir.
 | Radio del punto para una cobertura `d` | `paso × 0,7213 × √d` | **[decisión]** geométrica: un punto de radio `paso × 0,707` (media diagonal) llena su celda; el 0,7213 añade un 2 % para que el negro pleno no deje poros |
 | Borde del punto | suavizado 1 px | **[decisión]**: un punto de bordes duros se ve como mapa de bits al exportar a JPEG |
 
-### 3.4 Mapa de la foto (pendiente de escribir; lo usará el director de diseño)
+### 3.4 Mapa de la foto (`src/dominio/diseno/mapaDeFoto.ts`, escrito; lo usa el director de diseño)
 
 **[fuente]** `smartcrop.js` puntúa cada zona con el detalle (filtro de Laplace, `detailWeight: 0.2`) y la saturación
-(`saturationWeight: 0.1`, a partir de `saturationThreshold: 0.4`), tras reducir la imagen (`scoreDownSample: 8`). Nuestro
-mapa usará las mismas dos señales por celda de la retícula, para decirle al director dónde hay aire sin gastar tokens de
-visión en ello.
+(`saturationWeight: 0.1`, a partir de `saturationThreshold: 0.4`), tras reducir la imagen (`scoreDownSample: 8`).
+Comprobado de nuevo en su código el 14/11.
+
+Lo que hace nuestro mapa, y en qué se aparta:
+
+| Dato | Valor | De dónde sale |
+|---|---|---|
+| Señal de detalle | Laplaciano de 4 vecinos sobre la luz (Rec. 709), media por celda y normalizada al máximo de la foto | **[fuente]** la señal de detalle de `smartcrop.js` |
+| Señal del sujeto | La **máscara** del plato (Apple Vision), no la saturación | **[decisión]**: `smartcrop` usa la saturación porque no sabe dónde está el sujeto; nosotros sí lo sabemos, y en un plato la saturación marca también un mantel o un neón |
+| Retícula | 12 × 16 celdas, 10 × 10 px de muestra por celda | **[decisión]**: la misma retícula en la que habla el director; 10 px por celda bastan para el detalle y el color |
+| `OCUPACION_DE_SUJETO` | 0,12 | **[decisión]**: una celda con más del 12 % de plato ya no admite un texto «aparte» sin rozarlo |
+| `DETALLE_TRANQUILO` | 0,3 del máximo | **[decisión]** sin calibrar: hay que mirarlo con fotos reales del producto |
+| Zonas libres | Los 3 mayores rectángulos de celdas libres, sin pisarse, de 2 × 2 celdas como mínimo | Algoritmo clásico del mayor rectángulo en un histograma (dominio público); a igual área gana el más apaisado, que es la forma de un bloque de texto |
+| Encuadre | La foto y la máscara se reducen «a sangre» (cubriendo 3:4 y centradas), como las pinta el compositor | `src/adaptadores/imagen/MedidorDeFotoSharp.ts` |
+
+El mapa se le da al director **como texto** (una letra por celda, unas doscientas fichas) en lugar de pedirle que mire la
+foto en alta: un modelo de lenguaje decide bien qué poner y mal dónde hay sitio.
+
+### 3.5 Color (`src/dominio/diseno/color.ts`)
+
+| Dato | Valor | De dónde sale |
+|---|---|---|
+| Espacio de color para mezclar y agrupar | OKLab / OKLCH | **[fuente]** Björn Ottosson, «A perceptual color space for image processing» (2020, `bottosson.github.io/posts/oklab`). Las matrices son las publicadas ahí |
+| Paleta dominante | k-medias en OKLab, arranque k-medias++ con semilla fija, 14 vueltas | **[fuente]** el arranque es el de Arthur y Vassilvitskii, «k-means++: The Advantages of Careful Seeding» (SODA 2007). La semilla fija y las 14 vueltas son **[decisión]** (determinista y suficiente con una muestra de 19 200 píxeles) |
+| Fundir grupos parecidos | distancia OKLab < 0,05 | **[decisión]**: por debajo, dos grupos se leen como el mismo color en la foto. Sin medir con el usuario |
+| Contraste | ratio WCAG 2; 4,5 para texto pequeño y 3 para el grande | **[fuente]** WCAG 2.x, criterio 1.4.3 (contraste mínimo) |
+| «Color del plato» (`colorVivo`) | peso ≥ 4 % y croma OKLCH ≥ 0,09 | **[decisión]**. La regla de fondo es **[fuente]** `editorial-food-poster`: «un solo color de acento, sacado de la comida» |
+| Un color medido «repite» uno de la marca | contraste entre los dos < 1,15 | **[decisión]** (`aplicacion/diseno/proponerDiseno.ts`): así la lista del director no lleva dos negros casi iguales |
+
+### 3.6 El director de diseño (`src/dominio/diseno/propuesta.ts`, `src/aplicacion/diseno/proponerDiseno.ts`)
+
+| Dato | Valor | De dónde sale |
+|---|---|---|
+| Tinta «impresa» | densidad 0,08, canto seco 0,02 | Dentro del margen de §3.2 (6–12 % y 1–4 %) **[fuente]**; el punto elegido es **[decisión]** |
+| Tinta «gastada» | densidad 0,12, canto seco 0,04 | El extremo alto del mismo margen |
+| Registro | 6 × 4 px | Dentro de 5–15 px (§3.2) |
+| Texto «detrás» del plato | el plato tapa del 20 al 45 % de su franja más tapada; sin salir de la zona segura | **[decisión]** heredada de las intenciones hechas a mano (v3-maqueta usa 30–45 %, Casa Aranda 10–20 %). Desde el 14/11 vale también con la foto a sangre: antes solo se pedía un mínimo de cruce y un titular tapado casi entero pasaba sin aviso |
+| Una sola vuelta de corrección | 2 propuestas como mucho | Como el director de foto (`proponerFotoNueva`): con el tier gratuito de Gemini cada llamada cuenta (ESTADO.md §6) |
+| Los avisos de oficio se devuelven una vez | Si quedan en la segunda, se apuntan y se compone | Los avisos de §3.1 son criterio, no regla («un criterio se puede romper con una razón») |
+| No inventar | cita literal, palabras y cifras que consten; ≤ 1 titular creativo de ≤ 2 palabras y sin reclamos, solo si el encargo lo permite | Regla del proyecto (`CONTEXTO-PARA-IA.md`). **[fuente]** de la idea de que la tipografía lleve evidencia: `photo-riso-poster` |
 
 ## 4. De la investigación a las capacidades
 
@@ -112,6 +149,8 @@ visión en ello.
 | Papel sin estucar | `editorial-food-poster` (`references/prompts.md`: «a barely perceptible paper texture») | `textura` con `recurso: papel` | `tinta.ts` |
 | Versalitas, cifras antiguas y florituras | práctica tipográfica; fontkit las admite | `rasgos` en el estilo de texto | `MotorTexto.ts` |
 | Medidas de oficio | `mono-color-skill`, `evo-poster` | `medidas.oficio` y avisos JERARQUIA, DENSIDAD, VOCES, GESTOS y CRUCE | `oficio.ts` |
+| Dónde hay aire en la foto | `smartcrop.js` | mapa de la foto, dado al director como texto | `mapaDeFoto.ts`, `MedidorDeFotoSharp.ts` |
+| El director escribe la intención | LayoutPrompter y OpenCOLE (el modelo decide, el código coloca) | propuesta de diseño (dialecto corto en la retícula) que el código comprueba y compila | `propuesta.ts`, `proponerDiseno.ts`, `DirectorDisenoGemini.ts` |
 
 ## 5. Lo que no se ha tomado, y por qué
 
@@ -132,3 +171,9 @@ visión en ello.
   composición: sus márgenes son los que sus autores consideran correctos, no medidas sobre un corpus. Los tomo como
   punto de partida razonado y los marco para calibrar con tus piezas.
 - Ningún umbral de oficio se ha contrastado todavía con tu juicio más allá de las cuatro piezas aprobadas de F1.6.
+- **Comprobación de las fuentes (14/11):** he vuelto a abrir `mono-color-skill` (existe, MIT; su `SKILL.md` dice
+  literalmente «Use one dramatic scale jump: largest text is 5-12 times the microcopy size», «One manual gesture
+  interrupts the system», «Type collides with the object» y «Handwriting supplies human interruption, never dates,
+  locations, essential facts, or long copy»), `editorial-food-poster` (existe, MIT) y los valores por defecto de
+  `smartcrop.js`. No he vuelto a abrir los JSON de `design-system/` de `mono-color-skill` (los márgenes de §3.2 y
+  `manual_gesture_limit` salen de ahí según la lectura del 11–12/11) ni el resto de fuentes.

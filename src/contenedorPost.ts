@@ -2,9 +2,9 @@
  * Raíz de composición de la ORDEN ÚNICA (`npm run post` y las pantallas de la web): decide qué adaptador va detrás de
  * cada puerto según la configuración y el modo. Junto con contenedor.ts, es el único sitio que crea clases concretas.
  *
- * Real: proyectos/<proyecto>/ y datos/. Director y revisor con Gemini; foto nueva con Gemini de pago solo si
- * GEMINI_FACTURACION=si, con el tope GEMINI_TOPE_USD; máscara con Apple Vision.
- * Simulado: director, generador, revisor y máscara simulados; nada se gasta y todo se escribe en datos-simulado/.
+ * Real: proyectos/<proyecto>/ y datos/. Directores (de foto y de diseño) y revisor con Gemini; foto nueva con Gemini de
+ * pago solo si GEMINI_FACTURACION=si, con el tope GEMINI_TOPE_USD; máscara con Apple Vision; mapa de la foto con sharp.
+ * Simulado: directores, generador, revisor y máscara simulados; nada se gasta y todo se escribe en datos-simulado/.
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -19,11 +19,14 @@ import { BibliotecaFicheros } from './adaptadores/ficheros/BibliotecaFicheros.js
 import { GaleriaDisenosFicheros } from './adaptadores/ficheros/GaleriaDisenosFicheros.js';
 import { PiezasHechasFicheros } from './adaptadores/ficheros/PiezasHechasFicheros.js';
 import { ClienteGemini } from './adaptadores/gemini/ClienteGemini.js';
+import { DirectorDisenoGemini } from './adaptadores/gemini/DirectorDisenoGemini.js';
 import { DirectorFotoGemini } from './adaptadores/gemini/DirectorFotoGemini.js';
 import { GeneradorFotoGemini, gastoAcumuladoGemini } from './adaptadores/gemini/GeneradorFotoGemini.js';
 import { registradorDeUso } from './adaptadores/gemini/registroUso.js';
 import { RevisorVisualGemini } from './adaptadores/gemini/RevisorVisualGemini.js';
+import { MedidorDeFotoSharp } from './adaptadores/imagen/MedidorDeFotoSharp.js';
 import { SegmentadorVision } from './adaptadores/imagen/SegmentadorVision.js';
+import { DirectorDisenoSimulado } from './adaptadores/simulado/DisenoSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from './adaptadores/simulado/FotoSimulada.js';
 import type { DepsDisenoPost } from './aplicacion/post/disenoDelPost.js';
 import type { DepsReferencias } from './aplicacion/referencias/dependencias.js';
@@ -102,8 +105,17 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     galeriaDeBorradores: new GaleriaDisenosFicheros(CARPETA_DE_BORRADORES),
     ahora,
   };
+  const medidor = new MedidorDeFotoSharp();
+  const describirFuente = await descriptorDeFuentes(join(RAIZ, 'recursos', 'tipografias', 'catalogo.json'));
   if (simular) {
-    return { ...comunes, director: new DirectorFotoSimulado(), generador: new GeneradorFotoSimulado(), revisor: new RevisorVisualSimulado(), segmentador: new SegmentadorSimulado() };
+    return {
+      ...comunes,
+      director: new DirectorFotoSimulado(),
+      generador: new GeneradorFotoSimulado(),
+      revisor: new RevisorVisualSimulado(),
+      segmentador: new SegmentadorSimulado(),
+      disenador: { director: new DirectorDisenoSimulado(), medidor, describirFuente },
+    };
   }
 
   const { geminiApiKey } = config;
@@ -122,6 +134,18 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     }),
     revisor: geminiApiKey ? new RevisorVisualGemini(cliente(geminiApiKey, 'comprobacion-salida'), modelos) : revisorSinClave,
     segmentador: new SegmentadorVision(RAIZ),
+    // Sin clave no hay director de diseño: INTENCION deja el borrador y se para, como antes de F3.
+    ...(geminiApiKey ? { disenador: { director: new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos), medidor, describirFuente } } : {}),
+  };
+}
+
+/** «anybody: grotesca, variable, ultracondensada, display»: cómo es cada fuente, para describírsela al director. */
+async function descriptorDeFuentes(rutaCatalogo: string): Promise<(fuente: string) => string> {
+  const catalogo = JSON.parse(await readFile(rutaCatalogo, 'utf8')) as { fuentes: Array<{ id: string; familia: string; clasificacion?: string[] }> };
+  const porId = new Map(catalogo.fuentes.map((f) => [f.id, f]));
+  return (fuente) => {
+    const f = porId.get(fuente);
+    return f ? `${f.familia} (${(f.clasificacion ?? []).join(', ')})` : fuente;
   };
 }
 
