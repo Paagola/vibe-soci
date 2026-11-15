@@ -1,6 +1,6 @@
 // Alta de un local: identidad de marca con colores HEX (con su muestra) y tipografías.
 import { api } from '../api.js';
-import { bloqueError, h, reemplazar } from '../ui.js';
+import { avisar, bloqueError, h, reemplazar } from '../ui.js';
 
 const MAX_COLORES = 6;
 
@@ -71,7 +71,13 @@ export async function vistaNuevoLocal() {
           .filter(([, control]) => control.value.trim())
           .map(([rol, control]) => ({ rol, descripcion: control.value.trim() })),
       };
-      await api('POST', '/locales', { marca, sobrescribir: sobrescribir.checked });
+      const respuesta = await api('POST', '/locales', { marca, sobrescribir: sobrescribir.checked });
+      // Punto 2: qué fuentes se han descargado, cuáles ya estaban y cuáles se han sustituido (pendientes de confirmar).
+      const fuentes = respuesta.marca?.fuentes ?? [];
+      if (fuentes.length) {
+        const estado = { EN_CATALOGO: 'ya estaba', DESCARGADA: 'descargada (Google Fonts, OFL)', SUSTITUIDA: 'SUSTITUIDA, pendiente de confirmar' };
+        for (const f of fuentes) avisar(`${f.rol}: ${f.pedida} → ${f.id} (${estado[f.estado]}). ${f.nota}`, f.estado === 'SUSTITUIDA' ? 'error' : 'info');
+      }
       location.hash = '#/nuevo';
     } catch (error) {
       reemplazar(errores, bloqueError(error));

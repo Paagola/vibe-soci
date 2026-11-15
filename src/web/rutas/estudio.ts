@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import express, { Router } from 'express';
 import { z } from 'zod';
 import { crearLocal } from '../../aplicacion/crearLocal.js';
+import { prepararMarca } from '../../aplicacion/prepararMarca.js';
+import { GoogleFontsGithub } from '../../adaptadores/fuentes/GoogleFontsGithub.js';
 import { RAIZ } from '../../config.js';
 import { validar } from '../../dominio/validacion.js';
 import { ErrorHttp } from '../errores.js';
@@ -55,7 +57,10 @@ export function rutasDelEstudio(estudio: Estudio): Router {
 
   rutas.post('/locales', async (req, res) => {
     const { marca, sobrescribir } = validar(CuerpoLocal, req.body, 'La petición no es válida.');
-    res.status(201).json({ local: await crearLocal(estudio.deps(), marca, { sobrescribir }) });
+    const local = await crearLocal(estudio.deps(), marca, { sobrescribir });
+    // Punto 2: sus tokens y sus fuentes (Google Fonts, OFL), solo en real: en simulado no se escribe en marcas/ ni se descarga.
+    const preparada = estudio.simulado() ? undefined : await prepararMarca({ raiz: RAIZ, proveedor: new GoogleFontsGithub(), hoy: () => new Date().toISOString().slice(0, 10) }, local);
+    res.status(201).json({ local, ...(preparada ? { marca: preparada } : {}) });
   });
 
   rutas.post('/ejemplos', async (req, res) => {
