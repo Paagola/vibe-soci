@@ -48,7 +48,10 @@ ${referencia}
 - "anguloGrados": la altura de la cámara sobre el plano de la mesa (0 = a ras de mesa, 90 = cenital, negativo si mira hacia arriba). Mírala bien: un ¾ alto está en torno a 45°.
 - "distancia": el tamaño de plano: GENERAL (el plato y mucho entorno), MEDIO (el plato entero con algo de aire), PRIMER_PLANO (el plato llena el encuadre o se corta) o MACRO (un detalle).
 - "encuadre" y "luz": cómo está hecha.
-- "elementos": cada elemento real con su estado (tostado, glaseado, brillante…) y su recuento (null si no se puede contar).
+- "elementos": cada elemento real con su estado (tostado, glaseado, brillante…) y su recuento (null si no se puede contar). Cuenta pieza a pieza, mirando la foto entera:
+  - "recuento" son solo las piezas que se ven ENTERAS; las que corta el borde de la foto van en "cortados" (una pieza cortada puede ser una entera en el plato real, o no: no la des por entera);
+  - piezas parecidas pero distintas son elementos distintos (un rollito blanco con huevas no es un rollito de atún): no las juntes;
+  - si alguna pieza queda tapada, borrosa o no sabes de qué tipo es, pon "dudoso": true y explícalo en "nota". Mejor dudoso que inventado.
 - "defectos": lo que tiene de foto rápida (resolución, luz plana, cosas que sobran en el encuadre, manchas).
 - "utilizable" y "motivo": si sirve como lista de elementos o hay que pedir otra foto.
 
@@ -67,5 +70,5 @@ Elige cámara, distancia y luz por el plato y la referencia, no por costumbre.
 En "decisiones", explica en español cada decisión y de qué ejemplo o referencia la sacas.
 ${problemas}
 Responde solo con este JSON (los números son de relleno: pon los tuyos):
-{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":1}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
+{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
 }

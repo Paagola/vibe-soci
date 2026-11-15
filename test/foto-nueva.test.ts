@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { DIFERENCIA_MINIMA_GRADOS, esOtraToma, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva } from '../src/dominio/fotoNueva.js';
+import { DIFERENCIA_MINIMA_GRADOS, esOtraToma, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva, DescripcionFoto, recuentosQueMirar } from '../src/dominio/fotoNueva.js';
 import { instruccionesFoto, textoFotoNueva } from '../src/adaptadores/gemini/instruccionesFoto.js';
 
 // Los huecos del prompt de la gamba que gustó: el montaje tiene que dar ese mismo prompt.
@@ -91,5 +91,27 @@ describe('Texto en arco (F10): circulo-texto con arco parcial', async () => {
   it('sin arco sigue siendo la vuelta entera, como un sello', () => {
     const svg = motor.trazarCircular(estilo, 'CAFÉ DE ESPECIALIDAD', 40, 500, 500, 200, -90);
     assert.ok(Math.max(...ys(svg)) > 650, 'hay letras en la mitad de abajo');
+  });
+});
+
+describe('F3.2 (punto 5) · recuento: piezas enteras, cortadas por el borde y dudosas', () => {
+  it('lo cortado y lo dudoso se dice aparte para que lo mire una persona', () => {
+    const d = DescripcionFoto.parse({
+      anguloGrados: 30,
+      encuadre: 'tabla en ¾',
+      luz: 'natural',
+      elementos: [
+        { nombre: 'rollito de atún', estado: 'con cebollino', recuento: 2, cortados: 1 },
+        { nombre: 'rollito blanco con huevas', estado: 'con huevas', recuento: 1, dudoso: true, nota: 'medio tapado por la flor' },
+        { nombre: 'nigiri de salmón', estado: 'flambeado', recuento: 4 },
+      ],
+      defectos: [],
+      utilizable: true,
+      motivo: 'sirve',
+    });
+    assert.deepEqual(recuentosQueMirar(d), [
+      'rollito de atún: 2 enteros y 1 cortado(s) por el borde',
+      'rollito blanco con huevas: 1 enteros (dudoso) · medio tapado por la flor',
+    ]);
   });
 });

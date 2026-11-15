@@ -30,9 +30,26 @@ export const LADO_MINIMO_RECOMENDADO_PX = 1000;
 const Elemento = z.object({
   nombre: z.string().min(1),
   estado: z.string().min(1),
-  /** null si no se puede contar (salsa, brotes). */
+  /** null si no se puede contar (salsa, brotes). Solo las piezas que se ven ENTERAS. */
   recuento: z.number().int().positive().nullable(),
+  /**
+   * Piezas de este elemento que la foto corta por el borde (se ve solo una parte): no cuentan en «recuento» y se dicen
+   * aparte (Sushita, 15/11: «×4» cuando se veían 2 enteras y una cortada).
+   */
+  cortados: z.number().int().nonnegative().optional(),
+  /** El director no está seguro del recuento (piezas tapadas, parecidas entre sí, borrosas): lo tiene que mirar una persona. */
+  dudoso: z.boolean().optional(),
+  /** Por qué es dudoso, o qué se ve cortado. */
+  nota: z.string().optional(),
 });
+export type ElementoFoto = z.infer<typeof Elemento>;
+
+/** Los elementos cuyo recuento hay que mirar en la parada: dudosos o con piezas cortadas por el borde. */
+export function recuentosQueMirar(d: DescripcionFoto): string[] {
+  return d.elementos
+    .filter((e) => e.dudoso || (e.cortados ?? 0) > 0)
+    .map((e) => `${e.nombre}: ${e.recuento ?? 'sin contar'} enteros${e.cortados ? ` y ${e.cortados} cortado(s) por el borde` : ''}${e.dudoso ? ' (dudoso)' : ''}${e.nota ? ` · ${e.nota}` : ''}`);
+}
 
 /** Lo que el director ve en la foto subida, antes de proponer nada. */
 export const DescripcionFoto = z.object({

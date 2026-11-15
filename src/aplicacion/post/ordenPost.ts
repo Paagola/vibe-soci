@@ -28,7 +28,7 @@ import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
 import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
-import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
+import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar } from '../../dominio/fotoNueva.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas } from '../../puertos/ComponedorDePiezas.js';
@@ -247,13 +247,15 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
 
     const disponible = deps.generador.disponible();
     const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0)) : 0;
-    const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''} (${x.estado})`).join('; ');
+    const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''}${x.cortados ? ` (+${x.cortados} cortado por el borde)` : ''}${x.dudoso ? ' ¿?' : ''} (${x.estado})`).join('; ');
+    const mirar = recuentosQueMirar(propuesta.descripcion);
     if (!accion.confirmo) {
       return {
         encargo,
         parar: [
           'CONFIRMA LOS ELEMENTOS Y EL GASTO',
           `  Elementos: ${elementos}`,
+          ...(mirar.length ? [`  MIRA ESTOS RECUENTOS EN LA FOTO SUBIDA (el director no está seguro o hay piezas cortadas): ${mirar.join(' | ')}`] : []),
           `  Cámara: de ${propuesta.descripcion.anguloGrados}° a ${propuesta.huecos.camara.anguloGrados}° · ${propuesta.huecos.camara.descripcion}`,
           `  Prompt: ${prompt}`,
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
@@ -339,7 +341,8 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''), 'utf8')) as { propuesta: unknown };
     const propuesta = PropuestaFotoNueva.parse(guardada.propuesta);
     const lista = `${propuesta.huecos.elementos.replace(/[.\s]+$/, '')}. ${propuesta.huecos.recuento}`;
-    const piezas = propuesta.descripcion.elementos.filter((x) => x.recuento !== null && x.recuento > 0).map((x) => ({ nombre: x.nombre, esperado: x.recuento as number }));
+    // Un recuento dudoso no sirve de patrón para contar piezas en la foto nueva.
+    const piezas = propuesta.descripcion.elementos.filter((x) => x.recuento !== null && x.recuento > 0 && !x.dudoso).map((x) => ({ nombre: x.nombre, esperado: x.recuento as number }));
     const revision = await comprobarFotoNueva(
       { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
       { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas },
