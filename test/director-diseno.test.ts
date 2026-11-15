@@ -304,8 +304,9 @@ describe('F3 · el caso de uso: colores, voces y reintento', () => {
       { director: new DirectorDisenoSimulado(), critico, medidor, probar: async () => ({ errores: [], avisos: [], png: '/pieza.png' }) },
       { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens },
     );
-    assert.deepEqual(critico.piezas, ['/pieza.png']);
-    assert.deepEqual(r.critica, { llega: false, motivos: ['El titular no tiene tensión: que sangre.'], adoptada: true });
+    assert.deepEqual(critico.piezas, ['/pieza.png', '/pieza.png'], 'la corrección adoptada se vuelve a criticar');
+    assert.deepEqual(r.critica, { llega: true, motivos: [], adoptada: true });
+    assert.equal(r.enRevision, false);
     assert.equal(r.intentos.at(-1)?.origen, 'critica');
     assert.equal(r.propuesta?.composicion?.sangra, true);
     // Si la corrección no pasa, se queda la pieza que ya pasaba y la crítica se apunta como aviso.
@@ -317,6 +318,31 @@ describe('F3 · el caso de uso: colores, voces y reintento', () => {
     assert.equal(r2.critica?.adoptada, false);
     assert.deepEqual(r2.problemas, []);
     assert.ok(r2.avisos.includes('CRITICA: Falta tensión.'));
+    assert.equal(r2.enRevision, true, 'no llega y su corrección no pasa: queda en revisión');
+  });
+
+  it('la firma del local es obligatoria, salvo excepción razonada', async () => {
+    const sinFirma = { ...(await new DirectorDisenoSimulado().proponer({ hechos } as never)), composicion: { mecanismo: 'TITULAR_DETRAS' as const, titular: 'titular' } };
+    const director = new DirectorDisenoSimulado([sinFirma, { ...sinFirma, excepcion: 'Pieza de serie: la firma va en la portada del carrusel.' }]);
+    const r = await proponerDiseno({ director, medidor, probar: async () => ({ errores: [], avisos: [] }) }, { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens });
+    assert.match(r.intentos[0]!.problemas.join(), /Falta la firma del local/);
+    assert.deepEqual(r.problemas, []);
+  });
+
+  it('COBERTURA fuera de rango es un error: el código prueba el titular al otro lado antes de devolverlo', async () => {
+    const pruebas: Intencion[] = [];
+    const r = await proponerDiseno(
+      {
+        director: new DirectorDisenoSimulado(),
+        medidor,
+        probar: async (i) => (pruebas.push(i), pruebas.length === 1 ? { errores: [], avisos: ['COBERTURA: El sujeto tapa 76 % de «titular» en su parte más tapada; se pedía entre el 20 % y el 45 %.'] } : { errores: [], avisos: [] }),
+      },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens },
+    );
+    assert.deepEqual(r.problemas, []);
+    assert.match(r.intentos[0]!.arreglos.join(), /al otro lado del plato \(abajo\)/);
+    const titular = (i: Intencion) => i.capas.find((c) => c.id === 'titular') as { caja: { y: number } };
+    assert.ok(titular(pruebas[1]!).caja.y > titular(pruebas[0]!).caja.y, 'el titular baja');
   });
 
   it('el titular simulado sale literal de la nota, sin acabar en una palabra gramatical', () => {
@@ -418,12 +444,22 @@ describe('F3 · la orden única con el director de diseño (simulado) y el compo
   });
 
   it('la propuesta rica (detrás del plato, sello, anotación con flecha, tinta) se compone sin errores', async () => {
-    const d = deps(new DirectorDisenoSimulado([propuestaRica(), propuestaRica()]));
+    // La máscara simulada es una elipse que no sigue a la gamba: la cobertura medida no dice nada, de ahí la excepción.
+    const rica = maqueta({ ...propuestaRica(), excepcion: 'Prueba del compositor con una máscara simulada que no sigue al plato.' });
+    const d = deps(new DirectorDisenoSimulado([rica, rica]));
     const r = await hastaIntencion(d, 'gamba-rica');
     assert.equal(r.parada, 'HECHO', r.parada);
     const resuelto = JSON.parse(await readFile(join(carpeta, 'datos', 'disenos', 'gamba-rica', 'post', 'v001', 'resuelto.json'), 'utf8'));
     assert.deepEqual(resuelto.problemas.filter((p: { gravedad: string }) => p.gravedad === 'ERROR'), []);
     assert.ok(resuelto.medidas.oficio, 'el documento resuelto lleva las medidas de oficio');
+  });
+
+  it('si la crítica visual dice que no llega y no hay corrección que pase, queda EN REVISIÓN con su borrador, no HECHO', async () => {
+    const d = { ...deps(new DirectorDisenoSimulado()), disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado([{ llega: false, motivos: ['No tiene la tensión de la referencia.'] }]), medidor: new MedidorDeFotoSharp() } };
+    const r = await hastaIntencion(d, 'gamba-revision');
+    assert.equal(r.encargo.paso, 'INTENCION');
+    assert.match(r.parada, /EN REVISIÓN: .*No tiene la tensión de la referencia/);
+    await stat(join(carpeta, 'proyectos', 'gamba-revision', 'intenciones', 'post.borrador.json'));
   });
 
   it('si la propuesta no pasa, deja el borrador y la propuesta, se para, y no vuelve a llamar al director al relanzar', async () => {

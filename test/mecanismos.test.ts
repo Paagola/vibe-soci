@@ -193,3 +193,10 @@ describe('F3.1 · voces del estudio y arreglos del código', () => {
 });
 
 const alto = (c: { fila: number[] }) => c.fila[1]! - c.fila[0]! + 1;
+
+describe('F3.2 · sin aire no hay titular detrás', () => {
+  it('si el plato llena la foto (Sushita), TITULAR_DETRAS no se coloca y propone PLATO_SOBRE_COLOR', () => {
+    const lleno = mapaSintetico({ cy: 0.5, rx: 0.6, ry: 0.48 });
+    assert.match(colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma' }), entorno(lleno)).problemas.join(), /No hay aire .*PLATO_SOBRE_COLOR/);
+  });
+});

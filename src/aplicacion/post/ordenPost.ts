@@ -428,16 +428,19 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
             const r = await disenarIntencion(deps, deps.disenador, e, marca, tokens);
             await writeFile(
               archivoPropuesta,
-              `${JSON.stringify({ director: deps.disenador.director.nombre, critico: deps.disenador.critico?.nombre ?? null, fecha: deps.ahora(), propuesta: r.propuesta, problemas: r.problemas, avisos: r.avisos, critica: r.critica ?? null, intentos: r.intentos, mapa: { sujeto: r.mapa.sujeto, libres: r.mapa.libres, vivo: r.mapa.vivo } }, null, 2)}\n`,
+              `${JSON.stringify({ director: deps.disenador.director.nombre, critico: deps.disenador.critico?.nombre ?? null, fecha: deps.ahora(), propuesta: r.propuesta, problemas: r.problemas, avisos: r.avisos, critica: r.critica ?? null, enRevision: r.enRevision, intentos: r.intentos, mapa: { sujeto: r.mapa.sujeto, libres: r.mapa.libres, vivo: r.mapa.vivo } }, null, 2)}\n`,
             );
-            if (r.intencion && r.problemas.length === 0) {
+            if (r.intencion && r.problemas.length === 0 && !r.enRevision) {
               await writeFile(intencion, `${JSON.stringify(r.intencion, null, 2)}\n`);
               const critica = r.critica ? ` Crítica visual: ${r.critica.llega ? 'llega al oficio de la referencia' : `no llega (${r.critica.motivos.join('; ')})`}${r.critica.adoptada ? '; se adopta su corrección' : ''}.` : '';
               nota(`Intención escrita por ${deps.disenador.director.nombre} (${r.intentos.length} propuesta(s))${r.avisos.length ? `, con avisos: ${r.avisos.join(' | ')}` : ''}.${critica}`);
               return { encargo: ir(e, 'COMPONER') };
             }
             if (r.intencion) await writeFile(borrador, `${JSON.stringify(r.intencion, null, 2)}\n`);
-            motivo = `la propuesta del director no pasa las comprobaciones: ${r.problemas.join(' | ')}`;
+            // Cumple todo lo medible pero la crítica visual dice que no llega: queda EN REVISIÓN, no se compone sola.
+            motivo = r.problemas.length
+              ? `la propuesta del director no pasa las comprobaciones: ${r.problemas.join(' | ')}`
+              : `EN REVISIÓN: cumple todo lo medible, pero la crítica visual dice que no llega al oficio de la referencia (${r.critica?.motivos.join('; ') ?? 'sin motivos'}). El borrador es su mejor propuesta: si te vale, guárdalo como intención`;
           } catch (error) {
             if (!(error instanceof ErrorDeServicio || error instanceof ErrorDeUsuario)) throw error;
             motivo = `el director de diseño no ha podido responder (${error.message})`;

@@ -75,8 +75,10 @@ export interface ResultadoDiseno {
   /** Avisos que quedan (no impiden componer; se apuntan para que los veas). */
   avisos: string[];
   intentos: Intento[];
-  /** Lo que dijo la crítica visual, si la hubo. */
+  /** Lo que dijo la crítica visual, si la hubo (la última). */
   critica?: { llega: boolean; motivos: string[]; adoptada: boolean };
+  /** La crítica dice que no llega al oficio de la referencia: la pieza no se compone sola, queda en revisión. */
+  enRevision: boolean;
   mapa: MapaDeFoto;
 }
 
@@ -89,7 +91,9 @@ const PENDIENTE = 'propuesta del estudio, pendiente de confirmar con el local';
 /** Los avisos que no dependen del director (la foto o los activos): no se le devuelven. */
 const AVISOS_AJENOS = /^(ACTIVO|FIDELIDAD|RESOLUCION):/;
 /** Los avisos de oficio que pasan a ser obligatorios cuando la foto lo permite. */
-const OFICIO_OBLIGATORIO = /^(CRUCE|JERARQUIA):/;
+const OFICIO_OBLIGATORIO = /^(CRUCE|JERARQUIA|COBERTURA):/;
+/** Críticas visuales como mucho: la primera y, si su corrección se adopta, una para confirmarla. */
+export const MAX_CRITICAS = 2;
 
 export const MAX_PROPUESTAS = 2;
 
@@ -144,6 +148,8 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
 
   const evaluar = async (p: PropuestaDeDiseno, ajustes: Ajustes = {}): Promise<Evaluacion> => {
     const problemas = problemasDeTextos(p.textos, entrada.hechos, { titularCreativo: encargo.titularCreativo, palabrasDeReferencia });
+    const sinFirma = firmaQueFalta(p);
+    if (sinFirma) problemas.push(sinFirma);
     const arreglos: string[] = [];
     let maqueta: Maqueta;
     if (p.composicion) {
@@ -204,18 +210,19 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     devolver = [...e.problemas, ...devolubles.map((a) => `(aviso de oficio) ${a}`)];
   }
 
-  // Crítica visual: solo sobre una pieza que ya cumple todo lo medible, y una vuelta como mucho.
+  // Crítica visual: solo sobre una pieza que ya cumple todo lo medible. Si no llega, se prueba su corrección y, si se
+  // adopta, se vuelve a criticar (MAX_CRITICAS). Si al final no llega, la pieza queda EN REVISIÓN: no se compone sola.
   let critica: ResultadoDiseno['critica'];
   if (deps.critico && mejor && mejor.e.problemas.length === 0 && mejor.e.png) {
-    const c = await deps.critico.criticar(encargo, mejor.propuesta, mejor.e.png);
-    critica = { llega: c.llega, motivos: c.motivos, adoptada: false };
-    if (!c.llega && c.propuesta) {
+    for (let v = 1; v <= MAX_CRITICAS; v++) {
+      const c = await deps.critico.criticar(encargo, mejor.propuesta, mejor.e.png!);
+      critica = { llega: c.llega, motivos: c.motivos, adoptada: critica?.adoptada ?? false };
+      if (c.llega || v === MAX_CRITICAS || !c.propuesta) break;
       const e = await evaluarYArreglar(c.propuesta);
       intentos.push({ origen: 'critica', problemas: e.problemas, avisos: e.avisos, arreglos: e.arreglos });
-      if (e.problemas.length === 0) {
-        mejor = { propuesta: c.propuesta, e };
-        critica.adoptada = true;
-      }
+      if (e.problemas.length || !e.png) break;
+      mejor = { propuesta: c.propuesta, e };
+      critica.adoptada = true;
     }
   }
 
@@ -224,11 +231,22 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     propuesta: final.propuesta,
     ...(final.e.intencion ? { intencion: final.e.intencion } : {}),
     problemas: final.e.problemas,
-    avisos: [...final.e.avisos, ...(critica && !critica.llega && !critica.adoptada ? critica.motivos.map((m) => `CRITICA: ${m}`) : [])],
+    avisos: [...final.e.avisos, ...(critica && !critica.llega ? critica.motivos.map((m) => `CRITICA: ${m}`) : [])],
+    enRevision: Boolean(critica && !critica.llega),
     intentos,
     ...(critica ? { critica } : {}),
     mapa,
   };
+}
+
+/**
+ * La firma del local es obligatoria (Sushita, 15/11: un post con un solo texto, sin nombre, aunque la marca tiene nombre,
+ * ciudad e Instagram). Vale la «firma» de la composición o, en una maqueta a mano, cualquier texto de la MARCA.
+ */
+export function firmaQueFalta(p: PropuestaDeDiseno): string | undefined {
+  if (p.excepcion) return undefined;
+  const conFirma = p.composicion ? Boolean(p.composicion.firma) : p.textos.some((t) => t.fuente === 'MARCA');
+  return conFirma ? undefined : 'Falta la firma del local (su nombre, o su Instagram): ponla en «firma», o explica en «excepcion» por qué esta pieza no la lleva.';
 }
 
 /** Los arreglos que el código sabe hacer sin el modelo: velo y tinta clara donde falta contraste; titular más alto si falta escala. */
@@ -249,8 +267,15 @@ export function arreglosPara(problemas: string[], maqueta: Maqueta, colores: Col
   }
   const titularMasAlto = problemas.some((p) => /^JERARQUIA:/.test(p)) ? 2 : 0;
   if (titularMasAlto) descripcion.push('Arreglo del código: el titular, dos filas más alto (no había salto de escala).');
-  if (!velos.size && !titularMasAlto) return undefined;
-  return { ajustes: { velos: [...velos], tintas, titularMasAlto }, descripcion };
+  // El plato tapa el titular fuera del 20–45 % y el compositor ya no lo puede mover en su lado: se prueba el otro.
+  let lado: 'arriba' | 'abajo' | undefined;
+  const titular = maqueta.capas.find((c) => c.tipo === 'texto' && c.id === 'titular');
+  if (problemas.some((p) => /^COBERTURA:/.test(p)) && titular && 'caja' in titular && titular.caja) {
+    lado = (titular.caja.fila[0]! + titular.caja.fila[1]!) / 2 <= 8.5 ? 'abajo' : 'arriba';
+    descripcion.push(`Arreglo del código: el titular, al otro lado del plato (${lado}), porque el plato lo tapaba fuera del 20–45 %.`);
+  }
+  if (!velos.size && !titularMasAlto && !lado) return undefined;
+  return { ajustes: { velos: [...velos], tintas, titularMasAlto, ...(lado ? { lado } : {}) }, descripcion };
 }
 
 /** Las voces que propone el estudio y lo que ha decidido el código quedan escritos en las notas de la intención. */

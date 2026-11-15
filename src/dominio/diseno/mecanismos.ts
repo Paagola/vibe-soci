@@ -50,6 +50,8 @@ export interface Ajustes {
   tintas?: Record<string, string>;
   /** Filas de más para el titular (si el salto de escala no llega). */
   titularMasAlto?: number;
+  /** Lado del titular forzado por un arreglo (el otro, si en el elegido el plato lo tapa demasiado). */
+  lado?: 'arriba' | 'abajo';
 }
 
 export interface EntornoDeMecanismo {
@@ -207,7 +209,7 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   if (sujeto && detras) {
     const libresArriba = Math.max(0, sujeto.fila[0] - PRIMERA_FILA);
     const libresAbajo = Math.max(0, ULTIMA_FILA - sujeto.fila[1]);
-    lado = comp.lado ?? (libresAbajo > libresArriba ? 'abajo' : 'arriba');
+    lado = ajustes.lado ?? comp.lado ?? (libresAbajo > libresArriba ? 'abajo' : 'arriba');
     const libres = lado === 'arriba' ? libresArriba : libresAbajo;
     // El tamaño del titular lo pone el aire de su lado (su caja es ese aire); cuánto se mete en el plato lo decide el
     // compositor, que lo acerca hasta que el plato tape del 20 al 45 % de su franja más tapada (relación «detras»).
@@ -215,6 +217,8 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     // Con acento, sus dos filas van en el borde y el titular empieza justo después: si compartieran fila, el titular
     // taparía el acento. Por eso el acento necesita cuatro filas de aire (dos suyas y dos del titular).
     const desplazamiento = acento ? 2 : 0;
+    // Sin aire, el titular «detrás» quedaría tapado casi entero (Sushita, 15/11: el 76 %): no se coloca.
+    if (libres < 2) problemas.push(`No hay aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato (${libres} fila(s); encima ${libresArriba} y debajo ${libresAbajo}): el titular quedaría tapado. Usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano), ANOTACIONES, o el otro lado si tiene aire.`);
     if (acento && libres < 4) problemas.push(`Para el acento hacen falta cuatro filas de aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato y hay ${libres}: usa TITULAR_DETRAS (o el otro lado, si tiene más aire).`);
     // Una sola palabra no puede partirse en dos líneas: su caja puede entrar una fila en el plato y crecer sin riesgo.
     const unaPalabra = !/\s/.test((e.textos[titular] ?? '').trim());
