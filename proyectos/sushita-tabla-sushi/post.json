@@ -6,6 +6,9 @@
   "fotoSubida": "/private/tmp/claude-501/-Users-padre-Documents-victor-pantallas/2c396ab9-435c-49b8-a650-e9ac1b4259ee/scratchpad/sushi/fotos-resena/Andrew-Forbes-Visits-Sushita-Chinitas-Malaga-4.jpg",
   "usoFotoReal": "SOLO_PRUEBA_COMPOSICION",
   "referencia": "ref-pin-34",
+  "estiloDeReferencia": false,
+  "estetica": "COLOR_POP",
+  "formato": "carrusel",
   "titularCreativo": false,
   "simulado": false,
   "paso": "HECHO",
@@ -90,6 +93,56 @@
       "fecha": "2026-11-15T01:55:43.438Z",
       "paso": "COMPONER",
       "nota": "Hojas de revisión: datos/disenos/sushita-tabla-sushi/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    },
+    {
+      "fecha": "2026-11-15T14:35:02.344Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v2 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:06.636Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v2 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:06.636Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v1 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:06.636Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v1 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:06.636Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-3 v1 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:06.636Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v1 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:53.935Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v2 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:53.935Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v2 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:53.935Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-3 v2 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T14:35:53.935Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v2 (3:4 y 4:5)."
     }
   ],
   "creadoEn": "2026-11-15T01:52:17.130Z"

@@ -1,0 +1,138 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T14:32:19.596Z",
+  "estetica": "COLOR_POP",
+  "formato": "carrusel",
+  "propuesta": {
+    "idea": "La variedad y técnica de la tabla de sushi presentada con recorte monumental para abrir un recorrido de producto.",
+    "foco": "PLATO",
+    "seToma": [
+      "Producto recortado en gran escala que rompe la composición",
+      "Fondo plano partido en diagonal para dinamizar la pieza",
+      "Jerarquía estricta con titular rotundo y apoyo secundario"
+    ],
+    "noSeCopia": [
+      "Los textos de oferta y códigos promocionales",
+      "La tipografía de pincel y los motivos de ramas de cerezo",
+      "La marca y paleta cromática roja de la referencia"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "SUSHI",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "Para compartir",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir"
+      },
+      {
+        "clave": "firma",
+        "texto": "Sushita Chinitas",
+        "fuente": "MARCA",
+        "cita": "Sushita Chinitas"
+      },
+      {
+        "clave": "nigiri-salmon",
+        "texto": "Nigiri de salmón flambeado con foie",
+        "fuente": "ELEMENTO",
+        "cita": "nigiri de salmón flambeado con foie y glaseado tostado y brillante"
+      },
+      {
+        "clave": "uramaki-verde",
+        "texto": "Uramaki con salsa cremosa verde y sésamo",
+        "fuente": "ELEMENTO",
+        "cita": "uramaki con salsa cremosa verde y sésamo bañado en salsa con sésamo espolvoreado"
+      },
+      {
+        "clave": "maki-tartar",
+        "texto": "Rollitos con tartar de atún y microgreens",
+        "fuente": "ELEMENTO",
+        "cita": "rollitos con tartar de atún y microgreens fresco con hierba picada"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "PLATO_SOBRE_COLOR",
+      "titular": "titular",
+      "apoyo": "apoyo",
+      "firma": "firma",
+      "sangra": true,
+      "tinta": "limpia",
+      "color": "@oro"
+    },
+    "carrusel": {
+      "detalles": [
+        {
+          "texto": "nigiri-salmon",
+          "punto": {
+            "x": 0.45,
+            "y": 0.62
+          }
+        },
+        {
+          "texto": "uramaki-verde",
+          "punto": {
+            "x": 0.28,
+            "y": 0.44
+          }
+        },
+        {
+          "texto": "maki-tartar",
+          "punto": {
+            "x": 0.22,
+            "y": 0.26
+          }
+        }
+      ]
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-1: SEPARACION: «titular» y «nota» quedan a 8 px: deja al menos 20 px para que respiren.",
+    "detalle-1: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+    "detalle-1: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-2: SEPARACION: «titular» y «nota» se montan 13 px: deja al menos 20 px para que respiren.",
+    "detalle-2: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.7 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+    "detalle-2: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-3: SEPARACION: «titular» y «nota» se montan 14 px: deja al menos 20 px para que respiren.",
+    "detalle-3: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+    "detalle-3: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "cierre: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+  ],
+  "critica": {
+    "llega": true,
+    "motivos": [
+      "Resuelve la estética Pop con recorte: el fondo partido en diagonal sostiene con fuerza el producto recortado.",
+      "El titular «SUSHI» domina con un salto de escala monumental, capturando la tensión visual de la referencia sin copiar sus artificios."
+    ],
+    "adoptada": false
+  },
+  "enRevision": false,
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-1: SEPARACION: «titular» y «nota» quedan a 8 px: deja al menos 20 px para que respiren.",
+        "detalle-1: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "detalle-1: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-2: SEPARACION: «titular» y «nota» se montan 13 px: deja al menos 20 px para que respiren.",
+        "detalle-2: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.7 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "detalle-2: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-3: SEPARACION: «titular» y «nota» se montan 14 px: deja al menos 20 px para que respiren.",
+        "detalle-3: JERARQUIA: No hay salto de escala: el texto más grande es solo 1.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "detalle-3: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "cierre: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": [
+        "La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.",
+        "Campo @oro partido en diagonal con @negro; el plato recortado, girado y cortado por el borde."
+      ]
+    }
+  ]
+}

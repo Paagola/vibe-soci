@@ -1,9 +1,9 @@
 {
   "esquema": "diseno/intencion@1",
   "id": "post",
-  "version": 1,
+  "version": 2,
   "titulo": "Sushita Chinitas · Tabla de sushi para compartir: nigiri de salmón con foie y",
-  "notas": "Idea: La contundencia de una tabla de sushi para compartir condensada en un titular rotundo que se sumerge tras la tabla. Foco: el plato. De la referencia se toma: Titular monumental en la parte superior que ancla la lectura con fuerza tipográfica.; Jerarquía estricta donde el producto manda y la tipografía interactúa con él.. No se copia: Recursos promocionales de flyer como códigos QR, porcentajes de descuento y botones.; El fondo rojo ilustrado con ramas y texturas añadidas..",
+  "notas": "Idea: La variedad y técnica de la tabla de sushi presentada con recorte monumental para abrir un recorrido de producto. Foco: el plato. De la referencia se toma: Producto recortado en gran escala que rompe la composición; Fondo plano partido en diagonal para dinamizar la pieza; Jerarquía estricta con titular rotundo y apoyo secundario. No se copia: Los textos de oferta y códigos promocionales; La tipografía de pincel y los motivos de ramas de cerezo; La marca y paleta cromática roja de la referencia. La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo. Campo @oro partido en diagonal con @negro; el plato recortado, girado y cortado por el borde.",
   "marca": "sushita-chinitas",
   "lienzo": {
     "formato": "FEED_3_4"
@@ -36,7 +36,12 @@
     "foto": "sushita-tabla-sushi-foto-1"
   },
   "textos": {
-    "titular": "SUSHI"
+    "titular": "SUSHI",
+    "apoyo": "Para compartir",
+    "firma": "Sushita Chinitas",
+    "nigiri-salmon": "Nigiri de salmón flambeado con foie",
+    "uramaki-verde": "Uramaki con salsa cremosa verde y sésamo",
+    "maki-tartar": "Rollitos con tartar de atún y microgreens"
   },
   "capas": [
     {
@@ -45,40 +50,78 @@
       "fusion": "normal",
       "oculta": false,
       "tipo": "relleno",
-      "color": "@negro"
+      "color": "@oro"
     },
     {
-      "id": "foto",
+      "id": "diagonal",
       "opacidad": 1,
       "fusion": "normal",
       "oculta": false,
-      "tipo": "imagen",
-      "activo": "foto",
-      "caja": {
+      "tipo": "forma",
+      "figura": "poligono",
+      "puntos": [
+        {
+          "x": -0.05,
+          "y": 0.64
+        },
+        {
+          "x": 1.05,
+          "y": 0.4
+        },
+        {
+          "x": 1.05,
+          "y": 1.05
+        },
+        {
+          "x": -0.05,
+          "y": 1.05
+        }
+      ],
+      "color": "@negro",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "sombra",
+      "opacidad": 0.45,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "proyectada",
+      "color": "#000000",
+      "desenfoque": 36,
+      "desplazamiento": {
         "x": 0,
-        "y": 0,
-        "w": 1,
-        "h": 1
+        "y": 26
       },
-      "enfoque": {
-        "x": 0.5,
-        "y": 0.5
-      },
-      "zoom": 1
+      "ancho": 0.8,
+      "alto": 30
     },
     {
       "id": "plato",
-      "opacidad": 0,
+      "opacidad": 1,
       "fusion": "normal",
       "oculta": false,
-      "nota": "Silueta del plato de la foto a sangre: no se pinta.",
       "tipo": "recorte",
       "activo": "foto",
+      "escala": {
+        "anchoSujeto": 1.5
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.0667,
+          "y": 0.5609,
+          "w": 0.8667,
+          "h": 0.3891
+        },
+        "alinear": "arriba-centro"
+      },
       "sangradoAbajo": 0,
-      "alineadoCon": "foto",
       "bordeSuave": 0.8,
-      "contraerBorde": 0,
-      "giro": 0
+      "contraerBorde": 1,
+      "giro": -8
     },
     {
       "id": "titular",
@@ -89,38 +132,101 @@
       "texto": "@titular",
       "estilo": "titular",
       "caja": {
-        "x": -0.04,
-        "y": 0.1068,
-        "w": 1.08,
-        "h": 0.1052
+        "x": 0.0667,
+        "y": 0.1635,
+        "w": 0.8667,
+        "h": 0.2188
       },
       "ajuste": "caja",
       "alinear": "izquierda",
-      "vertical": "abajo",
+      "vertical": "centro",
       "rotacion": 0,
       "giro": 0,
-      "sangrado": true,
-      "color": "@crema",
-      "recortarCon": {
-        "sujeto": "plato",
-        "modo": "fuera"
-      }
+      "sangrado": false,
+      "color": "@negro"
+    },
+    {
+      "id": "firma",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1068,
+        "w": 0.5741,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@negro"
+    },
+    {
+      "id": "apoyo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.3906,
+        "w": 0.6472,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 46,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@negro"
     }
   ],
   "relaciones": [
     {
-      "tipo": "detras",
+      "tipo": "contrasteMinimo",
       "texto": "titular",
-      "sujeto": "plato",
-      "cobertura": [
-        0.2,
-        0.45
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "firma",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular",
+        "firma",
+        "apoyo"
       ],
-      "medida": "franja",
-      "zona": {
-        "desde": 0.1068,
-        "hasta": 0.3823
-      }
+      "sujeto": "plato",
+      "maximo": 0.03
     }
-  ]
+  ],
+  "estetica": "COLOR_POP",
+  "oficio": {
+    "saltoMinimo": 3.5,
+    "palabrasMaximas": 30,
+    "nivelesMaximos": 4,
+    "vocesMaximas": 3,
+    "gestosMaximos": 1,
+    "recursosMaximos": 3
+  },
+  "padre": 1
 }
