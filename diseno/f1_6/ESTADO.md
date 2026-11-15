@@ -68,6 +68,7 @@
 | **Entrecot v004** | **Le encanta al usuario.** TITULAR_CON_ACENTO: «ENTRECOT» monumental detrás de la carne y «directo de Galicia» en Ballet. Código exacto: `062ac7e` (comprobado recompilando su propuesta) → `diseno/f3/img/tdv-entrecot-v003-v004-y-31808bf.jpg` | `062ac7e` |
 | Ensalada v002 | Para comparar. **No mejora la v001:** solo el titular, que sangra, y sin firma. La foto tiene 3 filas de aire y el plato ocupa el 52 %. La v001 sigue intacta → `diseno/f3/img/tdv-ensalada-v001-v002.jpg` | — |
 | Ajustes que cambian el aspecto | Sangrado simétrico, tres voces y firma al borde: **pendientes de tu visto bueno**, porque cambiarían la v004 (tercera imagen) | `31808bf` |
+| **Entrecot v005 (15/11)** | Lo que pidió el usuario sobre `31808bf`: un sangrado suave por los dos cantos (0,008 del ancho por canto; la E conserva 30 de sus 38 px de palo), el apoyo en la voz de la firma y la firma al borde. Sale de **recompilar la propuesta guardada de la v004, sin llamar a Gemini**. La v004 sigue intacta → `diseno/f3/img/tdv-entrecot-v004-v005.jpg` | `462180f` |
 
 **Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
 
