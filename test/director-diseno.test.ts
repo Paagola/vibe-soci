@@ -475,3 +475,28 @@ describe('F3 · la orden única con el director de diseño (simulado) y el compo
     assert.match(r.parada, /ya hay una propuesta del director que no pasó/);
   });
 });
+
+describe('F3.2 · el plato que sale de su foto, compilado', () => {
+  it('«sobreLaFoto» es un recorte alineado con la foto en marco; el marco que sangra llega a los cantos y abajo', () => {
+    const p = maqueta({
+      ...propuestaRica(),
+      capas: [
+        { tipo: 'fondo', color: '@hueso' },
+        { tipo: 'foto', encuadre: 'marco', caja: { col: [1, 12], fila: [7, 16] }, sangra: true },
+        { tipo: 'texto', id: 'titular', texto: 'titular', voz: 'frase', caja: { col: [1, 12], fila: [3, 6] }, ajuste: 'caja', color: '@carbon', relacion: 'detras' },
+        { tipo: 'plato', sobreLaFoto: true },
+        { tipo: 'texto', id: 'firma', texto: 'firma', voz: 'firma', caja: { col: [1, 6], fila: [2, 2] }, ajuste: 'fijo', tamano: 34, color: '@carbon', relacion: 'aparte' },
+      ],
+    });
+    const c = compilarIntencion(p, contexto());
+    assert.deepEqual(c.problemas, []);
+    const i = Intencion.parse(c.intencion);
+    const foto = i.capas.find((x) => x.id === 'foto') as { caja: { x: number; w: number; y: number; h: number } };
+    assert.equal(foto.caja.x, 0);
+    assert.equal(foto.caja.w, 1);
+    assert.ok(Math.abs(foto.caja.y + foto.caja.h - 1) < 0.001);
+    const plato = i.capas.find((x) => x.id === 'plato') as { tipo: string; alineadoCon?: string; opacidad: number };
+    assert.deepEqual([plato.tipo, plato.alineadoCon, plato.opacidad], ['recorte', 'foto', 1]);
+    assert.ok(i.relaciones.some((r) => r.tipo === 'detras' && r.texto === 'titular'));
+  });
+});

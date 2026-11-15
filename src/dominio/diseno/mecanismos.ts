@@ -25,6 +25,8 @@ const PASO_FILA = (1440 - 2 * 72 + 12) / 16;
 /** Cuerpo de los textos pequeños: el mínimo del dialecto. */
 const CUERPO_PEQUENO = 34;
 const CUERPO_ANOTACION = 44;
+/** Segundo nivel de texto (entre el titular y la firma): un 35 % más que la firma, para que se separe como nivel. */
+const CUERPO_SEGUNDO = 46;
 /** Contraste que se pide al elegir la tinta: el de WCAG con un margen, porque el mapa mide medias por celda. */
 const MARGEN_DE_CONTRASTE = 1.3;
 
@@ -66,6 +68,8 @@ export interface EntornoDeMecanismo {
   /** Los textos de la propuesta (clave → texto). */
   textos: Record<string, string>;
   ajustes?: Ajustes;
+  /** La caja de la silueta del plato en la foto entera, en px, y el tamaño de la foto: dice si la foto corta el plato. */
+  silueta?: { x: number; y: number; w: number; h: number; anchoFoto: number; altoFoto: number };
 }
 
 export interface Colocacion {
@@ -162,6 +166,7 @@ function extremos(colores: Tinta[]): { oscura: Tinta; clara: Tinta } {
 }
 
 export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
+  if (comp.mecanismo === 'PLATO_SOBRE_COLOR') return platoSobreColor(comp, e);
   const { mapa } = e;
   const problemas: string[] = [];
   const notas: string[] = [];
@@ -344,4 +349,65 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     ...capasSello,
   ];
   return { capas, textos, problemas, notas };
+}
+
+/**
+ * PLATO_SOBRE_COLOR (familias F1 y F3: «color plano y producto recortado»; ref-pin-34 de Sushita):
+ * - un campo de color plano partido en diagonal (dos colores de la marca);
+ * - el plato, recortado con su máscara, grande, girado y cortado por el borde, por delante de la diagonal;
+ * - el titular, grande y ENTERO, por delante del fondo y sin que nada lo tape (en el v001 de Sushita quedó enterrado);
+ * - tres niveles de texto: titular, una línea secundaria y la firma.
+ * Si la foto corta el plato por los lados (la tabla llena la foto), el plato se agranda hasta que esos cortes quedan
+ * fuera del lienzo y solo se ve su canto de arriba, que es real; si lo corta por arriba, no se puede.
+ * Todo va sobre colores exactos, así que la tinta de cada texto se elige midiendo contra su color, sin estimar.
+ */
+function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
+  const problemas: string[] = [];
+  const notas: string[] = [];
+  const sujeto = e.tieneMascara ? e.mapa.sujeto : undefined;
+  if (!sujeto) return { capas: [], textos: {}, problemas: ['PLATO_SOBRE_COLOR recorta el plato: hace falta la máscara de la foto.'], notas };
+  if (comp.lado === 'abajo') notas.push('PLATO_SOBRE_COLOR pone siempre el titular arriba y el plato abajo, cortado por el borde.');
+  if (comp.sello) problemas.push('PLATO_SOBRE_COLOR no lleva sello: compite con el plato recortado.');
+  if ((comp.anotaciones?.length ?? 0) > 0) problemas.push('PLATO_SOBRE_COLOR no lleva anotaciones: el plato recortado ya es el gesto (las anotaciones van en las diapositivas de detalle).');
+  for (const [para, clave] of [['titular', comp.titular], ['apoyo', comp.apoyo], ['firma', comp.firma]] as const) {
+    if (clave && !(clave in e.textos)) problemas.push(`${para}: no hay ningún texto con la clave «${clave}».`);
+  }
+  const { oscura, clara } = extremos(e.colores);
+  const deMarca = e.colores.filter((t) => !['plato', 'foto'].includes(t.token));
+  const conCaracter = deMarca.find((t) => t.token !== oscura.token && t.token !== clara.token) ?? clara;
+  if (comp.color && !e.colores.some((t) => `@${t.token}` === comp.color)) problemas.push(`El color «${comp.color}» no está en la lista.`);
+  // El campo de arriba (el del titular) y el de la diagonal: dos colores de la marca que contrasten entre sí.
+  const campo = (comp.color && e.colores.find((t) => `@${t.token}` === comp.color)) || oscura;
+  const diagonal = campo.token === conCaracter.token ? oscura : conCaracter;
+  const sobre = (fondo: Tinta, preferida: string | undefined, ratio: number): Tinta => {
+    const pref = e.colores.find((t) => t.token === preferida);
+    if (pref && pref.token !== fondo.token && contraste(pref.hex, fondo.hex) >= ratio * MARGEN_DE_CONTRASTE) return pref;
+    return [...deMarca].sort((a, b) => contraste(b.hex, fondo.hex) - contraste(a.hex, fondo.hex))[0]!;
+  };
+
+  const s = e.silueta;
+  const toca = s ? { arriba: s.y <= 2, izquierda: s.x <= 2, derecha: s.x + s.w >= s.anchoFoto - 2 } : { arriba: sujeto.fila[0] <= 1, izquierda: sujeto.col[0] <= 1, derecha: sujeto.col[1] >= COLUMNAS };
+  if (toca.arriba) problemas.push('La foto corta el plato por arriba: recortado se vería el corte recto. Usa la foto a sangre (TITULAR_DETRAS o ANOTACIONES).');
+  const cortadoPorLosLados = toca.izquierda || toca.derecha;
+  // Proporción de la silueta (ancho / alto); las celdas del mapa son cuadradas.
+  const proporcion = s ? s.w / s.h : (sujeto.col[1] - sujeto.col[0] + 1) / (sujeto.fila[1] - sujeto.fila[0] + 1);
+  const plato: CapaPropuesta = cortadoPorLosLados
+    ? // 1,5 del ancho: los cortes de los lados quedan fuera del lienzo y el plato sigue más allá del borde de abajo.
+      { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [10, 16] }, ancho: 1.5, alinear: 'arriba-centro', giro: -8, sombra: 'proyectada' }
+    : // Entero: su alto, en torno al 55 % del lienzo, y el 12 % sale por abajo.
+      { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: Math.round(acotar((0.55 * 1440 * proporcion) / 1080, 0.55, 1.3) * 100) / 100, alinear: 'abajo-centro', giro: -10, sangra: 0.12, sombra: 'proyectada' };
+  if (cortadoPorLosLados) notas.push('La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.');
+
+  const capas: CapaPropuesta[] = [
+    { tipo: 'fondo', color: `@${campo.token}` },
+    { tipo: 'diagonal', color: `@${diagonal.token}`, izquierda: 0.64, derecha: 0.4 },
+    plato,
+    // El titular, entero y por delante: su caja acaba antes que el plato y la diagonal.
+    { tipo: 'texto', id: 'titular', texto: comp.titular, voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [3, 6] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'centro', color: `@${sobre(campo, e.colorDeVoz[e.voces.titular], 3).token}`, relacion: 'aparte', ...(comp.tinta ? { tinta: comp.tinta } : {}) },
+  ];
+  if (comp.firma) capas.push({ tipo: 'texto', id: 'firma', texto: comp.firma, voz: e.voces.firma, caja: { col: [1, 8], fila: [2, 2] }, ajuste: 'fijo', tamano: CUERPO_PEQUENO, alinear: 'izquierda', vertical: 'centro', color: `@${sobre(campo, e.colorDeVoz[e.voces.firma], 4.5).token}`, relacion: 'aparte' });
+  // El segundo nivel: una línea entre el titular y la firma, en la voz de texto, a un cuerpo intermedio.
+  if (comp.apoyo) capas.push({ tipo: 'texto', id: 'apoyo', texto: comp.apoyo, voz: e.voces.apoyo, caja: { col: [1, 9], fila: [7, 7] }, ajuste: 'fijo', tamano: CUERPO_SEGUNDO, alinear: 'izquierda', vertical: 'arriba', color: `@${sobre(campo, e.colorDeVoz[e.voces.apoyo], 4.5).token}`, relacion: 'aparte' });
+  notas.push(`Campo @${campo.token} partido en diagonal con @${diagonal.token}; el plato recortado, girado y cortado por el borde.`);
+  return { capas, textos: {}, problemas, notas };
 }

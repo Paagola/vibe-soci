@@ -219,3 +219,40 @@ describe('F3.1 · mecanismos: detalles de oficio', () => {
     assert.equal(new Set(r.capas.flatMap((c) => ('voz' in c ? [c.voz] : []))).size, 3);
   });
 });
+
+describe('F3.2 · PLATO_SOBRE_COLOR (familias F1 y F3)', () => {
+  const m = mapaSintetico();
+  const silueta = (x: number, y: number, w: number, h: number) => ({ x, y, w, h, anchoFoto: 1200, altoFoto: 1600 });
+
+  it('con la silueta entera: campo de color partido en diagonal, el plato recortado girado y cortado por abajo, el titular entero por delante', () => {
+    const r = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma', apoyo: 'apoyo' }), entorno(m, { silueta: silueta(200, 600, 800, 700) }));
+    assert.deepEqual(r.problemas, []);
+    assert.deepEqual(r.capas.slice(0, 2).map((c) => c.tipo), ['fondo', 'diagonal']);
+    const [fondo, diagonal] = r.capas as Array<{ color: string }>;
+    assert.notEqual(fondo!.color, diagonal!.color, 'dos colores de la marca');
+    const plato = r.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>;
+    assert.ok(plato.giro && plato.sangra && plato.ancho);
+    const t = texto(r.capas, 'titular')!;
+    assert.equal(t.relacion, 'aparte', 'nada lo tapa: el compositor comprueba que no pisa el plato');
+    assert.ok(t.caja.fila[1]! < plato.caja!.fila[0]!, 'el titular acaba antes que el plato');
+    assert.deepEqual(['firma', 'apoyo', 'titular'].map((id) => Boolean(texto(r.capas, id))), [true, true, true], 'tres niveles');
+    assert.ok(texto(r.capas, 'apoyo')!.tamano! > texto(r.capas, 'firma')!.tamano!, 'el segundo nivel, más grande que la firma');
+    assert.ok(!r.capas.some((c) => c.tipo === 'foto'), 'sin la foto: solo el plato recortado');
+  });
+
+  it('si la foto corta el plato por los lados, se agranda hasta que esos cortes quedan fuera del lienzo', () => {
+    const r = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta: silueta(0, 200, 1200, 1400) }));
+    assert.deepEqual(r.problemas, []);
+    const plato = r.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>;
+    assert.ok(plato.ancho! >= 1.4 && plato.giro);
+    assert.match(r.notas.join(), /cortes quedan fuera del lienzo/);
+  });
+
+  it('si la foto corta el plato por arriba, no se puede: lo dice', () => {
+    assert.match(colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR' }), entorno(m, { silueta: silueta(100, 0, 900, 1000) })).problemas.join(), /corta el plato por arriba/);
+  });
+
+  it('sin máscara no hay recorte', () => {
+    assert.match(colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR' }), entorno(m, { tieneMascara: false })).problemas.join(), /máscara/);
+  });
+});

@@ -144,6 +144,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     voces: roles,
     colorDeVoz: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, e.color.replace(/^@/, '')])),
     anchoDeCaracter: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, anchoDeCaracter(e)])),
+    ...(entrada.foto.activo.mascara?.bbox ? { silueta: { ...entrada.foto.activo.mascara.bbox, anchoFoto: entrada.foto.activo.ancho, altoFoto: entrada.foto.activo.alto } } : {}),
   };
 
   const evaluar = async (p: PropuestaDeDiseno, ajustes: Ajustes = {}): Promise<Evaluacion> => {
@@ -294,7 +295,8 @@ function conNotasDelEstudio(i: Intencion, vocesDeEstudio: Record<string, EstiloT
  */
 export function avisoDeCruce(p: Pick<Maqueta, 'capas'>, tieneMascara: boolean): string | undefined {
   if (!tieneMascara) return undefined;
-  const tocan = p.capas.some((c) => (c.tipo === 'texto' && c.relacion !== 'aparte') || c.tipo === 'anotacion' || (c.tipo === 'patron' && c.motivo === 'palabra'));
+  // El plato recortado sobre color plano (F1, F3) ya cruza: es el producto el que rompe el fondo, no el texto.
+  const tocan = p.capas.some((c) => (c.tipo === 'texto' && c.relacion !== 'aparte') || c.tipo === 'anotacion' || c.tipo === 'plato' || (c.tipo === 'patron' && c.motivo === 'palabra'));
   if (tocan) return undefined;
   return 'CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Usa un mecanismo que cruce (TITULAR_DETRAS, TITULAR_CON_ACENTO) o anotaciones que señalen el plato.';
 }

@@ -58,12 +58,14 @@ const CapaFoto = z.object({
   papel: Token.optional().describe('duotono: el color de las luces. trama: el del papel (sin él, se ve lo de debajo).'),
   velo: z.enum(['no', 'arriba', 'abajo', 'ambos']).optional().describe('Oscurece ese lado de la foto (o los dos) para que se lea un texto. Solo si hace falta.'),
   colorVelo: Token.optional(),
+  sangra: z.boolean().optional().describe('marco: llega a los cantos de los lados y al de abajo (la foto ocupa la parte baja del lienzo).'),
 });
 
 const CapaPlato = z.object({
   tipo: z.literal('plato'),
-  caja: Celdas.describe('Dónde se apoya el plato recortado.'),
-  ancho: z.number().min(0.15).max(1.5).describe('Ancho del plato como fracción del ancho del lienzo. Más de 1 sangra por los lados.'),
+  caja: Celdas.optional().describe('Dónde se apoya el plato recortado (salvo «sobreLaFoto»).'),
+  ancho: z.number().min(0.15).max(1.5).optional().describe('Ancho del plato como fracción del ancho del lienzo. Más de 1 sangra por los lados (salvo «sobreLaFoto»).'),
+  sobreLaFoto: z.boolean().optional().describe('El plato sale de su foto en marco: recortado justo encima de ella, en el mismo sitio, y lo que queda fuera del marco se ve sobre el fondo.'),
   alinear: z.enum(['arriba-izquierda', 'arriba-centro', 'arriba-derecha', 'centro-izquierda', 'centro', 'centro-derecha', 'abajo-izquierda', 'abajo-centro', 'abajo-derecha']).optional(),
   giro: Giro.optional(),
   sangra: z.number().min(0).max(0.5).optional().describe('Fracción del plato que se sale por debajo de su caja.'),
@@ -159,13 +161,22 @@ const CapaForma = z.object({
   tinta: NivelDeTinta.optional(),
 });
 
+/** Un campo de color partido en diagonal (familia F3): lo de debajo (o encima) de la línea va en este color. */
+const CapaDiagonal = z.object({
+  tipo: z.literal('diagonal'),
+  color: Token,
+  izquierda: z.number().min(0).max(1).describe('Altura de la línea en el canto izquierdo (0 arriba, 1 abajo).'),
+  derecha: z.number().min(0).max(1).describe('Altura de la línea en el canto derecho.'),
+  lado: z.enum(['abajo', 'arriba']).optional().describe('Qué parte se pinta: la de debajo de la línea (por defecto) o la de encima.'),
+});
+
 const CapaTextura = z.object({
   tipo: z.literal('textura'),
   recurso: z.enum(['papel', 'grano']).describe('papel: sobre un color plano. grano: sobre una foto.'),
   intensidad: z.number().min(0.03).max(0.2).optional(),
 });
 
-export const CapaPropuesta = z.discriminatedUnion('tipo', [CapaFondo, CapaFoto, CapaPlato, CapaTexto, CapaPatron, CapaSello, CapaAnotacion, CapaTrazo, CapaForma, CapaTextura]);
+export const CapaPropuesta = z.discriminatedUnion('tipo', [CapaFondo, CapaFoto, CapaPlato, CapaTexto, CapaPatron, CapaSello, CapaAnotacion, CapaTrazo, CapaForma, CapaTextura, CapaDiagonal]);
 export type CapaPropuesta = z.infer<typeof CapaPropuesta>;
 
 /**
@@ -176,11 +187,12 @@ export type CapaPropuesta = z.infer<typeof CapaPropuesta>;
  * lo apilaba todo «aparte»).
  */
 export const Mecanismo = z
-  .enum(['TITULAR_DETRAS', 'TITULAR_CON_ACENTO', 'ANOTACIONES'])
+  .enum(['TITULAR_DETRAS', 'TITULAR_CON_ACENTO', 'ANOTACIONES', 'PLATO_SOBRE_COLOR'])
   .describe(
     'TITULAR_DETRAS: el titular, monumental, a todo lo ancho, con el plato tapando su parte baja (o alta). ' +
       'TITULAR_CON_ACENTO: lo mismo, más una palabra o dos en una voz de acento (manuscrita o didona) que se apoya en el titular, escalonada: es el mecanismo de las referencias con un titular de florituras. ' +
-      'ANOTACIONES: el titular grande en la zona libre y de una a tres anotaciones a mano con flecha que señalan elementos reales del plato.',
+      'ANOTACIONES: el titular grande en la zona libre y de una a tres anotaciones a mano con flecha que señalan elementos reales del plato. ' +
+      'PLATO_SOBRE_COLOR: el plato recortado, enorme y girado, sobre un color plano, cortado por el borde de abajo y tapando la parte baja de un titular grande (familias F1 y F3); sirve aunque la foto no deje aire.',
   );
 export type Mecanismo = z.infer<typeof Mecanismo>;
 
@@ -193,6 +205,7 @@ export const Composicion = z.object({
   lado: z.enum(['arriba', 'abajo']).optional().describe('Dónde va el titular respecto al plato. Sin él, donde haya más aire.'),
   sangra: z.boolean().optional().describe('El titular se sale por los dos bordes (más tensión; se corta en el canto).'),
   tinta: NivelDeTinta.optional().describe('Tinta del titular.'),
+  color: Token.optional().describe('PLATO_SOBRE_COLOR: el color plano del fondo (de la lista). Sin él, el de la marca con más carácter.'),
   sello: z
     .object({ lineas: z.array(Id).min(1).max(2).describe('Claves de «textos»: un dato real corto (p. ej. un año que conste).') })
     .optional()
@@ -445,6 +458,11 @@ function zonaDe(entre: number[] | undefined, sangra: boolean | undefined): { zon
   return { zona: { desde, hasta } };
 }
 
+/** Un marco que llega a los cantos de los lados y al de abajo: de su borde de arriba hasta el final del lienzo. */
+function sangraAbajoYLados(r: { x: number; y: number; w: number; h: number }): { x: number; y: number; w: number; h: number } {
+  return { x: 0, y: r.y, w: 1, h: r4(1 - r.y) };
+}
+
 /** Un texto que toca la fila 1 o la 16 se sale de la zona segura (márgenes más el recorte de 4:5). */
 const fueraDeZonaSegura = (c: Celdas) => Math.min(c.fila[0]!, c.fila[1]!) <= 1 || Math.max(c.fila[0]!, c.fila[1]!) >= FILAS;
 
@@ -496,6 +514,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
   const relaciones: Array<Record<string, unknown>> = [];
   const noSolapar: string[] = [];
   const usados = new Set<string>();
+  let fotoEnMarco: string | undefined;
   const idLibre = (base: string): string => {
     let id = base;
     for (let n = 2; usados.has(id); n++) id = `${base}-${n}`;
@@ -518,6 +537,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
 
       case 'foto': {
         const id = idLibre('foto');
+        if (x.encuadre === 'marco' && (x.tratamiento ?? 'natural') === 'natural') fotoEnMarco = id;
         const natural = (x.tratamiento ?? 'natural') === 'natural';
         if (x.encuadre === 'marco' && !x.caja) problemas.push('Una foto en marco necesita «caja».');
         const retoque =
@@ -532,7 +552,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           id,
           tipo: 'imagen',
           activo: 'foto',
-          caja: x.encuadre === 'sangre' || !x.caja ? { x: 0, y: 0, w: 1, h: 1 } : aFracciones(x.caja),
+          caja: x.encuadre === 'sangre' || !x.caja ? { x: 0, y: 0, w: 1, h: 1 } : x.sangra ? sangraAbajoYLados(aFracciones(x.caja)) : aFracciones(x.caja),
           ...(x.zoom ? { zoom: x.zoom } : {}),
           ...(x.enfoque ? { enfoque: x.enfoque } : {}),
           ...(retoque ? { retoque } : {}),
@@ -567,6 +587,15 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
               ? { id: idLibre('sombra'), tipo: 'sombra', de: 'plato', modo: 'contacto', desenfoque: 26, ancho: 0.82, alto: 34, opacidad: 0.38 }
               : { id: idLibre('sombra'), tipo: 'sombra', de: 'plato', modo: 'proyectada', desenfoque: 36, desplazamiento: { x: 0, y: 26 }, opacidad: 0.45 },
           );
+        }
+        if (x.sobreLaFoto) {
+          if (!fotoEnMarco) problemas.push('plato «sobreLaFoto»: hace falta antes una capa «foto» en marco, al natural.');
+          poner(Plano3.PLATO, { id: 'plato', tipo: 'recorte', activo: 'foto', alineadoCon: fotoEnMarco ?? 'foto', contraerBorde: 1, nota: 'El plato sale de su foto: recortado encima de ella, en el mismo sitio.' });
+          break;
+        }
+        if (!x.caja || !x.ancho) {
+          problemas.push('plato: hace falta «caja» y «ancho» (o «sobreLaFoto»).');
+          break;
         }
         poner(Plano3.PLATO, {
           id: 'plato',
@@ -696,6 +725,24 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         const comun = { id: idLibre(x.figura), tipo: 'forma', color: color(x.color, donde), ...(x.giro ? { giro: x.giro } : {}), ...(detras && sujetoFantasma ? { recortarCon: { sujeto: 'plato', modo: 'fuera' } } : {}), ...tintaDe(x.tinta) };
         if (x.figura === 'filete') poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: 'linea', desde: { x: caja.x, y: r4(caja.y + caja.h / 2) }, hasta: { x: r4(caja.x + caja.w), y: r4(caja.y + caja.h / 2) }, grosor: 2 });
         else poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: x.figura === 'bloque' ? 'rect' : 'mancha', caja });
+        break;
+      }
+
+      case 'diagonal': {
+        // Un polígono que pasa de canto a canto y se sale un poco: la línea no deja huecos en las esquinas.
+        const borde = x.lado === 'arriba' ? -0.05 : 1.05;
+        poner(Plano3.FONDO, {
+          id: idLibre('diagonal'),
+          tipo: 'forma',
+          figura: 'poligono',
+          color: color(x.color, 'diagonal'),
+          puntos: [
+            { x: -0.05, y: x.izquierda },
+            { x: 1.05, y: x.derecha },
+            { x: 1.05, y: borde },
+            { x: -0.05, y: borde },
+          ],
+        });
         break;
       }
 

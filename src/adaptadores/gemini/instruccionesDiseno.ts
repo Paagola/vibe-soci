@@ -40,6 +40,10 @@ MECANISMOS (elige el que mejor cuente el plato y el que más se acerque al ofici
   dato (un origen, un ingrediente), nunca un adorno; el titular sigue siendo la voz de titular de la marca.
 - ANOTACIONES: el titular grande en la zona libre y de una a tres anotaciones a mano con flecha que señalan elementos
   reales del plato (con «apunta», en fracciones de la caja del plato: mira la foto para situarlos).
+- PLATO_SOBRE_COLOR: el plato recortado, grande y girado, sobre un campo de color plano partido en diagonal (dos colores
+  de la marca; «color» elige el de arriba), cortado por el borde de abajo, con el titular grande y entero por delante,
+  una línea de «apoyo» y la «firma» (tres niveles). Es el oficio de las familias F1 y F3, y el que sirve cuando la foto
+  no deja aire. Si la foto corta el plato por arriba, no vale.
 Complementos: «apoyo» (una línea pequeña), «firma» (el nombre del local), «sello» (un dato real corto, como un año que
 conste) y, fuera de ANOTACIONES, una anotación como mucho. Menos es más: cada complemento compite con el plato.
 
@@ -111,7 +115,7 @@ export function aireDelPlato(e: EncargoDeDiseno): string {
   if (!s) return 'AIRE: la foto no tiene plato recortable (sin máscara): el titular irá aparte, en la zona libre mayor.';
   const arriba = Math.max(0, s.fila[0] - 2);
   const abajo = Math.max(0, 15 - s.fila[1]);
-  return `AIRE: ${arriba} filas libres encima del plato y ${abajo} debajo. TITULAR_CON_ACENTO necesita 4 en su lado; con menos, usa TITULAR_DETRAS o ANOTACIONES.`;
+  return `AIRE: ${arriba} filas libres encima del plato y ${abajo} debajo. TITULAR_CON_ACENTO necesita 4 en su lado y TITULAR_DETRAS 2; con menos, usa PLATO_SOBRE_COLOR o ANOTACIONES.`;
 }
 
 /** El mensaje de cada pieza: hechos, referencia, mapa, listas y, si los hay, los problemas de la propuesta anterior. */
