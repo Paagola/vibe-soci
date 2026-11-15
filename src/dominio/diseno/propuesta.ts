@@ -413,7 +413,15 @@ const r4 = (n: number) => Math.round(n * 10000) / 10000;
 const ZONA_SEGURA_VERTICAL = { desde: r4((RETICULA.margen + RECORTE_4_5_PX) / LIENZO.alto), hasta: r4(1 - (RETICULA.margen + RECORTE_4_5_PX) / LIENZO.alto) };
 
 /** Una caja de celdas en fracciones del lienzo. Con `sangra`, llega a los bordes laterales (y los pasa un poco). */
-function aFracciones(celdas: Celdas, sangra = false): { x: number; y: number; w: number; h: number } {
+/**
+ * Cuánto se sale por cada canto lo que sangra, en fracción del ancho. Un titular solo asoma (el 15/11 el usuario pidió
+ * «un recorte de canto, no una amputación de letras»: con 0,04 se perdía media E de ENTRECOT); un patrón o un bloque,
+ * que no se leen letra a letra, sí pueden salirse más.
+ */
+export const SANGRADO_TITULAR = 0.008;
+const SANGRADO_FORMA = 0.04;
+
+function aFracciones(celdas: Celdas, sangra = false, cuanto = SANGRADO_FORMA): { x: number; y: number; w: number; h: number } {
   const col: [number, number] = [Math.min(celdas.col[0]!, celdas.col[1]!), Math.max(celdas.col[0]!, celdas.col[1]!)];
   const fila: [number, number] = [Math.min(celdas.fila[0]!, celdas.fila[1]!), Math.max(celdas.fila[0]!, celdas.fila[1]!)];
   const r = rectDeCaja({ col, fila }, LIENZO, RETICULA);
@@ -421,8 +429,8 @@ function aFracciones(celdas: Celdas, sangra = false): { x: number; y: number; w:
   let w = r.w / LIENZO.ancho;
   if (sangra) {
     // Lo que toca la primera o la última columna se lleva más allá del borde: un titular que sangra se corta en el canto.
-    const derecha = col[1] === COLUMNAS ? 1.04 : x + w;
-    x = col[0] === 1 ? -0.04 : x;
+    const derecha = col[1] === COLUMNAS ? 1 + cuanto : x + w;
+    x = col[0] === 1 ? -cuanto : x;
     w = derecha - x;
   }
   return { x: r4(x), y: r4(r.y / LIENZO.alto), w: r4(w), h: r4(r.h / LIENZO.alto) };
@@ -581,7 +589,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           tipo: 'texto',
           texto: texto(x.texto, donde),
           estilo: voz(x.voz, donde),
-          caja: aFracciones(x.caja, x.sangra),
+          caja: aFracciones(x.caja, x.sangra, SANGRADO_TITULAR),
           ajuste: x.ajuste,
           ...(x.tamano && x.ajuste === 'fijo' ? { tamano: x.tamano } : {}),
           ...(x.alinear ? { alinear: x.alinear } : {}),
