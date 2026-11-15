@@ -95,11 +95,41 @@ export const OrigenReferencia = z.discriminatedUnion('tipo', [
 ]);
 export type OrigenReferencia = z.infer<typeof OrigenReferencia>;
 
+/**
+ * Puntos 3 y 4 (15/11): ¿la imagen es de verdad un post publicado? Una referencia por enlace puede traer el mockup de un
+ * vendedor con marca de agua («Xtreme Flyers», Pinterest), una captura con la interfaz de la app o un collage de varios
+ * posts: de eso no se toma oficio.
+ */
+export const TipoDeImagen = z.enum(['POST', 'MOCKUP', 'MARCA_DE_AGUA', 'CAPTURA_CON_INTERFAZ', 'COLLAGE']);
+export type TipoDeImagen = z.infer<typeof TipoDeImagen>;
+
+export const Aptitud = z.object({
+  tipo: TipoDeImagen.describe('POST: el post tal cual. MOCKUP: un post puesto en un móvil, una mano o una escena de vendedor. MARCA_DE_AGUA: lleva la marca de agua de un banco de imágenes o de un vendedor. CAPTURA_CON_INTERFAZ: una captura con botones, iconos o textos de la app alrededor. COLLAGE: varios posts juntos.'),
+  problemas: z.array(z.string().max(200)).max(5).describe('Qué se ve que lo delata (la marca de agua y dónde, el marco del móvil…). Vacío si es un post limpio.'),
+});
+export type Aptitud = z.infer<typeof Aptitud>;
+
+/** Lo que se hace con cada tipo: un mockup, una marca de agua o un collage se rechazan; una captura se acepta con aviso. */
+export function decidirAptitud(a: Aptitud): 'ACEPTA' | 'AVISA' | 'RECHAZA' {
+  if (a.tipo === 'POST') return 'ACEPTA';
+  return a.tipo === 'CAPTURA_CON_INTERFAZ' ? 'AVISA' : 'RECHAZA';
+}
+
+export const AnalisisAutomatico = z.object({
+  fecha: z.string(),
+  analista: z.string(),
+  aptitud: Aptitud,
+  decision: z.enum(['ACEPTA', 'AVISA', 'RECHAZA']),
+});
+export type AnalisisAutomatico = z.infer<typeof AnalisisAutomatico>;
+
 export const ReferenciaLocal = z.object({
   id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
   local: z.string(),
   origen: OrigenReferencia,
   ficha: FichaReferencia.optional(),
+  /** El análisis automático (ficha con Gemini visión), con lo que dice de la imagen. */
+  analisis: AnalisisAutomatico.optional(),
   creadaEn: z.string(),
   nota: z.string().optional(),
 });
@@ -182,6 +212,13 @@ export function comprobarPasoAConcepto(
       puede: false,
       falta: 'CAPTURA',
       motivo: `No se pudo leer el enlace (${referencia.origen.motivo ?? 'sin detalle'}). Sube una captura del post: no se analiza lo que no se ha visto.`,
+    };
+  }
+  if (referencia.analisis?.decision === 'RECHAZA') {
+    return {
+      puede: false,
+      falta: 'REFERENCIA',
+      motivo: `La imagen de «${referencia.id}» no es un post publicado (${referencia.analisis.aptitud.tipo}: ${referencia.analisis.aptitud.problemas.join('; ') || 'sin detalle'}): de ahí no se toma oficio. Sube el post limpio o elige otra referencia.`,
     };
   }
   if (!referencia.ficha) {

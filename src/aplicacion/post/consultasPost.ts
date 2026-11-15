@@ -184,7 +184,8 @@ const resumirReferencia = (r: ReferenciaLocal): ResumenReferencia => ({
   familia: r.ficha?.familia ?? null,
   deBiblioteca: r.origen.tipo === 'IMAGEN' ? (r.origen.deBiblioteca ?? null) : null,
   conImagen: Boolean(r.origen.archivo),
-  usable: Boolean(r.ficha) && !(r.origen.tipo === 'ENLACE' && r.origen.estado === 'PIDE_CAPTURA'),
+  // Sin ficha también vale: la orden la analiza sola (puntos 3 y 4). No vale sin imagen ni si se rechazó.
+  usable: !(r.origen.tipo === 'ENLACE' && r.origen.estado === 'PIDE_CAPTURA') && r.analisis?.decision !== 'RECHAZA',
 });
 
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);

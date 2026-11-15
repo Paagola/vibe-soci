@@ -3,6 +3,21 @@ import type { EncargoPost } from '../../dominio/post.js';
 import { registrarReferencia } from '../referencias/registrarReferencia.js';
 import { guardarEncargo, leerEncargo, type DepsPost } from './ordenPost.js';
 
+/**
+ * Puntos 3 y 4: una referencia propia (una imagen subida o un enlace de Canva o Pinterest), registrada con un id nuevo
+ * («ref-propia-N») y elegida para el encargo. Su ficha la escribe el analista al seguir la orden.
+ */
+export async function usarReferenciaPropia(deps: DepsPost, proyecto: string, origen: { imagen: string } | { enlace: string }): Promise<EncargoPost> {
+  const e = await leerEncargo(deps, proyecto);
+  if (e.paso !== 'REFERENCIA') throw new ErrorDeUsuario('La referencia se elige antes de la propuesta de foto: este encargo ya ha pasado ese paso.');
+  const existentes = new Set((await deps.referencias.referencias.listar(e.local)).map((r) => r.id));
+  let n = 1;
+  while (existentes.has(`ref-propia-${n}`)) n++;
+  const id = `ref-propia-${n}`;
+  await registrarReferencia(deps.referencias, { local: e.local, id, ...origen, nota: `Referencia propia subida para el encargo ${proyecto}.` });
+  return elegirReferencia(deps, proyecto, id);
+}
+
 /** Un post de la biblioteca del estudio: «post-07», «post-30»… */
 const POST_DE_BIBLIOTECA = /^post-\d{2}$/;
 

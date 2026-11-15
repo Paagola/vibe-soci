@@ -10,7 +10,7 @@ import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
 import { corregirPropuesta } from '../../aplicacion/post/corregirPropuesta.js';
 import { claveDeBorrador, guardarIntencion, recomponerPost, vistaPreviaDelDiseno, type DepsDisenoPost } from '../../aplicacion/post/disenoDelPost.js';
-import { elegirReferencia, usarReferenciaDeBiblioteca } from '../../aplicacion/post/elegirReferencia.js';
+import { elegirReferencia, usarReferenciaDeBiblioteca, usarReferenciaPropia } from '../../aplicacion/post/elegirReferencia.js';
 import { avanzar, leerEncargo, type Accion } from '../../aplicacion/post/ordenPost.js';
 import { presupuestoDeFoto } from '../../aplicacion/post/presupuestoDeFoto.js';
 import type { AlProgresar, Progreso } from '../../aplicacion/progreso.js';
@@ -37,7 +37,13 @@ const CuerpoAvanzar = z
   })
   .refine((c) => [c.confirmo, c.rechazo, c.importar].filter(Boolean).length <= 1, 'Una sola acción cada vez: confirmar, rechazar o importar.');
 /** Una referencia ya registrada del local, o un post de la biblioteca del estudio (se registra con su ficha). */
-const CuerpoReferencia = z.union([z.object({ referencia: z.string().min(1) }), z.object({ biblioteca: z.string().min(1) })]);
+const CuerpoReferencia = z.union([
+  z.object({ referencia: z.string().min(1) }),
+  z.object({ biblioteca: z.string().min(1) }),
+  /** Una referencia propia: una imagen subida (/api/subidas) o un enlace. */
+  z.object({ subidaId: z.string().min(1) }),
+  z.object({ enlace: z.string().url('Pega un enlace completo (https://…).') }),
+]);
 const CuerpoPropuesta = z.object({ propuesta: z.unknown() });
 const CuerpoIntencion = z.object({ intencion: z.unknown() });
 
@@ -120,7 +126,15 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const proyecto = proyectoDe(req);
     const cuerpo = validar(CuerpoReferencia, req.body, 'Elige una referencia.');
     const deps = await exigirLibre(estudio, proyecto);
-    const encargo = 'biblioteca' in cuerpo ? await usarReferenciaDeBiblioteca(deps, proyecto, cuerpo.biblioteca) : await elegirReferencia(deps, proyecto, cuerpo.referencia);
+    const encargo =
+      'biblioteca' in cuerpo
+        ? await usarReferenciaDeBiblioteca(deps, proyecto, cuerpo.biblioteca)
+        : 'subidaId' in cuerpo
+          ? await usarReferenciaPropia(deps, proyecto, { imagen: estudio.subidas.ruta(cuerpo.subidaId) })
+          : 'enlace' in cuerpo
+            ? await usarReferenciaPropia(deps, proyecto, { enlace: cuerpo.enlace })
+            : await elegirReferencia(deps, proyecto, cuerpo.referencia);
+    if ('subidaId' in cuerpo) await estudio.subidas.borrar([cuerpo.subidaId]);
     res.json({ encargo: { proyecto: encargo.proyecto, referencia: encargo.referencia } });
   });
 

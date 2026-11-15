@@ -19,7 +19,9 @@ import { BibliotecaFicheros } from './adaptadores/ficheros/BibliotecaFicheros.js
 import { GaleriaDisenosFicheros } from './adaptadores/ficheros/GaleriaDisenosFicheros.js';
 import { PiezasHechasFicheros } from './adaptadores/ficheros/PiezasHechasFicheros.js';
 import { ClienteGemini } from './adaptadores/gemini/ClienteGemini.js';
+import { AnalistaReferenciasGemini } from './adaptadores/gemini/AnalistaReferenciasGemini.js';
 import { DirectorDisenoGemini } from './adaptadores/gemini/DirectorDisenoGemini.js';
+import { AnalistaReferenciasSimulado } from './adaptadores/simulado/AnalistaSimulado.js';
 import { DirectorFotoGemini } from './adaptadores/gemini/DirectorFotoGemini.js';
 import { GeneradorFotoGemini, gastoAcumuladoGemini } from './adaptadores/gemini/GeneradorFotoGemini.js';
 import { registradorDeUso } from './adaptadores/gemini/registroUso.js';
@@ -115,6 +117,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       revisor: new RevisorVisualSimulado(),
       segmentador: new SegmentadorSimulado(),
       disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado(), medidor, describirFuente },
+      analista: new AnalistaReferenciasSimulado(),
     };
   }
 
@@ -134,9 +137,21 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     }),
     revisor: geminiApiKey ? new RevisorVisualGemini(cliente(geminiApiKey, 'comprobacion-salida'), modelos) : revisorSinClave,
     segmentador: new SegmentadorVision(RAIZ),
+    // La ficha automática de una referencia nueva (puntos 3 y 4), con las familias del estudio y una ficha de ejemplo.
+    ...(geminiApiKey ? { analista: await analistaGemini(cliente(geminiApiKey, 'analista-referencias'), modelos, referencias.biblioteca) } : {}),
     // Sin clave no hay director de diseño: INTENCION deja el borrador y se para, como antes de F3.
     ...(geminiApiKey ? { disenador: { ...disenadorGemini(new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos)), medidor, describirFuente } } : {}),
   };
+}
+
+async function analistaGemini(cliente: ClienteGemini, modelos: string[], biblioteca: DepsReferencias['biblioteca']): Promise<AnalistaReferenciasGemini> {
+  const familias = await biblioteca.familias();
+  // Una ficha hecha a mano por el estudio como ejemplo (post-09, F2), sin lo que pone el código.
+  const ejemplo = await biblioteca.ficha('post-09').then(
+    ({ esquema: _e, analizadaPor: _p, analizadaEn: _f, ...resto }) => resto,
+    () => undefined,
+  );
+  return new AnalistaReferenciasGemini(cliente, modelos, familias, ejemplo);
 }
 
 /** El mismo adaptador hace de director y de crítico: comparten las instrucciones fijas (y el prefijo que la API reutiliza). */

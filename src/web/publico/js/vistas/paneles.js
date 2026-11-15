@@ -203,7 +203,36 @@ function panelReferencia(ctx) {
       (primero.length ? primero : resto.slice(0, 3)).map(familia),
       resto.length > (primero.length ? 0 : 3) ? h('details', {}, h('summary', {}, 'Ver el resto de familias'), h('div', { class: 'familias' }, (primero.length ? resto : resto.slice(3)).map(familia))) : null,
     ),
-    h('p', { class: 'nota' }, 'Una imagen o un enlace propios se registran con la línea de comandos (npm run referencia), que también escribe su ficha.'),
+    referenciaPropia(usar),
+  );
+}
+
+/** Una referencia propia: una imagen o un enlace. Su ficha la escribe el analista al seguir (y avisa si no es un post limpio). */
+function referenciaPropia(usar) {
+  const archivo = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', 'aria-label': 'Imagen de la referencia' });
+  const enlace = h('input', { type: 'url', placeholder: 'https://… (Canva o Pinterest)', 'aria-label': 'Enlace de la referencia' });
+  const errores = h('div', {});
+  const enviar = async (evento) => {
+    reemplazar(errores);
+    try {
+      if (archivo.files?.[0]) {
+        const subida = await subirArchivo(archivo.files[0]);
+        await usar({ subidaId: subida.id })(evento);
+      } else if (enlace.value.trim()) {
+        await usar({ enlace: enlace.value.trim() })(evento);
+      } else reemplazar(errores, bloqueError({ message: 'Elige una imagen o pega un enlace.' }));
+    } catch (error) {
+      reemplazar(errores, bloqueError(error));
+    }
+  };
+  return h(
+    'div',
+    { class: 'bloque' },
+    h('h3', {}, 'O una referencia propia'),
+    h('p', { class: 'nota' }, 'Una imagen o un enlace. El estudio escribe su ficha y avisa si es un mockup, lleva marca de agua o no es el post en sí.'),
+    h('div', { class: 'campo' }, archivo, enlace),
+    errores,
+    h('button', { type: 'button', class: 'lanza-trabajo', onclick: enviar }, 'Usar esta referencia'),
   );
 }
 

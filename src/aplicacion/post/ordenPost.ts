@@ -40,6 +40,8 @@ import type { RevisorVisual } from '../../puertos/RevisorVisual.js';
 import { comprobarFotoNueva } from '../fotos/comprobarFotoNueva.js';
 import { proponerFotoNueva } from '../fotos/proponerFotoNueva.js';
 import { comprobarReferencia } from '../referencias/comprobarReferencia.js';
+import { analizarReferencia } from '../referencias/analizarReferencia.js';
+import type { AnalistaDeReferencias } from '../../puertos/AnalistaDeReferencias.js';
 import type { DepsReferencias } from '../referencias/dependencias.js';
 
 export interface DepsPost {
@@ -59,6 +61,8 @@ export interface DepsPost {
    * persona). La prueba en el compositor la pone la orden, con el mismo componedor.
    */
   disenador?: Omit<DepsProponerDiseno, 'probar'>;
+  /** Puntos 3 y 4: escribe la ficha de una referencia nueva (y mira si es un post de verdad). Sin él, se pide a mano. */
+  analista?: AnalistaDeReferencias;
   ahora: () => string;
 }
 
@@ -182,7 +186,18 @@ const ir = (e: EncargoPost, paso: PasoPost, cambios: Partial<EncargoPost> = {}):
 
 const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   async REFERENCIA(deps, e, _a, nota) {
-    const estado = await comprobarReferencia(deps.referencias, { local: e.local, ...(e.referencia ? { referencia: e.referencia } : {}) });
+    let estado = await comprobarReferencia(deps.referencias, { local: e.local, ...(e.referencia ? { referencia: e.referencia } : {}) });
+    // Una referencia sin ficha la analiza el analista (Gemini visión) en vez de pararse a esperar una ficha a mano.
+    if (!estado.paso.puede && estado.paso.falta === 'FICHA' && e.referencia && deps.analista) {
+      const r = await analizarReferencia({ ...deps.referencias, analista: deps.analista }, { local: e.local, id: e.referencia });
+      const a = r.analisis!;
+      nota(
+        a.decision === 'RECHAZA'
+          ? `Referencia ${r.id} rechazada: no es un post publicado (${a.aptitud.tipo}: ${a.aptitud.problemas.join('; ')}).`
+          : `Ficha automática de ${r.id} (${a.analista}): ${r.ficha?.familia} · ${r.ficha?.titulo}.${a.decision === 'AVISA' ? ` AVISO: ${a.aptitud.tipo} (${a.aptitud.problemas.join('; ')}).` : ''}`,
+      );
+      estado = await comprobarReferencia(deps.referencias, { local: e.local, referencia: e.referencia });
+    }
     if (!estado.paso.puede) {
       const familias = estado.propuestas.map((f) => `${f.id} ${f.nombre} (${f.posts.join(', ')})`).join(' · ');
       // No se guarda como bloqueo: se vuelve a comprobar cada vez, así que basta con registrar la referencia y relanzar.
