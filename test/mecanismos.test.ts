@@ -70,8 +70,9 @@ describe('F3.1 · mecanismos: TITULAR_DETRAS', () => {
       const x = texto(r.capas, id)!;
       assert.equal(x.tamano, 34);
       assert.ok(!pisaElPlato(m, x.caja), `«${id}» no pisa el plato`);
-      assert.ok(x.caja.fila[0]! > m.sujeto!.fila[1], `«${id}» va en el lado contrario`);
+      assert.ok(x.caja.fila[0]! > t.caja.fila[1]!, `«${id}» no comparte filas con el titular`);
     }
+    assert.ok(texto(r.capas, 'firma')!.caja.fila[0]! > m.sujeto!.fila[1], 'la firma, en el lado contrario, pegada al borde');
   });
 
   it('con «lado: abajo» el titular va debajo; con más aire abajo, va abajo solo', () => {
@@ -193,3 +194,21 @@ describe('F3.1 · voces del estudio y arreglos del código', () => {
 });
 
 const alto = (c: { fila: number[] }) => c.fila[1]! - c.fila[0]! + 1;
+
+describe('F3.1 · mecanismos: detalles de oficio', () => {
+  it('«sangra» corta los dos cantos con una sola palabra (ancho, centrado); con varias se ignora y se dice', () => {
+    const m = mapaSintetico();
+    const una = colocar(comp({ mecanismo: 'TITULAR_DETRAS', sangra: true }), entorno(m, { textos: { ...textos, titular: 'ENTRECOT' } }));
+    const t = texto(una.capas, 'titular')!;
+    assert.deepEqual([t.ajuste, t.alinear, t.sangra], ['ancho', 'centro', true]);
+    const varias = colocar(comp({ mecanismo: 'TITULAR_DETRAS', sangra: true }), entorno(m));
+    assert.equal(texto(varias.capas, 'titular')!.sangra, undefined);
+    assert.match(varias.notas.join(), /sangra/);
+  });
+
+  it('con acento, el apoyo va en la voz de la firma: tres voces como mucho', () => {
+    const r = colocar(comp({ mecanismo: 'TITULAR_CON_ACENTO', acento: 'acento', apoyo: 'apoyo', firma: 'firma' }), entorno(mapaSintetico()));
+    assert.equal(texto(r.capas, 'apoyo')!.voz, 'rotulo');
+    assert.equal(new Set(r.capas.flatMap((c) => ('voz' in c ? [c.voz] : []))).size, 3);
+  });
+});

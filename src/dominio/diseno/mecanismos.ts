@@ -201,6 +201,10 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   if (comp.mecanismo !== 'ANOTACIONES' && (comp.anotaciones?.length ?? 0) > 1) problemas.push('Con este mecanismo, una anotación como mucho (un solo gesto a mano por pieza).');
 
   const detras = Boolean(sujeto) && comp.mecanismo !== 'ANOTACIONES';
+  const unaPalabra = !/\s/.test((e.textos[titular] ?? '').trim());
+  // Sangrar es cortar las letras en los DOS cantos: solo con una palabra, que llena el ancho entero sin partirse.
+  const sangra = Boolean(comp.sangra) && unaPalabra;
+  if (comp.sangra && !unaPalabra) notas.push('«sangra» solo se aplica a un titular de una palabra: con más, se partiría en líneas y no llegaría a los cantos.');
   let cajaTitular: Caja;
   let cajaAcento: Caja | undefined;
   let lado: 'arriba' | 'abajo' = 'arriba';
@@ -217,7 +221,6 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     const desplazamiento = acento ? 2 : 0;
     if (acento && libres < 4) problemas.push(`Para el acento hacen falta cuatro filas de aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato y hay ${libres}: usa TITULAR_DETRAS (o el otro lado, si tiene más aire).`);
     // Una sola palabra no puede partirse en dos líneas: su caja puede entrar una fila en el plato y crecer sin riesgo.
-    const unaPalabra = !/\s/.test((e.textos[titular] ?? '').trim());
     const filas = acotar(libres - desplazamiento + (unaPalabra ? 1 : 0), 2, 7) + (ajustes.titularMasAlto ?? 0);
     if (lado === 'arriba') {
       const f0 = PRIMERA_FILA + desplazamiento;
@@ -255,12 +258,12 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     texto: titular,
     voz: e.voces.titular,
     caja: cajaTitular,
-    ajuste: 'caja',
-    alinear: 'izquierda',
+    ajuste: sangra ? 'ancho' : 'caja',
+    alinear: sangra ? 'centro' : 'izquierda',
     vertical: lado === 'arriba' ? 'abajo' : 'arriba',
     color: `@${tintaTitular.token}`,
     relacion: detras ? 'detras' : 'aparte',
-    ...(comp.sangra ? { sangra: true } : {}),
+    ...(sangra ? { sangra: true } : {}),
     ...(comp.tinta ? { tinta: comp.tinta } : {}),
     ...(detras && sujeto ? { entre: lado === 'arriba' ? [cajaTitular.fila[0], Math.min(ULTIMA_FILA, sujeto.fila[0] + 3)] : [Math.max(PRIMERA_FILA, sujeto.fila[1] - 3), cajaTitular.fila[1]] } : {}),
   });
@@ -269,8 +272,10 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   const pequenos: Array<{ id: string; clave: string; voz: string }> = [];
   const apoyo = pedir(comp.apoyo, 'apoyo');
   const firma = pedir(comp.firma, 'firma');
-  if (apoyo) pequenos.push({ id: 'apoyo', clave: apoyo, voz: e.voces.apoyo });
+  // La firma primero: se queda el sitio más pegado al borde, y el apoyo va justo antes de ella.
   if (firma) pequenos.push({ id: 'firma', clave: firma, voz: e.voces.firma });
+  // Con acento ya hay tres voces (titular, acento y firma): el apoyo va en la de la firma para no pasar de tres.
+  if (apoyo) pequenos.push({ id: 'apoyo', clave: apoyo, voz: acento ? e.voces.firma : e.voces.apoyo });
   // Mejor en el lado contrario al titular, pegados al borde; si no caben, en el lado del titular.
   const opuesto = lado === 'arriba' ? { col: 1, fila: ULTIMA_FILA } : { col: 1, fila: PRIMERA_FILA };
   for (const t of pequenos) {
