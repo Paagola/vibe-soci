@@ -402,11 +402,13 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   // Cortado por UN solo lado (un producto de cerca, como los nigiris de una toma de detalle): se pega a ese canto del
   // lienzo, así el corte cae fuera; agrandarlo 1,5 veces lo dejaba ilegible (v005 de Sushita).
   const unLado = toca.izquierda !== toca.derecha;
+  const anchoCortado = Math.round(acotar((0.62 * 1440 * proporcion) / 1080, 1.12, 1.5) * 100) / 100;
   const plato: CapaPropuesta = unLado
     ? { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: 1.02, alinear: toca.izquierda ? 'abajo-izquierda' : 'abajo-derecha', giro: toca.izquierda ? -6 : 6, sangra: 0.06, sombra: 'proyectada' }
     : cortadoPorLosLados
-    ? // 1,5 del ancho: los cortes de los lados quedan fuera del lienzo y el plato sigue más allá del borde de abajo.
-      { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [10, 16] }, ancho: 1.5, alinear: 'arriba-centro', giro: -8, sombra: 'proyectada' }
+    ? // Lo justo para que los cortes de los lados queden fuera del lienzo (de 1,12 a 1,5 del ancho), sin que el plato pase
+      // del 62 % del alto: un producto de cerca agrandado 1,5 veces era ilegible (v005 de Sushita). Girado solo si sobra.
+      { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [10, 16] }, ancho: anchoCortado, alinear: 'arriba-centro', giro: anchoCortado >= 1.3 ? -8 : -2, sombra: 'proyectada' }
     : // Entero: su alto, en torno al 55 % del lienzo, y el 12 % sale por abajo.
       { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: Math.round(acotar((0.55 * 1440 * proporcion) / 1080, 0.55, 1.3) * 100) / 100, alinear: 'abajo-centro', giro: -10, sangra: 0.12, sombra: 'proyectada' };
   if (unLado) notas.push(`La foto corta el plato por la ${toca.izquierda ? 'izquierda' : 'derecha'}: se pega a ese canto, y el corte queda fuera del lienzo.`);

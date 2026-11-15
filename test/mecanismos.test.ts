@@ -248,8 +248,11 @@ describe('F3.2 · PLATO_SOBRE_COLOR (familias F1 y F3)', () => {
     const r = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta: silueta(0, 200, 1200, 1400) }));
     assert.deepEqual(r.problemas, []);
     const plato = r.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>;
-    assert.ok(plato.ancho! >= 1.4 && plato.giro);
+    assert.ok(plato.ancho! >= 1.12 && plato.ancho! <= 1.5 && plato.giro);
     assert.match(r.notas.join(), /cortes quedan fuera del lienzo/);
+    // Un producto de cerca y apaisado (los nigiris de la toma de Sushita): lo justo para esconder los cortes, no 1,5.
+    const cerca = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta: { x: 0, y: 769, w: 1792, h: 1471, anchoFoto: 1792, altoFoto: 2400 } }));
+    assert.ok((cerca.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>).ancho! < 1.3);
   });
 
   it('si la foto corta el plato por arriba, no se puede: lo dice', () => {
