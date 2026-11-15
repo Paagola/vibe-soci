@@ -437,8 +437,17 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   // TINTA: un subrayado a pincel bajo el titular, la interrupción a mano de la pieza.
   // Bajo el segundo nivel si lo hay (bajo el titular cruzaría el segundo nivel), en el color de la diagonal.
   if (trata.has('TINTA')) capas.push({ tipo: 'trazo', gesto: 'subrayado', de: comp.apoyo ? 'apoyo' : 'titular', color: `@${diagonal.token === campo.token ? clara.token : diagonal.token}` });
-  // Elementos gráficos de la estética, cada uno con su papel (punto 13).
-  const graficos = (e.graficos?.tipos ?? []).slice(0, e.graficos?.maximo ?? 0);
+  // ILUSTRADO o ICONOS_DE_LINEA: el gesto dibujado a tinta de la referencia, una rama de cerezo que entra por el canto
+  // derecho en el vacío junto al segundo nivel (en ref-pin-34 entra por el izquierdo; aquí ese lado es del texto).
+  const conRama = trata.has('ILUSTRADO') || trata.has('ICONOS_DE_LINEA');
+  if (conRama) {
+    // A la derecha, por debajo de la línea de la diagonal (que allí corta al 40 %): va sobre el color de la diagonal.
+    const debajo = !e.recursos || e.recursos.includes('diagonal') ? diagonal : campo;
+    capas.splice(capas.indexOf(plato), 0, { tipo: 'forma', figura: 'rama', caja: { col: [9, COLUMNAS], fila: [7, 10] }, sangra: true, color: `@${sobre(debajo, undefined, 3).token}`, plano: 'fondo' });
+    notas.push('Una rama de cerezo dibujada a tinta entra por el canto derecho (tratamiento ilustrado de la referencia).');
+  }
+  // Elementos gráficos de la estética, cada uno con su papel (punto 13). La trama de puntos cede su sitio a la rama.
+  const graficos = (e.graficos?.tipos ?? []).filter((g) => !(conRama && g === 'puntos')).slice(0, e.graficos?.maximo ?? 0);
   for (const g of graficos) {
     if (g === 'circulo') {
       // Un disco detrás del plato: lo enmarca y lo separa del campo, como un plato de color bajo el producto.

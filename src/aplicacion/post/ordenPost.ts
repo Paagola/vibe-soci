@@ -32,6 +32,7 @@ import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
 import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { contradiccionesConLaNota } from '../../dominio/nota.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost, type TomaDelEncargo } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas } from '../../puertos/ComponedorDePiezas.js';
@@ -292,6 +293,8 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, prompt, problemas }, null, 2)}\n`);
     // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto: la foto de más que haya subido el
     // dueño para ese elemento (no se genera) o, si no, una toma nueva sacada de la misma foto real.
+    // F3.3: un elemento que la nota del dueño llama con otra preparación no se confirma (gunkan / rollito de papel de arroz).
+    problemas.push(...contradiccionesConLaNota(e.plato, propuesta.descripcion.elementos));
     const nombres = propuesta.descripcion.elementos.map((x) => x.nombre);
     const extras = e.fotosExtra.map((x) => ({ ...x, nombre: elementoParecido(x.elemento, nombres) }));
     for (const x of extras) if (!x.nombre) problemas.push(`La foto de más «${x.ruta}» dice que enseña «${x.elemento}», pero no es ninguno de los elementos descritos (${nombres.join(', ')}): corrige el elemento o la descripción.`);

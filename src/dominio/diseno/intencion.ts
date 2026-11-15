@@ -255,8 +255,8 @@ export const CapaForma = z.object({
   ...base,
   tipo: z.literal('forma'),
   /** `mancha` es una forma orgánica dentro de su caja (las de post-17 y post-19); `poligono`, un bloque de color libre. */
-  figura: z.enum(['rect', 'elipse', 'linea', 'poligono', 'mancha']),
-  /** rect, elipse y mancha. */
+  figura: z.enum(['rect', 'elipse', 'linea', 'poligono', 'mancha', 'rama']),
+  /** rect, elipse, mancha y rama (F3.3: una rama de cerezo dibujada a tinta que entra por el canto derecho de la caja). */
   caja: Caja.optional(),
   /** linea: de un punto a otro, en fracciones del lienzo. */
   desde: Punto.optional(),

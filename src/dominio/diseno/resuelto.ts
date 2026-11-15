@@ -123,7 +123,7 @@ export type CapaResuelta = BaseResuelta &
       }
     | {
         tipo: 'forma';
-        figura: 'rect' | 'elipse' | 'linea' | 'poligono' | 'mancha';
+        figura: 'rect' | 'elipse' | 'linea' | 'poligono' | 'mancha' | 'rama';
         rect?: Rect;
         desde?: { x: number; y: number };
         hasta?: { x: number; y: number };

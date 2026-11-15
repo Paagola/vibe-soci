@@ -192,7 +192,7 @@ export class ResolutorDiseno {
         }
         case 'forma': {
           if (capa.figura === 'poligono' && !capa.puntos) throw new RangeError(`«${capa.id}»: un polígono necesita «puntos».`);
-          if (capa.figura === 'mancha' && !capa.caja) throw new RangeError(`«${capa.id}»: una mancha necesita «caja».`);
+          if ((capa.figura === 'mancha' || capa.figura === 'rama') && !capa.caja) throw new RangeError(`«${capa.id}»: una ${capa.figura} necesita «caja».`);
           const relleno = color(capa.color);
           resueltas.set(capa.id, {
             ...comun,
@@ -208,6 +208,7 @@ export class ResolutorDiseno {
             ...(capa.radio ? { radio: capa.radio } : {}),
             ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
             ...(capa.figura === 'mancha' ? { lobulos: capa.lobulos, irregularidad: capa.irregularidad, semilla: semilla(capa) } : {}),
+            ...(capa.figura === 'rama' ? { semilla: semilla(capa) } : {}),
             ...conTinta(tinta(capa, relleno)),
             ...conRecorte(this.siluetaDe(resueltas, capa)),
           });

@@ -125,3 +125,71 @@ export function trazadoMancha(rect: { x: number; y: number; w: number; h: number
 export function trazadoPoligono(puntos: Array<{ x: number; y: number }>): string {
   return `${puntos.map((q, i) => `${i === 0 ? 'M' : 'L'}${n2(q.x)} ${n2(q.y)}`).join('')}Z`;
 }
+
+/**
+ * F3.3 (punto 12): una rama de cerezo dibujada a tinta, como la de los flyers japoneses (ref-pin-34). Entra por el canto
+ * derecho de su caja y crece hacia la izquierda: un tallo principal que adelgaza, unas ramitas y unas flores de cinco
+ * pétalos en contorno con el centro relleno. Todo del mismo color, como un dibujo a pluma; la semilla la hace estable.
+ */
+export function dibujoRama(rect: { x: number; y: number; w: number; h: number }, color: string, semilla: number): string {
+  const azar = mulberry32(semilla);
+  const g = Math.min(rect.w, rect.h);
+  const partes: string[] = [];
+  /** Un trazo de pincel: una curva cuadrática cuyo grosor va de `w0` a `w1`, rellena (no un stroke: así adelgaza). */
+  const trazo = (p0: P, p1: P, p2: P, w0: number, w1: number): P[] => {
+    const n = 24;
+    const izquierda: P[] = [];
+    const derecha: P[] = [];
+    const puntos: P[] = [];
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const x = (1 - t) ** 2 * p0.x + 2 * (1 - t) * t * p1.x + t ** 2 * p2.x;
+      const y = (1 - t) ** 2 * p0.y + 2 * (1 - t) * t * p1.y + t ** 2 * p2.y;
+      const dx = 2 * (1 - t) * (p1.x - p0.x) + 2 * t * (p2.x - p1.x);
+      const dy = 2 * (1 - t) * (p1.y - p0.y) + 2 * t * (p2.y - p1.y);
+      const largo = Math.hypot(dx, dy) || 1;
+      const w = (w0 + (w1 - w0) * t) * (0.85 + azar() * 0.3);
+      izquierda.push({ x: x - (dy / largo) * (w / 2), y: y + (dx / largo) * (w / 2) });
+      derecha.push({ x: x + (dy / largo) * (w / 2), y: y - (dx / largo) * (w / 2) });
+      puntos.push({ x, y });
+    }
+    const d = [...izquierda, ...derecha.reverse()].map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('');
+    partes.push(`<path d="${d}Z" fill="${color}"/>`);
+    return puntos;
+  };
+  const flor = (c: P, r: number) => {
+    const giro = azar() * 72;
+    const linea = Math.max(1.4, r * 0.09);
+    for (let k = 0; k < 5; k++) {
+      const a = ((giro + k * 72) * Math.PI) / 180;
+      partes.push(`<ellipse cx="${(c.x + Math.cos(a) * r * 0.62).toFixed(1)}" cy="${(c.y + Math.sin(a) * r * 0.62).toFixed(1)}" rx="${(r * 0.5).toFixed(1)}" ry="${(r * 0.38).toFixed(1)}" transform="rotate(${((a * 180) / Math.PI).toFixed(1)} ${(c.x + Math.cos(a) * r * 0.62).toFixed(1)} ${(c.y + Math.sin(a) * r * 0.62).toFixed(1)})" fill="none" stroke="${color}" stroke-width="${linea.toFixed(2)}"/>`);
+    }
+    partes.push(`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${(r * 0.18).toFixed(1)}" fill="${color}"/>`);
+  };
+  // El tallo: del canto derecho, a media altura, hasta cerca del izquierdo, con una comba hacia arriba.
+  const inicio = { x: rect.x + rect.w + g * 0.05, y: rect.y + rect.h * 0.62 };
+  const fin = { x: rect.x + rect.w * 0.08, y: rect.y + rect.h * 0.3 };
+  const tallo = trazo(inicio, { x: rect.x + rect.w * 0.5, y: rect.y + rect.h * 0.75 }, fin, g * 0.07, g * 0.012);
+  // Las ramitas: salen del tallo hacia arriba o hacia abajo, cada vez más finas.
+  const salidas = [0.3, 0.5, 0.68, 0.84];
+  const puntas: P[] = [fin];
+  for (const [i, s] of salidas.entries()) {
+    const base = tallo[Math.round(s * (tallo.length - 1))]!;
+    const arriba = i % 2 === 0;
+    const largo = g * (0.32 - s * 0.15) * (0.8 + azar() * 0.4);
+    const punta = { x: base.x - largo * 0.75, y: base.y + (arriba ? -1 : 1) * largo * 0.7 };
+    trazo(base, { x: base.x - largo * 0.2, y: base.y + (arriba ? -1 : 1) * largo * 0.55 }, punta, g * 0.035 * (1 - s * 0.5), g * 0.008);
+    puntas.push(punta);
+  }
+  // Las flores: en cada punta y alguna a lo largo del tallo.
+  for (const p of puntas) flor(p, g * (0.075 + azar() * 0.03));
+  for (const s of [0.58, 0.92]) {
+    const b = tallo[Math.round(s * (tallo.length - 1))]!;
+    flor({ x: b.x + g * 0.02, y: b.y - g * 0.07 }, g * 0.055);
+  }
+  // Unos capullos: puntos de tinta junto a las ramitas.
+  for (const p of puntas.slice(1)) partes.push(`<circle cx="${(p.x + g * 0.09).toFixed(1)}" cy="${(p.y - g * 0.02).toFixed(1)}" r="${(g * 0.016).toFixed(1)}" fill="${color}"/>`);
+  return partes.join('');
+}
+
+type P = { x: number; y: number };

@@ -15,7 +15,7 @@ import type { Fusion, Intencion, Retoque } from '../../dominio/diseno/intencion.
 import { nombreDeCapa, type CapaResuelta, type Resuelto } from '../../dominio/diseno/resuelto.js';
 import type { Lienzo, Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from '../../puertos/Compositor.js';
-import { trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
+import { dibujoRama, trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
 import { alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
@@ -499,6 +499,9 @@ function figura(capa: CapaForma): string {
     centro = centroDe(capa.rect);
   } else if (capa.figura === 'mancha' && capa.rect) {
     dibujo = `<path d="${trazadoMancha(capa.rect, capa.lobulos ?? 5, capa.irregularidad ?? 0.35, capa.semilla ?? 7)}" ${trazo}/>`;
+    centro = centroDe(capa.rect);
+  } else if (capa.figura === 'rama' && capa.rect) {
+    dibujo = dibujoRama(capa.rect, capa.color, capa.semilla ?? 7);
     centro = centroDe(capa.rect);
   } else if (capa.figura === 'poligono' && capa.puntos) {
     dibujo = `<path d="${trazadoPoligono(capa.puntos)}" ${trazo}/>`;

@@ -7,6 +7,7 @@
  * Ningún texto es nuevo: los nombres y estados salen de los elementos confirmados y la firma de los datos del local.
  * Dominio puro: devuelve maquetas en el dialecto, que compila compilarIntencion.
  */
+import { conMayuscula, segmentoDelElemento } from '../nota.js';
 import { contraste } from './color.js';
 import type { CapaPropuesta, Carrusel, HechosDeLaPieza, Maqueta, TextoPropuesto } from './propuesta.js';
 
@@ -89,9 +90,11 @@ export function diapositivasDeCarrusel(
   const decorado = portada.capas.filter((c) => c.tipo === 'textura' || (c.tipo === 'patron' && c.suave));
   for (const t of tomas.slice(0, 3)) {
     vistos.add(normal(t.elemento.nombre));
-    const titulo = tituloCorto(t.elemento.nombre);
+    // El título, como lo llama el dueño si su nota nombra el elemento; si no, el nombre confirmado. Con mayúscula inicial.
+    const delDueno = segmentoDelElemento(hechos.plato, t.elemento.nombre);
+    const titulo = conMayuscula(tituloCorto(delDueno ?? t.elemento.nombre));
     const estado = estadoCorto(t.elemento.estado);
-    const textos: TextoPropuesto[] = [{ clave: 'titular', texto: titulo, fuente: 'ELEMENTO', cita: t.elemento.nombre }];
+    const textos: TextoPropuesto[] = [delDueno ? { clave: 'titular', texto: titulo, fuente: 'PLATO', cita: delDueno } : { clave: 'titular', texto: titulo, fuente: 'ELEMENTO', cita: t.elemento.nombre }];
     const giro = diapositivas.length % 2 ? 6 : -6;
     const capas: CapaPropuesta[] = [
       { tipo: 'fondo', color: `@${campo}` },
@@ -127,8 +130,8 @@ export function diapositivasDeCarrusel(
     vistos.add(normal(nombre.texto));
     // El título del detalle, corto para que se lea grande (salto de escala frente a la anotación): las primeras
     // palabras del nombre, tal cual (sigue respaldado por la misma cita).
-    const corto = tituloCorto(nombre.texto);
-    const textos: TextoPropuesto[] = [{ ...nombre, texto: corto }];
+    const delDueno = elemento ? segmentoDelElemento(hechos.plato, elemento.nombre) : undefined;
+    const textos: TextoPropuesto[] = [delDueno ? { clave: nombre.clave, texto: conMayuscula(tituloCorto(delDueno)), fuente: 'PLATO', cita: delDueno } : { ...nombre, texto: conMayuscula(tituloCorto(nombre.texto)) }];
     // En los detalles no va la cuña: la anotación necesita el campo entero (en la prueba de Sushita se pisaban).
     const capas: CapaPropuesta[] = [
       { tipo: 'fondo', color: `@${campo}` },
@@ -152,8 +155,11 @@ export function diapositivasDeCarrusel(
   const ciudad = l.ciudad.split('(')[0]!.trim();
   textos.push({ clave: 'ciudad', texto: ciudad, fuente: 'MARCA', cita: ciudad });
   if (l.instagram) textos.push({ clave: 'instagram', texto: `@${l.instagram.replace(/^@/, '')}`, fuente: 'MARCA', cita: l.instagram.replace(/^@/, '') });
+  // La rama a tinta de la portada, si la lleva, también en el cierre (en el vacío a la derecha de la ciudad).
+  const rama = portada.capas.find((c) => c.tipo === 'forma' && c.figura === 'rama') as Extract<CapaPropuesta, { tipo: 'forma' }> | undefined;
   const capas: CapaPropuesta[] = [
     ...fondo(0.66, 0.57),
+    ...(rama ? [{ ...rama, caja: { col: [9, COLUMNAS], fila: [6, 8] }, color: `@${tintaSobre(campo, e, undefined, 3)}` } as CapaPropuesta] : []),
     { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [10, 16] }, sangra: true },
     { tipo: 'texto', id: 'firma', texto: 'firma', voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [3, 6] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'abajo', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
     { tipo: 'texto', id: 'ciudad', texto: 'ciudad', voz: e.voces.firma, caja: { col: [1, 8], fila: [8, 8] }, ajuste: 'fijo', tamano: 40, alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' },

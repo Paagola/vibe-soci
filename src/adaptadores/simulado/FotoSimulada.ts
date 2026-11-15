@@ -91,7 +91,7 @@ export class RevisorVisualSimulado implements RevisorVisual {
 
   async comprobarElementos(_f: ParDeFotos, lista: string): Promise<ChecklistVisual> {
     this.siguiente = this.cola.shift() ?? {};
-    return { elementos: [{ nombre: lista.slice(0, 40), esperado: null, visto: null, presente: true, nota: 'simulado' }], anatomia: [], anadidos: [], textoNuevo: [], copiadoDeReferencia: [], seguro: true, ...this.siguiente.checklist } as ChecklistVisual;
+    return { elementos: [{ nombre: lista.slice(0, 40), esperado: null, visto: null, presente: true, nota: 'simulado' }], anatomia: [], anadidos: [], textoNuevo: [], cambiados: [], copiadoDeReferencia: [], seguro: true, ...this.siguiente.checklist } as ChecklistVisual;
   }
 
   async compararToma(): Promise<ComparacionToma> {

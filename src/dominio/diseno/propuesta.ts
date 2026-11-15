@@ -161,7 +161,7 @@ const CapaTrazo = z.object({
 
 const CapaForma = z.object({
   tipo: z.literal('forma'),
-  figura: z.enum(['bloque', 'mancha', 'filete', 'circulo']).describe('bloque: rectángulo de color. mancha: forma orgánica. filete: una línea fina a lo ancho de la caja. circulo: un disco que llena la caja.'),
+  figura: z.enum(['bloque', 'mancha', 'filete', 'circulo', 'rama']).describe('bloque: rectángulo de color. mancha: forma orgánica. filete: una línea fina a lo ancho de la caja. circulo: un disco que llena la caja. rama: una rama de cerezo dibujada a tinta que entra por el canto derecho de la caja.'),
   caja: Celdas,
   color: Token,
   giro: Giro.optional(),
@@ -542,6 +542,8 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
   const relaciones: Array<Record<string, unknown>> = [];
   const noSolapar: string[] = [];
   const usados = new Set<string>();
+  // F3.3: la flecha de una anotación se tiene que ver: más gruesa en las estéticas de color (con 4–5 px no se veía).
+  const grosorFlecha = ['COLOR_POP', 'MAXIMALISMO'].includes(c.estetica?.id ?? '') ? 9 : 6;
   let fotoEnMarco: string | undefined;
   const idLibre = (base: string): string => {
     let id = base;
@@ -737,14 +739,14 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           const haciaLaDerecha = caja.x + caja.w / 2 < x.hacia.x;
           const abajo = caja.y + caja.h / 2 < x.hacia.y;
           const desde = { x: r4(haciaLaDerecha ? caja.x + caja.w * 0.6 : caja.x + caja.w * 0.3), y: r4(abajo ? caja.y + caja.h + 0.004 : caja.y - 0.004) };
-          poner(Plano3.GESTO, { id: idLibre(`${x.id}-flecha`), tipo: 'trazo', gesto: 'flecha', desde, hasta: x.hacia, curva: haciaLaDerecha === abajo ? -0.3 : 0.3, color: color(x.color, donde), grosor: 5, temblor: 0.4 });
+          poner(Plano3.GESTO, { id: idLibre(`${x.id}-flecha`), tipo: 'trazo', gesto: 'flecha', desde, hasta: x.hacia, curva: haciaLaDerecha === abajo ? -0.3 : 0.3, color: color(x.color, donde), grosor: grosorFlecha, temblor: 0.4 });
         } else if (haySujeto) {
           // La flecha sale del lado del rótulo que mira al centro del lienzo, que es hacia donde está el plato.
           const cx = caja.x + caja.w / 2;
           const cy = caja.y + caja.h / 2;
           const haciaLaDerecha = cx < 0.5;
           const desde = { x: r4(haciaLaDerecha ? caja.x + caja.w * 0.55 : caja.x + caja.w * 0.2), y: r4(cy < 0.5 ? caja.y + caja.h * 0.75 : caja.y - 0.004) };
-          poner(Plano3.GESTO, { id: idLibre(`${x.id}-flecha`), tipo: 'trazo', gesto: 'flecha', desde, hacia: { sujeto: 'plato', punto: x.apunta }, curva: haciaLaDerecha === cy < 0.5 ? -0.3 : 0.3, color: color(x.color, donde), grosor: 4, temblor: 0.4 });
+          poner(Plano3.GESTO, { id: idLibre(`${x.id}-flecha`), tipo: 'trazo', gesto: 'flecha', desde, hacia: { sujeto: 'plato', punto: x.apunta }, curva: haciaLaDerecha === cy < 0.5 ? -0.3 : 0.3, color: color(x.color, donde), grosor: grosorFlecha, temblor: 0.4 });
           noSolapar.push(x.id);
         }
         break;
@@ -761,7 +763,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         const caja = aFracciones(x.caja, x.sangra);
         const comun = { id: idLibre(x.figura), tipo: 'forma', color: color(x.color, donde), ...(x.giro ? { giro: x.giro } : {}), ...(detras && sujetoFantasma ? { recortarCon: { sujeto: 'plato', modo: 'fuera' } } : {}), ...tintaDe(x.tinta) };
         if (x.figura === 'filete') poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: 'linea', desde: { x: caja.x, y: r4(caja.y + caja.h / 2) }, hasta: { x: r4(caja.x + caja.w), y: r4(caja.y + caja.h / 2) }, grosor: 2 });
-        else poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: x.figura === 'bloque' ? 'rect' : x.figura === 'circulo' ? 'elipse' : 'mancha', caja });
+        else poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: x.figura === 'bloque' ? 'rect' : x.figura === 'circulo' ? 'elipse' : x.figura, caja });
         break;
       }
 

@@ -120,6 +120,18 @@ describe('F3 · los textos solo dicen lo que consta', () => {
   });
 });
 
+describe('F3.3 · la flecha de una anotación se ve', () => {
+  it('más gruesa en las estéticas de color que en las editoriales (con 4 px no se veía)', () => {
+    const flecha = (estetica?: string) => {
+      const i = Intencion.parse(compilarIntencion(propuestaRica(), contexto(estetica ? { estetica: { id: estetica, limites: { saltoMinimo: 3, palabrasMaximas: 30, nivelesMaximos: 4, vocesMaximas: 3, gestosMaximos: 2, recursosMaximos: 3 } } } : {})).intencion);
+      const t = i.capas.find((c) => c.tipo === 'trazo' && c.gesto === 'flecha');
+      return t?.tipo === 'trazo' ? t.grosor : 0;
+    };
+    assert.equal(flecha('COLOR_POP'), 9);
+    assert.equal(flecha(), 6);
+  });
+});
+
 describe('F3 · de la propuesta a la intención', () => {
   it('compila una propuesta rica en una intención válida, con la silueta del plato y las relaciones medibles', () => {
     const c = compilarIntencion(propuestaRica(), contexto());
@@ -611,7 +623,7 @@ describe('Punto 1 · carrusel en la orden única', () => {
     const detalle = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'tomas', 'intenciones', 'detalle-1.json'), 'utf8')));
     assert.equal(detalle.activos.detalle1, 'tomas-toma-1', 'el detalle 1 con su toma, no con la portada');
     assert.ok(detalle.capas.some((c) => c.tipo === 'imagen' && c.activo === 'detalle1'));
-    assert.equal(detalle.textos.titular, 'pieza simulada 1');
+    assert.equal(detalle.textos.titular, 'Pieza simulada 1', 'con mayúscula inicial, como todos los detalles');
     const plan = JSON.parse(await readFile(join(carpeta, 'proyectos', 'tomas', 'plan.json'), 'utf8'));
     assert.ok(plan.diapositivas.length >= 3);
     await stat(join(carpeta, 'datos', 'disenos', 'tomas', 'detalle-1', 'v001', 'exportadas', '4x5.jpg'));
@@ -642,7 +654,7 @@ describe('Punto 1 · carrusel en la orden única', () => {
     assert.equal(r.parada, 'HECHO', r.parada);
     const detalle = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'extra', 'intenciones', 'detalle-1.json'), 'utf8')));
     assert.equal(detalle.activos.detalle1, 'extra-real-2');
-    assert.equal(detalle.textos.titular, 'pieza simulada 2');
+    assert.equal(detalle.textos.titular, 'Pieza simulada 2');
   });
 
   it('una foto de más que no corresponde a ningún elemento no deja confirmar', () => {

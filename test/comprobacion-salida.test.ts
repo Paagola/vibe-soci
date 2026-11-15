@@ -182,7 +182,7 @@ describe('Comprobación de salida · teselas y lista', () => {
 });
 
 describe('F3.2 (punto 8) · el aire que pidió el director de foto', () => {
-  const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], copiadoDeReferencia: [], seguro: true };
+  const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], cambiados: [], copiadoDeReferencia: [], seguro: true };
   it('si la zona pedida no queda libre de plato, se descarta (y se reintenta si quedan intentos)', () => {
     const d = decidirSalida(bien, undefined, undefined, { lado: 'arriba-derecha', libre: 0.12, minimo: AIRE_MINIMO });
     assert.equal(d.final, 'DESCARTA');
@@ -193,7 +193,7 @@ describe('F3.2 (punto 8) · el aire que pidió el director de foto', () => {
 
 describe('F3.2 (punto 9) · lo copiado de la referencia descarta', () => {
   it('un texto, un logotipo o un objeto de @image2 en la foto nueva es motivo de descarte', () => {
-    const c = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], copiadoDeReferencia: ['los palillos negros de la referencia'], seguro: true };
+    const c = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], cambiados: [], copiadoDeReferencia: ['los palillos negros de la referencia'], seguro: true };
     const d = decidirSalida(c);
     assert.equal(d.final, 'DESCARTA');
     assert.match(d.motivos.join(), /copiado de la referencia: los palillos/);
@@ -202,7 +202,7 @@ describe('F3.2 (punto 9) · lo copiado de la referencia descarta', () => {
 
 describe('F3.2 · la misma disposición que la foto subida no es otra toma', () => {
   it('aunque cambien la cámara y el fondo, si los elementos están colocados igual, se descarta', () => {
-    const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], copiadoDeReferencia: [], seguro: true };
+    const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], cambiados: [], copiadoDeReferencia: [], seguro: true };
     const d = decidirSalida(bien, { ...otraToma, mismaDistribucion: true, explicacion: 'atún arriba a la izquierda, flor a la izquierda y uramakis a la derecha, como en la subida' });
     assert.equal(d.toma, 'MISMA');
     assert.equal(d.final, 'DESCARTA');

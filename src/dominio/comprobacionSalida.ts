@@ -25,6 +25,12 @@ export const ChecklistVisual = z.object({
   anatomia: z.array(z.string()).default([]),
   anadidos: z.array(z.string()).default([]),
   textoNuevo: z.array(z.string()).default([]),
+  /**
+   * F3.3: elementos que en la foto nueva son OTRA preparación que el mismo elemento en la foto real (otro envoltorio, otro
+   * corte, otra forma), aunque la lista los describa así: manda la foto real (la toma de Sushita pasó con «rollitos de
+   * papel de arroz» porque la lista, equivocada, lo decía).
+   */
+  cambiados: z.array(z.string()).default([]),
   /** Lo que la foto nueva ha copiado del post de referencia (@image2): textos, logotipos, comida u objetos suyos. */
   copiadoDeReferencia: z.array(z.string()).default([]),
   seguro: z.boolean(),
@@ -82,6 +88,7 @@ function motivosDeElementos(c: ChecklistVisual, a?: ConteoAnatomia): string[] {
     ...c.anatomia.map((x) => `anatomía: ${x}`),
     ...c.anadidos.map((x) => `añadido: ${x}`),
     ...c.textoNuevo.map((x) => `texto nuevo: ${x}`),
+    ...c.cambiados.map((x) => `cambiado respecto a la foto real: ${x}`),
     ...c.copiadoDeReferencia.map((x) => `copiado de la referencia: ${x}`),
   ];
   for (const p of a?.piezas ?? []) {

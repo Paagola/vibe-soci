@@ -811,3 +811,23 @@ describe('F3.3 · patrón de línea de olas', () => {
     assert.ok(maximo < 200, `flojo: ${maximo}`);
   });
 });
+
+describe('F3.3 · la rama dibujada a tinta', () => {
+  it('pinta tinta dentro de su caja y nada fuera', async () => {
+    const rama = { id: 'r', tipo: 'forma', figura: 'rama', caja: { x: 0.5, y: 0.1, w: 0.5, h: 0.3 }, color: '@negro' };
+    const r = await pintar(intencion([fondo, rama]));
+    const png = await sharp(r.render.png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { width, height } = png.info;
+    let dentro = 0;
+    let fuera = 0;
+    for (let y = 0; y < height; y += 2) {
+      for (let x = 0; x < width; x += 2) {
+        const oscuro = png.data[(y * width + x) * 3]! < 100;
+        if (x > width * 0.48 && y > height * 0.08 && y < height * 0.42) dentro += oscuro ? 1 : 0;
+        else fuera += oscuro ? 1 : 0;
+      }
+    }
+    assert.ok(dentro > 400, `tinta en la caja: ${dentro}`);
+    assert.equal(fuera, 0);
+  });
+});

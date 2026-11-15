@@ -45,8 +45,9 @@ Para la imagen 2:
 - "anatomia": problemas de anatomía o forma (una cabeza o una cola de más o de menos, cuerpos fundidos, piezas cortadas que no deberían). Vacío si no hay.
 - "anadidos": objetos, alimentos o vajilla de la imagen 2 que NO están en la lista (un posavasos, un plato de más, hierbas, un limón…). La superficie y el fondo no cuentan. Vacío si no hay.
 - "textoNuevo": letras, palabras o logotipos visibles en la imagen 2 que NO están en la imagen 1. Vacío si no hay.
+- "cambiados": elementos que en la imagen 2 son OTRA preparación que el mismo elemento en la imagen 1: otro envoltorio (arroz, alga, papel de arroz…), otro corte, otra forma u otro relleno visible. MANDA LA IMAGEN 1, no la lista: si la lista describe algo que la imagen 1 no enseña y la imagen 2 lo sigue, también es un cambio. Vacío si no hay.
 ${conReferencia ? '- "copiadoDeReferencia": lo que la imagen 2 ha copiado de la imagen 3 (el post de referencia): sus letras, palabras o logotipos, su comida, sus objetos (palillos, papel, ramas, códigos QR…) o su composición de elementos. Copiar su luz, su ángulo, su fondo o su color NO cuenta. Vacío si no hay.\n' : ''}- "seguro": false si alguna respuesta es dudosa.
-JSON: {"elementos":[{"nombre":"…","esperado":2,"visto":2,"presente":true,"nota":"…"}],"anatomia":[],"anadidos":[],"textoNuevo":[],${conReferencia ? '"copiadoDeReferencia":[],' : ''}"seguro":true}`;
+JSON: {"elementos":[{"nombre":"…","esperado":2,"visto":2,"presente":true,"nota":"…"}],"anatomia":[],"anadidos":[],"textoNuevo":[],"cambiados":[],${conReferencia ? '"copiadoDeReferencia":[],' : ''}"seguro":true}`;
 }
 
 export const INSTRUCCIONES_TOMA = `Eres un fotógrafo profesional. Te enseñan dos fotos del mismo plato: imagen 1 (la que hizo el restaurante) e imagen 2 (una foto nueva).
