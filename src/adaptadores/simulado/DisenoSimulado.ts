@@ -29,6 +29,8 @@ export class DirectorDisenoSimulado implements DirectorDeDiseno {
     const enCola = this.cola.shift();
     if (enCola) return enCola;
     const titular = titularDeLaNota(e.hechos.plato);
+    // Carrusel: dos detalles con los dos primeros elementos confirmados (el nombre tal cual), en dos puntos de la foto.
+    const detalles = e.formato === 'carrusel' ? e.hechos.elementos.slice(0, 2).map((x, i) => ({ clave: `elemento-${i + 1}`, texto: x.nombre, punto: { x: 0.4 + 0.2 * i, y: 0.55 } })) : [];
     return {
       idea: `Simulado: «${titular}» monumental detrás del plato, y la firma del local.`,
       foco: 'PLATO',
@@ -37,8 +39,10 @@ export class DirectorDisenoSimulado implements DirectorDeDiseno {
       textos: [
         { clave: 'titular', texto: titular, fuente: 'PLATO', cita: titular },
         { clave: 'firma', texto: e.hechos.local.nombre, fuente: 'MARCA', cita: e.hechos.local.nombre },
+        ...detalles.map((d) => ({ clave: d.clave, texto: d.texto, fuente: 'ELEMENTO' as const, cita: d.texto })),
       ],
       composicion: { mecanismo: 'TITULAR_DETRAS', titular: 'titular', firma: 'firma' },
+      ...(detalles.length ? { carrusel: { detalles: detalles.map((d) => ({ texto: d.clave, punto: d.punto })) } } : {}),
     };
   }
 }

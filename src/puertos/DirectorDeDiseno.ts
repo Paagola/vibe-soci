@@ -40,6 +40,8 @@ export interface EncargoDeDiseno {
   titularCreativo: boolean;
   /** Punto 10: la estética del encargo (manda sobre la foto y el diseño). */
   estetica?: Estetica;
+  /** Punto 1: un carrusel lleva, además de la portada, los detalles («carrusel.detalles»). */
+  formato?: 'post' | 'carrusel';
 }
 
 export interface DirectorDeDiseno {

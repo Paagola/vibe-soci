@@ -104,6 +104,9 @@ function hechosYContexto(e: EncargoDeDiseno): string[] {
     `COLORES: ${e.colores.map((c) => `@${c.token} ${c.hex} (${c.papel})`).join(' · ')}`,
     `VOCES: ${e.voces.map((v) => `${v.id}: ${v.descripcion}`).join(' · ')}`,
     ...(e.estetica ? [textoEstetica(e.estetica)] : []),
+    ...(e.formato === 'carrusel'
+      ? ['FORMATO: CARRUSEL. Tu composición es la PORTADA. Rellena además «carrusel.detalles»: de uno a tres elementos confirmados, distintos (dos o tres si el plato tiene varios), cada uno con un texto corto con su nombre (fuente ELEMENTO, de una a cuatro palabras) y «punto», dónde está en la foto entera (míralo bien: el código amplía la foto ahí). El cierre con la firma lo pone el código.']
+      : []),
     `VOZ DE ACENTO: ${e.voces.some((v) => v.id === 'acento' || /ballet|bodoni|sacramento|kaushan/i.test(v.descripcion)) ? 'sí (TITULAR_CON_ACENTO es posible)' : 'no (no uses TITULAR_CON_ACENTO)'}`,
   ];
 }

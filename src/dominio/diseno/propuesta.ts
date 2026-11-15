@@ -141,6 +141,8 @@ const CapaAnotacion = z.object({
   tamano: z.number().min(34).max(90).optional(),
   apunta: Fraccion.describe('Punto del plato al que señala la flecha: 0,0 es su esquina de arriba a la izquierda y 1,1 la de abajo a la derecha.'),
   color: Token,
+  /** En vez de un punto del plato, un punto del LIENZO (0–1): para una foto en marco ampliada sobre un elemento. */
+  hacia: Fraccion.optional(),
 });
 
 const CapaTrazo = z.object({
@@ -232,19 +234,34 @@ const BasePropuesta = z.object({
     .describe('Solo si a propósito la pieza no cruza el plato o no tiene salto de escala: por qué. Lo lee una persona.'),
 });
 
+/**
+ * Punto 1 (15/11): un carrusel. La portada es la composición; después, de dos a tres diapositivas de DETALLE de la
+ * misma foto (un elemento confirmado, ampliado, con su nombre y una flecha) y un CIERRE con la firma del local. Las
+ * coloca el código, con la retícula, las voces y los colores de la portada.
+ */
+export const DetalleDeCarrusel = z.object({
+  texto: Id.describe('Clave de «textos» con el nombre del elemento (fuente ELEMENTO).'),
+  punto: Fraccion.describe('Dónde está ese elemento en la foto ENTERA (0,0 arriba a la izquierda; 1,1 abajo a la derecha): mira la foto.'),
+});
+export const Carrusel = z.object({
+  detalles: z.array(DetalleDeCarrusel).min(1).max(3).describe('De uno a tres elementos confirmados del plato, distintos entre sí (dos o tres si el plato tiene varios).'),
+});
+export type Carrusel = z.infer<typeof Carrusel>;
+
 /** Lo que escribe el director (el modelo): sin capas. */
-export const PropuestaDelDirector = BasePropuesta.extend({ composicion: Composicion });
+export const PropuestaDelDirector = BasePropuesta.extend({ composicion: Composicion, carrusel: Carrusel.optional().describe('Solo si el encargo es un carrusel.') });
 export type PropuestaDelDirector = z.infer<typeof PropuestaDelDirector>;
 
 /** Una propuesta: con «composicion» (coloca el código) o con «capas» (maqueta escrita a mano). */
 export const PropuestaDeDiseno = BasePropuesta.extend({
   composicion: Composicion.optional(),
+  carrusel: Carrusel.optional(),
   capas: z.array(CapaPropuesta).min(2).max(16).optional().describe('De fondo a frente.'),
 }).refine((p) => Boolean(p.composicion) !== Boolean(p.capas), 'Una propuesta lleva «composicion» (coloca el código) o «capas» (maqueta a mano), no las dos ni ninguna.');
 export type PropuestaDeDiseno = z.infer<typeof PropuestaDeDiseno>;
 
 /** La propuesta ya colocada, capa a capa: lo que compila compilarIntencion. */
-export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas'> & { capas: CapaPropuesta[] };
+export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas' | 'carrusel'> & { capas: CapaPropuesta[] };
 
 // ------------------------------------------------------------------ Hechos y comprobación de los textos
 
@@ -699,11 +716,17 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
 
       case 'anotacion': {
         const donde = `anotación «${x.id}»`;
-        if (!haySujeto) problemas.push(`${donde}: una anotación señala al plato; hace falta el plato recortado o una foto a sangre con máscara.`);
+        if (!haySujeto && !x.hacia) problemas.push(`${donde}: una anotación señala al plato; hace falta el plato recortado o una foto a sangre con máscara.`);
         if (fueraDeZonaSegura(x.caja)) problemas.push(`${donde}: las filas 1 y 16 quedan fuera de la zona segura (se cortan en 4:5); usa las filas 2–15.`);
         const caja = aFracciones(x.caja);
         poner(Plano3.GESTO, { id: x.id, tipo: 'texto', texto: texto(x.texto, donde), estilo: voz(x.voz, donde), caja, ajuste: 'fijo', tamano: x.tamano ?? 46, color: color(x.color, donde) });
-        if (haySujeto) {
+        if (x.hacia) {
+          // Hacia un punto del lienzo (el elemento ampliado en una diapositiva de detalle).
+          const haciaLaDerecha = caja.x + caja.w / 2 < x.hacia.x;
+          const abajo = caja.y + caja.h / 2 < x.hacia.y;
+          const desde = { x: r4(haciaLaDerecha ? caja.x + caja.w * 0.6 : caja.x + caja.w * 0.3), y: r4(abajo ? caja.y + caja.h + 0.004 : caja.y - 0.004) };
+          poner(Plano3.GESTO, { id: idLibre(`${x.id}-flecha`), tipo: 'trazo', gesto: 'flecha', desde, hasta: x.hacia, curva: haciaLaDerecha === abajo ? -0.3 : 0.3, color: color(x.color, donde), grosor: 5, temblor: 0.4 });
+        } else if (haySujeto) {
           // La flecha sale del lado del rótulo que mira al centro del lienzo, que es hacia donde está el plato.
           const cx = caja.x + caja.w / 2;
           const cy = caja.y + caja.h / 2;

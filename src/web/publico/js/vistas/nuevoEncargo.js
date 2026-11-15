@@ -76,6 +76,21 @@ export async function vistaNuevoEncargo() {
     uso('SOLO_PRUEBA_COMPOSICION', 'Solo para probar', 'Sacada de internet: sirve para componer, nunca se publica.'),
   );
   const proyecto = h('input', { pattern: '[a-z0-9]+(-[a-z0-9]+)*', maxlength: '80', placeholder: 'Se pone solo: fecha y plato' });
+  // Formato y estética (puntos 1 y 10): la estética manda a la vez sobre la foto y sobre el diseño.
+  const formato = h('select', {}, h('option', { value: 'post' }, 'Post'), h('option', { value: 'carrusel' }, 'Carrusel (portada, detalles y cierre)'));
+  const estetica = h(
+    'select',
+    {},
+    h('option', { value: '' }, 'La de la referencia'),
+    ...[
+      ['EDITORIAL_SERENO', 'Editorial sereno (claro, aire)'],
+      ['EDITORIAL_OSCURO', 'Editorial oscuro (clave baja, script)'],
+      ['COLOR_POP', 'Color pop con recorte'],
+      ['MAXIMALISMO', 'Maximalismo / collage'],
+      ['MEDITERRANEO_LUMINOSO', 'Cenital luminoso mediterráneo'],
+      ['RUSTICO_FUEGO', 'Rústico de fuego'],
+    ].map(([v, t]) => h('option', { value: v }, t)),
+  );
 
   const enviar = async (evento) => {
     evento.preventDefault();
@@ -94,6 +109,8 @@ export async function vistaNuevoEncargo() {
           local: local.value,
           plato: plato.value.trim(),
           usoFotoReal: nodo.querySelector('input[name="uso"]:checked')?.value ?? 'PUBLICABLE',
+          formato: formato.value,
+          ...(estetica.value ? { estetica: estetica.value } : {}),
           ...(proyecto.value.trim() ? { proyecto: proyecto.value.trim() } : {}),
         });
         location.hash = `#/encargo/${encargo.proyecto}`;
@@ -117,6 +134,13 @@ export async function vistaNuevoEncargo() {
       zona,
       campo('¿Qué plato es?', plato, 'Con las palabras del local: el director no inventa ingredientes y los textos solo dicen lo que consta del local.'),
       h('div', { class: 'campo' }, h('span', {}, '¿De dónde sale la foto?'), opcionesUso),
+    ),
+    h(
+      'fieldset',
+      {},
+      h('legend', {}, 'La pieza'),
+      campo('Formato', formato),
+      campo('Estética', estetica, 'Manda sobre la foto nueva y sobre el diseño. Si no eliges, sale de la referencia; si eliges otra, se avisa.'),
     ),
     h('details', {}, h('summary', {}, 'Más opciones'), campo('Nombre del encargo', proyecto, 'Solo minúsculas, números y guiones. Si lo dejas vacío, sale de la fecha y del plato.')),
     errores,

@@ -19,6 +19,7 @@ import { Intencion, type EstiloTexto, type Tokens } from '../../dominio/diseno/i
 import type { MapaDeFoto } from '../../dominio/diseno/mapaDeFoto.js';
 import { ESTETICAS, esteticaDeFamilia, type Estetica } from '../../dominio/diseno/estetica.js';
 import { colocar, type Ajustes, type VocesDeLaPieza } from '../../dominio/diseno/mecanismos.js';
+import { diapositivasDeCarrusel } from '../../dominio/diseno/carrusel.js';
 import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, type HechosDeLaPieza, type Maqueta, type PropuestaDeDiseno } from '../../dominio/diseno/propuesta.js';
 import type { FichaReferencia } from '../../dominio/referencia.js';
 import { describirProblemas } from '../../dominio/validacion.js';
@@ -58,6 +59,8 @@ export interface EntradaDiseno {
   titularCreativo?: boolean;
   /** Punto 10: la estética del encargo. Sin ella, la de la familia de la referencia. */
   estetica?: Estetica;
+  /** Punto 1: un carrusel (portada, detalles y cierre). */
+  formato?: 'post' | 'carrusel';
 }
 
 export interface Intento {
@@ -82,6 +85,8 @@ export interface ResultadoDiseno {
   critica?: { llega: boolean; motivos: string[]; adoptada: boolean };
   /** La crítica dice que no llega al oficio de la referencia: la pieza no se compone sola, queda en revisión. */
   enRevision: boolean;
+  /** Carrusel: las diapositivas que siguen a la portada (detalles y cierre), ya compiladas y probadas. */
+  diapositivas?: Array<{ id: string; intencion: Intencion }>;
   mapa: MapaDeFoto;
 }
 
@@ -124,6 +129,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     voces,
     titularCreativo: entrada.titularCreativo ?? false,
     estetica,
+    ...(entrada.formato ? { formato: entrada.formato } : {}),
   };
   const tieneMascara = Boolean(entrada.foto.rutaMascara);
   const contexto = {
@@ -239,7 +245,38 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
   }
 
   const final = mejor!;
+  // Carrusel: detalles y cierre, colocados por el código con la retícula, las voces y los colores de la portada.
+  let diapositivas: ResultadoDiseno['diapositivas'];
+  if (entrada.formato === 'carrusel' && final.e.maqueta && final.e.problemas.length === 0) {
+    if (!final.propuesta.carrusel) final.e.problemas.push('Es un carrusel: falta «carrusel.detalles» (de uno a tres elementos y dónde están en la foto).');
+    else {
+      const serie = diapositivasDeCarrusel(final.e.maqueta, final.propuesta.carrusel, entrada.hechos, {
+        colores: entorno.colores,
+        voces: { titular: roles.titular, firma: roles.firma, ...(roles.anotacion ? { anotacion: roles.anotacion } : {}) },
+        conDiagonal: parametros.diseno.recursos.includes('diagonal'),
+      });
+      final.e.problemas.push(...serie.problemas);
+      diapositivas = [];
+      for (const d of serie.diapositivas) {
+        const c = compilarIntencion(d.maqueta, { ...contexto, id: d.id, titulo: `${entrada.titulo} · ${d.id}` });
+        final.e.problemas.push(...c.problemas.map((p) => `${d.id}: ${p}`));
+        const leida = Intencion.safeParse(c.intencion);
+        if (!leida.success) {
+          final.e.problemas.push(...describirProblemas(leida.error).map((p) => `${d.id}: ${p}`));
+          continue;
+        }
+        const intencion = conNotasDelEstudio(leida.data, vocesDeEstudio, []);
+        if (deps.probar && c.problemas.length === 0) {
+          const prueba = await deps.probar(intencion);
+          final.e.problemas.push(...prueba.errores.map((p) => `${d.id}: ${p}`));
+          final.e.avisos.push(...prueba.avisos.map((p) => `${d.id}: ${p}`));
+        }
+        diapositivas.push({ id: d.id, intencion });
+      }
+    }
+  }
   return {
+    ...(diapositivas ? { diapositivas } : {}),
     propuesta: final.propuesta,
     ...(final.e.intencion ? { intencion: final.e.intencion } : {}),
     problemas: final.e.problemas,

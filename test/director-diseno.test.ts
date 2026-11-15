@@ -527,3 +527,54 @@ describe('Punto 10 · la estética en el diseño', () => {
     assert.equal(r.intencion?.oficio?.gestosMaximos, 1);
   });
 });
+
+describe('Punto 1 · carrusel en la orden única', () => {
+  let carpeta: string;
+  let refs: DepsReferencias;
+  before(async () => {
+    carpeta = await mkdtemp(join(tmpdir(), 'estudio-carrusel-'));
+    const locales = new AlmacenLocalesFicheros(join(carpeta, 'locales'));
+    await locales.guardar(Marca.parse({ ...JSON.parse(await readFile(join(RAIZ, 'plantillas', 'marca.ejemplo.json'), 'utf8')), instagram: 'asadoretxebarri' }));
+    refs = {
+      piezas: { listar: async () => [] } as unknown as DepsReferencias['piezas'],
+      piezasHechas: new PiezasHechasFicheros(join(carpeta, 'proyectos')),
+      locales,
+      referencias: new AlmacenReferenciasFicheros(join(carpeta, 'locales')),
+      biblioteca: new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(RAIZ, 'biblioteca', 'referencias')),
+      enlaces: { obtener: async () => ({ estado: 'PIDE_CAPTURA', motivo: 'x' }) },
+      leerArchivo: (ruta) => readFile(ruta),
+      ahora: () => '2026-11-15T10:00:00.000Z',
+    };
+    await registrarReferencia(refs, { local: 'asador-etxebarri', id: 'ref-post-30', deBiblioteca: 'post-30' });
+  });
+  after(() => rm(carpeta, { recursive: true, force: true }));
+
+  it('portada del director, detalles de la misma foto y cierre con la firma, con la misma estética, en un plan de varias diapositivas', async () => {
+    const d: DepsPost = {
+      raiz: RAIZ,
+      proyectos: join(carpeta, 'proyectos'),
+      activos: new AlmacenActivosFicheros(join(carpeta, 'datos', 'locales')),
+      referencias: refs,
+      director: new DirectorFotoSimulado(),
+      generador: new GeneradorFotoSimulado(),
+      revisor: new RevisorVisualSimulado(),
+      segmentador: new SegmentadorSimulado(),
+      componedor: new ComponedorProyectos(RAIZ, join(carpeta, 'datos')),
+      disenador: { director: new DirectorDisenoSimulado(), medidor: new MedidorDeFotoSharp() },
+      ahora: () => '2026-11-15T10:00:00.000Z',
+    };
+    await crearEncargo(d, { proyecto: 'carrusel', local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true, formato: 'carrusel' });
+    await avanzar(d, 'carrusel');
+    await avanzar(d, 'carrusel', { confirmo: true });
+    const r = await avanzar(d, 'carrusel', { confirmo: true });
+    assert.equal(r.parada, 'HECHO', r.parada);
+    assert.equal(r.encargo.estetica, 'RUSTICO_FUEGO', 'deducida de la familia de la referencia (F7)');
+    const plan = JSON.parse(await readFile(join(carpeta, 'proyectos', 'carrusel', 'plan.json'), 'utf8'));
+    assert.deepEqual(plan.diapositivas.map((x: { intencion: string }) => x.intencion), ['intenciones/post.json', 'intenciones/detalle-1.json', 'intenciones/cierre.json']);
+    const cierre = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'carrusel', 'intenciones', 'cierre.json'), 'utf8')));
+    assert.equal(cierre.textos.firma, 'Asador Etxebarri');
+    assert.equal(cierre.textos.instagram, '@asadoretxebarri');
+    assert.equal(cierre.estetica, 'RUSTICO_FUEGO');
+    for (const id of ['post', 'detalle-1', 'cierre']) await stat(join(carpeta, 'datos', 'disenos', 'carrusel', id, 'v001', 'exportadas', '4x5.jpg'));
+  });
+});

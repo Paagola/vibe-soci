@@ -3,7 +3,7 @@
  * Se para donde hace falta tu confirmación; cada vez que la lanzas, sigue desde donde se quedó.
  *
  *   npm run post -- nuevo <proyecto> --local L --foto <ruta> --plato "nota del dueño" [--referencia ref-id]
- *                  [--uso PUBLICABLE|SOLO_PRUEBA_COMPOSICION] [--titular-creativo] [--estilo-de-referencia] [--estetica E] [--simular]
+ *                  [--uso PUBLICABLE|SOLO_PRUEBA_COMPOSICION] [--titular-creativo] [--estilo-de-referencia] [--estetica E] [--formato post|carrusel] [--simular]
  *   npm run post -- <proyecto>                       sigue hasta la siguiente parada
  *   npm run post -- <proyecto> --confirmo            confirma la parada (elementos y gasto, o la foto)
  *   npm run post -- <proyecto> --rechazo "motivo"    rechaza la foto propuesta (vuelve a generar si quedan intentos)
@@ -13,6 +13,7 @@
  * GEMINI_TOPE_USD. Revisión y directores (de foto y de diseño, F3) con Gemini. Máscara con Apple Vision.
  * --titular-creativo: el director de diseño puede usar UN titular que no sea un dato (una o dos palabras, sin cifras
  * ni reclamos). Por defecto, todo lo que dice la pieza tiene que constar en los datos.
+ * --formato carrusel: portada, dos o tres detalles de la misma foto y un cierre con la firma (punto 1).
  * --estetica: EDITORIAL_SERENO, EDITORIAL_OSCURO, COLOR_POP, MAXIMALISMO, MEDITERRANEO_LUMINOSO o RUSTICO_FUEGO (punto 10;
  *   sin ella, la de la familia de la referencia). Manda sobre la foto y el diseño.
  * --estilo-de-referencia: el generador recibe también la imagen de la referencia como @image2, solo de estilo (punto 9).
@@ -40,6 +41,7 @@ const { values, positionals } = parseArgs({
     'titular-creativo': { type: 'boolean', default: false },
     'estilo-de-referencia': { type: 'boolean', default: false },
     estetica: { type: 'string' },
+    formato: { type: 'string', default: 'post' },
     confirmo: { type: 'boolean', default: false },
     rechazo: { type: 'string' },
     importar: { type: 'string' },
@@ -62,7 +64,7 @@ async function principal(): Promise<void> {
     if (!proyecto || !values.local || !values.foto || !values.plato) throw new ErrorDeUsuario('Uso: npm run post -- nuevo <proyecto> --local L --foto <ruta> --plato "…" [--referencia ref-id] [--simular]');
     const uso = values.uso === 'SOLO_PRUEBA_COMPOSICION' ? 'SOLO_PRUEBA_COMPOSICION' : 'PUBLICABLE';
     const deps = await construirDeps(values.simular, proyecto);
-    await crearEncargo(deps, { proyecto, local: values.local, plato: values.plato, foto: values.foto, usoFotoReal: uso, simulado: values.simular, titularCreativo: values['titular-creativo'], estiloDeReferencia: values['estilo-de-referencia'], ...(values.estetica ? { estetica: Estetica.parse(values.estetica) } : {}), ...(values.referencia ? { referencia: values.referencia } : {}) });
+    await crearEncargo(deps, { proyecto, local: values.local, plato: values.plato, foto: values.foto, usoFotoReal: uso, simulado: values.simular, titularCreativo: values['titular-creativo'], estiloDeReferencia: values['estilo-de-referencia'], ...(values.estetica ? { estetica: Estetica.parse(values.estetica) } : {}), formato: values.formato === 'carrusel' ? 'carrusel' : 'post', ...(values.referencia ? { referencia: values.referencia } : {}) });
     console.log(`✓ Encargo ${proyecto} creado${values.simular ? ' (SIMULADO, en datos-simulado/)' : ''}.`);
     await seguir(deps, proyecto);
     return;

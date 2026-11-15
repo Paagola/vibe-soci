@@ -111,6 +111,7 @@ export async function crearEncargo(
     titularCreativo?: boolean;
     estiloDeReferencia?: boolean;
     estetica?: Estetica;
+    formato?: 'post' | 'carrusel';
   },
 ): Promise<EncargoPost> {
   if (await existe(rutaEncargo(deps, datos.proyecto))) throw new ErrorDeUsuario(`El encargo «${datos.proyecto}» ya existe: continúa con npm run post -- ${datos.proyecto}`);
@@ -129,6 +130,7 @@ export async function crearEncargo(
     titularCreativo: datos.titularCreativo ?? false,
     estiloDeReferencia: datos.estiloDeReferencia ?? false,
     ...(datos.estetica ? { estetica: datos.estetica } : {}),
+    formato: datos.formato ?? 'post',
     creadoEn: ahora,
     historial: [{ fecha: ahora, paso: 'REFERENCIA', nota: 'encargo creado' }],
   });
@@ -456,6 +458,13 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
             );
             if (r.intencion && r.problemas.length === 0 && !r.enRevision) {
               await writeFile(intencion, `${JSON.stringify(r.intencion, null, 2)}\n`);
+              // Carrusel: cada diapositiva en su archivo, y el plan con todas, en orden (la portada primero).
+              if (r.diapositivas?.length) {
+                for (const d of r.diapositivas) await writeFile(join(carpeta, 'intenciones', `${d.id}.json`), `${JSON.stringify(d.intencion, null, 2)}\n`);
+                const actual = JSON.parse(await readFile(plan, 'utf8')) as Record<string, unknown>;
+                await writeFile(plan, `${JSON.stringify({ ...actual, diapositivas: [{ intencion: 'intenciones/post.json' }, ...r.diapositivas.map((d) => ({ intencion: `intenciones/${d.id}.json` }))] }, null, 2)}\n`);
+                nota(`Carrusel: portada, ${r.diapositivas.length - 1} detalle(s) y cierre.`);
+              }
               const critica = r.critica ? ` Crítica visual: ${r.critica.llega ? 'llega al oficio de la referencia' : `no llega (${r.critica.motivos.join('; ')})`}${r.critica.adoptada ? '; se adopta su corrección' : ''}.` : '';
               nota(`Intención escrita por ${deps.disenador.director.nombre} (${r.intentos.length} propuesta(s))${r.avisos.length ? `, con avisos: ${r.avisos.join(' | ')}` : ''}.${critica}`);
               return { encargo: ir(e, 'COMPONER') };
@@ -551,6 +560,7 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
       ...(referencia ? { referencia } : {}),
       titularCreativo: e.titularCreativo,
       ...(e.estetica ? { estetica: e.estetica } : {}),
+      formato: e.formato,
     },
   );
 }

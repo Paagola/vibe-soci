@@ -53,6 +53,8 @@ export const EncargoPost = z.object({
    * familia de la ficha de referencia en el paso REFERENCIA y se guarda aquí.
    */
   estetica: Estetica.optional(),
+  /** Punto 1: un post suelto o un carrusel (portada, dos o tres detalles de la misma foto y cierre con la firma). */
+  formato: z.enum(['post', 'carrusel']).default('post'),
   /** F3: el encargo permite UN titular creativo (una palabra de acción o sensorial que no es un dato). Por defecto, no. */
   titularCreativo: z.boolean().default(false),
   /** Con director, generador, revisor y máscara simulados: no gasta ni llama a nada. Los datos van aparte. */

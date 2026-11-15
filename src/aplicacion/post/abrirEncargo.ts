@@ -11,6 +11,7 @@ import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
 import { idDePieza, problemaDeFoto } from '../../dominio/reglas.js';
 import { validar } from '../../dominio/validacion.js';
+import { Estetica } from '../../dominio/diseno/estetica.js';
 import { crearEncargo, type DepsPost } from './ordenPost.js';
 
 export const DatosNuevoEncargo = z.object({
@@ -20,6 +21,10 @@ export const DatosNuevoEncargo = z.object({
   /** Id de una referencia ya registrada para el local. */
   referencia: z.string().min(1).optional(),
   usoFotoReal: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).default('PUBLICABLE'),
+  /** Punto 1: un post o un carrusel. */
+  formato: z.enum(['post', 'carrusel']).default('post'),
+  /** Punto 10: la estética. Sin ella, la de la familia de la referencia. */
+  estetica: Estetica.optional(),
   /** Nombre del proyecto. Si no se da, sale de la fecha y de la nota. */
   proyecto: z
     .string()
@@ -72,6 +77,8 @@ export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: O
       plato: datos.plato,
       foto: relativa.startsWith('..') ? destino : relativa,
       usoFotoReal: datos.usoFotoReal,
+      formato: datos.formato,
+      ...(datos.estetica ? { estetica: datos.estetica } : {}),
       simulado: opciones.simulado,
       ...(datos.referencia ? { referencia: datos.referencia } : {}),
     });
