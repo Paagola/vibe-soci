@@ -26,7 +26,7 @@ import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias
 import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
 import { RAIZ } from '../src/config.js';
 import { Intencion, Tokens } from '../src/dominio/diseno/intencion.js';
-import { construirMapa, mapaEnTexto, rectangulosLibres, type MapaDeFoto } from '../src/dominio/diseno/mapaDeFoto.js';
+import { aireEn, construirMapa, mapaEnTexto, rectangulosLibres, type MapaDeFoto } from '../src/dominio/diseno/mapaDeFoto.js';
 import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, PropuestaDeDiseno, type ContextoDeCompilacion, type HechosDeLaPieza, type Maqueta } from '../src/dominio/diseno/propuesta.js';
 import { Marca } from '../src/dominio/modelos.js';
 import type { ActivoDisponible } from '../src/puertos/Compositor.js';
@@ -498,5 +498,14 @@ describe('F3.2 · el plato que sale de su foto, compilado', () => {
     const plato = i.capas.find((x) => x.id === 'plato') as { tipo: string; alineadoCon?: string; opacidad: number };
     assert.deepEqual([plato.tipo, plato.alineadoCon, plato.opacidad], ['recorte', 'foto', 1]);
     assert.ok(i.relaciones.some((r) => r.tipo === 'detras' && r.texto === 'titular'));
+  });
+});
+
+describe('F3.2 (punto 8) · aire medido con el mapa', () => {
+  it('aireEn: la mitad de arriba de la foto sintética está libre de plato y la de abajo, en parte, no', () => {
+    const m = construirMapa(fotoSintetica());
+    assert.ok(aireEn(m, 'arriba')! > aireEn(m, 'abajo')!);
+    assert.ok(aireEn(m, 'arriba-izquierda')! >= 0.5);
+    assert.equal(aireEn({ ...m, ocupacion: [] }, 'arriba'), undefined, 'sin máscara no se mide');
   });
 });

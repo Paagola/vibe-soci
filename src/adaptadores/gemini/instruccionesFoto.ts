@@ -63,6 +63,7 @@ El estudio monta el prompt con esta estructura exacta (no la escribas tú):
 - "recuento": «Exactly …» con el número de cada pieza que se pueda contar.
 - "camara": altura en grados, "giroGrados" (cuánto gira alrededor del plato respecto a la foto subida: 0 el mismo lado, 45 un ¾ desde la esquina, 90 de costado), "distancia" (otro tamaño de plano si cambia), una frase que describa el resultado visible, objetivo y apertura. Tiene que ser otra toma (regla de arriba).
 - "ideaGrafica": la composición con sitio para cada cosa: qué va grande, dónde, qué sale por los bordes, qué línea guía la mirada y dónde queda el hueco limpio para el titular.
+- "aire": dónde queda ese hueco limpio para el texto, en una palabra: arriba, abajo, izquierda, derecha, arriba-izquierda, arriba-derecha, abajo-izquierda o abajo-derecha ("ninguno" si no hace falta). El estudio lo MIDE en la foto nueva: si el plato lo llena, la foto se descarta. Que la cámara y la distancia lo dejen de verdad (el plato no puede ocupar toda esa zona).
 - "luz": la fuente, su dirección y su calidad, y lo que hace en el plato.
 - "colorDominante": qué color manda y cuál es el único fuerte.
 Elige cámara, distancia y luz por el plato y la referencia, no por costumbre.
@@ -70,5 +71,5 @@ Elige cámara, distancia y luz por el plato y la referencia, no por costumbre.
 En "decisiones", explica en español cada decisión y de qué ejemplo o referencia la sacas.
 ${problemas}
 Responde solo con este JSON (los números son de relleno: pon los tuyos):
-{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
+{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","aire":"arriba-derecha","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
 }

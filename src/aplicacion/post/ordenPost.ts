@@ -25,6 +25,8 @@ import sharp from 'sharp';
 import { Activo } from '../../dominio/activos.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
+import { AIRE_MINIMO, type AireMedido } from '../../dominio/comprobacionSalida.js';
+import { aireEn } from '../../dominio/diseno/mapaDeFoto.js';
 import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
@@ -343,9 +345,18 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const lista = `${propuesta.huecos.elementos.replace(/[.\s]+$/, '')}. ${propuesta.huecos.recuento}`;
     // Un recuento dudoso no sirve de patrón para contar piezas en la foto nueva.
     const piezas = propuesta.descripcion.elementos.filter((x) => x.recuento !== null && x.recuento > 0 && !x.dudoso).map((x) => ({ nombre: x.nombre, esperado: x.recuento as number }));
+    // El aire que pidió el director de foto, medido con la máscara de la foto nueva (que se guarda ya para el diseño).
+    let aire: AireMedido | undefined;
+    const lado = propuesta.huecos.aire;
+    if (lado && lado !== 'ninguno' && deps.disenador) {
+      await asegurarMascara(deps, e.local, ultimo.activo, nota);
+      const mapa = await deps.disenador.medidor.medir(await deps.activos.obtener(e.local, ultimo.activo));
+      const libre = aireEn(mapa, lado);
+      if (libre !== undefined) aire = { lado, libre, minimo: AIRE_MINIMO };
+    }
     const revision = await comprobarFotoNueva(
       { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
-      { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas },
+      { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas, ...(aire ? { aire } : {}) },
     );
     const intentos = e.intentos.map((i) => (i.n === ultimo.n ? { ...i, final: revision.final, motivos: revision.motivos } : i));
     nota(`Comprobación del intento ${ultimo.n}: ${revision.final}${revision.motivos.length ? ` (${revision.motivos.join('; ')})` : ''}.`);
@@ -388,19 +399,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   },
 
   async MASCARA(deps, e, _a, nota) {
-    const foto = await deps.activos.obtener(e.local, e.fotoElegida as string);
-    if (!foto.activo.mascara) {
-      const png = await deps.segmentador.mascara(foto.ruta);
-      const recortada = await sharp(png).trim({ background: '#000000', threshold: 40 }).toBuffer({ resolveWithObject: true });
-      const bbox = { x: -(recortada.info.trimOffsetLeft ?? 0), y: -(recortada.info.trimOffsetTop ?? 0), w: recortada.info.width, h: recortada.info.height };
-      await deps.activos.actualizar(
-        e.local,
-        foto.activo.id,
-        { mascara: { archivo: 'mascara.png', metodo: deps.segmentador.metodo, creadaEn: deps.ahora(), bbox, incluye: `lo que detecte ${deps.segmentador.metodo}` } },
-        { 'mascara.png': png },
-      );
-      nota(`Máscara del sujeto (${deps.segmentador.metodo}): caja ${bbox.w} × ${bbox.h} px.`);
-    }
+    await asegurarMascara(deps, e.local, e.fotoElegida as string, nota);
     return { encargo: ir(e, 'INTENCION') };
   },
 
@@ -476,6 +475,22 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     return { encargo: ir(e, 'HECHO') };
   },
 };
+
+/** La máscara del sujeto de una foto, si aún no la tiene (la necesitan la comprobación del aire y el diseño). */
+async function asegurarMascara(deps: DepsPost, local: string, activo: string, nota: Nota): Promise<void> {
+  const foto = await deps.activos.obtener(local, activo);
+  if (foto.activo.mascara) return;
+  const png = await deps.segmentador.mascara(foto.ruta);
+  const recortada = await sharp(png).trim({ background: '#000000', threshold: 40 }).toBuffer({ resolveWithObject: true });
+  const bbox = { x: -(recortada.info.trimOffsetLeft ?? 0), y: -(recortada.info.trimOffsetTop ?? 0), w: recortada.info.width, h: recortada.info.height };
+  await deps.activos.actualizar(
+    local,
+    foto.activo.id,
+    { mascara: { archivo: 'mascara.png', metodo: deps.segmentador.metodo, creadaEn: deps.ahora(), bbox, incluye: `lo que detecte ${deps.segmentador.metodo}` } },
+    { 'mascara.png': png },
+  );
+  nota(`Máscara del sujeto (${deps.segmentador.metodo}): caja ${bbox.w} × ${bbox.h} px.`);
+}
 
 /** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. También sirve para rehacer el diseño de un encargo terminado (una versión nueva). */
 export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {

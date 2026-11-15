@@ -93,8 +93,17 @@ function motivosDeElementos(c: ChecklistVisual, a?: ConteoAnatomia): string[] {
  * - la toma es MISMA si B dice «mismo punto de vista»: entonces no es otra toma y la foto no pasa.
  * Final: DESCARTA si los elementos descartan o la toma es la misma; REVISAR si los elementos piden revisión; si no, PASA.
  */
-export function decidirSalida(checklist: ChecklistVisual, toma?: ComparacionToma, anatomia?: ConteoAnatomia): DecisionSalida {
+/** Fracción de la zona pedida que tiene que quedar libre de plato: por debajo, la foto no deja sitio al texto. */
+export const AIRE_MINIMO = 0.6;
+
+/** El aire pedido y el medido con el mapa de la foto (la máscara del plato). */
+export const AireMedido = z.object({ lado: z.string(), libre: z.number().min(0).max(1), minimo: z.number().default(AIRE_MINIMO) });
+export type AireMedido = z.infer<typeof AireMedido>;
+
+export function decidirSalida(checklist: ChecklistVisual, toma?: ComparacionToma, anatomia?: ConteoAnatomia, aire?: AireMedido): DecisionSalida {
   const motivos = motivosDeElementos(checklist, anatomia);
+  // Sin el aire pedido, la foto no sirve para el diseño: se descarta como un elemento añadido (otro intento si quedan).
+  if (aire && aire.libre < aire.minimo) motivos.push(`no deja el aire pedido (${aire.lado}): libre el ${Math.round(aire.libre * 100)} % de esa zona, hace falta el ${Math.round(aire.minimo * 100)} %`);
   const dudoso = !checklist.seguro || (anatomia ? !anatomia.seguro : false);
   const elementos: VeredictoElementos = motivos.length ? 'DESCARTA' : dudoso ? 'REVISAR' : 'CONSERVA';
   if (elementos === 'REVISAR') motivos.push('el revisor no está seguro de algún elemento');
@@ -114,6 +123,6 @@ export const RevisionAutomatica = z.object({
   toma: z.enum(['OTRA', 'MISMA', 'SIN_COMPROBAR']),
   final: z.enum(['PASA', 'DESCARTA', 'REVISAR']),
   motivos: z.array(z.string()),
-  respuestas: z.object({ checklist: ChecklistVisual, toma: ComparacionToma.optional(), anatomia: ConteoAnatomia.optional() }),
+  respuestas: z.object({ checklist: ChecklistVisual, toma: ComparacionToma.optional(), anatomia: ConteoAnatomia.optional(), aire: AireMedido.optional() }),
 });
 export type RevisionAutomatica = z.infer<typeof RevisionAutomatica>;

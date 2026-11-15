@@ -1,4 +1,4 @@
-import { decidirSalida, RevisionAutomatica } from '../../dominio/comprobacionSalida.js';
+import { decidirSalida, RevisionAutomatica, type AireMedido } from '../../dominio/comprobacionSalida.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { RevisorVisual } from '../../puertos/RevisorVisual.js';
 
@@ -22,6 +22,8 @@ export interface EntradaComprobacion {
   comprobarToma?: boolean;
   /** false: no se guarda en el activo (para ensayos). */
   guardar?: boolean;
+  /** El aire que pidió el director de foto, ya medido con el mapa de la foto nueva. */
+  aire?: AireMedido;
 }
 
 /**
@@ -36,7 +38,7 @@ export async function comprobarFotoNueva(deps: DepsComprobacion, e: EntradaCompr
   const checklist = await deps.revisor.comprobarElementos(fotos, e.lista);
   const toma = e.comprobarToma === false ? undefined : await deps.revisor.compararToma(fotos);
   const anatomia = e.piezas?.length ? await deps.revisor.contarAnatomia(generado.ruta, e.piezas) : undefined;
-  const decision = decidirSalida(checklist, toma, anatomia);
+  const decision = decidirSalida(checklist, toma, anatomia, e.aire);
 
   const revision = RevisionAutomatica.parse({
     fecha: deps.ahora(),
@@ -44,7 +46,7 @@ export async function comprobarFotoNueva(deps: DepsComprobacion, e: EntradaCompr
     frente: e.real,
     lista: e.lista,
     ...decision,
-    respuestas: { checklist, ...(toma ? { toma } : {}), ...(anatomia ? { anatomia } : {}) },
+    respuestas: { checklist, ...(toma ? { toma } : {}), ...(anatomia ? { anatomia } : {}), ...(e.aire ? { aire: e.aire } : {}) },
   });
   if (e.guardar !== false) await deps.activos.anotarRevision(e.local, e.generado, revision);
   return revision;

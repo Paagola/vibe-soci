@@ -201,3 +201,24 @@ export function mapaEnTexto(m: MapaDeFoto): string {
 }
 
 const r3 = (n: number) => Math.round(n * 1000) / 1000;
+
+/**
+ * Qué fracción de una zona del encuadre (una mitad o un cuarto) queda libre de plato, según la máscara. Sirve para
+ * comprobar que la foto nueva dejó el aire que pidió el director de foto. Sin máscara (ocupación vacía), devuelve undefined.
+ */
+export function aireEn(m: MapaDeFoto, lado: 'arriba' | 'abajo' | 'izquierda' | 'derecha' | 'arriba-izquierda' | 'arriba-derecha' | 'abajo-izquierda' | 'abajo-derecha'): number | undefined {
+  if (!m.ocupacion.length) return undefined;
+  const mitadF = m.filas / 2;
+  const mitadC = m.columnas / 2;
+  const filas: [number, number] = lado.startsWith('arriba') ? [0, mitadF] : lado.startsWith('abajo') ? [mitadF, m.filas] : [0, m.filas];
+  const columnas: [number, number] = lado.endsWith('izquierda') ? [0, mitadC] : lado.endsWith('derecha') ? [mitadC, m.columnas] : [0, m.columnas];
+  let libres = 0;
+  let total = 0;
+  for (let f = filas[0]; f < filas[1]; f++) {
+    for (let c = columnas[0]; c < columnas[1]; c++) {
+      total++;
+      if ((m.ocupacion[f * m.columnas + c] ?? 0) < OCUPACION_DE_SUJETO) libres++;
+    }
+  }
+  return total ? Math.round((libres / total) * 1000) / 1000 : undefined;
+}

@@ -24,6 +24,10 @@ const CASI_CENITAL_GRADOS = 80;
 export const Distancia = z.enum(['GENERAL', 'MEDIO', 'PRIMER_PLANO', 'MACRO']);
 export type Distancia = z.infer<typeof Distancia>;
 
+/** Zonas del encuadre donde puede quedar el aire para el texto. */
+export const LadoDeAire = z.enum(['arriba', 'abajo', 'izquierda', 'derecha', 'arriba-izquierda', 'arriba-derecha', 'abajo-izquierda', 'abajo-derecha', 'ninguno']);
+export type LadoDeAire = z.infer<typeof LadoDeAire>;
+
 /** Por debajo de este lado largo la foto se marca: los detalles finos (texturas, dibujos) no se pueden leer. */
 export const LADO_MINIMO_RECOMENDADO_PX = 1000;
 
@@ -89,6 +93,12 @@ export const HuecosFotoNueva = z.object({
   }),
   /** Dónde va cada cosa en el encuadre (incluido el hueco del titular si hay referencia). */
   ideaGrafica: z.string().min(10),
+  /**
+   * Dónde tiene que quedar el hueco limpio para el texto (lo que dice «ideaGrafica», en un dato que se puede medir).
+   * La comprobación de salida mide con el mapa de la foto si de verdad quedó (Sushita, 15/11: pidió aire arriba a la
+   * derecha y la tabla llenó el encuadre). «ninguno» si la composición no lo necesita.
+   */
+  aire: LadoDeAire.optional(),
   /** Fuente, dirección y calidad de la luz. */
   luz: z.string().min(10),
   /** «red the only strong colour». */

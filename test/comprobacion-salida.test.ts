@@ -14,7 +14,7 @@ import { teselas } from '../src/adaptadores/gemini/RevisorVisualGemini.js';
 import { comprobarFotoNueva } from '../src/aplicacion/fotos/comprobarFotoNueva.js';
 import { listaYPiezas } from '../src/aplicacion/fotos/listaDePropuesta.js';
 import { RAIZ } from '../src/config.js';
-import { ChecklistVisual, ComparacionToma, ConteoAnatomia, decidirSalida } from '../src/dominio/comprobacionSalida.js';
+import { ChecklistVisual, ComparacionToma, ConteoAnatomia, decidirSalida, AIRE_MINIMO } from '../src/dominio/comprobacionSalida.js';
 import type { RevisorVisual } from '../src/puertos/RevisorVisual.js';
 
 const reales = JSON.parse(await readFile(join(RAIZ, 'proyectos', 'prueba-comprobacion-salida', 'resultados.json'), 'utf8')) as {
@@ -178,5 +178,15 @@ describe('Comprobación de salida · teselas y lista', () => {
     const manual = await listaYPiezas({ lista: 'x', pieza: ['gamba=2'] });
     assert.deepEqual(manual.piezas, [{ nombre: 'gamba', esperado: 2 }]);
     await assert.rejects(listaYPiezas({ lista: 'x', pieza: ['gamba'] }), /nombre=N/);
+  });
+});
+
+describe('F3.2 (punto 8) · el aire que pidió el director de foto', () => {
+  const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], seguro: true };
+  it('si la zona pedida no queda libre de plato, se descarta (y se reintenta si quedan intentos)', () => {
+    const d = decidirSalida(bien, undefined, undefined, { lado: 'arriba-derecha', libre: 0.12, minimo: AIRE_MINIMO });
+    assert.equal(d.final, 'DESCARTA');
+    assert.match(d.motivos.join(), /no deja el aire pedido \(arriba-derecha\): libre el 12 %/);
+    assert.equal(decidirSalida(bien, undefined, undefined, { lado: 'arriba', libre: 0.8, minimo: AIRE_MINIMO }).final, 'PASA');
   });
 });
