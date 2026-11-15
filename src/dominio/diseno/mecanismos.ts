@@ -319,11 +319,12 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     if (!caja) problemas.push('No hay un hueco libre de 3 × 3 celdas para el sello: quítalo.');
     else if (lineas.length) {
       rejilla.ocupar(caja);
+      // Las líneas en la voz del titular (la más estrecha y la que más pesa: el dato se lee aunque el sello sea pequeño).
       // El fondo del sello: el color con más carácter (ni el más oscuro ni el más claro); las letras, la tinta que más contrasta con él.
       const fondo = e.colores.find((t) => t.token !== oscura.token && t.token !== clara.token) ?? clara;
       const letras = contraste(oscura.hex, fondo.hex) >= contraste(clara.hex, fondo.hex) ? oscura : clara;
       const centro = { x: (72 + (caja.col[0] - 1) * PASO_COLUMNA + (3 * PASO_COLUMNA - 12) / 2) / 1080, y: (72 + (caja.fila[0] - 1) * PASO_FILA + (3 * PASO_FILA - 12) / 2) / 1440 };
-      capasSello.push({ tipo: 'sello', forma: 'circulo', centro: { x: Math.round(centro.x * 1000) / 1000, y: Math.round(centro.y * 1000) / 1000 }, radio: 0.1, fondo: `@${fondo.token}`, color: `@${letras.token}`, lineas: lineas.map((l) => ({ texto: l, voz: e.voces.firma })) });
+      capasSello.push({ tipo: 'sello', forma: 'circulo', centro: { x: Math.round(centro.x * 1000) / 1000, y: Math.round(centro.y * 1000) / 1000 }, radio: 0.095, fondo: `@${fondo.token}`, color: `@${letras.token}`, lineas: lineas.map((l) => ({ texto: l, voz: e.voces.titular })) });
     }
   }
 
