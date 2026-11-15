@@ -373,7 +373,9 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   const sujeto = e.tieneMascara ? e.mapa.sujeto : undefined;
   if (!sujeto) return { capas: [], textos: {}, problemas: ['PLATO_SOBRE_COLOR recorta el plato: hace falta la máscara de la foto.'], notas };
   if (comp.lado === 'abajo') notas.push('PLATO_SOBRE_COLOR pone siempre el titular arriba y el plato abajo, cortado por el borde.');
-  if (comp.sello) problemas.push('PLATO_SOBRE_COLOR no lleva sello: compite con el plato recortado.');
+  // Sin sello: compite con el plato recortado. Se quita (no bloquea): así una corrección del crítico que lo pida no se
+  // pierde entera por él (en la v003 de Sushita se perdió el campo en oro por el sello).
+  if (comp.sello) notas.push('PLATO_SOBRE_COLOR no lleva sello (compite con el plato recortado): se quita.');
   if ((comp.anotaciones?.length ?? 0) > 0) problemas.push('PLATO_SOBRE_COLOR no lleva anotaciones: el plato recortado ya es el gesto (las anotaciones van en las diapositivas de detalle).');
   for (const [para, clave] of [['titular', comp.titular], ['apoyo', comp.apoyo], ['firma', comp.firma]] as const) {
     if (clave && !(clave in e.textos)) problemas.push(`${para}: no hay ningún texto con la clave «${clave}».`);

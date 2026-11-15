@@ -103,13 +103,16 @@ export function diapositivasDeCarrusel(
     ];
     if (e.voces.anotacion) {
       textos.push({ clave: 'estado', texto: estado, fuente: 'ELEMENTO', cita: estado });
-      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
+      // Recortada, la flecha llega al canto de arriba del elemento (al centro, lo cruzaba entero como un palo).
+      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: platoPortada ? { x: 0.5, y: 0.12 } : { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
     }
     capas.push(...decorado.filter((c) => c.tipo === 'textura'));
     diapositivas.push({ id: `detalle-${diapositivas.length + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
   }
 
-  for (const d of carrusel?.detalles ?? []) {
+  // Con dos tomas propias o más, ningún recorte de la portada: mezclados, la serie se rompe (v003 de Sushita: dos
+  // productos recortados y un tercero en banda). El recorte queda para cuando hay una sola toma, o ninguna.
+  for (const d of tomas.length >= 2 ? [] : (carrusel?.detalles ?? [])) {
     if (diapositivas.length >= 3) break;
     const nombre = portada.textos.find((t) => t.clave === d.texto);
     if (!nombre) {
