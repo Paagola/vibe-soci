@@ -32,7 +32,7 @@ import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
 import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
-import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
+import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost, type TomaDelEncargo } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas } from '../../puertos/ComponedorDePiezas.js';
 import type { DirectorDeFoto, GeneradorFoto, PeticionFoto, Segmentador } from '../../puertos/Foto.js';
@@ -120,10 +120,14 @@ export async function crearEncargo(
     estiloDeReferencia?: boolean;
     estetica?: Estetica;
     formato?: 'post' | 'carrusel';
+    /** F3.3: fotos reales de más para los detalles del carrusel («qué elemento enseña» cada una). */
+    fotosExtra?: Array<{ ruta: string; elemento: string }>;
   },
 ): Promise<EncargoPost> {
   if (await existe(rutaEncargo(deps, datos.proyecto))) throw new ErrorDeUsuario(`El encargo «${datos.proyecto}» ya existe: continúa con npm run post -- ${datos.proyecto}`);
   if (!(await existe(resolve(deps.raiz, datos.foto)))) throw new ErrorDeUsuario(`No encuentro la foto «${datos.foto}».`);
+  for (const x of datos.fotosExtra ?? []) if (!(await existe(resolve(deps.raiz, x.ruta)))) throw new ErrorDeUsuario(`No encuentro la foto de más «${x.ruta}».`);
+  if (datos.fotosExtra?.length && datos.formato !== 'carrusel') throw new ErrorDeUsuario('Las fotos de más son para los detalles de un carrusel: añade --formato carrusel.');
   await deps.referencias.locales.obtener(datos.local); // el local tiene que existir y ser válido
   const ahora = deps.ahora();
   const encargo = EncargoPost.parse({
@@ -139,6 +143,7 @@ export async function crearEncargo(
     estiloDeReferencia: datos.estiloDeReferencia ?? false,
     ...(datos.estetica ? { estetica: datos.estetica } : {}),
     formato: datos.formato ?? 'post',
+    fotosExtra: datos.fotosExtra ?? [],
     creadoEn: ahora,
     historial: [{ fecha: ahora, paso: 'REFERENCIA', nota: 'encargo creado' }],
   });
@@ -221,32 +226,14 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
 
   async FOTO_REAL(deps, e, _a, nota) {
     const id = `${e.proyecto}-real`;
-    if (!(await deps.activos.existe(e.local, id))) {
-      const origen = resolve(deps.raiz, e.fotoSubida);
-      const bytes = await readFile(origen);
-      const meta = await sharp(bytes).metadata();
-      const sha = createHash('sha256').update(bytes).digest('hex');
-      const archivo = `original${extname(origen).toLowerCase() || '.jpg'}`;
-      await deps.activos.crear(
-        Activo.parse({
-          id,
-          localSlug: e.local,
-          tipo: 'REAL',
-          uso: e.usoFotoReal,
-          descripcion: `Foto subida para el encargo ${e.proyecto}: ${e.plato}`,
-          archivo,
-          ancho: meta.width,
-          alto: meta.height,
-          sha256: sha,
-          procedencia: { ruta: relative(deps.raiz, origen), sha256: sha, copiadoEn: deps.ahora() },
-          alteraciones: [],
-          niveles: [],
-        }),
-        { [archivo]: bytes },
-      );
-      nota(`Foto subida registrada como activo ${id} (${meta.width} × ${meta.height} px).`);
+    await registrarFotoReal(deps, e, id, e.fotoSubida, `Foto subida para el encargo ${e.proyecto}: ${e.plato}`, nota);
+    const fotosExtra = [];
+    for (const [i, x] of e.fotosExtra.entries()) {
+      const idExtra = `${e.proyecto}-real-${i + 2}`;
+      await registrarFotoReal(deps, e, idExtra, x.ruta, `Foto de más del encargo ${e.proyecto} (la sube el dueño): ${x.elemento}`, nota);
+      fotosExtra.push({ ...x, activo: idExtra });
     }
-    return { encargo: ir(e, 'PROPUESTA', { activoReal: id }) };
+    return { encargo: ir(e, 'PROPUESTA', { activoReal: id, fotosExtra }) };
   },
 
   async PROPUESTA(deps, e, _a, nota) {
@@ -288,13 +275,26 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
     const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt);
     await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, prompt, problemas }, null, 2)}\n`);
-    // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto (sale de la misma foto real).
-    const tomas = e.formato === 'carrusel' ? (propuesta.tomas ?? []).map((t, i) => ({ n: i + 1, elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, guardada.opcionesPrompt) })) : [];
+    // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto: la foto de más que haya subido el
+    // dueño para ese elemento (no se genera) o, si no, una toma nueva sacada de la misma foto real.
+    const nombres = propuesta.descripcion.elementos.map((x) => x.nombre);
+    const extras = e.fotosExtra.map((x) => ({ ...x, nombre: elementoParecido(x.elemento, nombres) }));
+    for (const x of extras) if (!x.nombre) problemas.push(`La foto de más «${x.ruta}» dice que enseña «${x.elemento}», pero no es ninguno de los elementos descritos (${nombres.join(', ')}): corrige el elemento o la descripción.`);
+    const tomas: TomaDelEncargo[] =
+      e.formato !== 'carrusel'
+        ? []
+        : [
+            ...extras.filter((x) => x.nombre && x.activo).map((x) => ({ elemento: x.nombre!, prompt: '', real: true, elegida: x.activo })),
+            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, guardada.opcionesPrompt) })),
+          ]
+            .slice(0, 3)
+            .map((t, i) => ({ n: i + 1, ...t }));
+    const generadas = tomas.filter((t) => !t.real);
     const encargo = { ...e, propuesta: { archivo: e.propuesta?.archivo ?? 'foto/propuesta.json', prompt, problemas } };
 
     const disponible = deps.generador.disponible();
     const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0, await rutaDeEstilo(deps, e))) : 0;
-    const fotos = 1 + tomas.length;
+    const fotos = 1 + generadas.length;
     const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''}${x.cortados ? ` (+${x.cortados} cortado por el borde)` : ''}${x.dudoso ? ' ¿?' : ''} (${x.estado})`).join('; ');
     const mirar = recuentosQueMirar(propuesta.descripcion);
     if (!accion.confirmo) {
@@ -306,11 +306,11 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           ...(mirar.length ? [`  MIRA ESTOS RECUENTOS EN LA FOTO SUBIDA (el director no está seguro o hay piezas cortadas): ${mirar.join(' | ')}`] : []),
           `  Cámara: de ${propuesta.descripcion.anguloGrados}° a ${propuesta.huecos.camara.anguloGrados}° · ${propuesta.huecos.camara.descripcion}`,
           `  Prompt${tomas.length ? ' de la portada' : ''}: ${prompt}`,
-          ...tomas.map((t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`),
+          ...tomas.map((t) => (t.real ? `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, tal cual (no se genera).` : `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`)),
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
           disponible.ok
-            ? tomas.length
-              ? `  FOTOS: ${fotos} (la portada y ${tomas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD en total con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una); la portada puede reintentarse hasta ${MAX_INTENTOS_SEGUIDOS} veces (≤ ${(estimado * (fotos + MAX_INTENTOS_SEGUIDOS - 1)).toFixed(3)} USD como mucho). Un detalle que no pase usa un recorte de la portada.`
+            ? generadas.length
+              ? `  FOTOS: ${fotos} (la portada y ${generadas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD en total con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una); la portada puede reintentarse hasta ${MAX_INTENTOS_SEGUIDOS} veces (≤ ${(estimado * (fotos + MAX_INTENTOS_SEGUIDOS - 1)).toFixed(3)} USD como mucho). Un detalle que no pase usa un recorte de la portada.`
               : `  Gasto: ≤ ${estimado.toFixed(3)} USD por intento con ${deps.generador.nombre}, como mucho ${MAX_INTENTOS_SEGUIDOS} intentos seguidos.`
             : `  Generación por la API no disponible: ${disponible.motivo}.`,
           `  Para corregir: edita ${relative(deps.raiz, ruta)} («propuesta»). Para seguir: --confirmo`,
@@ -352,10 +352,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     // F3.3 (punto 11): las tomas de detalle que aún no tienen foto, una vez cada una (con la foto importada a mano no hay
     // generador: los detalles usarán recortes de la portada).
     let tomas = e.tomas;
-    if (!accion.importar && tomas.some((t) => !t.intento)) {
+    if (!accion.importar && tomas.some((t) => !t.intento && !t.real)) {
       tomas = [];
       for (const t of e.tomas) {
-        if (t.intento) {
+        if (t.intento || t.real) {
           tomas.push(t);
           continue;
         }
@@ -395,7 +395,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     // foto subida: un primer plano de un elemento ya es otra toma; sí el aire que pidió.
     const tomas = [];
     for (const t of e.tomas) {
-      const hueco = propuesta.tomas?.[t.n - 1];
+      const hueco = propuesta.tomas?.find((x) => x.elemento === t.elemento);
       if (!t.intento || t.intento.final !== 'PENDIENTE' || !hueco) {
         tomas.push(t);
         continue;
@@ -433,6 +433,9 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           'MIRA LA FOTO Y CONFIRMA',
           `  Foto: ${relative(deps.raiz, foto.ruta)}`,
           `  Comprobación automática: ${ultimo.final}${ultimo.motivos.length ? ` · ${ultimo.motivos.join('; ')}` : ''}`,
+          ...(await Promise.all(
+            e.tomas.filter((t) => t.real).map(async (t) => `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.elegida!)).ruta)}`),
+          )),
           ...(await Promise.all(
             e.tomas.filter((t) => t.intento).map(async (t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.intento!.activo)).ruta)} · ${t.intento!.final}${t.intento!.final === 'DESCARTA' ? ' (no se usará: su diapositiva irá con un recorte de la portada)' : ''}`),
           )),
@@ -557,6 +560,47 @@ async function asegurarMascara(deps: DepsPost, local: string, activo: string, no
     { 'mascara.png': png },
   );
   nota(`Máscara del sujeto (${deps.segmentador.metodo}): caja ${bbox.w} × ${bbox.h} px.`);
+}
+
+const sinAcentos = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+/** El elemento descrito que más palabras comparte con lo que dice el dueño (o ninguno si no comparten ninguna). */
+export function elementoParecido(dicho: string, nombres: string[]): string | undefined {
+  const tokens = (t: string) => sinAcentos(t).split(/[^a-z0-9ñ]+/).filter((p) => p.length > 2 || /\d/.test(p));
+  const palabras = tokens(dicho);
+  // La misma palabra o la misma raíz (nigiri / nigiris).
+  const igual = (a: string, b: string) => a === b || (Math.min(a.length, b.length) > 3 && (a.startsWith(b) || b.startsWith(a)));
+  const puntos = nombres.map((n) => ({ n, p: palabras.filter((p) => tokens(n).some((t) => igual(t, p))).length }));
+  const mejor = puntos.sort((a, b) => b.p - a.p)[0];
+  return mejor && mejor.p > 0 ? mejor.n : undefined;
+}
+
+/** Registra una foto real subida (la del plato o una de más) como activo REAL del local, si no estaba. */
+async function registrarFotoReal(deps: DepsPost, e: EncargoPost, id: string, ruta: string, descripcion: string, nota: (t: string) => void): Promise<void> {
+  if (await deps.activos.existe(e.local, id)) return;
+  const origen = resolve(deps.raiz, ruta);
+  const bytes = await readFile(origen);
+  const meta = await sharp(bytes).metadata();
+  const sha = createHash('sha256').update(bytes).digest('hex');
+  const archivo = `original${extname(origen).toLowerCase() || '.jpg'}`;
+  await deps.activos.crear(
+    Activo.parse({
+      id,
+      localSlug: e.local,
+      tipo: 'REAL',
+      uso: e.usoFotoReal,
+      descripcion,
+      archivo,
+      ancho: meta.width,
+      alto: meta.height,
+      sha256: sha,
+      procedencia: { ruta: relative(deps.raiz, origen), sha256: sha, copiadoEn: deps.ahora() },
+      alteraciones: [],
+      niveles: [],
+    }),
+    { [archivo]: bytes },
+  );
+  nota(`Foto subida registrada como activo ${id} (${meta.width} × ${meta.height} px).`);
 }
 
 /** Registra una foto generada (o importada) como activo GENERADO del local, con su procedencia. */

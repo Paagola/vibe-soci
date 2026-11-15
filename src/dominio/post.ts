@@ -39,6 +39,8 @@ export const TomaDelEncargo = z.object({
   intento: IntentoFoto.optional(),
   /** El activo confirmado para su diapositiva. */
   elegida: z.string().optional(),
+  /** Es una foto real que ha subido el dueño (no se genera ni se comprueba: es suya). */
+  real: z.boolean().optional(),
 });
 export type TomaDelEncargo = z.infer<typeof TomaDelEncargo>;
 
@@ -80,6 +82,8 @@ export const EncargoPost = z.object({
   intentos: z.array(IntentoFoto).default([]),
   /** F3.3: las tomas de detalle de un carrusel (una foto por diapositiva de detalle). */
   tomas: z.array(TomaDelEncargo).default([]),
+  /** F3.3: fotos reales de más que sube el dueño para el carrusel, cada una con el elemento que enseña. */
+  fotosExtra: z.array(z.object({ ruta: z.string().min(1), elemento: z.string().min(1), activo: z.string().optional() })).max(3).default([]),
   fotoElegida: z.string().optional(),
   historial: z.array(z.object({ fecha: z.string(), paso: PasoPost, nota: z.string() })).default([]),
   creadoEn: z.string(),

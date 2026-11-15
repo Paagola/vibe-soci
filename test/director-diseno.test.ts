@@ -21,7 +21,7 @@ import { MedidorDeFotoSharp } from '../src/adaptadores/imagen/MedidorDeFotoSharp
 import { CriticoDisenoSimulado, DirectorDisenoSimulado, titularDeLaNota } from '../src/adaptadores/simulado/DisenoSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
 import { avisoDeCruce, coloresDisponibles, proponerDiseno, vocesDisponibles } from '../src/aplicacion/diseno/proponerDiseno.js';
-import { avanzar, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
+import { avanzar, crearEncargo, elementoParecido, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
 import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
 import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
 import { RAIZ } from '../src/config.js';
@@ -615,5 +615,39 @@ describe('Punto 1 · carrusel en la orden única', () => {
     const plan = JSON.parse(await readFile(join(carpeta, 'proyectos', 'tomas', 'plan.json'), 'utf8'));
     assert.ok(plan.diapositivas.length >= 3);
     await stat(join(carpeta, 'datos', 'disenos', 'tomas', 'detalle-1', 'v001', 'exportadas', '4x5.jpg'));
+  });
+
+  it('F3.3 (punto 11): la foto de más del dueño va tal cual a su detalle y no se genera; las demás tomas sí', async () => {
+    const generador = new GeneradorFotoSimulado();
+    const d: DepsPost = {
+      raiz: RAIZ,
+      proyectos: join(carpeta, 'proyectos'),
+      activos: new AlmacenActivosFicheros(join(carpeta, 'datos', 'locales')),
+      referencias: refs,
+      director: new DirectorFotoSimulado({ tomas: 2 }),
+      generador,
+      revisor: new RevisorVisualSimulado(),
+      segmentador: new SegmentadorSimulado(),
+      componedor: new ComponedorProyectos(RAIZ, join(carpeta, 'datos')),
+      disenador: { director: new DirectorDisenoSimulado(), medidor: new MedidorDeFotoSharp() },
+      ahora: () => '2026-11-15T10:00:00.000Z',
+    };
+    await crearEncargo(d, { proyecto: 'extra', local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true, formato: 'carrusel', fotosExtra: [{ ruta: FOTO, elemento: 'la pieza 2 de cerca' }] });
+    let r = await avanzar(d, 'extra');
+    assert.match(r.parada, /FOTOS: 2 \(la portada y 1 detalle/);
+    assert.match(r.parada, /Detalle 1 \(«pieza simulada 2»\): la foto de más del dueño/);
+    r = await avanzar(d, 'extra', { confirmo: true });
+    assert.equal(generador.peticiones.length, 2, 'la portada y la toma que no tiene foto del dueño');
+    r = await avanzar(d, 'extra', { confirmo: true });
+    assert.equal(r.parada, 'HECHO', r.parada);
+    const detalle = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'extra', 'intenciones', 'detalle-1.json'), 'utf8')));
+    assert.equal(detalle.activos.detalle1, 'extra-real-2');
+    assert.equal(detalle.textos.titular, 'pieza simulada 2');
+  });
+
+  it('una foto de más que no corresponde a ningún elemento no deja confirmar', () => {
+    assert.equal(elementoParecido('el nigiri de atún', ['uramaki de salmón', 'nigiri de atún rojo']), 'nigiri de atún rojo');
+    assert.equal(elementoParecido('los nigiris', ['uramaki de salmón', 'nigiri de atún rojo']), 'nigiri de atún rojo');
+    assert.equal(elementoParecido('postre', ['uramaki de salmón']), undefined);
   });
 });
