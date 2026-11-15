@@ -94,11 +94,24 @@ function hechosYContexto(e: EncargoDeDiseno): string[] {
     referencia,
     '',
     mapaEnTexto(e.mapa),
+    aireDelPlato(e),
     '',
     `COLORES: ${e.colores.map((c) => `@${c.token} ${c.hex} (${c.papel})`).join(' · ')}`,
     `VOCES: ${e.voces.map((v) => `${v.id}: ${v.descripcion}`).join(' · ')}`,
     `VOZ DE ACENTO: ${e.voces.some((v) => v.id === 'acento' || /ballet|bodoni|sacramento|kaushan/i.test(v.descripcion)) ? 'sí (TITULAR_CON_ACENTO es posible)' : 'no (no uses TITULAR_CON_ACENTO)'}`,
   ];
+}
+
+/**
+ * El aire que hay encima y debajo del plato, en filas útiles (2–15): lo que decide qué mecanismo cabe. En la prueba real
+ * del 15/11 el crítico pidió TITULAR_CON_ACENTO sobre una foto con tres filas de aire, y su corrección no podía pasar.
+ */
+export function aireDelPlato(e: EncargoDeDiseno): string {
+  const s = e.mapa.sujeto;
+  if (!s) return 'AIRE: la foto no tiene plato recortable (sin máscara): el titular irá aparte, en la zona libre mayor.';
+  const arriba = Math.max(0, s.fila[0] - 2);
+  const abajo = Math.max(0, 15 - s.fila[1]);
+  return `AIRE: ${arriba} filas libres encima del plato y ${abajo} debajo. TITULAR_CON_ACENTO necesita 4 en su lado; con menos, usa TITULAR_DETRAS o ANOTACIONES.`;
 }
 
 /** El mensaje de cada pieza: hechos, referencia, mapa, listas y, si los hay, los problemas de la propuesta anterior. */

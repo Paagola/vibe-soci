@@ -348,6 +348,7 @@ describe('F3 · director de diseño con Gemini (fetch falso)', () => {
     const texto = partes[0]!.text ?? '';
     assert.match(texto, /PLATO \(nota del dueño\): «Gamba roja de Palamós/);
     assert.match(texto, /Mapa de la foto/);
+    assert.match(texto, /AIRE: \d+ filas libres encima del plato y \d+ debajo/);
     assert.match(texto, /@carbon #111111/);
     assert.match(texto, /un problema anterior/);
     const imagenes = partes.filter((x) => x.inlineData);
