@@ -88,10 +88,11 @@ export function diapositivasDeCarrusel(
     // palabras del nombre, tal cual (sigue respaldado por la misma cita).
     const corto = tituloCorto(nombre.texto);
     const textos: TextoPropuesto[] = [{ ...nombre, texto: corto }];
+    // En los detalles no va la cuña: la anotación necesita el campo entero (en la prueba de Sushita se pisaban).
     const capas: CapaPropuesta[] = [
-      ...fondo(0.38, 0.3),
+      { tipo: 'fondo', color: `@${campo}` },
       // La foto, ampliada sobre el elemento: queda en el centro de la banda.
-      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [6, 16] }, sangra: true, zoom: 2.4, enfoque: d.punto },
+      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, zoom: 2.4, enfoque: d.punto },
       { tipo: 'texto', id: 'titular', texto: nombre.clave, voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [2, 4] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
     ];
     if (elemento && e.voces.anotacion) {
@@ -99,7 +100,7 @@ export function diapositivasDeCarrusel(
       textos.push({ clave: 'estado', texto: estado, fuente: 'ELEMENTO', cita: estado });
       // La anotación, en el campo, con la flecha hasta el centro de la banda (donde quedó el elemento).
       // En el color de acento (el de la diagonal), si contrasta con el campo: es la voz humana de la serie.
-      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [6, COLUMNAS], fila: [5, 5] }, vertical: 'abajo', tamano: 42, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.58, y: 0.68 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
+      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
     }
     diapositivas.push({ id: `detalle-${i + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
   }
