@@ -143,6 +143,8 @@ export interface OpcionesDePrompt {
   familia?: string;
   /** Punto 10: la estética del encargo; su frase de luz, fondo, atrezo, color y encuadre va en el prompt. */
   estetica?: Estetica;
+  /** F3.3: es una toma de detalle del carrusel (la estética sin su encuadre de plato entero). */
+  deDetalle?: boolean;
 }
 
 /** El papel de @image2 en el prompt, tal como lo pidió el usuario. */
@@ -162,7 +164,7 @@ export function montarPromptFotoNueva(h: HuecosFotoNueva, o: OpcionesDePrompt = 
     `${conPunto(h.recuento)} Nothing else added.`,
     `New composition by a professional food photographer: ${sinPunto(h.camara.descripcion)}, ${h.camara.objetivoMm} mm lens at f/${h.camara.apertura}, ${sinPunto(h.ideaGrafica)}${recorte}.`,
     `${mayuscula(sinPunto(h.luz))}, ${sinPunto(h.colorDominante)}.`,
-    ...(o.estetica ? [frasePrompt(o.estetica)] : []),
+    ...(o.estetica ? [frasePrompt(o.estetica, o.deDetalle)] : []),
     'Photographic realism, no text.',
   ].join(' ');
 }

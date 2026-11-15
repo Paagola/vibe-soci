@@ -171,7 +171,8 @@ export function choqueConFamilia(estetica: Estetica, familia: Familia | undefine
 }
 
 /** La frase de estética que se añade al prompt de la foto. */
-export function frasePrompt(e: Estetica): string {
+/** La frase de la estética para el prompt. En una toma de detalle (F3.3) sin su encuadre: ese lo decide la toma (de cerca). */
+export function frasePrompt(e: Estetica, deDetalle = false): string {
   const f = ESTETICAS[e].foto;
-  return `Overall aesthetic: ${f.luz}; ${f.fondo}; ${f.atrezo}; ${f.color}; ${f.encuadre}.`;
+  return `Overall aesthetic: ${f.luz}; ${f.fondo}; ${f.atrezo}; ${f.color}${deDetalle ? '' : `; ${f.encuadre}`}.`;
 }

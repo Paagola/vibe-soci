@@ -300,7 +300,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         ? []
         : [
             ...extras.filter((x) => x.nombre && x.activo).map((x) => ({ elemento: x.nombre!, prompt: '', real: true, elegida: x.activo })),
-            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, guardada.opcionesPrompt) })),
+            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, { ...guardada.opcionesPrompt, deDetalle: true }) })),
           ]
             .slice(0, 3)
             .map((t, i) => ({ n: i + 1, ...t }));

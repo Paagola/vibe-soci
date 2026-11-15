@@ -35,6 +35,11 @@ describe('Punto 10 · catálogo de estéticas', () => {
     assert.ok(p.includes(frasePrompt('COLOR_POP')));
     assert.match(p, /clean, plain, uniform background/);
     assert.notEqual(montarPromptFotoNueva(huecos, { estetica: 'EDITORIAL_OSCURO' }), p, 'otra estética, otra foto');
+    // F3.3: una toma de detalle conserva luz, fondo y color, pero no el encuadre de plato entero.
+    const detalle = montarPromptFotoNueva(huecos, { estetica: 'COLOR_POP', deDetalle: true });
+    assert.match(detalle, /clean, plain, uniform background/);
+    assert.doesNotMatch(detalle, /not cut by any edge/);
+    assert.match(p, /not cut by any edge/);
     assert.match(textoFotoNueva({ plato: 'sushi', archivo: 'x.jpg', ancho: 1000, alto: 1000, alGenerador: { estetica: 'COLOR_POP' } }), /Estética del post: Color pop con recorte/);
   });
 
