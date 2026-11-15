@@ -59,6 +59,8 @@ const CapaFoto = z.object({
   velo: z.enum(['no', 'arriba', 'abajo', 'ambos']).optional().describe('Oscurece ese lado de la foto (o los dos) para que se lea un texto. Solo si hace falta.'),
   colorVelo: Token.optional(),
   sangra: z.boolean().optional().describe('marco: llega a los cantos de los lados y al de abajo (la foto ocupa la parte baja del lienzo).'),
+  /** F3.3: qué foto (el papel, p. ej. «detalle1»); sin él, la foto nueva de la portada. */
+  activo: Id.optional(),
 });
 
 const CapaPlato = z.object({
@@ -417,6 +419,8 @@ export interface ContextoDeCompilacion {
   coloresMedidos: Record<string, string>;
   /** Hay referencia: la propuesta tiene que decir qué toma y qué no copia. */
   conReferencia: boolean;
+  /** F3.3: otras fotos del encargo, por papel («detalle1» → id del activo): las tomas de detalle del carrusel. */
+  activosExtra?: Record<string, string>;
   /** Punto 10: la estética del encargo y sus límites de oficio, que viajan en la intención hasta el compositor. */
   estetica?: { id: string; limites: { saltoMinimo: number; palabrasMaximas: number; nivelesMaximos: number; vocesMaximas: number; gestosMaximos: number; recursosMaximos: number } };
 }
@@ -572,7 +576,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         poner(Plano3.FOTO, {
           id,
           tipo: 'imagen',
-          activo: 'foto',
+          activo: x.activo ?? 'foto',
           caja: x.encuadre === 'sangre' || !x.caja ? { x: 0, y: 0, w: 1, h: 1 } : x.sangra ? sangraAbajoYLados(aFracciones(x.caja)) : aFracciones(x.caja),
           ...(x.zoom ? { zoom: x.zoom } : {}),
           ...(x.enfoque ? { enfoque: x.enfoque } : {}),
@@ -796,7 +800,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         .join(' '),
       marca: c.marca,
       tokens: { colores: c.coloresMedidos, estilos: c.vocesDeEstudio },
-      activos: { foto: c.foto },
+      activos: { foto: c.foto, ...(c.activosExtra ?? {}) },
       textos: Object.fromEntries(p.textos.map((t) => [t.clave, t.texto])),
       capas: ordenadas,
       relaciones,

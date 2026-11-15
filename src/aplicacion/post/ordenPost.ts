@@ -271,7 +271,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       await sharp(referencia!.imagen!).rotate().resize(LADO_REFERENCIA_DE_ESTILO, LADO_REFERENCIA_DE_ESTILO, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 90 }).toFile(join(deps.proyectos, e.proyecto, ARCHIVO_REFERENCIA_DE_ESTILO));
     }
     const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}), ...(e.estetica ? { estetica: e.estetica } : {}) };
-    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador });
+    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador, formato: e.formato });
     const archivo = 'foto/propuesta.json';
     await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
     await writeFile(join(deps.proyectos, e.proyecto, archivo), `${JSON.stringify({ director: deps.director.nombre, fecha: deps.ahora(), ...resultado }, null, 2)}\n`);
@@ -288,10 +288,13 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
     const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt);
     await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, prompt, problemas }, null, 2)}\n`);
+    // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto (sale de la misma foto real).
+    const tomas = e.formato === 'carrusel' ? (propuesta.tomas ?? []).map((t, i) => ({ n: i + 1, elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, guardada.opcionesPrompt) })) : [];
     const encargo = { ...e, propuesta: { archivo: e.propuesta?.archivo ?? 'foto/propuesta.json', prompt, problemas } };
 
     const disponible = deps.generador.disponible();
     const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0, await rutaDeEstilo(deps, e))) : 0;
+    const fotos = 1 + tomas.length;
     const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''}${x.cortados ? ` (+${x.cortados} cortado por el borde)` : ''}${x.dudoso ? ' ¿?' : ''} (${x.estado})`).join('; ');
     const mirar = recuentosQueMirar(propuesta.descripcion);
     if (!accion.confirmo) {
@@ -302,10 +305,13 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           `  Elementos: ${elementos}`,
           ...(mirar.length ? [`  MIRA ESTOS RECUENTOS EN LA FOTO SUBIDA (el director no está seguro o hay piezas cortadas): ${mirar.join(' | ')}`] : []),
           `  Cámara: de ${propuesta.descripcion.anguloGrados}° a ${propuesta.huecos.camara.anguloGrados}° · ${propuesta.huecos.camara.descripcion}`,
-          `  Prompt: ${prompt}`,
+          `  Prompt${tomas.length ? ' de la portada' : ''}: ${prompt}`,
+          ...tomas.map((t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`),
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
           disponible.ok
-            ? `  Gasto: ≤ ${estimado.toFixed(3)} USD por intento con ${deps.generador.nombre}, como mucho ${MAX_INTENTOS_SEGUIDOS} intentos seguidos.`
+            ? tomas.length
+              ? `  FOTOS: ${fotos} (la portada y ${tomas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD en total con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una); la portada puede reintentarse hasta ${MAX_INTENTOS_SEGUIDOS} veces (≤ ${(estimado * (fotos + MAX_INTENTOS_SEGUIDOS - 1)).toFixed(3)} USD como mucho). Un detalle que no pase usa un recorte de la portada.`
+              : `  Gasto: ≤ ${estimado.toFixed(3)} USD por intento con ${deps.generador.nombre}, como mucho ${MAX_INTENTOS_SEGUIDOS} intentos seguidos.`
             : `  Generación por la API no disponible: ${disponible.motivo}.`,
           `  Para corregir: edita ${relative(deps.raiz, ruta)} («propuesta»). Para seguir: --confirmo`,
         ].join('\n'),
@@ -315,7 +321,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     nota(`Confirmado: elementos, prompt y hasta ${MAX_INTENTOS_SEGUIDOS} intentos${disponible.ok ? ` (≤ ${estimado.toFixed(3)} USD cada uno)` : ''}.`);
     const { bloqueo: _fuera, ...sinBloqueo } = encargo;
     return {
-      encargo: ir(sinBloqueo as EncargoPost, 'GENERAR', { autorizacion: { fecha: deps.ahora(), maxIntentos: MAX_INTENTOS_SEGUIDOS, estimadoPorIntentoUsd: estimado } }),
+      encargo: ir(sinBloqueo as EncargoPost, 'GENERAR', { autorizacion: { fecha: deps.ahora(), maxIntentos: MAX_INTENTOS_SEGUIDOS, estimadoPorIntentoUsd: estimado }, tomas }),
       usaAccion: true,
     };
   },
@@ -341,44 +347,26 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       generacion = { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle };
       nota(`Intento ${n} generado con ${deps.generador.nombre} (${foto.modelo}): ${foto.costeUsd.toFixed(4)} USD.`);
     }
-    const meta = await sharp(bytes).metadata();
-    const extension = meta.format === 'jpeg' ? 'jpg' : (meta.format ?? 'png');
-    const archivo = `original.${extension}`;
-    const sha = createHash('sha256').update(bytes).digest('hex');
-    await deps.activos.crear(
-      Activo.parse({
-        id,
-        localSlug: e.local,
-        tipo: 'GENERADO',
-        uso: 'SOLO_PRUEBA_COMPOSICION',
-        descripcion: `Foto nueva del encargo ${e.proyecto}, intento ${n}: ${e.plato}`,
-        archivo,
-        ancho: meta.width,
-        alto: meta.height,
-        sha256: sha,
-        procedencia: {
-          ruta: relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? '')),
-          sha256: sha,
-          copiadoEn: deps.ahora(),
-          generacion: {
-            modelo: generacion.modelo,
-            requestId: `sin-id-${sha.slice(0, 12)}`,
-            promptArchivo: relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? '')),
-            prompt,
-            parametros: { aspectRatio: ASPECTO, imageSize: TAMANO, intento: n, orden: 'post' },
-            referencias: [{ activo: e.activoReal as string, sha256: real.activo.sha256 }],
-            costeEstimadoUsd: generacion.costeUsd,
-            tarifa: generacion.tarifa,
-            generadoEn: deps.ahora(),
-          },
-        },
-        alteraciones: ['Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).', 'Superficie y fondo libres.'],
-        niveles: [],
-      }),
-      { [archivo]: bytes },
-    );
+    await registrarFotoGenerada(deps, e, real, { id, bytes, generacion, prompt, n, descripcion: `Foto nueva del encargo ${e.proyecto}, intento ${n}: ${e.plato}` });
     const intento: IntentoFoto = { n, activo: id, final: 'PENDIENTE', motivos: [], costeUsd: generacion.costeUsd };
-    return { encargo: ir(e, 'COMPROBAR', { intentos: [...e.intentos, intento] }), usaAccion: Boolean(accion.importar) };
+    // F3.3 (punto 11): las tomas de detalle que aún no tienen foto, una vez cada una (con la foto importada a mano no hay
+    // generador: los detalles usarán recortes de la portada).
+    let tomas = e.tomas;
+    if (!accion.importar && tomas.some((t) => !t.intento)) {
+      tomas = [];
+      for (const t of e.tomas) {
+        if (t.intento) {
+          tomas.push(t);
+          continue;
+        }
+        const idToma = `${e.proyecto}-toma-${t.n}`;
+        const foto = await deps.generador.generar({ ...peticion(e, real.ruta, t.prompt, 0, await rutaDeEstilo(deps, e)), id: idToma });
+        await registrarFotoGenerada(deps, e, real, { id: idToma, bytes: foto.bytes, generacion: { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle }, prompt: t.prompt, n: 1, descripcion: `Toma de detalle ${t.n} del encargo ${e.proyecto}: ${t.elemento}` });
+        nota(`Toma de detalle ${t.n} («${t.elemento}») generada: ${foto.costeUsd.toFixed(4)} USD.`);
+        tomas.push({ ...t, intento: { n: 1, activo: idToma, final: 'PENDIENTE', motivos: [], costeUsd: foto.costeUsd } });
+      }
+    }
+    return { encargo: ir(e, 'COMPROBAR', { intentos: [...e.intentos, intento], tomas }), usaAccion: Boolean(accion.importar) };
   },
 
   async COMPROBAR(deps, e, _a, nota) {
@@ -403,8 +391,30 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     );
     const intentos = e.intentos.map((i) => (i.n === ultimo.n ? { ...i, final: revision.final, motivos: revision.motivos } : i));
     nota(`Comprobación del intento ${ultimo.n}: ${revision.final}${revision.motivos.length ? ` (${revision.motivos.join('; ')})` : ''}.`);
+    // F3.3: cada toma de detalle, por separado, frente a su propia lista (solo su elemento). Sin comparar la toma con la
+    // foto subida: un primer plano de un elemento ya es otra toma; sí el aire que pidió.
+    const tomas = [];
+    for (const t of e.tomas) {
+      const hueco = propuesta.tomas?.[t.n - 1];
+      if (!t.intento || t.intento.final !== 'PENDIENTE' || !hueco) {
+        tomas.push(t);
+        continue;
+      }
+      let aireToma: AireMedido | undefined;
+      if (hueco.huecos.aire && hueco.huecos.aire !== 'ninguno' && deps.disenador) {
+        await asegurarMascara(deps, e.local, t.intento.activo, nota);
+        const libre = aireEn(await deps.disenador.medidor.medir(await deps.activos.obtener(e.local, t.intento.activo)), hueco.huecos.aire);
+        if (libre !== undefined) aireToma = { lado: hueco.huecos.aire, libre, minimo: AIRE_MINIMO };
+      }
+      const r = await comprobarFotoNueva(
+        { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
+        { local: e.local, generado: t.intento.activo, real: e.activoReal as string, lista: `${hueco.huecos.elementos.replace(/[.\s]+$/, '')}. ${hueco.huecos.recuento}`, comprobarToma: false, ...(aireToma ? { aire: aireToma } : {}) },
+      );
+      nota(`Comprobación de la toma de detalle ${t.n} («${t.elemento}»): ${r.final}${r.motivos.length ? ` (${r.motivos.join('; ')})` : ''}${r.final === 'DESCARTA' ? '. Su diapositiva usará un recorte de la portada.' : ''}.`);
+      tomas.push({ ...t, intento: { ...t.intento, final: r.final, motivos: r.motivos } });
+    }
     const siguiente = trasComprobar(revision.final, intentos, e.autorizacion?.maxIntentos);
-    return { encargo: ir(e, siguiente.paso, { intentos, ...(siguiente.bloqueo ? { bloqueo: siguiente.bloqueo } : {}) }) };
+    return { encargo: ir(e, siguiente.paso, { intentos, tomas, ...(siguiente.bloqueo ? { bloqueo: siguiente.bloqueo } : {}) }) };
   },
 
   async CONFIRMAR_FOTO(deps, e, accion, nota) {
@@ -423,7 +433,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           'MIRA LA FOTO Y CONFIRMA',
           `  Foto: ${relative(deps.raiz, foto.ruta)}`,
           `  Comprobación automática: ${ultimo.final}${ultimo.motivos.length ? ` · ${ultimo.motivos.join('; ')}` : ''}`,
-          '  Si los elementos y la toma están bien: --confirmo · si no: --rechazo "motivo"',
+          ...(await Promise.all(
+            e.tomas.filter((t) => t.intento).map(async (t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.intento!.activo)).ruta)} · ${t.intento!.final}${t.intento!.final === 'DESCARTA' ? ' (no se usará: su diapositiva irá con un recorte de la portada)' : ''}`),
+          )),
+          '  Si los elementos y la toma están bien: --confirmo (confirma también las tomas de detalle que no se descartaron) · si no: --rechazo "motivo"',
         ].join('\n'),
       };
     }
@@ -438,11 +451,15 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       },
     });
     nota(`Foto del intento ${ultimo.n} confirmada.`);
-    return { encargo: ir(e, 'MASCARA', { fotoElegida: ultimo.activo }), usaAccion: true };
+    const tomas = e.tomas.map((t) => (t.intento && t.intento.final !== 'DESCARTA' ? { ...t, elegida: t.intento.activo } : t));
+    const confirmadas = tomas.filter((t) => t.elegida);
+    if (confirmadas.length) nota(`Tomas de detalle confirmadas: ${confirmadas.map((t) => `${t.n} («${t.elemento}»)`).join(', ')}.`);
+    return { encargo: ir(e, 'MASCARA', { fotoElegida: ultimo.activo, tomas }), usaAccion: true };
   },
 
   async MASCARA(deps, e, _a, nota) {
     await asegurarMascara(deps, e.local, e.fotoElegida as string, nota);
+    for (const t of e.tomas) if (t.elegida) await asegurarMascara(deps, e.local, t.elegida, nota);
     return { encargo: ir(e, 'INTENCION') };
   },
 
@@ -542,6 +559,52 @@ async function asegurarMascara(deps: DepsPost, local: string, activo: string, no
   nota(`Máscara del sujeto (${deps.segmentador.metodo}): caja ${bbox.w} × ${bbox.h} px.`);
 }
 
+/** Registra una foto generada (o importada) como activo GENERADO del local, con su procedencia. */
+async function registrarFotoGenerada(
+  deps: DepsPost,
+  e: EncargoPost,
+  real: { activo: { sha256: string } },
+  f: { id: string; bytes: Buffer; generacion: { modelo: string; costeUsd: number; tarifa: string }; prompt: string; n: number; descripcion: string },
+): Promise<void> {
+  const { id, bytes, generacion, prompt, n } = f;
+  const meta = await sharp(bytes).metadata();
+  const extension = meta.format === 'jpeg' ? 'jpg' : (meta.format ?? 'png');
+  const archivo = `original.${extension}`;
+  const sha = createHash('sha256').update(bytes).digest('hex');
+  await deps.activos.crear(
+    Activo.parse({
+      id,
+      localSlug: e.local,
+      tipo: 'GENERADO',
+      uso: 'SOLO_PRUEBA_COMPOSICION',
+      descripcion: f.descripcion,
+      archivo,
+      ancho: meta.width,
+      alto: meta.height,
+      sha256: sha,
+      procedencia: {
+        ruta: relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? '')),
+        sha256: sha,
+        copiadoEn: deps.ahora(),
+        generacion: {
+          modelo: generacion.modelo,
+          requestId: `sin-id-${sha.slice(0, 12)}`,
+          promptArchivo: relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? '')),
+          prompt,
+          parametros: { aspectRatio: ASPECTO, imageSize: TAMANO, intento: n, orden: 'post' },
+          referencias: [{ activo: e.activoReal as string, sha256: real.activo.sha256 }],
+          costeEstimadoUsd: generacion.costeUsd,
+          tarifa: generacion.tarifa,
+          generadoEn: deps.ahora(),
+        },
+      },
+      alteraciones: ['Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).', 'Superficie y fondo libres.'],
+      niveles: [],
+    }),
+    { [archivo]: bytes },
+  );
+}
+
 /** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. También sirve para rehacer el diseño de un encargo terminado (una versión nueva). */
 export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {
   const foto = await deps.activos.obtener(e.local, e.fotoElegida as string);
@@ -589,6 +652,10 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
       ...(e.estetica ? { estetica: e.estetica } : {}),
       formato: e.formato,
       ...(huella ? { huella } : {}),
+      // F3.3: las tomas de detalle confirmadas, con su elemento tal como se confirmó.
+      tomas: e.tomas
+        .filter((t) => t.elegida)
+        .map((t) => ({ papel: `detalle${t.n}`, activo: t.elegida!, elemento: { nombre: t.elemento, estado: propuestaFoto.descripcion.elementos.find((x) => x.nombre === t.elemento)?.estado ?? t.elemento } })),
     },
   );
 }

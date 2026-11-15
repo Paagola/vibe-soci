@@ -8,6 +8,8 @@ export interface EncargoDeFoto {
   plato: string;
   /** La referencia del post: su ficha en palabras y, si la hay, su imagen (solo para el director). */
   referencia?: { id: string; resumen: string; imagen?: string };
+  /** F3.3: un carrusel pide además las tomas de detalle. */
+  formato?: 'post' | 'carrusel';
   /** Cómo se montará el prompt: si el generador verá la referencia (@image2) y su familia (F1/F3: fondo para recortar). */
   alGenerador?: OpcionesDePrompt;
 }

@@ -577,4 +577,43 @@ describe('Punto 1 · carrusel en la orden única', () => {
     assert.equal(cierre.estetica, 'RUSTICO_FUEGO');
     for (const id of ['post', 'detalle-1', 'cierre']) await stat(join(carpeta, 'datos', 'disenos', 'carrusel', id, 'v001', 'exportadas', '4x5.jpg'));
   });
+
+  it('F3.3 (punto 11): cada detalle con su propia foto; la primera parada dice cuántas fotos y el gasto; cada toma se comprueba aparte y la que no pasa vuelve al recorte', async () => {
+    const generador = new GeneradorFotoSimulado();
+    // Portada bien; toma 1 bien; toma 2 con algo añadido (se descarta).
+    const revisor = new RevisorVisualSimulado([{}, {}, { checklist: { anadidos: ['una hoja de shiso que no estaba'] } }]);
+    const d: DepsPost = {
+      raiz: RAIZ,
+      proyectos: join(carpeta, 'proyectos'),
+      activos: new AlmacenActivosFicheros(join(carpeta, 'datos', 'locales')),
+      referencias: refs,
+      director: new DirectorFotoSimulado({ tomas: 2 }),
+      generador,
+      revisor,
+      segmentador: new SegmentadorSimulado(),
+      componedor: new ComponedorProyectos(RAIZ, join(carpeta, 'datos')),
+      disenador: { director: new DirectorDisenoSimulado(), medidor: new MedidorDeFotoSharp() },
+      ahora: () => '2026-11-15T10:00:00.000Z',
+    };
+    await crearEncargo(d, { proyecto: 'tomas', local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true, formato: 'carrusel' });
+    let r = await avanzar(d, 'tomas');
+    assert.equal(r.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+    assert.match(r.parada, /FOTOS: 3 \(la portada y 2 detalle/);
+    assert.match(r.parada, /Toma de detalle 1 \(«pieza simulada 1»\)/);
+    r = await avanzar(d, 'tomas', { confirmo: true });
+    assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO', r.parada);
+    assert.equal(generador.peticiones.length, 3, 'la portada y una foto por toma');
+    assert.deepEqual(r.encargo.tomas.map((t) => t.intento?.final), ['PASA', 'DESCARTA']);
+    assert.match(r.mensajes.join('\n'), /toma de detalle 2 .*DESCARTA.*recorte de la portada/);
+    r = await avanzar(d, 'tomas', { confirmo: true });
+    assert.equal(r.parada, 'HECHO', r.parada);
+    assert.deepEqual(r.encargo.tomas.map((t) => t.elegida), ['tomas-toma-1', undefined]);
+    const detalle = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'tomas', 'intenciones', 'detalle-1.json'), 'utf8')));
+    assert.equal(detalle.activos.detalle1, 'tomas-toma-1', 'el detalle 1 con su toma, no con la portada');
+    assert.ok(detalle.capas.some((c) => c.tipo === 'imagen' && c.activo === 'detalle1'));
+    assert.equal(detalle.textos.titular, 'pieza simulada 1');
+    const plan = JSON.parse(await readFile(join(carpeta, 'proyectos', 'tomas', 'plan.json'), 'utf8'));
+    assert.ok(plan.diapositivas.length >= 3);
+    await stat(join(carpeta, 'datos', 'disenos', 'tomas', 'detalle-1', 'v001', 'exportadas', '4x5.jpg'));
+  });
 });

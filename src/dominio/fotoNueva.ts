@@ -107,10 +107,23 @@ export const HuecosFotoNueva = z.object({
 });
 export type HuecosFotoNueva = z.infer<typeof HuecosFotoNueva>;
 
+/**
+ * F3.3 (punto 11): en un carrusel, además de la portada, una TOMA PROPIA por cada elemento que tendrá su diapositiva de
+ * detalle (el nigiri de cerca, el uramaki…), sacada de la misma foto real: solo ese elemento, fiel a él.
+ */
+export const TomaDeDetalle = z.object({
+  /** El nombre EXACTO de un elemento de «descripcion.elementos». */
+  elemento: z.string().min(1),
+  huecos: HuecosFotoNueva,
+});
+export type TomaDeDetalle = z.infer<typeof TomaDeDetalle>;
+
 export const PropuestaFotoNueva = z.object({
   descripcion: DescripcionFoto,
   huecos: HuecosFotoNueva,
   decisiones: z.array(z.string()).min(1),
+  /** Solo en un carrusel: de una a tres tomas de detalle. */
+  tomas: z.array(TomaDeDetalle).max(3).optional(),
 });
 export type PropuestaFotoNueva = z.infer<typeof PropuestaFotoNueva>;
 
@@ -186,6 +199,12 @@ export function problemasFotoNueva(p: PropuestaFotoNueva, lado: { ancho: number;
   if (!/\d|exactly|one|two|three|four|single/i.test(p.huecos.recuento)) problemas.push('El recuento no dice cuántas piezas hay («Exactly …»).');
   if (/\btext\b|letters|typography|headline/i.test(p.huecos.ideaGrafica) && !/space|room|empty|clean/i.test(p.huecos.ideaGrafica)) {
     problemas.push('La idea gráfica no puede pedir texto en la foto: solo el hueco donde irá.');
+  }
+  for (const [i, t] of (p.tomas ?? []).entries()) {
+    const donde = `toma de detalle ${i + 1} («${t.elemento}»)`;
+    if (!p.descripcion.elementos.some((e) => e.nombre === t.elemento)) problemas.push(`${donde}: «elemento» tiene que ser el nombre exacto de uno de los elementos descritos.`);
+    if (!/\d|exactly|one|two|three|four|single/i.test(t.huecos.recuento)) problemas.push(`${donde}: el recuento no dice cuántas piezas hay («Exactly …»).`);
+    if (!esOtraToma(p.descripcion, t.huecos.camara).otra) problemas.push(`${donde}: no es otra toma (cambia la distancia y la altura, o la altura más de ${DIFERENCIA_MINIMA_GRADOS}°).`);
   }
   if (Math.max(lado.ancho, lado.alto) < LADO_MINIMO_RECOMENDADO_PX && !p.descripcion.defectos.some((d) => /resoluci|pequeñ|píxel|pixel/i.test(d))) {
     problemas.push(`La foto mide ${lado.ancho} × ${lado.alto} px: anótalo en "defectos" y di si los detalles finos se pueden leer.`);

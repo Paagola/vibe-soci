@@ -31,6 +31,17 @@ export const IntentoFoto = z.object({
 });
 export type IntentoFoto = z.infer<typeof IntentoFoto>;
 
+/** F3.3 (punto 11): la foto propia de una diapositiva de detalle del carrusel (un intento; si no pasa, recorte). */
+export const TomaDelEncargo = z.object({
+  n: z.number().int().positive(),
+  elemento: z.string(),
+  prompt: z.string(),
+  intento: IntentoFoto.optional(),
+  /** El activo confirmado para su diapositiva. */
+  elegida: z.string().optional(),
+});
+export type TomaDelEncargo = z.infer<typeof TomaDelEncargo>;
+
 export const EncargoPost = z.object({
   esquema: z.literal('post/encargo@1'),
   proyecto: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'minúsculas, números y guiones'),
@@ -67,6 +78,8 @@ export const EncargoPost = z.object({
   /** Lo que autorizaste en la parada de elementos. */
   autorizacion: z.object({ fecha: z.string(), maxIntentos: z.number().int().positive(), estimadoPorIntentoUsd: z.number().nonnegative() }).optional(),
   intentos: z.array(IntentoFoto).default([]),
+  /** F3.3: las tomas de detalle de un carrusel (una foto por diapositiva de detalle). */
+  tomas: z.array(TomaDelEncargo).default([]),
   fotoElegida: z.string().optional(),
   historial: z.array(z.object({ fecha: z.string(), paso: PasoPost, nota: z.string() })).default([]),
   creadoEn: z.string(),

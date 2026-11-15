@@ -63,6 +63,8 @@ export interface EntradaDiseno {
   formato?: 'post' | 'carrusel';
   /** F3.3 (punto 14): la huella tipográfica del local y la regla de mezcla, en texto para el director. */
   huella?: string;
+  /** F3.3 (punto 11): las tomas propias de los detalles del carrusel (papel → activo, y su elemento). */
+  tomas?: Array<{ papel: string; activo: string; elemento: { nombre: string; estado: string } }>;
 }
 
 export interface Intento {
@@ -148,6 +150,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     coloresMedidos,
     conReferencia: Boolean(entrada.referencia),
     estetica: { id: estetica, limites: parametros.diseno.limites },
+    ...(entrada.tomas?.length ? { activosExtra: Object.fromEntries(entrada.tomas.map((t) => [t.papel, t.activo])) } : {}),
   };
   const palabrasDeReferencia = entrada.referencia?.ficha ? palabrasDeLaFicha(entrada.referencia.ficha) : [];
   // El cruce y el salto de escala se exigen si la foto lo permite: hay plato recortable y aire donde poner el titular.
@@ -254,13 +257,19 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
   // Carrusel: detalles y cierre, colocados por el código con la retícula, las voces y los colores de la portada.
   let diapositivas: ResultadoDiseno['diapositivas'];
   if (entrada.formato === 'carrusel' && final.e.maqueta && final.e.problemas.length === 0) {
-    if (!final.propuesta.carrusel) final.e.problemas.push('Es un carrusel: falta «carrusel.detalles» (de uno a tres elementos y dónde están en la foto).');
+    if (!final.propuesta.carrusel && !entrada.tomas?.length) final.e.problemas.push('Es un carrusel: falta «carrusel.detalles» (de uno a tres elementos y dónde están en la foto).');
     else {
-      const serie = diapositivasDeCarrusel(final.e.maqueta, final.propuesta.carrusel, entrada.hechos, {
-        colores: entorno.colores,
-        voces: { titular: roles.titular, firma: roles.firma, ...(roles.anotacion ? { anotacion: roles.anotacion } : {}) },
-        conDiagonal: parametros.diseno.recursos.includes('diagonal'),
-      });
+      const serie = diapositivasDeCarrusel(
+        final.e.maqueta,
+        final.propuesta.carrusel,
+        entrada.hechos,
+        {
+          colores: entorno.colores,
+          voces: { titular: roles.titular, firma: roles.firma, ...(roles.anotacion ? { anotacion: roles.anotacion } : {}) },
+          conDiagonal: parametros.diseno.recursos.includes('diagonal'),
+        },
+        (entrada.tomas ?? []).map((t) => ({ papel: t.papel, elemento: t.elemento })),
+      );
       final.e.problemas.push(...serie.problemas);
       diapositivas = [];
       for (const d of serie.diapositivas) {

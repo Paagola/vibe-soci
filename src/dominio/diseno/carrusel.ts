@@ -56,11 +56,18 @@ export function tituloCorto(t: string): string {
 
 const normal = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
+/** F3.3: una toma propia de un elemento (su foto, por papel en la intención, y el elemento confirmado). */
+export interface TomaDeCarrusel {
+  papel: string;
+  elemento: { nombre: string; estado: string };
+}
+
 export function diapositivasDeCarrusel(
   portada: Maqueta,
-  carrusel: Carrusel,
+  carrusel: Carrusel | undefined,
   hechos: HechosDeLaPieza,
   e: EntornoDeCarrusel,
+  tomas: TomaDeCarrusel[] = [],
 ): { diapositivas: Diapositiva[]; problemas: string[] } {
   const problemas: string[] = [];
   const diapositivas: Diapositiva[] = [];
@@ -73,17 +80,39 @@ export function diapositivasDeCarrusel(
   ];
   const vistos = new Set<string>();
 
-  for (const [i, d] of carrusel.detalles.entries()) {
+  // F3.3 (punto 11): con tomas propias, cada detalle es su foto entera (no un recorte de la portada). Los elementos sin
+  // toma (o cuya toma se descartó) vuelven a la alternativa barata: el recorte de la portada.
+  const conToma = new Set(tomas.map((t) => normal(t.elemento.nombre)));
+  for (const t of tomas.slice(0, 3)) {
+    vistos.add(normal(t.elemento.nombre));
+    const titulo = tituloCorto(t.elemento.nombre);
+    const estado = estadoCorto(t.elemento.estado);
+    const textos: TextoPropuesto[] = [{ clave: 'titular', texto: titulo, fuente: 'ELEMENTO', cita: t.elemento.nombre }];
+    const capas: CapaPropuesta[] = [
+      { tipo: 'fondo', color: `@${campo}` },
+      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, activo: t.papel },
+      { tipo: 'texto', id: 'titular', texto: 'titular', voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [2, 4] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
+    ];
+    if (e.voces.anotacion) {
+      textos.push({ clave: 'estado', texto: estado, fuente: 'ELEMENTO', cita: estado });
+      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
+    }
+    diapositivas.push({ id: `detalle-${diapositivas.length + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
+  }
+
+  for (const d of carrusel?.detalles ?? []) {
+    if (diapositivas.length >= 3) break;
     const nombre = portada.textos.find((t) => t.clave === d.texto);
     if (!nombre) {
       problemas.push(`carrusel: no hay ningún texto con la clave «${d.texto}».`);
       continue;
     }
-    if (vistos.has(normal(nombre.texto))) problemas.push(`carrusel: «${nombre.texto}» sale dos veces; cada detalle, un elemento distinto.`);
-    vistos.add(normal(nombre.texto));
-    // El estado de ese elemento, tal como se confirmó: el elemento cuyo nombre comparte más palabras con el texto.
     const palabras = new Set(normal(nombre.texto).split(/\W+/).filter((p) => p.length > 3));
     const elemento = [...hechos.elementos].sort((a, b) => [...palabras].filter((p) => normal(b.nombre).includes(p)).length - [...palabras].filter((p) => normal(a.nombre).includes(p)).length)[0];
+    // El estado de ese elemento, tal como se confirmó: el elemento cuyo nombre comparte más palabras con el texto.
+    if (elemento && conToma.has(normal(elemento.nombre))) continue;
+    if (vistos.has(normal(nombre.texto))) problemas.push(`carrusel: «${nombre.texto}» sale dos veces; cada detalle, un elemento distinto.`);
+    vistos.add(normal(nombre.texto));
     // El título del detalle, corto para que se lea grande (salto de escala frente a la anotación): las primeras
     // palabras del nombre, tal cual (sigue respaldado por la misma cita).
     const corto = tituloCorto(nombre.texto);
@@ -102,7 +131,7 @@ export function diapositivasDeCarrusel(
       // En el color de acento (el de la diagonal), si contrasta con el campo: es la voz humana de la serie.
       capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
     }
-    diapositivas.push({ id: `detalle-${i + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
+    diapositivas.push({ id: `detalle-${diapositivas.length + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
   }
 
   // El cierre: la firma del local, su ciudad y su Instagram (datos de la marca), y la foto entera en una banda.

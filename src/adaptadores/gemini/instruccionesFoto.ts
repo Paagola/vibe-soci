@@ -34,6 +34,8 @@ export interface EncargoFoto {
   referencia?: { id: string; resumen: string };
   /** Si el generador verá la referencia como @image2 (solo de estilo) y su familia. */
   alGenerador?: { estiloDeReferencia?: boolean; familia?: string; estetica?: Estetica };
+  /** F3.3: un carrusel pide también las tomas de detalle. */
+  formato?: 'post' | 'carrusel';
 }
 
 export function textoFotoNueva(e: EncargoFoto, problemasPrevios: string[] = []): string {
@@ -79,8 +81,14 @@ El estudio monta el prompt con esta estructura exacta (no la escribas tú):
 - "colorDominante": qué color manda y cuál es el único fuerte.
 Elige cámara, distancia y luz por el plato y la referencia, no por costumbre.
 
+${e.formato === 'carrusel' ? `# Paso 3 (es un CARRUSEL): las tomas de detalle
+Los "huecos" de arriba son la PORTADA: el plato entero, aislado y heroico. Añade "tomas": de dos a tres tomas de DETALLE, una por cada elemento que más cuenta del plato (no la vajilla ni la superficie). Cada una:
+- "elemento": el nombre EXACTO de uno de tus "elementos";
+- "huecos": la misma plantilla, pero solo con ESE elemento de @image1: "plato" y "elementos" dicen solo ese elemento con su estado; "recuento": «Exactly N …» con las piezas de ese elemento que se ven en la toma (puede ser menos que en el plato: una o dos de cerca); la cámara MACRO o PRIMER_PLANO y otra altura; "ideaGrafica" con el elemento grande y aire limpio arriba para un título; "aire": "arriba".
+Nada que no esté en la foto subida.
+` : ''}
 En "decisiones", explica en español cada decisión y de qué ejemplo o referencia la sacas.
 ${problemas}
 Responde solo con este JSON (los números son de relleno: pon los tuyos):
-{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","aire":"arriba-derecha","luz":"…","colorDominante":"…"},"decisiones":["…"]}`;
+{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","aire":"arriba-derecha","luz":"…","colorDominante":"…"},"decisiones":["…"]${e.formato === 'carrusel' ? ',"tomas":[{"elemento":"…","huecos":{…la misma forma que "huecos"…}}]' : ''}}`;
 }

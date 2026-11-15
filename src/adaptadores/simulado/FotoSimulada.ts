@@ -12,7 +12,25 @@ import type { ParDeFotos, RevisorVisual } from '../../puertos/RevisorVisual.js';
 export class DirectorFotoSimulado implements DirectorDeFoto {
   readonly nombre = 'director simulado';
 
+  /** F3.3: con `tomas`, en un carrusel propone esa cantidad de tomas de detalle (una por pieza simulada). */
+  constructor(private readonly opciones: { tomas?: number } = {}) {}
+
   async proponer(e: EncargoDeFoto): Promise<PropuestaFotoNueva> {
+    const n = e.formato === 'carrusel' ? (this.opciones.tomas ?? 0) : 0;
+    const piezas = Array.from({ length: n }, (_, i) => ({ nombre: `pieza simulada ${i + 1}`, estado: `cortada en dos, simulada ${i + 1}`, recuento: 1 }));
+    const base = this.base(e);
+    if (!n) return base;
+    return {
+      ...base,
+      descripcion: { ...base.descripcion, elementos: [...base.descripcion.elementos, ...piezas] },
+      tomas: piezas.map((p) => ({
+        elemento: p.nombre,
+        huecos: { ...base.huecos, plato: p.nombre, elementos: `only the ${p.nombre}, ${p.estado}`, recuento: 'Exactly one piece.', camara: { anguloGrados: 20, distancia: 'MACRO', descripcion: 'a low macro close-up, 20 degrees', objetivoMm: 100, apertura: 4 }, ideaGrafica: 'the piece large, clean empty space above for a title', aire: 'arriba' },
+      })),
+    };
+  }
+
+  private base(e: EncargoDeFoto): PropuestaFotoNueva {
     return {
       descripcion: {
         anguloGrados: 45,
