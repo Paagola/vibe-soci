@@ -10,6 +10,7 @@
  * Macro, 10° o clave baja NO van fijados: dependen del plato y de la referencia.
  */
 import { z } from 'zod';
+import { frasePrompt, type Estetica } from './diseno/estetica.js';
 
 /** La cámara nueva tiene que quedar a más de esto de la original: en el benchmark, un ¾ a 25° frente a uno a 45° volvió a la foto subida. */
 export const DIFERENCIA_MINIMA_GRADOS = 30;
@@ -127,6 +128,8 @@ const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export interface OpcionesDePrompt {
   estiloDeReferencia?: boolean;
   familia?: string;
+  /** Punto 10: la estética del encargo; su frase de luz, fondo, atrezo, color y encuadre va en el prompt. */
+  estetica?: Estetica;
 }
 
 /** El papel de @image2 en el prompt, tal como lo pidió el usuario. */
@@ -146,6 +149,7 @@ export function montarPromptFotoNueva(h: HuecosFotoNueva, o: OpcionesDePrompt = 
     `${conPunto(h.recuento)} Nothing else added.`,
     `New composition by a professional food photographer: ${sinPunto(h.camara.descripcion)}, ${h.camara.objetivoMm} mm lens at f/${h.camara.apertura}, ${sinPunto(h.ideaGrafica)}${recorte}.`,
     `${mayuscula(sinPunto(h.luz))}, ${sinPunto(h.colorDominante)}.`,
+    ...(o.estetica ? [frasePrompt(o.estetica)] : []),
     'Photographic realism, no text.',
   ].join(' ');
 }

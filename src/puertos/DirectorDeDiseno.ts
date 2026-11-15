@@ -5,6 +5,7 @@
 import type { MapaDeFoto } from '../dominio/diseno/mapaDeFoto.js';
 import type { HechosDeLaPieza, PropuestaDeDiseno } from '../dominio/diseno/propuesta.js';
 import type { FichaReferencia } from '../dominio/referencia.js';
+import type { Estetica } from '../dominio/diseno/estetica.js';
 import type { ActivoDisponible } from './Compositor.js';
 
 /** Mide la foto (dónde está el plato, dónde hay aire, qué colores manda) sin gastar visión. */
@@ -37,6 +38,8 @@ export interface EncargoDeDiseno {
   voces: VozDisponible[];
   /** El encargo permite UN titular creativo (palabra de acción o sensorial que no es un dato). */
   titularCreativo: boolean;
+  /** Punto 10: la estética del encargo (manda sobre la foto y el diseño). */
+  estetica?: Estetica;
 }
 
 export interface DirectorDeDiseno {

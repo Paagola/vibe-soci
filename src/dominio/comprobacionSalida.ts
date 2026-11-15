@@ -37,6 +37,12 @@ export const ComparacionToma = z.object({
   mismoLado: z.boolean(),
   mismaDistancia: z.boolean(),
   mismoPuntoDeVista: z.boolean(),
+  /**
+   * Los elementos están colocados igual que en la foto subida (lo que estaba a la izquierda sigue a la izquierda…),
+   * aunque cambien la luz o el fondo. Sushita (15/11): las fotos de la prueba A/B copiaban la disposición de la foto
+   * mediocre y pasaban, porque «otra toma» solo miraba la cámara declarada en el prompt.
+   */
+  mismaDistribucion: z.boolean().default(false),
   explicacion: z.string().default(''),
 });
 export type ComparacionToma = z.infer<typeof ComparacionToma>;
@@ -110,8 +116,11 @@ export function decidirSalida(checklist: ChecklistVisual, toma?: ComparacionToma
   const dudoso = !checklist.seguro || (anatomia ? !anatomia.seguro : false);
   const elementos: VeredictoElementos = motivos.length ? 'DESCARTA' : dudoso ? 'REVISAR' : 'CONSERVA';
   if (elementos === 'REVISAR') motivos.push('el revisor no está seguro de algún elemento');
-  const veredictoToma: VeredictoToma = !toma ? 'SIN_COMPROBAR' : toma.mismoPuntoDeVista ? 'MISMA' : 'OTRA';
-  if (veredictoToma === 'MISMA') motivos.push(`no es otra toma: ${toma?.explicacion || 'mismo punto de vista que la foto subida'}`);
+  const veredictoToma: VeredictoToma = !toma ? 'SIN_COMPROBAR' : toma.mismoPuntoDeVista || toma.mismaDistribucion ? 'MISMA' : 'OTRA';
+  if (veredictoToma === 'MISMA') {
+    const que = toma?.mismaDistribucion && !toma.mismoPuntoDeVista ? 'los elementos están colocados igual que en la foto subida' : 'mismo punto de vista que la foto subida';
+    motivos.push(`no es otra toma: ${que}${toma?.explicacion ? ` (${toma.explicacion})` : ''}`);
+  }
   const final: VeredictoFinal = elementos === 'DESCARTA' || veredictoToma === 'MISMA' ? 'DESCARTA' : elementos === 'REVISAR' ? 'REVISAR' : 'PASA';
   return { elementos, toma: veredictoToma, final, motivos };
 }

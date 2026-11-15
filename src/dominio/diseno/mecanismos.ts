@@ -68,6 +68,8 @@ export interface EntornoDeMecanismo {
   /** Los textos de la propuesta (clave → texto). */
   textos: Record<string, string>;
   ajustes?: Ajustes;
+  /** Recursos que permite la estética del encargo (punto 10). Sin ella, todos. */
+  recursos?: string[];
   /** La caja de la silueta del plato en la foto entera, en px, y el tamaño de la foto: dice si la foto corta el plato. */
   silueta?: { x: number; y: number; w: number; h: number; anchoFoto: number; altoFoto: number };
 }
@@ -400,7 +402,8 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
 
   const capas: CapaPropuesta[] = [
     { tipo: 'fondo', color: `@${campo.token}` },
-    { tipo: 'diagonal', color: `@${diagonal.token}`, izquierda: 0.64, derecha: 0.4 },
+    // La diagonal, si la estética la admite (color pop, maximalismo); si no, un campo liso.
+    ...(!e.recursos || e.recursos.includes('diagonal') ? [{ tipo: 'diagonal' as const, color: `@${diagonal.token}`, izquierda: 0.64, derecha: 0.4 }] : []),
     plato,
     // El titular, entero y por delante: su caja acaba antes que el plato y la diagonal.
     { tipo: 'texto', id: 'titular', texto: comp.titular, voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [3, 6] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'centro', color: `@${sobre(campo, e.colorDeVoz[e.voces.titular], 3).token}`, relacion: 'aparte', ...(comp.tinta ? { tinta: comp.tinta } : {}) },

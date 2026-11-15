@@ -4,6 +4,7 @@
  */
 import { DIFERENCIA_MINIMA_GRADOS, DIFERENCIA_PARCIAL_GRADOS, GIRO_MINIMO_GRADOS } from '../../dominio/fotoNueva.js';
 import type { GuiaCreativa } from '../../puertos/BibliotecaCreativa.js';
+import { ESTETICAS, type Estetica } from '../../dominio/diseno/estetica.js';
 
 export function instruccionesFoto(guia: GuiaCreativa): string {
   return `Eres el director de fotografía de un estudio que hace fotos de producto para restaurantes y bares reales.
@@ -32,7 +33,7 @@ export interface EncargoFoto {
   /** Ficha de la referencia elegida para el post, en palabras (la imagen va aparte, solo para el director). */
   referencia?: { id: string; resumen: string };
   /** Si el generador verá la referencia como @image2 (solo de estilo) y su familia. */
-  alGenerador?: { estiloDeReferencia?: boolean; familia?: string };
+  alGenerador?: { estiloDeReferencia?: boolean; familia?: string; estetica?: Estetica };
 }
 
 export function textoFotoNueva(e: EncargoFoto, problemasPrevios: string[] = []): string {
@@ -42,11 +43,18 @@ ${e.referencia.id}: ${e.referencia.resumen}
 La foto nueva tiene que dejar sitio a su composición (dónde irá el titular y qué tapa el producto) y encajar con su luz y su fondo. No copies su plato, sus objetos ni sus textos.
 ${e.alGenerador?.estiloDeReferencia ? 'ESTA VEZ EL GENERADOR TAMBIÉN VERÁ LA REFERENCIA, como @image2, solo como referencia de estilo (luz, ángulo, tratamiento del fondo, color y aire para el texto). El estudio añade esa frase al prompt: tú no la escribas, pero escribe la luz, el fondo y el aire pensando en ella, y no nombres nada de lo que sale en la referencia (su comida, sus objetos, sus textos).\n' : ''}${e.alGenerador?.familia && ['F1', 'F3'].includes(e.alGenerador.familia) ? `La referencia es de la familia ${e.alGenerador.familia}: el plato irá RECORTADO sobre un color plano. Pide un fondo limpio y uniforme, sin objetos alrededor ni sombras duras que lo toquen, y el plato entero dentro del encuadre (que la foto no lo corte por ningún lado): el estudio añade al prompt el fondo para recortar.\n` : ''}`
     : '';
+  const estetica = e.alGenerador?.estetica ? ESTETICAS[e.alGenerador.estetica] : undefined;
+  const textoEstetica = estetica
+    ? `\n# Estética del post: ${estetica.nombre}
+${estetica.idea} La foto y el diseño tienen que ser de esta misma estética: el diseño se hará con ${estetica.diseno.mecanismos.join(', ')}.
+Luz: ${estetica.foto.luz}. Fondo: ${estetica.foto.fondo}. Atrezo: ${estetica.foto.atrezo}. Color: ${estetica.foto.color}. Encuadre: ${estetica.foto.encuadre}.
+El estudio añade esta frase de estética al prompt; escribe la cámara, la idea gráfica, el aire y la luz de acuerdo con ella (sin añadir comida ni nada que no esté en la foto subida).\n`
+    : '';
   const problemas = problemasPrevios.length ? `\n# Problemas de tu respuesta anterior (corrígelos)\n${problemasPrevios.map((p) => `- ${p}`).join('\n')}\n` : '';
   return `# Encargo
 Plato, con la nota que escribió el dueño al subir la foto: «${e.plato}»
 Imagen adjunta: ${e.archivo}, la foto real que ha subido el restaurante. Mide ${e.ancho} × ${e.alto} px.
-${referencia}
+${referencia}${textoEstetica}
 # Paso 1: describe la foto subida, antes de proponer nada
 - "anguloGrados": la altura de la cámara sobre el plano de la mesa (0 = a ras de mesa, 90 = cenital, negativo si mira hacia arriba). Mírala bien: un ¾ alto está en torno a 45°.
 - "distancia": el tamaño de plano: GENERAL (el plato y mucho entorno), MEDIO (el plato entero con algo de aire), PRIMER_PLANO (el plato llena el encuadre o se corta) o MACRO (un detalle).

@@ -15,11 +15,16 @@ import type { CapaResuelta, Problema } from './resuelto.js';
 import type { Lienzo, Rect } from './reticula.js';
 
 export const SALTO_DE_ESCALA_MINIMO = 3.5;
+const SALTO_MINIMO_EDITORIAL = SALTO_DE_ESCALA_MINIMO;
 export const SALTO_DE_ESCALA_OBJETIVO = 5;
 export const PALABRAS_MAXIMAS = 30;
 export const NIVELES_MAXIMOS = 4;
 export const VOCES_MAXIMAS = 3;
 export const RECURSOS_MAXIMOS = 2;
+const PALABRAS_MAXIMAS_EDITORIAL = PALABRAS_MAXIMAS;
+const NIVELES_MAXIMOS_EDITORIAL = NIVELES_MAXIMOS;
+const VOCES_MAXIMAS_EDITORIAL = VOCES_MAXIMAS;
+const RECURSOS_MAXIMOS_EDITORIAL = RECURSOS_MAXIMOS;
 
 export interface MedidasDeOficio {
   /** Altura de mayúscula del texto más grande dividida por la del más pequeño (1 si solo hay un texto). */
@@ -147,17 +152,36 @@ export function medirOficio(capas: CapaResuelta[], lienzo: Lienzo, medir: Medido
 }
 
 /** Los avisos que salen de las medidas. El de «cruza» lo pone el resolutor, que es quien mide el solape. */
-export function problemasDeOficio(m: MedidasDeOficio, formato: 'FEED_3_4' | 'HISTORIA_9_16' = 'FEED_3_4'): Problema[] {
+/**
+ * Los límites con los que se mide: los de la estética del encargo (dominio/diseno/estetica.ts, punto 10) o, sin ella,
+ * los editoriales de siempre (las constantes de arriba).
+ */
+export interface LimitesMedibles {
+  saltoMinimo: number;
+  palabrasMaximas: number;
+  nivelesMaximos: number;
+  vocesMaximas: number;
+  gestosMaximos: number;
+  recursosMaximos: number;
+}
+
+export function problemasDeOficio(m: MedidasDeOficio, formato: 'FEED_3_4' | 'HISTORIA_9_16' = 'FEED_3_4', l?: LimitesMedibles): Problema[] {
+  const SALTO_DE_ESCALA_MINIMO = l?.saltoMinimo ?? SALTO_MINIMO_EDITORIAL;
+  const PALABRAS_MAXIMAS = l?.palabrasMaximas ?? PALABRAS_MAXIMAS_EDITORIAL;
+  const NIVELES_MAXIMOS = l?.nivelesMaximos ?? NIVELES_MAXIMOS_EDITORIAL;
+  const VOCES_MAXIMAS = l?.vocesMaximas ?? VOCES_MAXIMAS_EDITORIAL;
+  const RECURSOS_MAXIMOS = l?.recursosMaximos ?? RECURSOS_MAXIMOS_EDITORIAL;
+  const GESTOS_MAXIMOS = l?.gestosMaximos ?? 1;
   const problemas: Problema[] = [];
   const aviso = (tipo: Problema['tipo'], mensaje: string) => problemas.push({ gravedad: 'AVISO', tipo, mensaje });
   if (m.niveles >= 2 && m.saltoDeEscala < SALTO_DE_ESCALA_MINIMO) {
     aviso('JERARQUIA', `No hay salto de escala: el texto más grande es solo ${m.saltoDeEscala.toFixed(1)} veces el más pequeño. Con menos de ${SALTO_DE_ESCALA_MINIMO} todo pesa parecido; una pieza con foco anda entre ${SALTO_DE_ESCALA_OBJETIVO} y 12.`);
   }
-  const maximo = formato === 'HISTORIA_9_16' ? 20 : PALABRAS_MAXIMAS;
+  const maximo = formato === 'HISTORIA_9_16' ? Math.min(20, PALABRAS_MAXIMAS) : PALABRAS_MAXIMAS;
   if (m.palabras > maximo) aviso('DENSIDAD', `La pieza lleva ${m.palabras} palabras; el máximo es ${maximo}. Lo que sobra va al pie de la publicación.`);
   if (m.niveles > NIVELES_MAXIMOS) aviso('DENSIDAD', `Hay ${m.niveles} niveles de texto; con más de ${NIVELES_MAXIMOS} (titular, apoyo, dato y firma) el ojo no sabe por dónde empezar.`);
   if (m.voces > VOCES_MAXIMAS) aviso('VOCES', `Hay ${m.voces} familias tipográficas; el máximo son dos y, si acaso, una manuscrita que solo interrumpe.`);
-  if (m.gestos > 1) aviso('GESTOS', `Hay ${m.gestos} gestos a mano distintos; uno solo (subrayado, círculo o flecha) interrumpe, varios decoran.`);
+  if (m.gestos > GESTOS_MAXIMOS) aviso('GESTOS', `Hay ${m.gestos} gestos a mano distintos; con esta estética caben ${GESTOS_MAXIMOS} (en editorial, uno solo interrumpe y varios decoran).`);
   if (m.recursos > RECURSOS_MAXIMOS) aviso('GESTOS', `Hay ${m.recursos} recursos gráficos (sellos y patrones); con más de ${RECURSOS_MAXIMOS} compiten entre sí y con el producto.`);
   return problemas;
 }

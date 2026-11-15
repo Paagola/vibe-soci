@@ -58,8 +58,9 @@ export const TEXTO_TOMA = `Compara las dos fotos:
 - "mismoLado": ¿se ve el plato desde el mismo lado?
 - "mismaDistancia": ¿el plato ocupa más o menos lo mismo del encuadre?
 - "mismoPuntoDeVista": true si un fotógrafo diría que la cámara está prácticamente en el mismo sitio (misma altura aproximada y mismo lado), aunque cambien la luz, el fondo o el encuadre.
+- "mismaDistribucion": true si los elementos están colocados igual que en la imagen 1: las mismas piezas en las mismas posiciones relativas (lo que está a la izquierda sigue a la izquierda, la misma fila en el mismo orden), aunque cambien la luz, el fondo o la cámara. Una foto nueva tiene que recolocar el plato, no repetir su disposición.
 - "explicacion": una frase.
-JSON: {"alturaReal":"…","alturaNueva":"…","mismoLado":true,"mismaDistancia":true,"mismoPuntoDeVista":true,"explicacion":"…"}`;
+JSON: {"alturaReal":"…","alturaNueva":"…","mismoLado":true,"mismaDistancia":true,"mismoPuntoDeVista":true,"mismaDistribucion":true,"explicacion":"…"}`;
 
 export const INSTRUCCIONES_ANATOMIA = `Eres el control de calidad de un estudio de fotografía gastronómica. Cuentas piezas en una foto generada por IA, que a veces añade una cabeza, una cola o un cuerpo de más, o funde dos piezas en una.
 Te doy la foto entera (reducida) y cuatro recortes a resolución completa: arriba a la izquierda, arriba a la derecha, abajo a la izquierda y abajo a la derecha. Los recortes se solapan un poco: una pieza que cae entre dos recortes es UNA sola.

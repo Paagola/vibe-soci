@@ -291,7 +291,7 @@ export class ResolutorDiseno {
 
     const capas = [...resueltas.values()].sort((a, b) => a.z - b.z);
     medidas.oficio = medirOficio(capas, lienzo, { alturaMayusculas: (e, tamano) => this.motor.alturaMayusculas(e, tamano), familia: (fuente) => this.motor.familia(fuente) });
-    problemas.push(...problemasDeOficio(medidas.oficio, intencion.lienzo.formato));
+    problemas.push(...problemasDeOficio(medidas.oficio, intencion.lienzo.formato, intencion.oficio));
 
     return {
       esquema: 'diseno/resuelto@1',

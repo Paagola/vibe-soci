@@ -27,6 +27,7 @@ import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
 import { AIRE_MINIMO, type AireMedido } from '../../dominio/comprobacionSalida.js';
 import { aireEn } from '../../dominio/diseno/mapaDeFoto.js';
+import { choqueConFamilia, ESTETICAS, esteticaDeFamilia, type Estetica } from '../../dominio/diseno/estetica.js';
 import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
@@ -109,6 +110,7 @@ export async function crearEncargo(
     simulado?: boolean;
     titularCreativo?: boolean;
     estiloDeReferencia?: boolean;
+    estetica?: Estetica;
   },
 ): Promise<EncargoPost> {
   if (await existe(rutaEncargo(deps, datos.proyecto))) throw new ErrorDeUsuario(`El encargo «${datos.proyecto}» ya existe: continúa con npm run post -- ${datos.proyecto}`);
@@ -126,6 +128,7 @@ export async function crearEncargo(
     simulado: datos.simulado ?? false,
     titularCreativo: datos.titularCreativo ?? false,
     estiloDeReferencia: datos.estiloDeReferencia ?? false,
+    ...(datos.estetica ? { estetica: datos.estetica } : {}),
     creadoEn: ahora,
     historial: [{ fecha: ahora, paso: 'REFERENCIA', nota: 'encargo creado' }],
   });
@@ -187,7 +190,12 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       };
     }
     nota(`Referencia: ${estado.paso.motivo} (${estado.piezasReales} piezas del local; obligatoria hasta ${estado.umbral}).`);
-    return { encargo: ir(e, 'FOTO_REAL') };
+    // Punto 10: la estética del post. Si no se eligió, sale de la familia de la referencia; si se eligió, se avisa si choca.
+    const familia = e.referencia ? (await deps.referencias.referencias.obtener(e.local, e.referencia)).ficha?.familia : undefined;
+    const estetica = e.estetica ?? esteticaDeFamilia(familia);
+    const choque = choqueConFamilia(estetica, familia);
+    nota(e.estetica ? `Estética elegida: ${ESTETICAS[estetica].nombre}.${choque ? ` AVISO: ${choque}` : ''}` : `Estética deducida de la referencia${familia ? ` (${familia})` : ''}: ${ESTETICAS[estetica].nombre}.`);
+    return { encargo: ir(e, 'FOTO_REAL', { estetica }) };
   },
 
   async FOTO_REAL(deps, e, _a, nota) {
@@ -241,7 +249,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
       await sharp(referencia!.imagen!).rotate().resize(LADO_REFERENCIA_DE_ESTILO, LADO_REFERENCIA_DE_ESTILO, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 90 }).toFile(join(deps.proyectos, e.proyecto, ARCHIVO_REFERENCIA_DE_ESTILO));
     }
-    const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}) };
+    const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}), ...(e.estetica ? { estetica: e.estetica } : {}) };
     const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador });
     const archivo = 'foto/propuesta.json';
     await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
@@ -542,6 +550,7 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
       tokensMarca,
       ...(referencia ? { referencia } : {}),
       titularCreativo: e.titularCreativo,
+      ...(e.estetica ? { estetica: e.estetica } : {}),
     },
   );
 }

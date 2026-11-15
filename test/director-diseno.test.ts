@@ -509,3 +509,21 @@ describe('F3.2 (punto 8) · aire medido con el mapa', () => {
     assert.equal(aireEn({ ...m, ocupacion: [] }, 'arriba'), undefined, 'sin máscara no se mide');
   });
 });
+
+describe('Punto 10 · la estética en el diseño', () => {
+  it('un mecanismo que no es de la estética se devuelve; la intención lleva la estética y sus límites al compositor', async () => {
+    const mapa = construirMapa(fotoSintetica());
+    const medidor = { medir: async () => mapa };
+    const tokens = Tokens.parse({ colores: { carbon: '#111111', hueso: '#EDE7DD' }, estilos: { frase: { fuente: 'league-gothic', color: '@hueso' }, firma: { fuente: 'plex-mono', color: '@hueso' } } });
+    const foto = { activo: { id: 'foto-1' }, ruta: FOTO, rutaMascara: '/m.png' } as unknown as ActivoDisponible;
+    const base = await new DirectorDisenoSimulado().proponer({ hechos } as never);
+    const color = { ...base, composicion: { mecanismo: 'PLATO_SOBRE_COLOR' as const, titular: 'titular', firma: 'firma' } };
+    const r = await proponerDiseno(
+      { director: new DirectorDisenoSimulado([color, base]), medidor, probar: async () => ({ errores: [], avisos: [] }) },
+      { id: 'post', version: 1, titulo: 't', marca: 'asador-etxebarri', foto, hechos, tokensMarca: tokens, estetica: 'EDITORIAL_OSCURO' },
+    );
+    assert.match(r.intentos[0]!.problemas.join(), /no es de la estética «Editorial oscuro»/);
+    assert.equal(r.intencion?.estetica, 'EDITORIAL_OSCURO');
+    assert.equal(r.intencion?.oficio?.gestosMaximos, 1);
+  });
+});

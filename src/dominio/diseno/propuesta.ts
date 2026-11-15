@@ -398,6 +398,8 @@ export interface ContextoDeCompilacion {
   coloresMedidos: Record<string, string>;
   /** Hay referencia: la propuesta tiene que decir qué toma y qué no copia. */
   conReferencia: boolean;
+  /** Punto 10: la estética del encargo y sus límites de oficio, que viajan en la intención hasta el compositor. */
+  estetica?: { id: string; limites: { saltoMinimo: number; palabrasMaximas: number; nivelesMaximos: number; vocesMaximas: number; gestosMaximos: number; recursosMaximos: number } };
 }
 
 /** Los márgenes de la tinta impresa salen de impresiones reales (diseno/f3/INVESTIGACION.md §3.2). */
@@ -772,6 +774,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
       textos: Object.fromEntries(p.textos.map((t) => [t.clave, t.texto])),
       capas: ordenadas,
       relaciones,
+      ...(c.estetica ? { estetica: c.estetica.id, oficio: c.estetica.limites } : {}),
     },
   };
 }

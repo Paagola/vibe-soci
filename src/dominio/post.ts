@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 import type { VeredictoFinal } from './comprobacionSalida.js';
+import { Estetica } from './diseno/estetica.js';
 
 export const PasoPost = z.enum(['REFERENCIA', 'FOTO_REAL', 'PROPUESTA', 'CONFIRMAR_ELEMENTOS', 'GENERAR', 'COMPROBAR', 'CONFIRMAR_FOTO', 'MASCARA', 'INTENCION', 'COMPONER', 'HECHO']);
 export type PasoPost = z.infer<typeof PasoPost>;
@@ -47,6 +48,11 @@ export const EncargoPost = z.object({
    * no: se activa por encargo hasta que la prueba A/B diga que no copia (diseno/f3/img/sushita-ab-image2.jpg).
    */
   estiloDeReferencia: z.boolean().default(false),
+  /**
+   * Punto 10: la estética del post, que manda a la vez sobre la foto y sobre el diseño. Si no se elige, se deduce de la
+   * familia de la ficha de referencia en el paso REFERENCIA y se guarda aquí.
+   */
+  estetica: Estetica.optional(),
   /** F3: el encargo permite UN titular creativo (una palabra de acción o sensorial que no es un dato). Por defecto, no. */
   titularCreativo: z.boolean().default(false),
   /** Con director, generador, revisor y máscara simulados: no gasta ni llama a nada. Los datos van aparte. */

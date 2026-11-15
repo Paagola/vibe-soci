@@ -17,6 +17,7 @@
 import { contraste, croma, type ColorDominante } from '../../dominio/diseno/color.js';
 import { Intencion, type EstiloTexto, type Tokens } from '../../dominio/diseno/intencion.js';
 import type { MapaDeFoto } from '../../dominio/diseno/mapaDeFoto.js';
+import { ESTETICAS, esteticaDeFamilia, type Estetica } from '../../dominio/diseno/estetica.js';
 import { colocar, type Ajustes, type VocesDeLaPieza } from '../../dominio/diseno/mecanismos.js';
 import { compilarIntencion, palabrasDeLaFicha, problemasDeTextos, type HechosDeLaPieza, type Maqueta, type PropuestaDeDiseno } from '../../dominio/diseno/propuesta.js';
 import type { FichaReferencia } from '../../dominio/referencia.js';
@@ -55,6 +56,8 @@ export interface EntradaDiseno {
   tokensMarca: Tokens;
   referencia?: { id: string; ficha?: FichaReferencia; imagen?: string };
   titularCreativo?: boolean;
+  /** Punto 10: la estética del encargo. Sin ella, la de la familia de la referencia. */
+  estetica?: Estetica;
 }
 
 export interface Intento {
@@ -108,6 +111,8 @@ interface Evaluacion {
 
 export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaDiseno): Promise<ResultadoDiseno> {
   const mapa = await deps.medidor.medir(entrada.foto);
+  const estetica = entrada.estetica ?? esteticaDeFamilia(entrada.referencia?.ficha?.familia);
+  const parametros = ESTETICAS[estetica];
   const { colores, coloresMedidos } = coloresDisponibles(entrada.tokensMarca, mapa);
   const { voces, vocesDeEstudio, roles } = vocesDisponibles(entrada.tokensMarca, colores, deps.describirFuente, entrada.referencia?.ficha);
   const encargo: EncargoDeDiseno = {
@@ -118,6 +123,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     colores,
     voces,
     titularCreativo: entrada.titularCreativo ?? false,
+    estetica,
   };
   const tieneMascara = Boolean(entrada.foto.rutaMascara);
   const contexto = {
@@ -132,6 +138,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     vocesDeEstudio,
     coloresMedidos,
     conReferencia: Boolean(entrada.referencia),
+    estetica: { id: estetica, limites: parametros.diseno.limites },
   };
   const palabrasDeReferencia = entrada.referencia?.ficha ? palabrasDeLaFicha(entrada.referencia.ficha) : [];
   // El cruce y el salto de escala se exigen si la foto lo permite: hay plato recortable y aire donde poner el titular.
@@ -144,6 +151,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     voces: roles,
     colorDeVoz: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, e.color.replace(/^@/, '')])),
     anchoDeCaracter: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, anchoDeCaracter(e)])),
+    recursos: parametros.diseno.recursos,
     ...(entrada.foto.activo.mascara?.bbox ? { silueta: { ...entrada.foto.activo.mascara.bbox, anchoFoto: entrada.foto.activo.ancho, altoFoto: entrada.foto.activo.alto } } : {}),
   };
 
@@ -151,6 +159,9 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     const problemas = problemasDeTextos(p.textos, entrada.hechos, { titularCreativo: encargo.titularCreativo, palabrasDeReferencia });
     const sinFirma = firmaQueFalta(p);
     if (sinFirma) problemas.push(sinFirma);
+    if (p.composicion && !parametros.diseno.mecanismos.includes(p.composicion.mecanismo)) {
+      problemas.push(`El mecanismo ${p.composicion.mecanismo} no es de la estética «${parametros.nombre}»: usa ${parametros.diseno.mecanismos.join(', ')}.`);
+    }
     const arreglos: string[] = [];
     let maqueta: Maqueta;
     if (p.composicion) {

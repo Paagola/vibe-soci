@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { mapaEnTexto } from '../../dominio/diseno/mapaDeFoto.js';
 import { PropuestaDelDirector } from '../../dominio/diseno/propuesta.js';
 import type { EncargoDeDiseno } from '../../puertos/DirectorDeDiseno.js';
+import { ESTETICAS, type Estetica } from '../../dominio/diseno/estetica.js';
 
 /** El esquema del dialecto, generado del mismo zod que valida la respuesta: no se pueden desincronizar. */
 const ESQUEMA = JSON.stringify(z.toJSONSchema(PropuestaDelDirector));
@@ -102,6 +103,7 @@ function hechosYContexto(e: EncargoDeDiseno): string[] {
     '',
     `COLORES: ${e.colores.map((c) => `@${c.token} ${c.hex} (${c.papel})`).join(' · ')}`,
     `VOCES: ${e.voces.map((v) => `${v.id}: ${v.descripcion}`).join(' · ')}`,
+    ...(e.estetica ? [textoEstetica(e.estetica)] : []),
     `VOZ DE ACENTO: ${e.voces.some((v) => v.id === 'acento' || /ballet|bodoni|sacramento|kaushan/i.test(v.descripcion)) ? 'sí (TITULAR_CON_ACENTO es posible)' : 'no (no uses TITULAR_CON_ACENTO)'}`,
   ];
 }
@@ -118,6 +120,18 @@ export function aireDelPlato(e: EncargoDeDiseno): string {
   return `AIRE: ${arriba} filas libres encima del plato y ${abajo} debajo. TITULAR_CON_ACENTO necesita 4 en su lado y TITULAR_DETRAS 2; con menos, usa PLATO_SOBRE_COLOR o ANOTACIONES.`;
 }
 
+/** La estética del encargo: manda sobre la foto y el diseño (punto 10). */
+export function textoEstetica(id: Estetica): string {
+  const p = ESTETICAS[id];
+  const l = p.diseno.limites;
+  return [
+    `ESTÉTICA DEL ENCARGO: ${p.nombre}. ${p.idea}`,
+    `  Mecanismos que caben (de más a menos propio): ${p.diseno.mecanismos.join(', ')}. Recursos: ${p.diseno.recursos.join(', ') || 'ninguno'}.`,
+    `  Color: ${p.diseno.color}`,
+    `  Límites: salto de escala ≥ ${l.saltoMinimo}, ${l.palabrasMaximas} palabras, ${l.nivelesMaximos} niveles, ${l.vocesMaximas} voces, ${l.gestosMaximos} gesto(s) a mano, ${l.recursosMaximos} recursos.`,
+  ].join('\n');
+}
+
 /** El mensaje de cada pieza: hechos, referencia, mapa, listas y, si los hay, los problemas de la propuesta anterior. */
 export function textoDiseno(e: EncargoDeDiseno, problemasPrevios: string[]): string {
   return [
@@ -129,7 +143,7 @@ export function textoDiseno(e: EncargoDeDiseno, problemasPrevios: string[]): str
 /** El mensaje de la crítica: lo mismo que la propuesta, más la propuesta que se pintó. Las imágenes van después. */
 export function textoCritica(e: EncargoDeDiseno, propuesta: unknown): string {
   return [
-    'CRÍTICA: mira la pieza pintada (primera imagen) junto a la referencia (segunda). ¿Llega a su oficio?',
+    'CRÍTICA: mira la pieza pintada (primera imagen) junto a la referencia (segunda). ¿Llega a su oficio? ¿Son la foto y el diseño de la MISMA estética (la del encargo, abajo)? Si no lo son, no llega.',
     '',
     ...hechosYContexto(e),
     '',

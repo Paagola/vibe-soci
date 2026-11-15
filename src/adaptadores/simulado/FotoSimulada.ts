@@ -77,7 +77,7 @@ export class RevisorVisualSimulado implements RevisorVisual {
   }
 
   async compararToma(): Promise<ComparacionToma> {
-    return { alturaReal: '¾', alturaNueva: 'cenital', mismoLado: false, mismaDistancia: true, mismoPuntoDeVista: false, explicacion: 'simulado', ...this.siguiente.toma };
+    return { alturaReal: '¾', alturaNueva: 'cenital', mismoLado: false, mismaDistancia: true, mismoPuntoDeVista: false, mismaDistribucion: false, explicacion: 'simulado', ...this.siguiente.toma };
   }
 
   async contarAnatomia(_g: string, piezas: Array<{ nombre: string; esperado: number }>): Promise<ConteoAnatomia> {

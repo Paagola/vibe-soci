@@ -507,5 +507,10 @@ export const Intencion = z.object({
   textos: z.record(z.string(), z.string()).default({}),
   capas: z.array(Capa).min(1),
   relaciones: z.array(Relacion).default([]),
+  /** Punto 10: la estética del encargo y sus límites de oficio. Sin ellos, los editoriales de siempre. */
+  estetica: z.string().optional(),
+  oficio: z
+    .object({ saltoMinimo: z.number(), palabrasMaximas: z.number(), nivelesMaximos: z.number(), vocesMaximas: z.number(), gestosMaximos: z.number(), recursosMaximos: z.number() })
+    .optional(),
 });
 export type Intencion = z.infer<typeof Intencion>;

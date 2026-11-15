@@ -199,3 +199,13 @@ describe('F3.2 (punto 9) · lo copiado de la referencia descarta', () => {
     assert.match(d.motivos.join(), /copiado de la referencia: los palillos/);
   });
 });
+
+describe('F3.2 · la misma disposición que la foto subida no es otra toma', () => {
+  it('aunque cambien la cámara y el fondo, si los elementos están colocados igual, se descarta', () => {
+    const bien = { elementos: [{ nombre: 'tabla', esperado: 1, visto: 1, presente: true, nota: '' }], anatomia: [], anadidos: [], textoNuevo: [], copiadoDeReferencia: [], seguro: true };
+    const d = decidirSalida(bien, { ...otraToma, mismaDistribucion: true, explicacion: 'atún arriba a la izquierda, flor a la izquierda y uramakis a la derecha, como en la subida' });
+    assert.equal(d.toma, 'MISMA');
+    assert.equal(d.final, 'DESCARTA');
+    assert.match(d.motivos.join(), /colocados igual que en la foto subida/);
+  });
+});
