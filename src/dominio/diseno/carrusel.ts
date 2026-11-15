@@ -16,6 +16,8 @@ export interface EntornoDeCarrusel {
   voces: { titular: string; firma: string; anotacion?: string };
   /** La estética admite la diagonal de color (color pop, maximalismo). */
   conDiagonal: boolean;
+  /** F3.3: el papel de la foto del plato entero cuando la portada es una toma (recortes de los detalles y cierre). */
+  fotoDeLaSerie?: string;
 }
 
 export interface Diapositiva {
@@ -136,7 +138,7 @@ export function diapositivasDeCarrusel(
     const capas: CapaPropuesta[] = [
       { tipo: 'fondo', color: `@${campo}` },
       // La foto, ampliada sobre el elemento: queda en el centro de la banda.
-      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, zoom: 2.4, enfoque: d.punto },
+      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, zoom: 2.4, enfoque: d.punto, ...(e.fotoDeLaSerie ? { activo: e.fotoDeLaSerie } : {}) },
       { tipo: 'texto', id: 'titular', texto: nombre.clave, voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [2, 4] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
     ];
     if (elemento && e.voces.anotacion) {
@@ -160,7 +162,7 @@ export function diapositivasDeCarrusel(
   const capas: CapaPropuesta[] = [
     ...fondo(0.66, 0.57),
     ...(rama ? [{ ...rama, caja: { col: [9, COLUMNAS], fila: [6, 8] }, color: `@${tintaSobre(campo, e, undefined, 3)}` } as CapaPropuesta] : []),
-    { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [10, 16] }, sangra: true },
+    { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [10, 16] }, sangra: true, ...(e.fotoDeLaSerie ? { activo: e.fotoDeLaSerie } : {}) },
     { tipo: 'texto', id: 'firma', texto: 'firma', voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [3, 6] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'abajo', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
     { tipo: 'texto', id: 'ciudad', texto: 'ciudad', voz: e.voces.firma, caja: { col: [1, 8], fila: [8, 8] }, ajuste: 'fijo', tamano: 40, alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' },
     ...(l.instagram ? [{ tipo: 'texto' as const, id: 'instagram', texto: 'instagram', voz: e.voces.firma, caja: { col: [1, 8], fila: [9, 9] } as { col: number[]; fila: number[] }, ajuste: 'fijo' as const, tamano: 34, alinear: 'izquierda' as const, vertical: 'arriba' as const, color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' as const }] : []),

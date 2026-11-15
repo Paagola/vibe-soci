@@ -83,6 +83,8 @@ export const EncargoPost = z.object({
   intentos: z.array(IntentoFoto).default([]),
   /** F3.3: las tomas de detalle de un carrusel (una foto por diapositiva de detalle). */
   tomas: z.array(TomaDelEncargo).default([]),
+  /** F3.3: la portada del carrusel sale de esta toma (producto aislado); la foto elegida, para los recortes y el cierre. */
+  portadaDeToma: z.number().int().positive().optional(),
   /** F3.3 (punto 12): el tratamiento de la referencia cuando su ficha a mano no lo dice (lo mira el analista; la ficha no se toca). */
   tratamiento: z.array(Tratamiento).optional(),
   /** F3.3: fotos reales de más que sube el dueño para el carrusel, cada una con el elemento que enseña. */

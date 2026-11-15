@@ -65,6 +65,8 @@ export interface EntradaDiseno {
   huella?: string;
   /** F3.3 (punto 11): las tomas propias de los detalles del carrusel (papel → activo, y su elemento). */
   tomas?: Array<{ papel: string; activo: string; elemento: { nombre: string; estado: string } }>;
+  /** F3.3: si la portada es una toma, la foto del plato entero, para los recortes de los detalles y el cierre. */
+  fotoDeLaSerie?: string;
 }
 
 export interface Intento {
@@ -150,7 +152,9 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     coloresMedidos,
     conReferencia: Boolean(entrada.referencia),
     estetica: { id: estetica, limites: parametros.diseno.limites },
-    ...(entrada.tomas?.length ? { activosExtra: Object.fromEntries(entrada.tomas.map((t) => [t.papel, t.activo])) } : {}),
+    ...(entrada.tomas?.length || entrada.fotoDeLaSerie
+      ? { activosExtra: { ...Object.fromEntries((entrada.tomas ?? []).map((t) => [t.papel, t.activo])), ...(entrada.fotoDeLaSerie ? { serie: entrada.fotoDeLaSerie } : {}) } }
+      : {}),
   };
   const palabrasDeReferencia = entrada.referencia?.ficha ? palabrasDeLaFicha(entrada.referencia.ficha) : [];
   // El cruce y el salto de escala se exigen si la foto lo permite: hay plato recortable y aire donde poner el titular.
@@ -267,6 +271,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
           colores: entorno.colores,
           voces: { titular: roles.titular, firma: roles.firma, ...(roles.anotacion ? { anotacion: roles.anotacion } : {}) },
           conDiagonal: parametros.diseno.recursos.includes('diagonal'),
+          ...(entrada.fotoDeLaSerie ? { fotoDeLaSerie: 'serie' } : {}),
         },
         (entrada.tomas ?? []).map((t) => ({ papel: t.papel, elemento: t.elemento })),
       );

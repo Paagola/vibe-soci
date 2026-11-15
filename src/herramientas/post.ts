@@ -9,6 +9,8 @@
  *   npm run post -- <proyecto> --confirmo            confirma la parada (elementos y gasto, o la foto)
  *   npm run post -- <proyecto> --rechazo "motivo"    rechaza la foto propuesta (vuelve a generar si quedan intentos)
  *   npm run post -- <proyecto> --importar <imagen>   usa una foto hecha a mano en el paso de generar (sin facturación)
+ *   npm run post -- <proyecto> --confirmo [--sin-toma N]… [--portada-toma N]   en un carrusel: quita tomas de detalle que no
+ *                                                    valen; hace la portada con una toma (producto aislado)
  *
  * Real: proyectos/<proyecto>/ y datos/. Generación con Gemini de pago solo si GEMINI_FACTURACION=si, con el tope
  * GEMINI_TOPE_USD. Revisión y directores (de foto y de diseño, F3) con Gemini. Máscara con Apple Vision.
@@ -46,6 +48,8 @@ const { values, positionals } = parseArgs({
     estetica: { type: 'string' },
     formato: { type: 'string', default: 'post' },
     'foto-extra': { type: 'string', multiple: true },
+    'portada-toma': { type: 'string' },
+    'sin-toma': { type: 'string', multiple: true },
     confirmo: { type: 'boolean', default: false },
     rechazo: { type: 'string' },
     importar: { type: 'string' },
@@ -91,6 +95,8 @@ async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
     confirmo: values.confirmo,
     ...(values.rechazo ? { rechazo: values.rechazo } : {}),
     ...(values.importar ? { importar: values.importar } : {}),
+    ...(values['portada-toma'] ? { portadaToma: Number(values['portada-toma']) } : {}),
+    ...(values['sin-toma']?.length ? { sinToma: values['sin-toma'].map(Number) } : {}),
   });
   for (const m of r.mensajes) console.log(`· ${m}`);
   console.log(`\n■ ${r.encargo.paso}${r.encargo.simulado ? ' (simulado)' : ''} · ${r.parada}`);

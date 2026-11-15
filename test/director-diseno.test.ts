@@ -657,6 +657,34 @@ describe('Punto 1 · carrusel en la orden única', () => {
     assert.equal(detalle.textos.titular, 'Pieza simulada 2');
   });
 
+  it('F3.3: --sin-toma quita una toma y --portada-toma hace la portada con otra; la foto confirmada queda para el cierre', async () => {
+    const d: DepsPost = {
+      raiz: RAIZ,
+      proyectos: join(carpeta, 'proyectos'),
+      activos: new AlmacenActivosFicheros(join(carpeta, 'datos', 'locales')),
+      referencias: refs,
+      director: new DirectorFotoSimulado({ tomas: 2 }),
+      generador: new GeneradorFotoSimulado(),
+      revisor: new RevisorVisualSimulado(),
+      segmentador: new SegmentadorSimulado(),
+      componedor: new ComponedorProyectos(RAIZ, join(carpeta, 'datos')),
+      disenador: { director: new DirectorDisenoSimulado(), medidor: new MedidorDeFotoSharp() },
+      ahora: () => '2026-11-15T10:00:00.000Z',
+    };
+    await crearEncargo(d, { proyecto: 'portada', local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true, formato: 'carrusel' });
+    await avanzar(d, 'portada');
+    await avanzar(d, 'portada', { confirmo: true });
+    const r = await avanzar(d, 'portada', { confirmo: true, portadaToma: 1, sinToma: [2] });
+    assert.equal(r.parada, 'HECHO', r.parada);
+    assert.equal(r.encargo.portadaDeToma, 1);
+    assert.equal(r.encargo.tomas[1]!.elegida, undefined, 'la toma 2, quitada');
+    const leer = async (id: string) => Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'portada', 'intenciones', `${id}.json`), 'utf8')));
+    assert.equal((await leer('post')).activos.foto, 'portada-toma-1', 'la portada, con la toma');
+    const cierre = await leer('cierre');
+    assert.equal(cierre.activos.serie, 'portada-foto-1');
+    assert.ok(cierre.capas.some((c) => c.tipo === 'imagen' && c.activo === 'serie'), 'el cierre, con la foto del plato entero');
+  });
+
   it('una foto de más que no corresponde a ningún elemento no deja confirmar', () => {
     assert.equal(elementoParecido('el nigiri de atún', ['uramaki de salmón', 'nigiri de atún rojo']), 'nigiri de atún rojo');
     assert.equal(elementoParecido('los nigiris', ['uramaki de salmón', 'nigiri de atún rojo']), 'nigiri de atún rojo');

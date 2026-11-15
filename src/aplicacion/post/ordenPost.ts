@@ -76,6 +76,10 @@ export interface Accion {
   rechazo?: string;
   /** Ruta de una foto hecha a mano para el paso GENERAR (sin facturación, o por el MCP). */
   importar?: string;
+  /** F3.3, al confirmar la foto: la portada del carrusel sale de esta toma (un producto aislado); la foto confirmada queda para los recortes y el cierre. */
+  portadaToma?: number;
+  /** F3.3, al confirmar la foto: tomas de detalle que no valen (su diapositiva no sale, o sale de un recorte). */
+  sinToma?: number[];
 }
 
 export interface ResultadoAvance {
@@ -458,6 +462,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
             e.tomas.filter((t) => t.intento).map(async (t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.intento!.activo)).ruta)} · ${t.intento!.final}${t.intento!.final === 'DESCARTA' ? ' (no se usará: su diapositiva irá con un recorte de la portada)' : ''}`),
           )),
           '  Si los elementos y la toma están bien: --confirmo (confirma también las tomas de detalle que no se descartaron) · si no: --rechazo "motivo"',
+          ...(e.tomas.length ? ['  En un carrusel: --sin-toma N quita una toma de detalle que no vale · --portada-toma N hace la portada con esa toma (un producto aislado) y deja la foto para los recortes y el cierre'] : []),
         ].join('\n'),
       };
     }
@@ -472,10 +477,21 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       },
     });
     nota(`Foto del intento ${ultimo.n} confirmada.`);
-    const tomas = e.tomas.map((t) => (t.intento && t.intento.final !== 'DESCARTA' ? { ...t, elegida: t.intento.activo } : t));
+    const fuera = new Set(accion.sinToma ?? []);
+    const tomas = e.tomas.map((t): TomaDelEncargo => {
+      if (fuera.has(t.n)) {
+        const { elegida: _x, ...sin } = t;
+        return sin;
+      }
+      return t.intento && t.intento.final !== 'DESCARTA' ? { ...t, elegida: t.intento.activo } : t;
+    });
+    if (fuera.size) nota(`Tomas de detalle quitadas por ti: ${[...fuera].join(', ')}.`);
     const confirmadas = tomas.filter((t) => t.elegida);
     if (confirmadas.length) nota(`Tomas de detalle confirmadas: ${confirmadas.map((t) => `${t.n} («${t.elemento}»)`).join(', ')}.`);
-    return { encargo: ir(e, 'MASCARA', { fotoElegida: ultimo.activo, tomas }), usaAccion: true };
+    const portada = accion.portadaToma !== undefined ? confirmadas.find((t) => t.n === accion.portadaToma) : undefined;
+    if (accion.portadaToma !== undefined && !portada) return { encargo: e, parar: `La toma ${accion.portadaToma} no está confirmada: no puede ser la portada.`, usaAccion: true };
+    if (portada) nota(`La portada sale de la toma ${portada.n} («${portada.elemento}»); la foto del intento ${ultimo.n}, para los recortes y el cierre.`);
+    return { encargo: ir(e, 'MASCARA', { fotoElegida: ultimo.activo, tomas, ...(portada ? { portadaDeToma: portada.n } : {}) }), usaAccion: true };
   },
 
   async MASCARA(deps, e, _a, nota) {
@@ -669,7 +685,9 @@ async function registrarFotoGenerada(
 
 /** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. También sirve para rehacer el diseño de un encargo terminado (una versión nueva). */
 export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {
-  const foto = await deps.activos.obtener(e.local, e.fotoElegida as string);
+  // F3.3: con «portadaDeToma», la portada es esa toma (un producto aislado) y la foto elegida queda para la serie.
+  const deToma = e.portadaDeToma !== undefined ? e.tomas.find((t) => t.n === e.portadaDeToma && t.elegida) : undefined;
+  const foto = await deps.activos.obtener(e.local, deToma?.elegida ?? (e.fotoElegida as string));
   const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? 'foto/propuesta.json'), 'utf8')) as { propuesta: unknown };
   const propuestaFoto = PropuestaFotoNueva.parse(guardada.propuesta);
   const hechos: HechosDeLaPieza = {
@@ -717,8 +735,9 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
       formato: e.formato,
       ...(huella ? { huella } : {}),
       // F3.3: las tomas de detalle confirmadas, con su elemento tal como se confirmó.
+      ...(deToma ? { fotoDeLaSerie: e.fotoElegida as string } : {}),
       tomas: e.tomas
-        .filter((t) => t.elegida)
+        .filter((t) => t.elegida && t !== deToma)
         .map((t) => ({ papel: `detalle${t.n}`, activo: t.elegida!, elemento: { nombre: t.elemento, estado: propuestaFoto.descripcion.elementos.find((x) => x.nombre === t.elemento)?.estado ?? t.elemento } })),
     },
   );
