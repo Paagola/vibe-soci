@@ -1,132 +1,179 @@
-# El estudio en vivo · hoja de diseño (kit Diorama 5.7.0)
+# La oficina del estudio · hoja de diseño (kit Diorama 5.7.0)
 
-> Rellenada a partir de `templates/DESIGN.md` del kit. Se mantiene al día con el código de esta carpeta.
-> Lo que no aplica (UI educativa, combate, vehículos, mecanismos, agua) se ha quitado.
+> Hoja del kit (`templates/DESIGN.md`) rellenada para el **Creative Automation Startup Loft** (15/11/2026).
+> Manda sobre la versión anterior, la del pasillo con once puestos.
+> Lo que no aplica (combate, vehículos, agua, mecanismos educativos) se ha quitado.
 
-## Perfil y decisiones (14/11/2026)
+## Decisiones
 
-- `sceneProfile`: **narrative**. Decisión del usuario: la escena cuenta cómo trabaja el estudio, no es una lección.
-- `uiMode`: **minimal-controls**. Decisión del usuario: solo pausa, recolocar la cámara y la órbita libre. Sin tarjetas, lecciones, dock ni rótulos flotantes. El estado se cuenta dentro de la escena. Hay una línea de estado solo para lectores de pantalla (visualmente oculta).
-- `representationMode`: explicativo. Es un estudio imaginado; cada puesto es un proceso real del código.
-- Preset de render: **`stroked-toon`**, elegido por el usuario. Usa `createStrokedToon` del kit, sin cambios:
-  - rampa de 4 escalones `[68, 122, 184, 246]`;
-  - contorno `OutlineEffect` de tinta `#27231e` con grosor `0.0034`;
-  - antialias, píxeles por punto con tope de 1,5 y `NoToneMapping`.
-- `assetStrategy`: **`authored-only`**, decisión del usuario. Ningún modelo de internet. Ver `CREDITS.md`.
-- Recibo: *stroked-toon · authored-only · narrative · minimal-controls*.
+- **Render:** `stroked-toon`, decisión del usuario. `createStrokedToon` del kit, sin cambios:
+  - rampa `[68, 122, 184, 246]`;
+  - tinta `#27231e` con grosor `0.0034` (OutlineEffect);
+  - antialias, `NoToneMapping` y dpr con tope de 1,5.
+  - No se suma un segundo sistema de contornos: el OutlineEffect basta, y un Sobel de normales y profundidad duplicaría líneas.
+- **Modelos:** `authored-only`, decisión del usuario.
+  - Ningún modelo descargado; todo está hecho a mano.
+  - Los profesionales se construyen sobre el rig vestido del kit (`kit/peopleModel-street.js`, MIT). Es código, no un modelo.
+- **Perfil:** `sceneProfile: narrative`.
+- **Interfaz:** `uiMode: requested-inspection`, por el anexo del 14/11. Nada es permanente: todo aparece bajo demanda y anclado al mundo.
+  - Rótulo al pasar por encima.
+  - Al pulsar, la cámara se acerca y aparece una tarjeta pegada a la estación.
+  - Solo se anuncian sin interacción las paradas que esperan a la persona.
+- **Fuente de verdad:** `GET /api/procesos`, de solo lectura. La escena es función de `t` y del estado (`guion.js`).
 
-### Tema oscuro del panel (cambio pedido el 14/11)
+## Concepto
 
-El «papel blanco» del kit se sustituye por el fondo del hueco: el lienzo es transparente (`alpha: true`) sobre `#0b1020`.
+Un loft de una startup creativa de IA, fotografía gastronómica y diseño:
+- ventanales a dos paredes, pilares de hormigón y una pérgola de madera sobre un **jardín central** con olivo;
+- tarimas de madera, cristaleras, paneles acústicos y vegetación integrada.
 
-La losa mantiene el tablero claro (`#f7f6f1`) y el canto azul de marca. Así:
-- los contornos de tinta se leen sobre el tablero;
-- la losa se recorta sobre el fondo oscuro sin necesidad de un contorno claro, como se ve en las capturas.
+El material del encargo recorre un circuito alrededor del jardín:
+- **por la calle del fondo:** recepción → referencias → foto → parada 1 → generador → revisión → parada 2 → segmentación;
+- **por la calle delantera:** dirección de arte → imprenta → galería de entrega.
 
-## Premisa
+Las zonas comunes (café, lounge, brainstorming y rincón de lectura) son ambiente: no fingen procesos.
 
-Un estudio pequeño donde el encargo de un post va de mano en mano: el corredor lleva el material de un puesto a otro.
-- Los **agentes que deciden** (dos directores y el revisor) trabajan en sus mesas.
-- Las **máquinas que ejecutan** (generador, recorte y compositor) trabajan solas.
-- En las dos **paradas**, todo espera a la persona con una señal amarilla.
+### Hora real del navegador (ambiente, no proceso)
 
-Lo que se ve sale de los datos reales: el paso, los intentos, el historial, los avisos de reintento y los errores. Sin datos, la escena queda en reposo.
+- **Mañana o tarde:** cielo claro.
+- **Atardecer:** luz cálida.
+- **Noche:** luz azulada y lámparas cálidas encendidas en el café, el lounge y la lectura.
 
-## Puestos (plano.js)
+### Encaje con la web oscura
 
-| Puesto | Paso de la orden | Tipo | Qué hace en la escena | Dato real que lo mueve |
-| --- | --- | --- | --- | --- |
-| Tablero de la referencia | REFERENCIA | tablero | El corredor coge la ficha; si falta la referencia, espera ante él con la señal amarilla | `paso`, `recorrido` |
-| Bandeja de entrada | FOTO_REAL | bandeja | Entra la foto subida; la pila muestra los otros encargos abiertos (hasta 4) | `recorrido`; los encargos sin terminar |
-| Director de foto (Gemini) | PROPUESTA | agente | Alterna mirar por la cámara del trípode y anotar; la foto sale convertida en propuesta | `trabajo.estado = EN_CURSO` en ese paso |
-| Parada 1 | CONFIRMAR_ELEMENTOS | parada | El suelo se pone amarillo, sube el letrero «TE TOCA» y el corredor enseña la propuesta | `paso` sin trabajo en curso; `bloqueo` (tras dos descartes vuelve aquí) |
-| Generador | GENERAR | máquina | La propuesta entra por la ranura; ojo de buey encendido, manivela y flash; la foto nueva sale por la bandeja | `trabajo`; `avisos` → nube «503» |
-| Revisor (comprobación automática) | COMPROBAR | agente | Pasa la lupa; al final marca con el sello: visto verde o cruz roja | `intentos[n].final`: DESCARTA → cruz y vuelta al generador |
-| Parada 2 | CONFIRMAR_FOTO | parada | Igual que la parada 1, con la foto nueva | `paso`; el rechazo (`RECHAZADA` y recorrido hacia atrás) → cruz y vuelta al generador |
-| Recorte (Apple Vision) | MASCARA | máquina | La cuchilla recorre el contorno del plato | `recorrido` |
-| Director de diseño F3 (Gemini) | INTENCION | agente | Dibuja a lápiz y levanta la cabeza a pensar | `trabajo`; `diseno.propuestas = 2` → prueba en el compositor y vuelta UNA vez |
-| Compositor (sharp/SVG) | COMPONER | máquina | Tres golpes de prensa y el volante girando: sale el post | `recorrido` |
-| Bandeja de salida | HECHO | expositor | El post queda en el marco; el corredor vuelve a descansar | `paso = HECHO` |
+El loft es un escenario iluminado sobre la interfaz oscura, decisión explícita: con poca luz no se leerían los procesos.
 
-Los fallos reales (`trabajo.estado = ERROR`) ponen una nube sobre el puesto: el código HTTP si lo hay, «…» si no contestó a tiempo y «!» en otro caso.
+- Fuera de la losa todo es fondo oscuro: degradado `#121a33` → `#090c16`.
+- La paleta de paredes y suelo se bajó un punto tras la primera revisión.
+- De noche, la oficina se oscurece con la hora real.
 
-Los reintentos dentro de un trabajo en curso, del tipo «no responde, sigo con…», ponen la misma nube sin rojo.
+## Plano (`plano.js`, única fuente de verdad, sin three.js)
 
-## Reparto (cast)
+- **Losa:** 19 × 13 m. Paredes de 3 m con ventanales al fondo (-Z) y a la izquierda (-X); los lados de la cámara quedan abiertos (cutaway).
+- **Calles:** red de nodos con anchura libre de 1,2 m. `ruta()` sigue la red por Dijkstra y `enRuta()` da posición y rumbo.
+- **Cada estación tiene:**
+  - centro y orientación;
+  - **entrega:** dónde se para el corredor;
+  - **operario:** dónde trabaja el profesional;
+  - **ocupa:** el área de colisión.
+- **Además:** zonas comunes, árboles con su radio de copa, pilares, jardineras y jardín vertical.
+- **Pruebas espaciales** (`test/diorama-plano.test.ts`, 7 casos):
+  - todo queda dentro de la losa y nada se solapa;
+  - las copas no invaden las calles;
+  - las calles mantienen su anchura;
+  - cada entrega queda fuera de los muebles y se alcanza a pie;
+  - cada operario está en su estación;
+  - el circuito es finito.
 
-| Papel | Silueta | Locomoción | Acción | Reacción | Salida | Accesorio |
-| --- | --- | --- | --- | --- | --- | --- |
-| Corredor (mascota) | Casco blanco, cara negra, sudadera azul | Paso del kit (`walkPose`, fase por distancia; zancada 0,56 m) | Dejar, coger, recoger; enseñar en alto en las paradas | Se gira hacia la cámara en las paradas | Vuelve a la bandeja de entrada al terminar | El material en las dos manos |
-| Director de foto | Igual, detrás de su mesa | — (fijo) | Visor del trípode y anotar | Mira al pasillo en reposo | — | Cámara en trípode, portapapeles |
-| Revisor | Igual | — | Lupa y sello | Ídem | — | Lupa (mano derecha), sello (izquierda) |
-| Director de diseño | Igual | — | Lápiz y pensar | Ídem | — | Lápiz, papelera con propuestas arrugadas |
+## Estaciones (`estaciones.js`): cada una con identidad propia
 
-Las máquinas son autónomas: no tienen operario, a propósito. Ejecutan; no deciden.
+| Estación | Paso | Qué es | Imagen REAL que enseña |
+| --- | --- | --- | --- |
+| Tablero de referencias | REFERENCIA | Moodboard de corcho con muestras de color, láminas y un hilo rojo; mesa de organización y archivador | La referencia del encargo, clavada con chinchetas |
+| Recepción | FOTO_REAL | Mostrador de lamas, bandeja azul, casillero de clasificación, rótulo con el nombre del local y router con piloto de conexión | La foto subida, en la bandeja |
+| Director de fotografía | PROPUESTA | Fondo de papel curvo, mesa de bodegón, dos softboxes, reflector, cámara en trípode y mesa con monitor y flexo | Foto original en la mesa y en el monitor; la propuesta, como papel pintado (es JSON) |
+| Parada 1 | CONFIRMAR_ELEMENTOS | Mesa de presentación con atril y carpeta; el tablero, la lámpara y el letrero «TE TOCA» se ponen amarillos solo cuando espera | Foto original en el atril |
+| Generador | GENERAR | Máquina modular azul petróleo: cámara de toma acristalada con platina que gira, brazos de luz, panel con pilotos, ranura y bandeja | En la bandeja y en el material, la foto nueva de ese intento |
+| Revisor visual | COMPROBAR | Caja de luz, dos pantallas de comparación, tampón, bandejas de aceptadas y devueltas, documentos y estantería | Original y foto nueva en las pantallas; sello con el veredicto real (PASA, DESCARTA, REVISAR) |
+| Parada 2 | CONFIRMAR_FOTO | Mesa con la foto ampliada en atril | La última foto nueva |
+| Segmentación | MASCARA | Escáner con tapa abierta, barra de luz que barre, torre de proceso y pantalla en brazo | La máscara real |
+| Director de diseño | INTENCION | Mesa con tableta gráfica, muestras, reglas y lápices; moodboard de cara a la sala y estantería | La referencia, en el moodboard y en la pantalla |
+| Compositor | COMPONER | Imprenta de rodillos con tinteros (cian, magenta y tinta), volante rojo, bandejas, pantalla y mesa auxiliar con guillotina | El post exportado, en la bandeja y en la pantalla |
+| Galería de entrega | HECHO | Panel expositor «PUBLICADOS» con un marco grande y siete pequeños, y la bandeja de entrega | El post del encargo en foco (solo cuando el corredor ya lo ha dejado) y los posts terminados anteriores |
 
-## Guion y tiempo (guion.js)
+**Sin imagen real, el soporte queda en blanco:** papel, o pantalla apagada. Nunca se inventa una imagen.
 
-- **Todo es función pura de `t`.** El guion es una lista de segmentos (`andar`, `dejar`, `procesar`, `recoger`, `coger`, `mostrar`, `espera`, `quieto`) con su `t0` y su `t1`. `escena.js` solo evalúa.
-- **Recorrido:** el historial más el paso actual, sin repetidos. Los huecos hacia delante se rellenan y los pasos hacia atrás son retornos.
-- **Al abrir,** el material aparece donde está, sin repetir el pasado.
-- **Cada consulta nueva** (cada 2 s) añade solo las visitas nuevas detrás de lo que ya se ve. Se cuentan en orden y con duración de escena:
-  - andar a 0,8 m/s;
-  - dejar y recoger, 0,75 s cada uno;
-  - trabajar: 2,8 s un agente, 2,6 s una máquina y 2,2 s la prueba.
+Además, son datos reales:
+- la pizarra del brainstorming, con los platos de los encargos abiertos;
+- el rótulo de la recepción, con el local del encargo en foco.
 
-  En simulado, la orden tarda milisegundos y la escena lo cuenta en segundos. En real, el puesto trabaja hasta que llega el siguiente dato.
-- **Foco:** el encargo con trabajo en curso; si no hay, el último que espera; si no, el último terminado.
-  - No salta a otro encargo mientras aún cuenta el actual.
-  - Tampoco salta antes de dejar su post en la salida.
-- **Pruebas:** `test/diorama-guion.test.ts` (10 casos) y `test/web-procesos.test.ts` (ruta de solo lectura).
+## Personajes (`personajes.js`)
 
-## Cámara y encaje
+| Personaje | Base | Identidad | Trabaja (solo con dato real) |
+| --- | --- | --- | --- |
+| Asistente de producción (la mascota) | `mascota.js` a escala 1,2 para alcanzar las mesas de 0,74 m | Casco blanco, cara negra mate, sudadera azul con estrella amarilla, guantes y zapatillas | Lleva el material por las calles, lo deja, lo recoge y lo enseña en las paradas |
+| Director de fotografía | Rig vestido del kit (1,69 m) | Pelo corto castaño, sobrecamisa camel, vaqueros y la cámara al cuello | Examina la foto, anota y consulta la pantalla |
+| Revisora visual | Ídem | Moño, gafas, chaqueta técnica azul petróleo, acreditación, lupa y sello | Lupa sobre la caja de luz con la cabeza inclinada; compara y sella al final |
+| Director de diseño | Ídem | Pelo largo, gafas, camisa terracota, bufanda crema y lápiz de tableta | Dibuja; se para a pensar con la mano en la barbilla y elige muestras |
 
-- Cámara de héroe:
-  - fov 26°, azimut 78°, elevación 48° y objetivo (0,1; 0,25; 0,2);
-  - margen de ajuste: `fillX` 0,92 y `fillY` 0,9;
-  - distancia resuelta por bisección del kit con las esquinas de la losa, la pared y lo más alto.
+**Honestidad:** la vida ambiental nunca se confunde con trabajo.
+- **Trabajo:** inclinado sobre la mesa, con las manos en ella, y luz o piloto encendido. Solo cuando el guion dice que su estación procesa, es decir, con dato real.
+- **Reposo:** erguido, sin tocar la mesa. Respira, mira alrededor, cambia el peso, se estira y cruza los brazos.
+- **Espera a la persona en su estación:** brazos cruzados, mirando a la sala.
+- **Fallo real:** la mano a la cabeza y una nube sobre la estación con el código HTTP, «…» o «!».
+- **Desconexión del backend:** ninguna estación finge actividad, y el rótulo y el piloto de la recepción se ponen en rojo.
 
-  Calibrada con capturas: con los 38° y 27,5° del preset, la losa larga se veía en diagonal y quedaba diminuta en un hueco vertical de 340 px.
-- Órbita libre del kit (`orbit.js`):
-  - sin auto-giro y sin desplazamiento lateral;
-  - distancia entre 0,45 y 1,6 veces la de héroe, y ángulo polar entre 0,25 y π/2 − 0,06;
-  - R o el botón la recolocan, y las flechas la giran.
-- Losa de 4,9 × 13,2 × 0,34 m. Pasillo central de 1,3 m con flechas en el sentido del material. Pared del fondo con el rótulo «estudio» (el hito).
+## Animación y guion (`guion.js`)
 
-## Rendimiento (medido el 14/11/2026)
+- **Se conservan las reglas de la versión anterior:**
+  - el guion es función pura de `t`;
+  - al abrir, el material aparece donde está;
+  - lo nuevo se añade detrás;
+  - los retornos son reales;
+  - el foco no salta de encargo en mitad de su recorrido.
+- **Nuevo:**
+  - el corredor anda por las calles (`plano.ruta`);
+  - el material lleva su número de intento y su veredicto, así que la foto y el sello son los de ese intento.
+- **Ritmo de escena:** el reloj de la escena no es el tiempo real. En real, el puesto trabaja hasta que llega el siguiente dato.
 
-Medido en Chrome sin ventana, con Metal, en este Mac; hueco de 340 × 900 px.
+## Interacción (`interaccion.js`)
+
+- **Al pasar por encima** (o al enfocar con el teclado los botones ocultos de cada estación) aparece un rótulo con el nombre y la función.
+- **Al pulsar:**
+  - **Cámara:** se acerca a 12,5 m de la estación, enfocada entre la estación y la entrega.
+  - **Oclusión:** oculta lo que se interpone (pérgola, pilares, árboles, colgantes, cristaleras), comprobando rayos hacia las esquinas, el profesional y la entrega.
+  - **Tarjeta:** aparece al lado, fuera del rectángulo que la estación ocupa en pantalla, con cuatro apartados:
+    - **Ahora:** el dato real; si no hace nada, lo dice.
+    - **Después:** el siguiente paso real y quién lo hace, con los matices del dominio (devolución al generador, una devolución al director de diseño).
+    - **Te toca:** si es su caso, qué tiene que decidir la persona y un botón amarillo a `#/encargo/<proyecto>`.
+    - **Lo último que entregó:** la nota real del historial, con miniatura real.
+- **Cierre:** con Escape, el ×, «Vista general», al alejarse (más de 1,6 veces la distancia de foco) o con «Recolocar cámara». Nunca hay más de una tarjeta.
+- **Indicador del borde:** si la parada que espera queda fuera de cuadro, un indicador amarillo en el borde lleva a ella.
+
+## Rendimiento (medido el 15/11/2026, Chrome sin ventana con Metal, este Mac, 1440 × 900 a pantalla completa)
 
 | Medida | Valor |
 | --- | --- |
 | Fotogramas por segundo en marcha | 30, el tope de `fpsMax` (estable) |
-| CPU por fotograma | 3,8 ms con dpr 1 y 4,1 ms con dpr 1,5 |
-| Llamadas de dibujo por fotograma (sombras, color y contorno) | 585; eran 915 antes de fusionar lo fijo |
-| Triángulos por fotograma (las tres pasadas) | ≈ 231 000 |
-| Con el hueco fuera de la vista, la pestaña oculta o en pausa | 0 fotogramas |
-| Con `prefers-reduced-motion` | 0 fotogramas: un solo fotograma fijo por cambio de estado |
-| Descarga hasta que el hueco se ve | `index.js` y `montar.js`, ≈ 12 KB |
-| Descarga al verse | three.js r170 y addons, 741 KB (188 KB con gzip; Express no comprime) + escena, 82 KB |
+| CPU por fotograma | 2,3–5,2 ms según la toma; con ruido de medida |
+| Llamadas de dibujo por fotograma (sombras, color y contorno) | 825; eran 585 en la escena anterior, con cuatro veces menos objetos |
+| Triángulos por fotograma (tres pasadas) | ≈ 732 000; eran 905 000 antes de simplificar las cajas pequeñas |
+| Oculta, fuera de la vista o en pausa | 0 fotogramas |
+| `prefers-reduced-motion` | 0 fotogramas en reposo; un fotograma fijo por cada cambio real |
+| Desmontar y volver a montar (5 veces) | 1 canvas en la página; contextos liberados con `forceContextLoss` |
+| Descarga hasta entrar en la oficina | ≈ 15 KB (`vistas/oficina.js`, `index.js`, `montar.js`) |
+| Descarga al entrar | three.js r170 y addons, 773 KB (≈ 190 KB con gzip; Express no comprime) + módulos de la escena, 201 KB |
+
+**Optimizaciones:**
+- fusión de lo estático por material (`fusionarEstaticos`, con el contrato `userData.vivo`);
+- fusión por articulación en los personajes (`fusionarArticulaciones`): de unas 100 mallas a unas 30 por persona;
+- cada árbol y cada elemento ocultable, fusionado dentro de sí;
+- geometrías en caché por forma;
+- cajas pequeñas con un solo segmento de bisel;
+- sombras solo en lo que las proyecta.
+
+## QA
+
+- **Capturas** (fuera del repositorio): `scratchpad/capturas/final/01…20`, las 20 que pide la sección 23. También:
+  - `capturas/v-h2/` (oficina real con un encargo simulado);
+  - `capturas/esc/` (desconexión, reconexión y noche).
+- **`frames.mjs` del kit:** corredor, director de foto, revisora y director de diseño, todos `ok`. Antes, el director de foto y la revisora salían `FROZEN` porque su gesto de trabajo era demasiado fino; se amplió.
+- **Pruebas:** `test/diorama-plano.test.ts`, `test/diorama-guion.test.ts` y `test/web-procesos.test.ts`, este último con las imágenes reales servidas.
 
 ## Descartado y por qué
 
-- **El aro (halo) de la mascota:** a escala de juguete se leía como el ala de un sombrero negro.
-- **Operarios en las máquinas:** las máquinas trabajan solas. Así se distingue el agente que decide de la máquina que ejecuta, y hay menos figuras.
-- **Repetir el pasado al abrir:** contaría como nuevo algo que ya pasó.
-- **Un encargo por cada encargo abierto:** ensucia la escena. Se cuenta uno; los demás son la pila de la bandeja de entrada.
-- **La sacudida del generador mientras trabaja:** 4 mm, no se veía.
-- **Texto en el hueco** (tarjetas, una línea de estado visible): el estado se cuenta dentro de la escena (pedido del usuario).
-- **Las hojas de la referencia que se despegan del tablero:** el corredor coge una copia y el tablero no cambia.
+- **El aro sobre la cabeza de la mascota:** a escala de juguete se leía como el ala de un sombrero.
+- **El contorno de tinta en cada masa de follaje:** las copas parecían espuma de anillos. Las copas no llevan contorno; el tronco y la jardinera, sí.
+- **Operarios decorativos en las máquinas:** el que decide se distingue de la máquina que ejecuta.
+- **Pantallas o tablones que tapan la cara del director de diseño:** se movieron a un lado.
+- **El corredor entregando delante del profesional:** en el estudio de foto y en la revisión entrega por un lado.
+- **Parpadeo:** el rig del kit fusiona los ojos con la cabeza por material para ahorrar llamadas. Separarlos solo para parpadear costaría más de lo que aporta.
+- **Consumo por agente en la tarjeta:** `/api/procesos` no lo trae y el anexo no lo pide; no se inventa.
+- **Un segundo sistema de contornos** (Sobel de normales y profundidad): duplicaría las líneas del OutlineEffect.
 
-## QA (capturas fuera del repositorio)
+## Limitaciones
 
-- `diorama.html?qa=demo` aplica, en orden, estados con la forma exacta de `/api/procesos`. Expone `window.__diorama.freeze(t)` y las marcas de tiempo, que es el contrato del arnés del kit.
-- `frames.mjs` del kit sobre el corredor andando: `ok`, sin congelarse ni teletransportarse.
-- Recorrido en vivo con el servidor en simulado: un encargo pasó por todo el flujo y la escena lo contó, sin errores en la consola.
-- Comprobados la órbita, la recolocación de la cámara y la pausa.
-
-## Riesgos y límites
-
-- En el hueco de 340 px, las figuras miden unos 20 px. Se leen las siluetas, la cara y el material; los detalles de las mesas, solo de cerca (con la órbita).
-- El tiempo de escena no es el tiempo real: la escena cuenta lo que pasó, en orden, con su propio ritmo.
-- `/api/panel` no tenía el historial ni los avisos, por eso existe `/api/procesos`. Si el hueco cambia su `obtenerEstado` para que devuelva `/api/procesos`, el diorama lo usa directamente y no pide nada más.
+- **A tamaño de héroe,** los personajes miden unos 40–60 px. Se leen con la órbita y el enfoque.
+- **El primer plano no se comprueba píxel a píxel:** la tarjeta se coloca fuera del rectángulo de la estación, pero un objeto de otra estación puede quedar delante.
+- **Pruebas solo en simulado:** ni una con la facturación real. Lo que se ve con datos reales es lo que dé `/api/procesos` en modo REAL, con las mismas rutas.
+- **El reloj de escena no es el real:** la escena cuenta lo que pasó, en orden, a su ritmo.
