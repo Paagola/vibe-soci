@@ -114,6 +114,11 @@ export class CompositorSharp implements Compositor {
         let recorte = await recortar(disponible, capa.origen, capa.destino.w, capa.destino.h, capa.bordeSuave, capa.contraerBorde, capa.retoque);
         let x = capa.destino.x;
         let y = capa.destino.y;
+        if (capa.filo) {
+          recorte = await conFilo(recorte, capa.filo.color, capa.filo.grosor);
+          x -= capa.filo.grosor;
+          y -= capa.filo.grosor;
+        }
         if (capa.giro) {
           // El sujeto gira alrededor de su centro: el lienzo del recorte crece para que no se corte ninguna esquina.
           const girado = await sharp(recorte).rotate(capa.giro, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer({ resolveWithObject: true });
@@ -593,4 +598,20 @@ async function grano(lienzo: Lienzo, intensidad: number, escala: number, semilla
     datos[i * 4 + 3] = alfa;
   }
   return sharp(datos, { raw: { width: w, height: h, channels: 4 } }).resize(lienzo.ancho, lienzo.alto, { kernel: 'cubic' }).png().toBuffer();
+}
+
+/**
+ * Filo de pegatina (F3.3): el sujeto, con un borde de color alrededor de su silueta. La silueta se ensancha difuminando
+ * el canal alfa y volviéndolo a cortar con un umbral bajo (una dilatación suave), se pinta del color y el sujeto encima.
+ * El resultado crece `grosor` px por cada lado.
+ */
+async function conFilo(recorte: Buffer, color: string, grosor: number): Promise<Buffer> {
+  const conMargen = await sharp(recorte).extend({ top: grosor, bottom: grosor, left: grosor, right: grosor, background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer({ resolveWithObject: true });
+  const { width, height } = conMargen.info;
+  // Cada paso en su propia tubería: sharp aplica las operaciones en un orden fijo, no en el de las llamadas.
+  const difuminada = await sharp(conMargen.data).extractChannel(3).blur(Math.max(0.5, grosor / 2)).png().toBuffer();
+  const cortada = await sharp(difuminada).threshold(6).png().toBuffer();
+  const alfa = await sharp(cortada).blur(1).extractChannel(0).raw().toBuffer();
+  const relleno = await sharp({ create: { width, height, channels: 3, background: color } }).joinChannel(alfa, { raw: { width, height, channels: 1 } }).png().toBuffer();
+  return sharp(relleno).composite([{ input: conMargen.data }]).png().toBuffer();
 }

@@ -36,6 +36,9 @@ REGLAS DE LA FICHA
   altura de las mayúsculas en % del alto del lienzo (un titular gigante, 10–15; un apoyo, 2–3).
 - «paleta»: de 2 a 5 HEX medidos a ojo con su papel.
 - «lectura»: qué se lee primero, segundo y tercero en el móvil.
+- «tratamiento»: lo que hace que parezca dibujada, impresa o pegada: ILUSTRADO (dibujos), TINTA (trazos a tinta o pincel),
+  PINCEL (letra de pincel), PEGATINA (producto recortado con un filo blanco), PAPEL (textura de papel), ICONOS_DE_LINEA
+  (iconos finos de fondo), TRAMA (semitonos), COLLAGE; o FOTOGRAFICO_LIMPIO si no hay nada de eso.
 - No inventes lo que no se ve.
 ${ejemplo ? `\nEJEMPLO de ficha hecha a mano (de otro post):\n${JSON.stringify(ejemplo)}\n` : ''}
 Responde SOLO con JSON: {"aptitud":{"tipo":"POST","problemas":[]},"ficha":{…}} con este esquema:

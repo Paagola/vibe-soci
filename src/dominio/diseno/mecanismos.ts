@@ -70,6 +70,10 @@ export interface EntornoDeMecanismo {
   ajustes?: Ajustes;
   /** Recursos que permite la estética del encargo (punto 10). Sin ella, todos. */
   recursos?: string[];
+  /** F3.3: los elementos gráficos que admite la estética y cuántos (punto 13). */
+  graficos?: { tipos: string[]; maximo: number };
+  /** F3.3: los tratamientos de la referencia que la estética sabe reproducir (punto 12): PEGATINA, PAPEL, PINCEL, TINTA… */
+  tratamientos?: string[];
   /** La caja de la silueta del plato en la foto entera, en px, y el tamaño de la foto: dice si la foto corta el plato. */
   silueta?: { x: number; y: number; w: number; h: number; anchoFoto: number; altoFoto: number };
 }
@@ -410,7 +414,47 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   ];
   if (comp.firma) capas.push({ tipo: 'texto', id: 'firma', texto: comp.firma, voz: e.voces.firma, caja: { col: [1, 8], fila: [2, 2] }, ajuste: 'fijo', tamano: CUERPO_PEQUENO, alinear: 'izquierda', vertical: 'centro', color: `@${sobre(campo, e.colorDeVoz[e.voces.firma], 4.5).token}`, relacion: 'aparte' });
   // El segundo nivel: una línea entre el titular y la firma, en la voz de texto, a un cuerpo intermedio.
-  if (comp.apoyo) capas.push({ tipo: 'texto', id: 'apoyo', texto: comp.apoyo, voz: e.voces.apoyo, caja: { col: [1, 9], fila: [7, 7] }, ajuste: 'fijo', tamano: CUERPO_SEGUNDO, alinear: 'izquierda', vertical: 'arriba', color: `@${sobre(campo, e.colorDeVoz[e.voces.apoyo], 4.5).token}`, relacion: 'aparte' });
+  const trata = new Set(e.tratamientos ?? []);
+  // PINCEL: el segundo nivel en la voz de acento de pincel (la identidad del local sigue en el titular).
+  const conPincel = trata.has('PINCEL') && Boolean(e.voces.acento);
+  if (comp.apoyo) {
+    capas.push(
+      conPincel
+        ? // Sin giro: la letra de pincel ya va inclinada, y girada se salía de la zona segura por la izquierda.
+          { tipo: 'texto', id: 'apoyo', texto: comp.apoyo, voz: e.voces.acento!, caja: { col: [1, 9], fila: [7, 8] }, ajuste: 'fijo', tamano: 70, alinear: 'izquierda', vertical: 'arriba', color: `@${sobre(campo, e.colorDeVoz[e.voces.acento!], 3).token}`, relacion: 'aparte' }
+        : { tipo: 'texto', id: 'apoyo', texto: comp.apoyo, voz: e.voces.apoyo, caja: { col: [1, 9], fila: [7, 7] }, ajuste: 'fijo', tamano: CUERPO_SEGUNDO, alinear: 'izquierda', vertical: 'arriba', color: `@${sobre(campo, e.colorDeVoz[e.voces.apoyo], 4.5).token}`, relacion: 'aparte' },
+    );
+  }
+  // PEGATINA: el plato recortado con un filo claro alrededor, como el producto de las referencias de flyer.
+  if (trata.has('PEGATINA')) {
+    const filo = [...deMarca].sort((a, b) => contraste(b.hex, '#000000') - contraste(a.hex, '#000000'))[0]!;
+    (plato as Extract<CapaPropuesta, { tipo: 'plato' }>).filo = `@${filo.token}`;
+    notas.push(`Filo de pegatina @${filo.token} alrededor del plato (tratamiento de la referencia).`);
+  }
+  // TINTA: un subrayado a pincel bajo el titular, la interrupción a mano de la pieza.
+  // Bajo el segundo nivel si lo hay (bajo el titular cruzaría el segundo nivel), en el color de la diagonal.
+  if (trata.has('TINTA')) capas.push({ tipo: 'trazo', gesto: 'subrayado', de: comp.apoyo ? 'apoyo' : 'titular', color: `@${diagonal.token === campo.token ? clara.token : diagonal.token}` });
+  // Elementos gráficos de la estética, cada uno con su papel (punto 13).
+  const graficos = (e.graficos?.tipos ?? []).slice(0, e.graficos?.maximo ?? 0);
+  for (const g of graficos) {
+    if (g === 'circulo') {
+      // Un disco detrás del plato: lo enmarca y lo separa del campo, como un plato de color bajo el producto.
+      capas.splice(capas.indexOf(plato), 0, { tipo: 'forma', figura: 'circulo', caja: { col: [2, 11], fila: [9, 16] }, color: `@${clara.token === campo.token ? diagonal.token : clara.token}`, plano: 'fondo' });
+      notas.push('Un disco detrás del plato, para enmarcarlo.');
+    } else if (g === 'mancha') {
+      capas.splice(capas.indexOf(plato), 0, { tipo: 'forma', figura: 'mancha', caja: { col: [1, 12], fila: [9, 16] }, color: `@${clara.token}`, plano: 'fondo' });
+      notas.push('Una mancha orgánica detrás del plato.');
+    } else if (g === 'puntos') {
+      // Una trama de puntos que llena el vacío a la derecha del segundo nivel y se apaga hacia el texto.
+      capas.splice(capas.indexOf(plato), 0, { tipo: 'patron', motivo: 'puntos', caja: { col: [9, 12], fila: [7, 9] }, color: `@${diagonal.token}`, desvanece: 'izquierda', plano: 'fondo' });
+      notas.push('Una trama de puntos en el vacío junto al segundo nivel.');
+    } else if (g === 'filete') {
+      // Un filete a la derecha de la firma: la línea de cabecera, como la etiqueta entre filetes de los flyers.
+      capas.push({ tipo: 'forma', figura: 'filete', caja: { col: [9, 12], fila: [2, 2] }, color: `@${sobre(campo, undefined, 3).token}`, plano: 'frente' });
+    }
+  }
+  // PAPEL: la fibra de un papel sin estucar sobre todo, muy suave.
+  if (trata.has('PAPEL')) capas.push({ tipo: 'textura', recurso: 'papel', intensidad: 0.1 });
   notas.push(`Campo @${campo.token} partido en diagonal con @${diagonal.token}; el plato recortado, girado y cortado por el borde.`);
   return { capas, textos: {}, problemas, notas };
 }

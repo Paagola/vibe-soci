@@ -167,6 +167,11 @@ export const CapaRecorte = z.object({
    * Un giro pequeño da gesto; uno grande solo si el plato no tiene «arriba» (un cenital).
    */
   giro: Giro.default(0),
+  /**
+   * F3.3 (punto 12): filo de pegatina, un borde de color alrededor de la silueta del sujeto (el producto recortado de
+   * ref-pin-34, que parece una pegatina). Grosor en px.
+   */
+  filo: z.object({ color: Color, grosor: z.number().min(2).max(40).default(12) }).optional(),
 });
 
 /** Sombra del sujeto: proyectada (la forma del plato, desplazada y difuminada) o de contacto (una elipse bajo la base). */

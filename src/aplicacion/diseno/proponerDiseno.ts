@@ -158,6 +158,9 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     colorDeVoz: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, e.color.replace(/^@/, '')])),
     anchoDeCaracter: Object.fromEntries(Object.entries(estilos).map(([id, e]) => [id, anchoDeCaracter(e)])),
     recursos: parametros.diseno.recursos,
+    graficos: parametros.diseno.graficos,
+    // Lo que la referencia trae (ficha) y la estética sabe reproducir.
+    tratamientos: (entrada.referencia?.ficha?.tratamiento ?? []).filter((t) => parametros.diseno.tratamientos.includes(t)),
     ...(entrada.foto.activo.mascara?.bbox ? { silueta: { ...entrada.foto.activo.mascara.bbox, anchoFoto: entrada.foto.activo.ancho, altoFoto: entrada.foto.activo.alto } } : {}),
   };
 
@@ -377,6 +380,8 @@ const ACENTOS = /ballet|kaushan|sacramento|bodoni-moda-italica|fraunces-italica|
  */
 export function acentoQuePide(ficha: FichaReferencia | undefined): { fuente: string; ejes: Record<string, number> } | undefined {
   const clases = (ficha?.tipografia ?? []).filter((t) => t.rol === 'TITULAR' || t.rol === 'SECUNDARIO').map((t) => t.clasificacion.toLowerCase()).join(' ');
+  // Pincel primero: «pincel de trazo seco» (ref-pin-34) es una script, pero de brocha, no de florituras.
+  if (/pincel|brush|brocha/.test(clases) || ficha?.tratamiento?.includes('PINCEL')) return { fuente: 'kaushan-script', ejes: {} };
   if (/florituras|script|caligr|swash/.test(clases)) return { fuente: 'ballet', ejes: { opsz: 72 } };
   if (/monolineal|manuscrit/.test(clases)) return { fuente: 'sacramento', ejes: {} };
   if (/didona|cursiva|itálica|italica/.test(clases)) return { fuente: 'bodoni-moda-italica', ejes: { opsz: 96, wght: 500 } };

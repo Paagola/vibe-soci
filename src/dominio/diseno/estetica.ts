@@ -10,7 +10,7 @@
  * Dominio puro.
  */
 import { z } from 'zod';
-import type { Familia } from '../referencia.js';
+import type { Familia, Tratamiento } from '../referencia.js';
 import type { Mecanismo } from './propuesta.js';
 
 export const Estetica = z.enum(['EDITORIAL_SERENO', 'EDITORIAL_OSCURO', 'COLOR_POP', 'MAXIMALISMO', 'MEDITERRANEO_LUMINOSO', 'RUSTICO_FUEGO']);
@@ -48,8 +48,18 @@ export interface ParametrosDeEstetica {
     /** Cómo se usa el color, para el director. */
     color: string;
     limites: LimitesDeOficio;
+    /**
+     * F3.3 (punto 13): elementos gráficos que le corresponden y cuántos como mucho. Los colocan los mecanismos, cada uno
+     * con un papel en la composición (enmarcar el plato, llenar un vacío, separar niveles), nunca de adorno suelto.
+     */
+    graficos: { tipos: Grafico[]; maximo: number };
+    /** F3.3 (punto 12): los tratamientos de la referencia que esta estética sabe reproducir con el compositor. */
+    tratamientos: Tratamiento[];
   };
 }
+
+/** Elementos gráficos que el compositor sabe pintar y los mecanismos saben colocar. */
+export type Grafico = 'circulo' | 'mancha' | 'filete' | 'puntos';
 
 export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
   EDITORIAL_SERENO: {
@@ -63,7 +73,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'natural, slightly muted colours',
       encuadre: 'the dish small to medium in the frame, cut by one edge, lots of calm negative space',
     },
-    diseno: { mecanismos: ['ANOTACIONES', 'TITULAR_DETRAS'], recursos: ['anotaciones'], color: 'Fondo claro, una sola tinta oscura y, como mucho, un acento pequeño.', limites: LIMITES_EDITORIALES },
+    diseno: { mecanismos: ['ANOTACIONES', 'TITULAR_DETRAS'], recursos: ['anotaciones'], color: 'Fondo claro, una sola tinta oscura y, como mucho, un acento pequeño.', limites: LIMITES_EDITORIALES, graficos: { tipos: ['filete'], maximo: 1 }, tratamientos: ['PAPEL'] },
   },
   EDITORIAL_OSCURO: {
     nombre: 'Editorial oscuro',
@@ -76,7 +86,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'rich but controlled colours, the dish the only bright area',
       encuadre: 'the dish in three-quarter view in the lower part, dark air above for the title',
     },
-    diseno: { mecanismos: ['TITULAR_CON_ACENTO', 'TITULAR_DETRAS', 'ANOTACIONES'], recursos: ['acento', 'tinta'], color: 'Negro de fondo; texto claro y un acento de la marca en el script.', limites: LIMITES_EDITORIALES },
+    diseno: { mecanismos: ['TITULAR_CON_ACENTO', 'TITULAR_DETRAS', 'ANOTACIONES'], recursos: ['acento', 'tinta'], color: 'Negro de fondo; texto claro y un acento de la marca en el script.', limites: LIMITES_EDITORIALES, graficos: { tipos: ['filete'], maximo: 1 }, tratamientos: ['TINTA'] },
   },
   COLOR_POP: {
     nombre: 'Color pop con recorte',
@@ -93,7 +103,9 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       mecanismos: ['PLATO_SOBRE_COLOR', 'TITULAR_DETRAS'],
       recursos: ['diagonal', 'sello'],
       color: 'Campos planos de dos colores de la marca partidos en diagonal; el producto es el único color fotográfico.',
-      limites: { ...LIMITES_EDITORIALES, recursosMaximos: 3 },
+      limites: { ...LIMITES_EDITORIALES, recursosMaximos: 3, vocesMaximas: 3 },
+      graficos: { tipos: ['circulo', 'puntos'], maximo: 2 },
+      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO'],
     },
   },
   MAXIMALISMO: {
@@ -112,6 +124,8 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       recursos: ['sello', 'anotaciones', 'tinta', 'diagonal'],
       color: 'Todos los colores de la marca a la vez, en bloques; tinta impresa y sellos.',
       limites: { saltoMinimo: 2.5, palabrasMaximas: 45, nivelesMaximos: 5, vocesMaximas: 3, gestosMaximos: 3, recursosMaximos: 5 },
+      graficos: { tipos: ['mancha', 'circulo', 'puntos', 'filete'], maximo: 4 },
+      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO', 'TRAMA', 'COLLAGE'],
     },
   },
   MEDITERRANEO_LUMINOSO: {
@@ -125,7 +139,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'bright, warm and fresh colours',
       encuadre: 'straight top-down, the dish centred with room around it',
     },
-    diseno: { mecanismos: ['ANOTACIONES', 'TITULAR_DETRAS'], recursos: ['anotaciones', 'sello'], color: 'Claros cálidos de la marca; tinta oscura legible sobre la luz.', limites: LIMITES_EDITORIALES },
+    diseno: { mecanismos: ['ANOTACIONES', 'TITULAR_DETRAS'], recursos: ['anotaciones', 'sello'], color: 'Claros cálidos de la marca; tinta oscura legible sobre la luz.', limites: LIMITES_EDITORIALES, graficos: { tipos: ['circulo'], maximo: 1 }, tratamientos: ['TINTA'] },
   },
   RUSTICO_FUEGO: {
     nombre: 'Rústico de fuego',
@@ -138,7 +152,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'warm, deep ambers and browns',
       encuadre: 'macro, the food filling the frame, cut by the edges',
     },
-    diseno: { mecanismos: ['TITULAR_DETRAS', 'TITULAR_CON_ACENTO'], recursos: ['tinta', 'acento'], color: 'Fondos de la foto; texto claro con tinta impresa.', limites: LIMITES_EDITORIALES },
+    diseno: { mecanismos: ['TITULAR_DETRAS', 'TITULAR_CON_ACENTO'], recursos: ['tinta', 'acento'], color: 'Fondos de la foto; texto claro con tinta impresa.', limites: LIMITES_EDITORIALES, graficos: { tipos: [], maximo: 0 }, tratamientos: ['PAPEL', 'TINTA'] },
   },
 };
 

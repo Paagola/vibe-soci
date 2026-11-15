@@ -70,6 +70,7 @@ const CapaPlato = z.object({
   giro: Giro.optional(),
   sangra: z.number().min(0).max(0.5).optional().describe('Fracción del plato que se sale por debajo de su caja.'),
   sombra: z.enum(['no', 'contacto', 'proyectada']).optional(),
+  filo: Token.optional().describe('Filo de pegatina alrededor del plato recortado, en este color.'),
 });
 
 const CapaTexto = z.object({
@@ -155,7 +156,7 @@ const CapaTrazo = z.object({
 
 const CapaForma = z.object({
   tipo: z.literal('forma'),
-  figura: z.enum(['bloque', 'mancha', 'filete']).describe('bloque: rectángulo de color. mancha: forma orgánica. filete: una línea fina a lo ancho de la caja.'),
+  figura: z.enum(['bloque', 'mancha', 'filete', 'circulo']).describe('bloque: rectángulo de color. mancha: forma orgánica. filete: una línea fina a lo ancho de la caja. circulo: un disco que llena la caja.'),
   caja: Celdas,
   color: Token,
   giro: Giro.optional(),
@@ -625,6 +626,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           ancla: { caja: aFracciones(x.caja), alinear: x.alinear ?? 'centro' },
           ...(x.sangra ? { sangradoAbajo: x.sangra } : {}),
           ...(x.giro ? { giro: x.giro } : {}),
+          ...(x.filo ? { filo: { color: color(x.filo, 'filo del plato'), grosor: 14 } } : {}),
           contraerBorde: 1,
         });
         break;
@@ -750,7 +752,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         const caja = aFracciones(x.caja, x.sangra);
         const comun = { id: idLibre(x.figura), tipo: 'forma', color: color(x.color, donde), ...(x.giro ? { giro: x.giro } : {}), ...(detras && sujetoFantasma ? { recortarCon: { sujeto: 'plato', modo: 'fuera' } } : {}), ...tintaDe(x.tinta) };
         if (x.figura === 'filete') poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: 'linea', desde: { x: caja.x, y: r4(caja.y + caja.h / 2) }, hasta: { x: r4(caja.x + caja.w), y: r4(caja.y + caja.h / 2) }, grosor: 2 });
-        else poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: x.figura === 'bloque' ? 'rect' : 'mancha', caja });
+        else poner(detras ? Plano3.DETRAS : Plano3.FRENTE, { ...comun, figura: x.figura === 'bloque' ? 'rect' : x.figura === 'circulo' ? 'elipse' : 'mancha', caja });
         break;
       }
 

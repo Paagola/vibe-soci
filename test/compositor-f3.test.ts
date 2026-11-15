@@ -771,3 +771,20 @@ describe('F3 · lo anterior no cambia', () => {
     }
   });
 });
+
+describe('F3.3 · filo de pegatina', () => {
+  it('el recorte con «filo» crece el grosor por cada lado y el borde nuevo es del color pedido', async () => {
+    const capa = (filo?: unknown) => ({ id: 's', tipo: 'recorte', activo: 'disco', escala: { anchoSujeto: 0.4 }, ancla: { caja: { x: 0, y: 0, w: 1, h: 1 }, alinear: 'centro' }, bordeSuave: 0, ...(filo ? { filo } : {}) });
+    const sin = await pintar(intencion([fondo, capa()], { disco: 'disco' }));
+    const con = await pintar(intencion([fondo, capa({ color: '#FFFFFF', grosor: 16 })], { disco: 'disco' }));
+    const a = medir(await alfaDe(sin.render, 's'));
+    const b = medir(await alfaDe(con.render, 's'));
+    assert.ok(b.w >= a.w + 24 && b.w <= a.w + 36, `${a.w} → ${b.w}`);
+    // Justo fuera del disco, a la izquierda de su centro, el píxel es blanco.
+    const png = await sharp(con.render.png).removeAlpha().raw().toBuffer();
+    const y = Math.round((b.y0 + b.y1) / 2);
+    const x = a.x0 - 6;
+    const i = (y * ANCHO + x) * 3;
+    assert.deepEqual([png[i], png[i + 1], png[i + 2]].map((v) => v! > 240), [true, true, true]);
+  });
+});

@@ -169,6 +169,10 @@ describe('F3.1 · voces del estudio y arreglos del código', () => {
   });
   const disponibles = tdv && Object.entries(tdv.colores).map(([token, hex]) => ({ token, hex, papel: 'de la marca' }));
 
+  it('la de pincel pide Kaushan (pincel, OFL)', () => {
+    assert.equal(acentoQuePide(ficha('pincel de trazo seco, mayúsculas'))?.fuente, 'kaushan-script');
+  });
+
   it('la referencia de florituras pide un acento de florituras; la didona, una didona; sin nada de eso, ninguno', () => {
     assert.equal(acentoQuePide(ficha('serif de florituras'))?.fuente, 'ballet');
     assert.equal(acentoQuePide(ficha('didona con florituras'))?.fuente, 'ballet');
@@ -254,5 +258,25 @@ describe('F3.2 · PLATO_SOBRE_COLOR (familias F1 y F3)', () => {
 
   it('sin máscara no hay recorte', () => {
     assert.match(colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR' }), entorno(m, { tieneMascara: false })).problemas.join(), /máscara/);
+  });
+});
+
+describe('F3.3 · tratamiento de la referencia y elementos gráficos de la estética', () => {
+  it('PLATO_SOBRE_COLOR reproduce la pegatina, el papel, el pincel y la tinta, y coloca los gráficos que admite la estética', () => {
+    const m = mapaSintetico();
+    const silueta = { x: 0, y: 200, w: 1200, h: 1400, anchoFoto: 1200, altoFoto: 1600 };
+    const r = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma', apoyo: 'apoyo' }), entorno(m, { silueta, tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA'], graficos: { tipos: ['circulo', 'puntos'], maximo: 2 } }));
+    assert.deepEqual(r.problemas, []);
+    const plato = r.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>;
+    assert.ok(plato.filo, 'filo de pegatina');
+    assert.ok(r.capas.some((c) => c.tipo === 'textura' && c.recurso === 'papel'));
+    assert.equal(texto(r.capas, 'apoyo')!.voz, 'acento', 'el segundo nivel en la voz de pincel');
+    assert.ok(r.capas.some((c) => c.tipo === 'trazo' && c.de === 'apoyo'));
+    const iPlato = r.capas.indexOf(plato);
+    assert.ok(r.capas.findIndex((c) => c.tipo === 'forma' && c.figura === 'circulo') < iPlato, 'el disco, detrás del plato');
+    assert.ok(r.capas.some((c) => c.tipo === 'patron' && c.motivo === 'puntos'));
+    // Sin tratamientos ni gráficos (editorial), nada de eso.
+    const sobrio = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: [], graficos: { tipos: [], maximo: 0 } }));
+    assert.ok(!sobrio.capas.some((c) => c.tipo === 'textura' || c.tipo === 'patron' || c.tipo === 'trazo' || (c.tipo === 'forma' && c.figura === 'circulo')));
   });
 });

@@ -85,6 +85,8 @@ export type CapaResuelta = BaseResuelta &
         bordeSuave: number;
         contraerBorde: number;
         giro?: number;
+        /** Filo de pegatina alrededor de la silueta. */
+        filo?: { color: string; grosor: number };
       }
     | {
         tipo: 'sombra';

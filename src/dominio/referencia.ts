@@ -45,6 +45,9 @@ export type Mecanismo = z.infer<typeof Mecanismo>;
 
 const Hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 
+export const Tratamiento = z.enum(['FOTOGRAFICO_LIMPIO', 'ILUSTRADO', 'TINTA', 'PINCEL', 'PEGATINA', 'PAPEL', 'ICONOS_DE_LINEA', 'TRAMA', 'COLLAGE']);
+export type Tratamiento = z.infer<typeof Tratamiento>;
+
 /** La ficha de análisis de una referencia: lo que un diseñador anotaría para poder reutilizar el oficio. */
 export const FichaReferencia = z.object({
   esquema: z.literal('referencia/ficha@1'),
@@ -70,6 +73,12 @@ export const FichaReferencia = z.object({
   recursos: z.array(z.object({ recurso: z.string().min(2), funcion: z.string().min(3) })).default([]),
   /** Qué se lee primero, segundo y tercero en el móvil. */
   lectura: z.tuple([z.string().min(2), z.string().min(2), z.string().min(2)]),
+  /**
+   * F3.3 (punto 12): el tratamiento gráfico, lo que hace que la pieza parezca dibujada, impresa o pegada (ref-pin-34:
+   * letra de pincel, rama a tinta, papel, iconos de línea y el producto con filo de pegatina). Opcional: las fichas
+   * anteriores no lo tienen.
+   */
+  tratamiento: z.array(Tratamiento).optional(),
   porQueFunciona: z.string().min(10),
   analizadaPor: z.enum(['ESTUDIO_A_MANO', 'GEMINI']),
   analizadaEn: z.string(),

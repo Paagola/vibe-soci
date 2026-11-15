@@ -147,6 +147,7 @@ export class ResolutorDiseno {
             bordeSuave: capa.bordeSuave,
             contraerBorde: capa.contraerBorde,
             ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
+            ...(capa.filo ? { filo: { color: color(capa.filo.color), grosor: capa.filo.grosor } } : {}),
           });
           break;
         }
@@ -284,6 +285,7 @@ export class ResolutorDiseno {
         bordeSuave: capa.bordeSuave,
         contraerBorde: capa.contraerBorde,
         ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
+        ...(capa.filo ? { filo: { color: color(capa.filo.color), grosor: capa.filo.grosor } } : {}),
       });
     }
     for (const { capa, comun } of trazos) resueltas.set(capa.id, this.resolverTrazo(capa, comun, resueltas, lienzo, color(capa.color), semilla(capa)));

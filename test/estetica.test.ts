@@ -44,3 +44,11 @@ describe('Punto 10 · catálogo de estéticas', () => {
     assert.match(t, /salto de escala ≥ 3.5/);
   });
 });
+
+describe('F3.3 · elementos gráficos y tratamientos por estética', () => {
+  it('maximalismo admite muchos elementos; editorial sereno, casi ninguno', () => {
+    assert.ok(ESTETICAS.MAXIMALISMO.diseno.graficos.maximo >= 4);
+    assert.ok(ESTETICAS.EDITORIAL_SERENO.diseno.graficos.maximo <= 1);
+    assert.ok(ESTETICAS.COLOR_POP.diseno.tratamientos.includes('PEGATINA'));
+  });
+});
