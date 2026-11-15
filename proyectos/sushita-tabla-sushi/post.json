@@ -15,13 +15,13 @@
   "activoReal": "sushita-tabla-sushi-real",
   "propuesta": {
     "archivo": "foto/propuesta.json",
-    "prompt": "@image1 is a real photo of assorted gourmet sushi board at a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board. Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower. Nothing else added. New composition by a professional food photographer: low-angle three-quarter view at 20 degrees, 85 mm lens at f/4, wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography. Hard studio flash from the side with short crisp shadows and glossy specular highlights, warm salmon orange and neutral timber tones. Photographic realism, no text.",
+    "prompt": "@image1 is a real photo of sharing sushi board with torched salmon nigiri topped with foie and truffle, spicy tuna uramaki, and toro tartare rolls from an upscale modern Japanese sushi bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the curved light wood serving board lined with an elongated green leaf, exactly three seared salmon nigiri glazed and topped with seared foie gras cubes and dark truffle slices, exactly five spicy uramaki rolls coated in speckled light green creamy sauce with white and black sesame seeds, exactly two translucent rice paper rolls topped with chopped pink toro tartare and minced green herbs, and one fresh yellow pansy flower with a dark velvety center; resting entirely on a clean, plain, uniform neutral off-white surface with no props or surrounding tableware. Exactly one curved wooden board, three seared salmon nigiri with foie and truffle, five cream-sauced uramaki pieces, two toro tartare rolls, and one yellow flower. Nothing else added. Nothing else added. New composition by a professional food photographer: elevated three-quarter studio view showing the entire wooden board entering diagonally from the bottom-left toward the center, leaving ample clean negative space in the upper right, the entire board and food fully within the frame without touching any edge, 70 mm lens at f/5.6, the whole wooden sushi board positioned boldly in the lower-left two thirds, floating with clean contours and soft contact shadows, guiding diagonal perspective toward the upper-right corner reserved for future bold brand typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright, even commercial studio lighting with crisp, soft-edged contact shadows underneath, specular glints on the torched salmon glaze and glossy tartare, clean uniform isolation background for seamless cut-out, vibrant warm salmon orange and creamy pistachio green as the sole saturated accents against a clean neutral canvas. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Photographic realism, no text.",
     "problemas": []
   },
   "autorizacion": {
-    "fecha": "2026-11-15T01:53:32.320Z",
+    "fecha": "2026-11-15T19:19:54.884Z",
     "maxIntentos": 2,
-    "estimadoPorIntentoUsd": 0.160456
+    "estimadoPorIntentoUsd": 0.161026
   },
   "intentos": [
     {
@@ -30,8 +30,71 @@
       "final": "PASA",
       "motivos": [],
       "costeUsd": 0.140676
+    },
+    {
+      "n": 2,
+      "activo": "sushita-tabla-sushi-foto-2",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de nigiris de salmón flambeado con foie: 4 en vez de 3",
+        "recuento de rollos de papel de arroz con tartar de toro: 3 en vez de 2",
+        "añadido: Rollo adicional en la parte posterior con huevas naranjas",
+        "anatomía por teselas de nigiri de salmón flameado con foie y trufa: 4 cuerpos (se esperan 3)",
+        "anatomía por teselas de rollitos de papel de arroz con tartar de toro: 3 cuerpos (se esperan 2)",
+        "no es otra toma: mismo punto de vista que la foto subida (Es exactamente la misma fotografía original a la que se le ha eliminado el fondo y sustituido por uno blanco liso.)"
+      ],
+      "costeUsd": 0.141126
+    },
+    {
+      "n": 3,
+      "activo": "sushita-tabla-sushi-foto-3",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de nigiri de salmón flameado con foie y trufa: 4 en vez de 3",
+        "recuento de rollos de papel de arroz con tartar de toro: 3 en vez de 2",
+        "añadido: Rollo con brotes y huevas en el extremo superior izquierdo no listado",
+        "anatomía por teselas de rollitos de papel de arroz con tartar de toro: 3 cuerpos (se esperan 2)",
+        "no es otra toma: mismo punto de vista que la foto subida (La perspectiva, ángulo y disposición de las piezas son idénticos, tratándose de la misma toma con el fondo aislado en blanco y un encuadre más alejado.)"
+      ],
+      "costeUsd": 0.141306
     }
   ],
+  "tomas": [
+    {
+      "n": 1,
+      "elemento": "nigiri de salmón flameado con foie y trufa",
+      "prompt": "@image1 is a real photo of torched salmon nigiri topped with seared foie gras and truffle slice from a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the torched salmon nigiri glistening with caramelized glaze, seared score marks, topped with a golden-brown cube of seared foie gras and a delicate dark truffle slice, resting on pristine sushi rice on a portion of the clean light wood board. Exactly two seared salmon nigiri with foie gras and truffle, shown in extreme crisp focus. Nothing else added. New composition by a professional food photographer: low macro perspective at 25 degrees, bringing the front nigiri massive and sharp into the lower third, with the second nigiri softly receding behind it, leaving the upper half of the frame clean and unobstructed, 105 mm lens at f/3.5, heroic macro shot where the sear marks, melting fat of the foie gras, and caramelized glaze fill the lower half, creating an intense tactile appetite appeal with generous clean negative space above, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Directional hard studio key light grazing across the fish surface to highlight charred edges, glossy sauce sheen, and fine rice grain definition against a clean seamless background, intense rich glossy salmon orange and warm caramel tones. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours. Photographic realism, no text.",
+      "intento": {
+        "n": 1,
+        "activo": "sushita-tabla-sushi-toma-1",
+        "final": "PASA",
+        "motivos": [],
+        "costeUsd": 0.14069
+      },
+      "elegida": "sushita-tabla-sushi-toma-1"
+    },
+    {
+      "n": 2,
+      "elemento": "gunkan de toro",
+      "prompt": "@image1 is a real photo of toro tartare rolls wrapped in rice paper from an upscale Japanese sushi bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: translucent rice paper roll filled with delicate ingredients, crowned with finely minced pink toro tuna tartare, sprinkled black sesame seeds, and delicate chopped fresh green micro-herbs, resting on the clean light wooden surface. Exactly two toro tartare rolls, placed side by side. Nothing else added. New composition by a professional food photographer: tight eye-level close-up at 30 degrees, placing the two rolls prominently in the bottom center, showcasing the fresh raw fish texture with clean negative headroom above, 90 mm lens at f/4, the delicate jewel-like pink tuna tartare and translucent rice paper wrapper dominate the lower center, highlighting freshness and artisanal prep while keeping the top half entirely free for text, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Crisp, bright side-angled studio flash capturing the glistening moisture and velvety marbling of the chopped toro tuna and the sheen of the seeds, soft tender pink tuna and fresh emerald green against a neutral studio backdrop. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours. Photographic realism, no text.",
+      "intento": {
+        "n": 1,
+        "activo": "sushita-tabla-sushi-toma-2",
+        "final": "RECHAZADA",
+        "motivos": [
+          "rechazada por el usuario: convierte el gunkan de toro en rollitos de papel de arroz, que no existen en el plato"
+        ],
+        "costeUsd": 0.140566
+      }
+    }
+  ],
+  "portadaDeToma": 1,
+  "tratamiento": [
+    "PAPEL",
+    "TINTA",
+    "ILUSTRADO"
+  ],
+  "fotosExtra": [],
   "fotoElegida": "sushita-tabla-sushi-foto-1",
   "historial": [
     {
@@ -143,6 +206,266 @@
       "fecha": "2026-11-15T14:35:53.935Z",
       "paso": "HECHO",
       "nota": "Versión nueva compuesta: cierre v2 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:18:34.144Z",
+      "paso": "REFERENCIA",
+      "nota": "F3.3: reabierto para el carrusel con fotos propias (portada aislada y tomas de detalle)"
+    },
+    {
+      "fecha": "2026-11-15T19:18:34.160Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-pin-34» (F3). (1 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-15T19:18:34.160Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética elegida: Color pop con recorte."
+    },
+    {
+      "fecha": "2026-11-15T19:18:46.372Z",
+      "paso": "REFERENCIA",
+      "nota": "Tratamiento de ref-pin-34 (lo mira Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash); la ficha a mano no se toca): PAPEL, TINTA, ILUSTRADO."
+    },
+    {
+      "fecha": "2026-11-15T19:19:39.504Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-15T19:19:54.883Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-15T19:20:20.159Z",
+      "paso": "GENERAR",
+      "nota": "Intento 2 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1411 USD."
+    },
+    {
+      "fecha": "2026-11-15T19:20:43.240Z",
+      "paso": "GENERAR",
+      "nota": "Toma de detalle 1 («nigiri de salmón flameado con foie y trufa») generada: 0.1407 USD."
+    },
+    {
+      "fecha": "2026-11-15T19:21:06.064Z",
+      "paso": "GENERAR",
+      "nota": "Toma de detalle 2 («rollitos de papel de arroz con tartar de toro») generada: 0.1406 USD."
+    },
+    {
+      "fecha": "2026-11-15T19:21:06.639Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 2184 px."
+    },
+    {
+      "fecha": "2026-11-15T19:22:12.494Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 2: DESCARTA (recuento de nigiris de salmón flambeado con foie: 4 en vez de 3; recuento de rollos de papel de arroz con tartar de toro: 3 en vez de 2; añadido: Rollo adicional en la parte posterior con huevas naranjas; anatomía por teselas de nigiri de salmón flameado con foie y trufa: 4 cuerpos (se esperan 3); anatomía por teselas de rollitos de papel de arroz con tartar de toro: 3 cuerpos (se esperan 2); no es otra toma: mismo punto de vista que la foto subida (Es exactamente la misma fotografía original a la que se le ha eliminado el fondo y sustituido por uno blanco liso.))."
+    },
+    {
+      "fecha": "2026-11-15T19:22:12.999Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 1471 px."
+    },
+    {
+      "fecha": "2026-11-15T19:22:24.170Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación de la toma de detalle 1 («nigiri de salmón flameado con foie y trufa»): PASA."
+    },
+    {
+      "fecha": "2026-11-15T19:22:24.603Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1442 × 814 px."
+    },
+    {
+      "fecha": "2026-11-15T19:22:32.874Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación de la toma de detalle 2 («rollitos de papel de arroz con tartar de toro»): PASA."
+    },
+    {
+      "fecha": "2026-11-15T19:22:55.562Z",
+      "paso": "GENERAR",
+      "nota": "Intento 3 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1413 USD."
+    },
+    {
+      "fecha": "2026-11-15T19:22:55.982Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1669 × 1846 px."
+    },
+    {
+      "fecha": "2026-11-15T19:23:31.749Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 3: DESCARTA (recuento de nigiri de salmón flameado con foie y trufa: 4 en vez de 3; recuento de rollos de papel de arroz con tartar de toro: 3 en vez de 2; añadido: Rollo con brotes y huevas en el extremo superior izquierdo no listado; anatomía por teselas de rollitos de papel de arroz con tartar de toro: 3 cuerpos (se esperan 2); no es otra toma: mismo punto de vista que la foto subida (La perspectiva, ángulo y disposición de las piezas son idénticos, tratándose de la misma toma con el fondo aislado en blanco y un encuadre más alejado.))."
+    },
+    {
+      "fecha": "2026-11-15T19:26:49.827Z",
+      "paso": "MASCARA",
+      "nota": "F3.3: portadas 2 y 3 descartadas y sin presupuesto de fotos: la portada vuelve a la foto-1 (PASA, confirmada en F3.2); tomas de detalle 1 y 2 (PASA) elegidas, pendientes del visto bueno del usuario"
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.188Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v2: ../../../datos/disenos/sushita-tabla-sushi/post/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.189Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-1 v2: ../../../datos/disenos/sushita-tabla-sushi/detalle-1/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.189Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-2 v2: ../../../datos/disenos/sushita-tabla-sushi/detalle-2/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.189Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-3 v2: ../../../datos/disenos/sushita-tabla-sushi/detalle-3/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.189Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta cierre v2: ../../../datos/disenos/sushita-tabla-sushi/cierre/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:26:50.189Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: ../../../datos/disenos/sushita-tabla-sushi/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    },
+    {
+      "fecha": "2026-11-15T19:28:10.140Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v3 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T19:28:15.276Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v3 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:28:15.276Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v3 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:28:15.276Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v3 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:28:15.276Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-3 v3 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:28:15.276Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v3 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:33:04.893Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v4 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T19:33:09.306Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v4 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:33:09.306Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v4 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:33:09.306Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v4 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:33:09.306Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v4 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:42:43.436Z",
+      "paso": "HECHO",
+      "nota": "F3.3: toma 2 rechazada (papel de arroz inventado); portada desde la toma 1; elementos corregidos (gunkan de toro, 4 nigiris)"
+    },
+    {
+      "fecha": "2026-11-15T19:43:20.239Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v5 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T19:43:24.352Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v5 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:43:24.352Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v5 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:43:24.352Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v5 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:43:24.352Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v5 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:44:57.594Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v6 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T19:45:01.770Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v6 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:45:01.770Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v6 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:45:01.770Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v6 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:45:01.770Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v6 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:47:24.661Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v7 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T19:47:28.345Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v7 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:47:28.345Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-1 v7 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:47:28.345Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: detalle-2 v7 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T19:47:28.345Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: cierre v7 (3:4 y 4:5)."
     }
   ],
   "creadoEn": "2026-11-15T01:52:17.130Z"

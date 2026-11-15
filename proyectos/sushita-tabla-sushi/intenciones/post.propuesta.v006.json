@@ -1,0 +1,77 @@
+{
+  "director": "propuesta v004 del director, editada a mano tras la revisión del coordinador (sin Gemini)",
+  "fecha": "2026-11-15",
+  "propuesta": {
+    "idea": "Un bocado heroico y aislado (dos nigiris de salmón flameado con foie) recortado con filo de pegatina sobre el campo de color en diagonal, con una rama dibujada a tinta; la tabla entera, en los detalles y el cierre.",
+    "foco": "PLATO",
+    "seToma": [
+      "Partición diagonal del fondo plano en dos tonos de marca",
+      "Producto aislado y heroico, recortado con filo de pegatina y cortado por el borde",
+      "El gesto dibujado a tinta (una rama de cerezo propia del estudio)",
+      "Titular rotundo en escala dominante"
+    ],
+    "noSeCopia": [
+      "Los textos en inglés y los reclamos de oferta de la referencia",
+      "Los palillos y el maki concreto de la referencia; su rama tal cual (la nuestra es otra, dibujada por el estudio)",
+      "El botón de pedido y el código QR"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "SUSHI",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "Nigiri de salmón con foie y trufa",
+        "fuente": "PLATO",
+        "cita": "nigiri de salmón con foie y trufa"
+      },
+      {
+        "clave": "firma",
+        "texto": "Sushita Chinitas",
+        "fuente": "MARCA",
+        "cita": "Sushita Chinitas"
+      },
+      {
+        "clave": "uramaki-verde",
+        "texto": "Uramaki con cobertura de salsa cremosa verde",
+        "fuente": "ELEMENTO",
+        "cita": "uramaki con cobertura de salsa cremosa verde"
+      },
+      {
+        "clave": "gunkan",
+        "texto": "Gunkan de toro",
+        "fuente": "PLATO",
+        "cita": "gunkan de toro"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "PLATO_SOBRE_COLOR",
+      "titular": "titular",
+      "firma": "firma",
+      "tinta": "limpia",
+      "color": "@oro",
+      "apoyo": "apoyo"
+    },
+    "carrusel": {
+      "detalles": [
+        {
+          "texto": "uramaki-verde",
+          "punto": {
+            "x": 0.25,
+            "y": 0.45
+          }
+        },
+        {
+          "texto": "gunkan",
+          "punto": {
+            "x": 0.22,
+            "y": 0.24
+          }
+        }
+      ]
+    }
+  }
+}

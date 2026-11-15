@@ -1,0 +1,307 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 6,
+  "titulo": "Sushita Chinitas · Tabla de sushi para compartir: nigiri de salmón con foie y",
+  "notas": "Idea: Un bocado heroico y aislado (dos nigiris de salmón flameado con foie) recortado con filo de pegatina sobre el campo de color en diagonal, con una rama dibujada a tinta; la tabla entera, en los detalles y el cierre. Foco: el plato. De la referencia se toma: Partición diagonal del fondo plano en dos tonos de marca; Producto aislado y heroico, recortado con filo de pegatina y cortado por el borde; El gesto dibujado a tinta (una rama de cerezo propia del estudio); Titular rotundo en escala dominante. No se copia: Los textos en inglés y los reclamos de oferta de la referencia; Los palillos y el maki concreto de la referencia; su rama tal cual (la nuestra es otra, dibujada por el estudio); El botón de pedido y el código QR. La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo. Filo de pegatina @blanco alrededor del plato (tratamiento ilustrado de la referencia). Una rama de cerezo dibujada a tinta entra por el canto derecho (tratamiento ilustrado de la referencia). Un disco detrás del plato, para enmarcarlo. Campo @oro partido en diagonal con @negro; el plato recortado, girado y cortado por el borde.",
+  "marca": "sushita-chinitas",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {
+      "plato": "#CB6D2E"
+    },
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@oro",
+        "rasgos": []
+      },
+      "acento": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 0.95,
+        "color": "@oro",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "sushita-tabla-sushi-toma-1",
+    "serie": "sushita-tabla-sushi-foto-1"
+  },
+  "textos": {
+    "titular": "SUSHI",
+    "apoyo": "Nigiri de salmón con foie y trufa",
+    "firma": "Sushita Chinitas",
+    "uramaki-verde": "Uramaki con cobertura de salsa cremosa verde",
+    "gunkan": "Gunkan de toro"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "relleno",
+      "color": "@oro"
+    },
+    {
+      "id": "diagonal",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "poligono",
+      "puntos": [
+        {
+          "x": -0.05,
+          "y": 0.64
+        },
+        {
+          "x": 1.05,
+          "y": 0.4
+        },
+        {
+          "x": 1.05,
+          "y": 1.05
+        },
+        {
+          "x": -0.05,
+          "y": 1.05
+        }
+      ],
+      "color": "@negro",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "rama",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "rama",
+      "caja": {
+        "x": 0.6519,
+        "y": 0.3906,
+        "w": 0.3881,
+        "h": 0.2188
+      },
+      "color": "@blanco",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "circulo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "elipse",
+      "caja": {
+        "x": 0.1398,
+        "y": 0.5042,
+        "w": 0.7204,
+        "h": 0.4458
+      },
+      "color": "@blanco",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "sombra",
+      "opacidad": 0.45,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "proyectada",
+      "color": "#000000",
+      "desenfoque": 36,
+      "desplazamiento": {
+        "x": 0,
+        "y": 26
+      },
+      "ancho": 0.8,
+      "alto": 30
+    },
+    {
+      "id": "plato",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "recorte",
+      "activo": "foto",
+      "escala": {
+        "anchoSujeto": 1.5
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.0667,
+          "y": 0.5609,
+          "w": 0.8667,
+          "h": 0.3891
+        },
+        "alinear": "arriba-centro"
+      },
+      "sangradoAbajo": 0,
+      "bordeSuave": 0.8,
+      "contraerBorde": 1,
+      "giro": -8,
+      "filo": {
+        "color": "@blanco",
+        "grosor": 14
+      }
+    },
+    {
+      "id": "titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1635,
+        "w": 0.8667,
+        "h": 0.2188
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@negro"
+    },
+    {
+      "id": "firma",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1068,
+        "w": 0.5741,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@negro"
+    },
+    {
+      "id": "apoyo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.3906,
+        "w": 0.6472,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 46,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@negro"
+    },
+    {
+      "id": "subrayado",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "trazo",
+      "gesto": "subrayado",
+      "de": "apoyo",
+      "curva": 0.25,
+      "cabeza": "abierta",
+      "color": "@negro",
+      "grosor": 6,
+      "temblor": 0.4,
+      "huecos": 0
+    },
+    {
+      "id": "papel",
+      "opacidad": 1,
+      "fusion": "soft-light",
+      "oculta": false,
+      "tipo": "textura",
+      "recurso": "papel",
+      "intensidad": 0.1,
+      "escala": 1.6,
+      "semilla": 7
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "firma",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular",
+        "firma",
+        "apoyo"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ],
+  "estetica": "COLOR_POP",
+  "oficio": {
+    "saltoMinimo": 3.5,
+    "palabrasMaximas": 30,
+    "nivelesMaximos": 4,
+    "vocesMaximas": 3,
+    "gestosMaximos": 1,
+    "recursosMaximos": 3
+  },
+  "padre": 5
+}

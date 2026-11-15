@@ -1,9 +1,9 @@
 {
   "esquema": "diseno/intencion@1",
   "id": "cierre",
-  "version": 2,
+  "version": 7,
   "titulo": "Sushita Chinitas · Tabla de sushi para compartir: nigiri de salmón con foie y · cierre",
-  "notas": "Idea: La variedad y técnica de la tabla de sushi presentada con recorte monumental para abrir un recorrido de producto. Foco: el plato. De la referencia se toma: Producto recortado en gran escala que rompe la composición; Fondo plano partido en diagonal para dinamizar la pieza; Jerarquía estricta con titular rotundo y apoyo secundario. No se copia: Los textos de oferta y códigos promocionales; La tipografía de pincel y los motivos de ramas de cerezo; La marca y paleta cromática roja de la referencia.",
+  "notas": "Idea: Un bocado heroico y aislado (dos nigiris de salmón flameado con foie) recortado con filo de pegatina sobre el campo de color en diagonal, con una rama dibujada a tinta; la tabla entera, en los detalles y el cierre. Foco: el plato. De la referencia se toma: Partición diagonal del fondo plano en dos tonos de marca; Producto aislado y heroico, recortado con filo de pegatina y cortado por el borde; El gesto dibujado a tinta (una rama de cerezo propia del estudio); Titular rotundo en escala dominante. No se copia: Los textos en inglés y los reclamos de oferta de la referencia; Los palillos y el maki concreto de la referencia; su rama tal cual (la nuestra es otra, dibujada por el estudio); El botón de pedido y el código QR.",
   "marca": "sushita-chinitas",
   "lienzo": {
     "formato": "FEED_3_4"
@@ -16,7 +16,7 @@
   },
   "tokens": {
     "colores": {
-      "plato": "#955F35"
+      "plato": "#CB6D2E"
     },
     "estilos": {
       "anotacion": {
@@ -29,11 +29,21 @@
         "interlineado": 1.05,
         "color": "@oro",
         "rasgos": []
+      },
+      "acento": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 0.95,
+        "color": "@oro",
+        "rasgos": []
       }
     }
   },
   "activos": {
-    "foto": "sushita-tabla-sushi-foto-1"
+    "foto": "sushita-tabla-sushi-toma-1",
+    "serie": "sushita-tabla-sushi-foto-1"
   },
   "textos": {
     "firma": "Sushita Chinitas",
@@ -85,7 +95,7 @@
       "fusion": "normal",
       "oculta": false,
       "tipo": "imagen",
-      "activo": "foto",
+      "activo": "serie",
       "caja": {
         "x": 0,
         "y": 0.5609,
@@ -97,6 +107,24 @@
         "y": 0.5
       },
       "zoom": 1
+    },
+    {
+      "id": "rama",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "rama",
+      "caja": {
+        "x": 0.6519,
+        "y": 0.4474,
+        "w": 0.3881,
+        "h": 0.1052
+      },
+      "color": "@negro",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
     },
     {
       "id": "firma",
@@ -193,5 +221,5 @@
     "gestosMaximos": 1,
     "recursosMaximos": 3
   },
-  "padre": 1
+  "padre": 6
 }

@@ -1,0 +1,172 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T19:28:08.185Z",
+  "estetica": "COLOR_POP",
+  "formato": "carrusel",
+  "tratamiento": [
+    "PAPEL",
+    "TINTA",
+    "ILUSTRADO"
+  ],
+  "propuesta": {
+    "idea": "El impacto visual de una generosa tabla de sushi contemporáneo recortada sobre fondo gráfico de color.",
+    "foco": "PLATO",
+    "seToma": [
+      "Composición pop con producto recortado en primer plano y partición de fondos",
+      "Titular contundente de escala masiva en la parte superior",
+      "Jerarquía estricta con apoyo breve y firma corporativa"
+    ],
+    "noSeCopia": [
+      "El grafismo de la rama de cerezo y los palillos",
+      "La tira de papel rasgado y la oferta porcentual",
+      "La paleta roja brillante ajena a la identidad de Sushita"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "SUSHI",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "PARA COMPARTIR",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir"
+      },
+      {
+        "clave": "firma",
+        "texto": "SUSHITA CHINITAS",
+        "fuente": "MARCA",
+        "cita": "Sushita Chinitas"
+      },
+      {
+        "clave": "det-nigiri",
+        "texto": "Nigiri de salmón flameado con foie y trufa",
+        "fuente": "ELEMENTO",
+        "cita": "nigiri de salmón flameado con foie y trufa"
+      },
+      {
+        "clave": "det-uramaki",
+        "texto": "Uramaki con cobertura de salsa cremosa verde",
+        "fuente": "ELEMENTO",
+        "cita": "uramaki con cobertura de salsa cremosa verde"
+      },
+      {
+        "clave": "det-toro",
+        "texto": "Rollitos de papel de arroz con tartar de toro",
+        "fuente": "ELEMENTO",
+        "cita": "rollitos de papel de arroz con tartar de toro"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "PLATO_SOBRE_COLOR",
+      "titular": "titular",
+      "apoyo": "apoyo",
+      "firma": "firma",
+      "sangra": false,
+      "tinta": "limpia",
+      "color": "@negro"
+    },
+    "carrusel": {
+      "detalles": [
+        {
+          "texto": "det-nigiri",
+          "punto": {
+            "x": 0.52,
+            "y": 0.62
+          }
+        },
+        {
+          "texto": "det-uramaki",
+          "punto": {
+            "x": 0.35,
+            "y": 0.42
+          }
+        },
+        {
+          "texto": "det-toro",
+          "punto": {
+            "x": 0.22,
+            "y": 0.25
+          }
+        }
+      ]
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-1: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-1: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-1: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-2: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-2: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-2: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-3: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-3: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "detalle-3: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "cierre: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "cierre: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "cierre: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "CRITICA: La pieza resulta sombría y fría: el fondo negro dominante (@negro) ahoga la frescura del producto y desentona con el carácter «Alegre» de la marca y la vitalidad luminosa de la referencia.",
+    "CRITICA: El titular flota aislado y tímido en la zona superior sin tensión ni escala suficiente; sangrarlo de borde a borde y aplicar textura de tinta impresa rescata la contundencia editorial del referente.",
+    "CRITICA: Falta un recurso de anclaje gráfico (como un sello de origen) para equilibrar la composición y estructurar el peso visual frente a la diagonal del fondo."
+  ],
+  "critica": {
+    "llega": false,
+    "motivos": [
+      "La pieza resulta sombría y fría: el fondo negro dominante (@negro) ahoga la frescura del producto y desentona con el carácter «Alegre» de la marca y la vitalidad luminosa de la referencia.",
+      "El titular flota aislado y tímido en la zona superior sin tensión ni escala suficiente; sangrarlo de borde a borde y aplicar textura de tinta impresa rescata la contundencia editorial del referente.",
+      "Falta un recurso de anclaje gráfico (como un sello de origen) para equilibrar la composición y estructurar el peso visual frente a la diagonal del fondo."
+    ],
+    "adoptada": false
+  },
+  "enRevision": true,
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-1: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-1: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-1: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-2: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-2: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-2: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-3: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-3: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "detalle-3: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "cierre: FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "cierre: FIDELIDAD: «detalle1» usa el activo «sushita-tabla-sushi-toma-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "cierre: FIDELIDAD: «detalle2» usa el activo «sushita-tabla-sushi-toma-2», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": [
+        "La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.",
+        "Filo de pegatina @blanco alrededor del plato (tratamiento ilustrado de la referencia).",
+        "Un disco detrás del plato, para enmarcarlo.",
+        "Una trama de puntos en el vacío junto al segundo nivel.",
+        "Campo @negro partido en diagonal con @oro; el plato recortado, girado y cortado por el borde."
+      ]
+    },
+    {
+      "origen": "critica",
+      "problemas": [
+        "PLATO_SOBRE_COLOR no lleva sello: compite con el plato recortado."
+      ],
+      "avisos": [],
+      "arreglos": [
+        "La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.",
+        "Filo de pegatina @blanco alrededor del plato (tratamiento ilustrado de la referencia).",
+        "Un disco detrás del plato, para enmarcarlo.",
+        "Una trama de puntos en el vacío junto al segundo nivel.",
+        "Campo @oro partido en diagonal con @negro; el plato recortado, girado y cortado por el borde."
+      ]
+    }
+  ]
+}

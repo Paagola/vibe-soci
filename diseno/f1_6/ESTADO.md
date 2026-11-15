@@ -72,6 +72,36 @@
 
 **Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
 
+### 0f. F3.3, 15/11: carrusel con varias fotos, tratamiento ilustrado, gráficos y huella tipográfica (rama `f3-3`)
+
+| Punto | Qué se ha hecho | Validado |
+|---|---|---|
+| 11 · Varias fotos | En un carrusel, el director de foto propone de una a tres tomas de detalle. La primera parada dice cuántas fotos son y el gasto total. Cada toma se comprueba aparte; si se descarta, vuelve al recorte. `--foto-extra "ruta=elemento"` usa fotos reales del dueño sin generar. `--sin-toma N` quita una toma y `--portada-toma N` hace la portada con una toma. Si la portada va recortada, los detalles también, con el mismo filo | Sushita, real |
+| 12 · Tratamiento | El analista lo mira si la ficha a mano no lo dice; queda en el encargo y la ficha no se toca. Qué hace cada tratamiento: **pegatina e ilustrado**, filo; **pincel**, voz de acento; **tinta**, subrayado; **papel**, textura; **trama e iconos de línea**, patrón de olas. **Ilustrado**, además, pone una rama de cerezo dibujada a tinta, en la portada y en el cierre | ref-pin-34 → PAPEL, TINTA, ILUSTRADO |
+| 13 · Gráficos | Cada estética dice qué gráficos lleva (círculo, mancha, puntos, filete) y cuántos | Pruebas |
+| 14 · Huella | La huella tipográfica del local, sacada de su historial, en `datos/huellas/<local>.json`. El director recibe la regla de mezcla | Torre de Vega y Sushita, solo lectura |
+| Revisión de la v003 | Lo arreglado: **la nota del dueño manda** (`src/dominio/nota.ts`): un elemento con otra preparación que la nota no se confirma. La comprobación busca elementos **«cambiados» frente a la foto real**. Títulos sacados de la nota y con mayúscula inicial. Flechas de 9 px en color pop. El sello ya no bloquea. El plato se recorta según cómo lo corta la foto | Pruebas (305) |
+
+**El carrusel de Sushita, v007** (`diseno/f3/img/sushita-f33-*.jpg`):
+- **Portada:** la toma 1, con dos nigiris con foie, recortada con filo blanco y cortada por el borde, sobre oro y negro en diagonal. La acompañan la rama a tinta y el subrayado.
+- **Detalles:** uramaki y gunkan de toro, recortes de la foto-1.
+- **Cierre:** firma, ciudad, Instagram, la rama y la foto-1.
+
+**Qué no se ha conseguido:**
+- Las dos portadas nuevas (la tabla entera aislada) se descartaron:
+  - el director contó 3 nigiris y en la foto hay 4;
+  - el generador mantuvo el punto de vista de la foto subida.
+- La toma 2 pasó la comprobación, pero **inventa un rollito de papel de arroz**. Pasó porque la lista ya lo decía así: la nota del dueño dice «gunkan de toro». Ya no se usa.
+- Las versiones intermedias son estas:
+  - v004: el director, con el campo en oro;
+  - v005: la primera con la portada de la toma, con el plato agrandado 1,5 veces;
+  - v006: igual que la v005.
+
+**Gasto de F3.3:**
+- 4 fotos de 4 (0,5637 USD).
+- **21 llamadas de texto, una más de las 20 autorizadas**: la v004 costó 6 porque el director reintentó y la crítica se repitió. Fichas: 133 275 de entrada, 13 566 de salida y 27 900 de razonamiento.
+- La v005, la v006 y la v007 se recompusieron sin Gemini, con la propuesta de la v004 editada a mano.
+
 ### 0e. F3.2, 15/11: arreglos tras la prueba de punta a punta con Sushita Chinitas (rama `f3-2-arreglos`)
 
 | Punto | Qué se ha hecho | Validado |

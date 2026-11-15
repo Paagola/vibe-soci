@@ -1,0 +1,147 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T19:19:39.502Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 55,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Plano picado diagonal sobre la tabla de sushi, cortando los bordes superior, izquierdo e inferior de la tabla; al fondo se aprecian un jarrón de vidrio con agua, vasos labrados y manteles con estampados que distraen.",
+      "luz": "Luz ambiente cenital de restaurante combinada con foco cálido directo; brillos irregulares y sombras suaves poco definidas.",
+      "elementos": [
+        {
+          "nombre": "tabla de madera clara",
+          "estado": "madera curvada pulida con veta visible y una hoja vegetal verde alargada como base",
+          "recuento": 1,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Aparece cortada por tres de sus lados."
+        },
+        {
+          "nombre": "nigiri de salmón flameado con foie y trufa",
+          "estado": "salmón marcado con soplete, glaseado brillante caramelizado, coronado con un dado de foie sellado y lasca oscura de trufa",
+          "recuento": 3,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Tres piezas completas y alineadas en diagonal en el centro de la tabla."
+        },
+        {
+          "nombre": "uramaki con cobertura de salsa cremosa verde",
+          "estado": "rollos de arroz con semillas de sésamo blanco y negro, bañados generosamente con una salsa cremosa verde pálida con hierbas",
+          "recuento": 5,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Cinco piezas visibles completas en fila y una última cortada en la esquina inferior derecha."
+        },
+        {
+          "nombre": "rollitos de papel de arroz con tartar de toro",
+          "estado": "envueltos en papel de arroz traslúcido, coronados con tartar picado de atún/toro rosado, sésamo negro y microbrotes verdes picados",
+          "recuento": 2,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Dos piezas enteras a la izquierda y una tercera cortada parcialmente por el lateral."
+        },
+        {
+          "nombre": "pensamiento comestible",
+          "estado": "flor fresca de pétalos amarillos brillantes con centro granate oscuro aterciopelado",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Colocada intacta sobre la madera junto a los nigiris."
+        },
+        {
+          "nombre": "pieza con huevas anaranjadas y brotes",
+          "estado": "rollo con huevas anaranjadas (masago/tobiko) y hojas de micromezclum",
+          "recuento": null,
+          "cortados": 1,
+          "dudoso": true,
+          "nota": "Solo se aprecia una pequeña sección en la esquina superior izquierda, cortada por el encuadre."
+        }
+      ],
+      "defectos": [
+        "Mesa saturada de elementos distractores (jarrón con ramas, vasos tallados, doble mantel).",
+        "La tabla queda cercenada por varios márgenes sin permitir apreciar la composición del servicio.",
+        "Luz cálida y difusa que aplana los contrastes del pescado crudo y los brillos del glaseado."
+      ],
+      "utilizable": true,
+      "motivo": "El producto principal está nítido, bien identificado y permite catalogar con exactitud ingredientes, texturas, salsas y emplatado real."
+    },
+    "huecos": {
+      "plato": "sharing sushi board with torched salmon nigiri topped with foie and truffle, spicy tuna uramaki, and toro tartare rolls",
+      "origen": "from an upscale modern Japanese sushi bar",
+      "elementos": "the curved light wood serving board lined with an elongated green leaf, exactly three seared salmon nigiri glazed and topped with seared foie gras cubes and dark truffle slices, exactly five spicy uramaki rolls coated in speckled light green creamy sauce with white and black sesame seeds, exactly two translucent rice paper rolls topped with chopped pink toro tartare and minced green herbs, and one fresh yellow pansy flower with a dark velvety center; resting entirely on a clean, plain, uniform neutral off-white surface with no props or surrounding tableware",
+      "recuento": "Exactly one curved wooden board, three seared salmon nigiri with foie and truffle, five cream-sauced uramaki pieces, two toro tartare rolls, and one yellow flower. Nothing else added.",
+      "camara": {
+        "anguloGrados": 40,
+        "descripcion": "elevated three-quarter studio view showing the entire wooden board entering diagonally from the bottom-left toward the center, leaving ample clean negative space in the upper right, the entire board and food fully within the frame without touching any edge",
+        "objetivoMm": 70,
+        "apertura": 5.6,
+        "giroGrados": 45,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "the whole wooden sushi board positioned boldly in the lower-left two thirds, floating with clean contours and soft contact shadows, guiding diagonal perspective toward the upper-right corner reserved for future bold brand typography",
+      "aire": "arriba-derecha",
+      "luz": "bright, even commercial studio lighting with crisp, soft-edged contact shadows underneath, specular glints on the torched salmon glaze and glossy tartare, clean uniform isolation background for seamless cut-out",
+      "colorDominante": "vibrant warm salmon orange and creamy pistachio green as the sole saturated accents against a clean neutral canvas"
+    },
+    "decisiones": [
+      "Familia F3 (Recorte sobre color pop): La referencia elegida (ref-pin-34) requiere que el producto quede totalmente aislado y recortado para recibir fondo de color plano y titular en la zona superior derecha; por eso se pide un fondo neutro liso, sin atrezo y con todo el plato contenido en el encuadre sin cortes.",
+      "Cambio radical de toma: La foto original era un picado a 55° cerrado y cortado por tres esquinas con fondo caótico. Se cambia a 40° tres cuartos con giro de 45° y objetivo de 70 mm a f/5.6 para tener nitidez en toda la tabla y un contorno limpio que facilite el recorte profesional.",
+      "Cero inventiva: Se conservan exactamente las piezas reales identificadas (3 nigiris con foie y trufa, 5 uramakis con salsa verde, 2 rollos de toro y 1 flor amarilla sobre la tabla curvada real), descartando objetos ajenos a la comida."
+    ],
+    "tomas": [
+      {
+        "elemento": "nigiri de salmón flameado con foie y trufa",
+        "huecos": {
+          "plato": "torched salmon nigiri topped with seared foie gras and truffle slice",
+          "origen": "from a modern Japanese restaurant",
+          "elementos": "the torched salmon nigiri glistening with caramelized glaze, seared score marks, topped with a golden-brown cube of seared foie gras and a delicate dark truffle slice, resting on pristine sushi rice on a portion of the clean light wood board",
+          "recuento": "Exactly two seared salmon nigiri with foie gras and truffle, shown in extreme crisp focus.",
+          "camara": {
+            "anguloGrados": 25,
+            "descripcion": "low macro perspective at 25 degrees, bringing the front nigiri massive and sharp into the lower third, with the second nigiri softly receding behind it, leaving the upper half of the frame clean and unobstructed",
+            "objetivoMm": 105,
+            "apertura": 3.5,
+            "giroGrados": 60,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "heroic macro shot where the sear marks, melting fat of the foie gras, and caramelized glaze fill the lower half, creating an intense tactile appetite appeal with generous clean negative space above",
+          "aire": "arriba",
+          "luz": "directional hard studio key light grazing across the fish surface to highlight charred edges, glossy sauce sheen, and fine rice grain definition against a clean seamless background",
+          "colorDominante": "intense rich glossy salmon orange and warm caramel tones"
+        }
+      },
+      {
+        "elemento": "rollitos de papel de arroz con tartar de toro",
+        "huecos": {
+          "plato": "toro tartare rolls wrapped in rice paper",
+          "origen": "from an upscale Japanese sushi bar",
+          "elementos": "translucent rice paper roll filled with delicate ingredients, crowned with finely minced pink toro tuna tartare, sprinkled black sesame seeds, and delicate chopped fresh green micro-herbs, resting on the clean light wooden surface",
+          "recuento": "Exactly two toro tartare rolls, placed side by side.",
+          "camara": {
+            "anguloGrados": 30,
+            "descripcion": "tight eye-level close-up at 30 degrees, placing the two rolls prominently in the bottom center, showcasing the fresh raw fish texture with clean negative headroom above",
+            "objetivoMm": 90,
+            "apertura": 4,
+            "giroGrados": 90,
+            "distancia": "PRIMER_PLANO"
+          },
+          "ideaGrafica": "the delicate jewel-like pink tuna tartare and translucent rice paper wrapper dominate the lower center, highlighting freshness and artisanal prep while keeping the top half entirely free for text",
+          "aire": "arriba",
+          "luz": "crisp, bright side-angled studio flash capturing the glistening moisture and velvety marbling of the chopped toro tuna and the sheen of the seeds",
+          "colorDominante": "soft tender pink tuna and fresh emerald green against a neutral studio backdrop"
+        }
+      }
+    ]
+  },
+  "prompt": "@image1 is a real photo of sharing sushi board with torched salmon nigiri topped with foie and truffle, spicy tuna uramaki, and toro tartare rolls from an upscale modern Japanese sushi bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the curved light wood serving board lined with an elongated green leaf, exactly three seared salmon nigiri glazed and topped with seared foie gras cubes and dark truffle slices, exactly five spicy uramaki rolls coated in speckled light green creamy sauce with white and black sesame seeds, exactly two translucent rice paper rolls topped with chopped pink toro tartare and minced green herbs, and one fresh yellow pansy flower with a dark velvety center; resting entirely on a clean, plain, uniform neutral off-white surface with no props or surrounding tableware. Exactly one curved wooden board, three seared salmon nigiri with foie and truffle, five cream-sauced uramaki pieces, two toro tartare rolls, and one yellow flower. Nothing else added. Nothing else added. New composition by a professional food photographer: elevated three-quarter studio view showing the entire wooden board entering diagonally from the bottom-left toward the center, leaving ample clean negative space in the upper right, the entire board and food fully within the frame without touching any edge, 70 mm lens at f/5.6, the whole wooden sushi board positioned boldly in the lower-left two thirds, floating with clean contours and soft contact shadows, guiding diagonal perspective toward the upper-right corner reserved for future bold brand typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright, even commercial studio lighting with crisp, soft-edged contact shadows underneath, specular glints on the torched salmon glaze and glossy tartare, clean uniform isolation background for seamless cut-out, vibrant warm salmon orange and creamy pistachio green as the sole saturated accents against a clean neutral canvas. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "familia": "F3",
+    "estetica": "COLOR_POP"
+  }
+}

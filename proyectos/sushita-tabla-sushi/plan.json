@@ -13,9 +13,6 @@
       "intencion": "intenciones/detalle-2.json"
     },
     {
-      "intencion": "intenciones/detalle-3.json"
-    },
-    {
       "intencion": "intenciones/cierre.json"
     }
   ],

@@ -1,0 +1,211 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "detalle-2",
+  "version": 3,
+  "titulo": "Sushita Chinitas · Tabla de sushi para compartir: nigiri de salmón con foie y · detalle-2",
+  "notas": "Idea: El impacto visual de una generosa tabla de sushi contemporáneo recortada sobre fondo gráfico de color. Foco: el plato. De la referencia se toma: Composición pop con producto recortado en primer plano y partición de fondos; Titular contundente de escala masiva en la parte superior; Jerarquía estricta con apoyo breve y firma corporativa. No se copia: El grafismo de la rama de cerezo y los palillos; La tira de papel rasgado y la oferta porcentual; La paleta roja brillante ajena a la identidad de Sushita. Voz «anotacion» (caveat): propuesta del estudio, pendiente de confirmar con el local.",
+  "marca": "sushita-chinitas",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {
+      "plato": "#955F35"
+    },
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@oro",
+        "rasgos": []
+      },
+      "acento": {
+        "fuente": "kaushan-script",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 0.95,
+        "color": "@oro",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "sushita-tabla-sushi-foto-1",
+    "detalle1": "sushita-tabla-sushi-toma-1",
+    "detalle2": "sushita-tabla-sushi-toma-2"
+  },
+  "textos": {
+    "titular": "rollitos de papel",
+    "estado": "envueltos en papel de arroz"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "relleno",
+      "color": "@negro"
+    },
+    {
+      "id": "sombra",
+      "opacidad": 0.45,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "sombra",
+      "de": "plato",
+      "modo": "proyectada",
+      "color": "#000000",
+      "desenfoque": 36,
+      "desplazamiento": {
+        "x": 0,
+        "y": 26
+      },
+      "ancho": 0.8,
+      "alto": 30
+    },
+    {
+      "id": "plato",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "recorte",
+      "activo": "detalle2",
+      "escala": {
+        "anchoSujeto": 0.92
+      },
+      "ancla": {
+        "caja": {
+          "x": 0.0667,
+          "y": 0.4474,
+          "w": 0.8667,
+          "h": 0.5026
+        },
+        "alinear": "centro"
+      },
+      "sangradoAbajo": 0,
+      "bordeSuave": 0.8,
+      "contraerBorde": 1,
+      "giro": 6,
+      "filo": {
+        "color": "@blanco",
+        "grosor": 14
+      }
+    },
+    {
+      "id": "titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1068,
+        "w": 0.8667,
+        "h": 0.162
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@blanco"
+    },
+    {
+      "id": "nota",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@estado",
+      "estilo": "anotacion",
+      "caja": {
+        "x": 0.3593,
+        "y": 0.2771,
+        "w": 0.5741,
+        "h": 0.1052
+      },
+      "ajuste": "fijo",
+      "tamano": 46,
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@oro"
+    },
+    {
+      "id": "nota-flecha",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "trazo",
+      "gesto": "flecha",
+      "desde": {
+        "x": 0.5315,
+        "y": 0.3863
+      },
+      "hasta": {
+        "x": 0.56,
+        "y": 0.72
+      },
+      "curva": 0.3,
+      "cabeza": "abierta",
+      "color": "@oro",
+      "grosor": 5,
+      "temblor": 0.4,
+      "huecos": 0
+    },
+    {
+      "id": "papel",
+      "opacidad": 1,
+      "fusion": "soft-light",
+      "oculta": false,
+      "tipo": "textura",
+      "recurso": "papel",
+      "intensidad": 0.1,
+      "escala": 1.6,
+      "semilla": 7
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "titular",
+      "ratio": 3
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "titular"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ],
+  "estetica": "COLOR_POP",
+  "oficio": {
+    "saltoMinimo": 3.5,
+    "palabrasMaximas": 30,
+    "nivelesMaximos": 4,
+    "vocesMaximas": 3,
+    "gestosMaximos": 1,
+    "recursosMaximos": 3
+  },
+  "padre": 2
+}
