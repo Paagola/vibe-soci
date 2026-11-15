@@ -61,6 +61,8 @@ export interface EntradaDiseno {
   estetica?: Estetica;
   /** Punto 1: un carrusel (portada, detalles y cierre). */
   formato?: 'post' | 'carrusel';
+  /** F3.3 (punto 14): la huella tipográfica del local y la regla de mezcla, en texto para el director. */
+  huella?: string;
 }
 
 export interface Intento {
@@ -130,6 +132,7 @@ export async function proponerDiseno(deps: DepsProponerDiseno, entrada: EntradaD
     titularCreativo: entrada.titularCreativo ?? false,
     estetica,
     ...(entrada.formato ? { formato: entrada.formato } : {}),
+    ...(entrada.huella ? { huella: entrada.huella } : {}),
   };
   const tieneMascara = Boolean(entrada.foto.rutaMascara);
   const contexto = {

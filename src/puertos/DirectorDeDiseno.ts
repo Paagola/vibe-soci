@@ -40,6 +40,8 @@ export interface EncargoDeDiseno {
   titularCreativo: boolean;
   /** Punto 10: la estética del encargo (manda sobre la foto y el diseño). */
   estetica?: Estetica;
+  /** F3.3 (punto 14): la huella tipográfica del local, los efectos de la referencia y la regla de mezcla, en texto. */
+  huella?: string;
   /** Punto 1: un carrusel lleva, además de la portada, los detalles («carrusel.detalles»). */
   formato?: 'post' | 'carrusel';
 }

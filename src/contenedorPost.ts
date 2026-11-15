@@ -17,6 +17,7 @@ import { AlmacenReferenciasFicheros } from './adaptadores/ficheros/AlmacenRefere
 import { BibliotecaDeReferenciasFicheros } from './adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
 import { BibliotecaFicheros } from './adaptadores/ficheros/BibliotecaFicheros.js';
 import { GaleriaDisenosFicheros } from './adaptadores/ficheros/GaleriaDisenosFicheros.js';
+import { HistorialDeDisenosFicheros } from './adaptadores/ficheros/HistorialDeDisenosFicheros.js';
 import { PiezasHechasFicheros } from './adaptadores/ficheros/PiezasHechasFicheros.js';
 import { ClienteGemini } from './adaptadores/gemini/ClienteGemini.js';
 import { AnalistaReferenciasGemini } from './adaptadores/gemini/AnalistaReferenciasGemini.js';
@@ -105,6 +106,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     componedor: new ComponedorProyectos(RAIZ, datos),
     galeria: new GaleriaDisenosFicheros(join(datos, 'disenos')),
     galeriaDeBorradores: new GaleriaDisenosFicheros(CARPETA_DE_BORRADORES),
+    historial: new HistorialDeDisenosFicheros(datos),
     ahora,
   };
   const medidor = new MedidorDeFotoSharp();

@@ -42,6 +42,8 @@ import { proponerFotoNueva } from '../fotos/proponerFotoNueva.js';
 import { comprobarReferencia } from '../referencias/comprobarReferencia.js';
 import { analizarReferencia } from '../referencias/analizarReferencia.js';
 import type { AnalistaDeReferencias } from '../../puertos/AnalistaDeReferencias.js';
+import type { HistorialDeDisenos } from '../../puertos/HistorialDeDisenos.js';
+import { efectosDeLaReferencia, huellaDelLocal, textoDeHuella } from '../../dominio/diseno/huella.js';
 import type { DepsReferencias } from '../referencias/dependencias.js';
 
 export interface DepsPost {
@@ -61,6 +63,8 @@ export interface DepsPost {
    * persona). La prueba en el compositor la pone la orden, con el mismo componedor.
    */
   disenador?: Omit<DepsProponerDiseno, 'probar'>;
+  /** F3.3 (punto 14): las piezas anteriores del local, para su huella tipográfica. */
+  historial?: HistorialDeDisenos;
   /** Puntos 3 y 4: escribe la ficha de una referencia nueva (y mira si es un post de verdad). Sin él, se pide a mano. */
   analista?: AnalistaDeReferencias;
   ahora: () => string;
@@ -562,6 +566,14 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
     referencia = { id: r.id, ...(r.ficha ? { ficha: r.ficha } : {}), ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}) };
   }
   const tokensMarca = Tokens.parse(JSON.parse(await readFile(rutaTokens, 'utf8')));
+  // Punto 14: la huella tipográfica del local (sus piezas anteriores y su marca) y los efectos de la referencia.
+  let huella: string | undefined;
+  if (deps.historial) {
+    const describir = disenador.describirFuente ?? ((f: string) => f);
+    const h = huellaDelLocal(e.local, await deps.historial.intencionesDelLocal(e.local), tokensMarca, (f) => /script|manuscrit|pincel|florituras|caligr/i.test(describir(f)));
+    await deps.historial.guardarHuella(e.local, h);
+    huella = textoDeHuella(h, efectosDeLaReferencia(referencia?.ficha));
+  }
   return proponerDiseno(
     { ...disenador, probar: (intencion) => probarIntencion(deps, e, rutaTokens, intencion) },
     {
@@ -576,6 +588,7 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
       titularCreativo: e.titularCreativo,
       ...(e.estetica ? { estetica: e.estetica } : {}),
       formato: e.formato,
+      ...(huella ? { huella } : {}),
     },
   );
 }
