@@ -15,7 +15,8 @@ export function liberarGeometrias() {
 }
 
 const r3 = (n) => Math.round(n * 1000) / 1000;
-export const caja = (w, h, d, r = 0.012, seg = 2) => geo(`caja:${r3(w)}:${r3(h)}:${r3(d)}:${r3(r)}:${seg}`, () => new RoundedBoxGeometry(w, h, d, seg, Math.max(0.0005, Math.min(r, w / 2.2, h / 2.2, d / 2.2))));
+/** Caja redondeada. Las pequeñas (< 0,5 m) con un solo segmento de bisel: con sombreado por escalones no se nota y ahorra triángulos. */
+export const caja = (w, h, d, r = 0.012, seg = Math.max(w, h, d) < 0.5 ? 1 : 2) => geo(`caja:${r3(w)}:${r3(h)}:${r3(d)}:${r3(r)}:${seg}`, () => new RoundedBoxGeometry(w, h, d, seg, Math.max(0.0005, Math.min(r, w / 2.2, h / 2.2, d / 2.2))));
 export const cil = (rt, rb, h, s = 16, abierto = false) => geo(`cil:${r3(rt)}:${r3(rb)}:${r3(h)}:${s}:${abierto}`, () => new THREE.CylinderGeometry(rt, rb, h, s, 1, abierto));
 export const esfera = (r, a = 16, b = 12) => geo(`esf:${r3(r)}:${a}:${b}`, () => new THREE.SphereGeometry(r, a, b));
 export const toro = (r, t, a = 10, b = 24, arco = Math.PI * 2) => geo(`toro:${r3(r)}:${r3(t)}:${a}:${b}:${r3(arco)}`, () => new THREE.TorusGeometry(r, t, a, b, arco));
