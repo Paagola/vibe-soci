@@ -181,8 +181,10 @@ export function montarDiorama(contenedor, opciones = {}) {
     linea.textContent = resumen(estado);
     if (!escena) return false;
     const cambio = escena.actualizar(estado, t);
-    if (cambio) interaccion?.refrescar();
-    dibujarSiQuieto();
+    if (cambio) {
+      interaccion?.refrescar();
+      dibujarSiQuieto();
+    }
     return cambio;
   }
   function programarSondeo() {
