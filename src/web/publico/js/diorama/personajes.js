@@ -153,16 +153,20 @@ function poseMesa(t, { mano = 0, amplitud = 0.08, cabeza = 0.45, izquierda = nul
 /** Trabajo de cada profesional (solo con dato real). `k`: avance del trabajo contado (0..1) o un ciclo si es en vivo. */
 export function poseTrabajo(id, t, { sella = false, k = 0 } = {}) {
   if (id === 'directorFoto') {
-    // Examina la foto, consulta la pantalla (referencias) y anota: ciclo de 6 s.
-    const c = t % 6;
-    const anota = poseMesa(t, { mano: t * 9, amplitud: 0.06, cabeza: 0.5 });
-    const consulta = { ...poseMesa(t, { mano: 0, amplitud: 0, cabeza: 0.12 }), head: [0.12, 0.25, 0], shoulderR: [-0.3, 0, 0.1], elbowR: [-1.3, 0, 0] };
-    return mixPose(anota, consulta, ventana(c, 3.2, 5.0, 0.5));
+    // Examina la foto, consulta la pantalla (referencias) y anota: ciclo de 4 s, con trazos que se leen a distancia.
+    const c = t % 4;
+    const anota = { ...poseMesa(t, { mano: t * 7, amplitud: 0.14, cabeza: 0.55 }), torso: [0.26 + 0.04 * Math.sin(t * 3.5), 0.08 * Math.sin(t * 1.2), 0] };
+    const consulta = { ...poseMesa(t, { mano: 0, amplitud: 0, cabeza: 0.12 }), head: [0.1, 0.3, 0], torso: [0.12, 0.2, 0], shoulderR: [-0.35, 0, 0.1], elbowR: [-1.35, 0, 0] };
+    return mixPose(anota, consulta, ventana(c, 2.0, 3.3, 0.4));
   }
   if (id === 'revisor') {
     // Inclina la cabeza y pasa la lupa por la foto; compara con las pantallas; al terminar, sella.
     const c = t % 5;
-    const lupa = { ...poseMesa(t, { mano: t * 2.2, amplitud: 0.1, cabeza: 0.55, izquierda: { shoulderL: [-0.2, 0, -0.2], elbowL: [-1.0, 0, 0] } }), head: [0.55, 0, 0.18 * Math.sin(t * 0.8)] };
+    const lupa = {
+      ...poseMesa(t, { mano: t * 2.6, amplitud: 0.18, cabeza: 0.55, izquierda: { shoulderL: [-0.2, 0, -0.2], elbowL: [-1.0, 0, 0] } }),
+      torso: [0.26 + 0.03 * Math.sin(t * 2.6), 0.1 * Math.sin(t * 1.3), 0],
+      head: [0.55, 0.12 * Math.sin(t * 1.3), 0.22 * Math.sin(t * 0.8)],
+    };
     const compara = { ...lupa, head: [0.15, -0.3, 0], torso: [0.12, -0.15, 0] };
     let pose = mixPose(lupa, compara, ventana(c, 3.4, 4.6, 0.4));
     if (sella) {
