@@ -1,0 +1,130 @@
+{
+  "A-sin-image2": {
+    "coste": 0.140184,
+    "modelo": "gemini-3-pro-image",
+    "prompt": "@image1 is a real photo of assorted gourmet sushi board at a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board. Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower. Nothing else added. New composition by a professional food photographer: low-angle three-quarter view at 20 degrees, 85 mm lens at f/4, wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Hard studio flash from the side with short crisp shadows and glossy specular highlights, warm salmon orange and neutral timber tones. Photographic realism, no text.",
+    "aire": {
+      "arriba-derecha": 0.833,
+      "arriba": 0.583
+    },
+    "sujeto": {
+      "col": [
+        1,
+        12
+      ],
+      "fila": [
+        2,
+        16
+      ],
+      "area": 0.602
+    },
+    "checklist": {
+      "elementos": [
+        {
+          "nombre": "seared salmon nigiri with foie gras",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Se observan 4 piezas."
+        },
+        {
+          "nombre": "uramaki with pale-green sauce",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Se observan 4 piezas en fila."
+        },
+        {
+          "nombre": "tuna rolls topped with tartare",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Distribución idéntica a la original."
+        },
+        {
+          "nombre": "yellow pansy flower",
+          "esperado": 1,
+          "visto": 1,
+          "presente": true,
+          "nota": "Una flor amarilla presente."
+        },
+        {
+          "nombre": "light blonde wooden board",
+          "esperado": null,
+          "visto": null,
+          "presente": true,
+          "nota": "Tabla de madera presente."
+        }
+      ],
+      "anatomia": [],
+      "anadidos": [],
+      "textoNuevo": [],
+      "copiadoDeReferencia": [],
+      "seguro": true
+    }
+  },
+  "B-con-image2": {
+    "coste": 0.141296,
+    "modelo": "gemini-3-pro-image",
+    "prompt": "@image1 is a real photo of assorted gourmet sushi board at a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. @image2 is a published reference post used ONLY as a style reference: take its lighting, camera angle, background treatment, colour mood and how much clean space it leaves for typography. Never copy its food, props, text, logos or layout of elements; every element in the new photo comes from @image1. The new photograph must contain the same real elements: four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board. Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower. Nothing else added. New composition by a professional food photographer: low-angle three-quarter view at 20 degrees, 85 mm lens at f/4, wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Hard studio flash from the side with short crisp shadows and glossy specular highlights, warm salmon orange and neutral timber tones. Photographic realism, no text.",
+    "aire": {
+      "arriba-derecha": 0.833,
+      "arriba": 0.583
+    },
+    "sujeto": {
+      "col": [
+        1,
+        12
+      ],
+      "fila": [
+        2,
+        16
+      ],
+      "area": 0.581
+    },
+    "checklist": {
+      "elementos": [
+        {
+          "nombre": "seared salmon nigiri with caramelized foie gras and glaze",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Cuatro piezas idénticas a la foto original."
+        },
+        {
+          "nombre": "uramaki drenched in pale-green creamy sauce with sesame",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Cuatro piezas visibles con salsa y sésamo."
+        },
+        {
+          "nombre": "tuna rolls topped with tartare",
+          "esperado": 4,
+          "visto": 4,
+          "presente": true,
+          "nota": "Tres piezas visibles en primer plano y una al fondo."
+        },
+        {
+          "nombre": "yellow pansy flower",
+          "esperado": 1,
+          "visto": 1,
+          "presente": true,
+          "nota": "Una flor preservada sobre la tabla."
+        },
+        {
+          "nombre": "light blonde wooden board",
+          "esperado": null,
+          "visto": null,
+          "presente": true,
+          "nota": "Tabla de madera clara conservada."
+        }
+      ],
+      "anatomia": [],
+      "anadidos": [],
+      "textoNuevo": [],
+      "copiadoDeReferencia": [],
+      "seguro": true
+    }
+  }
+}
