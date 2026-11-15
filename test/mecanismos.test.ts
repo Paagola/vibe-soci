@@ -275,6 +275,10 @@ describe('F3.3 · tratamiento de la referencia y elementos gráficos de la esté
     const iPlato = r.capas.indexOf(plato);
     assert.ok(r.capas.findIndex((c) => c.tipo === 'forma' && c.figura === 'circulo') < iPlato, 'el disco, detrás del plato');
     assert.ok(r.capas.some((c) => c.tipo === 'patron' && c.motivo === 'puntos'));
+    // TRAMA: el patrón de línea de olas, flojo y por detrás de todo (justo encima del campo).
+    const conTrama = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: ['TRAMA'], graficos: { tipos: [], maximo: 0 } }));
+    const olas = conTrama.capas.findIndex((c) => c.tipo === 'patron' && c.motivo === 'olas' && c.suave);
+    assert.equal(olas, 1, 'justo encima del fondo');
     // Sin tratamientos ni gráficos (editorial), nada de eso.
     const sobrio = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: [], graficos: { tipos: [], maximo: 0 } }));
     assert.ok(!sobrio.capas.some((c) => c.tipo === 'textura' || c.tipo === 'patron' || c.tipo === 'trazo' || (c.tipo === 'forma' && c.figura === 'circulo')));

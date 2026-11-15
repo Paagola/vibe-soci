@@ -453,6 +453,12 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
       capas.push({ tipo: 'forma', figura: 'filete', caja: { col: [9, 12], fila: [2, 2] }, color: `@${sobre(campo, undefined, 3).token}`, plano: 'frente' });
     }
   }
+  // TRAMA o ICONOS_DE_LINEA: un patrón de línea (olas seigaiha) muy flojo sobre el campo, por detrás de todo: la textura
+  // del fondo de los flyers japoneses. Iconos de línea propios (cerezo, palillos…) no hay: el patrón es lo más cercano.
+  if (trata.has('TRAMA') || trata.has('ICONOS_DE_LINEA')) {
+    capas.splice(1, 0, { tipo: 'patron', motivo: 'olas', caja: { col: [1, COLUMNAS], fila: [1, 16] }, color: `@${sobre(campo, clara.token, 1.5).token}`, suave: true, plano: 'fondo' });
+    notas.push('Un patrón de línea de olas, muy flojo, sobre el campo (tratamiento de la referencia).');
+  }
   // PAPEL: la fibra de un papel sin estucar sobre todo, muy suave.
   if (trata.has('PAPEL')) capas.push({ tipo: 'textura', recurso: 'papel', intensidad: 0.1 });
   notas.push(`Campo @${campo.token} partido en diagonal con @${diagonal.token}; el plato recortado, girado y cortado por el borde.`);

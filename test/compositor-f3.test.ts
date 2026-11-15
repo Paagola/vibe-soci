@@ -788,3 +788,26 @@ describe('F3.3 · filo de pegatina', () => {
     assert.deepEqual([png[i], png[i + 1], png[i + 2]].map((v) => v! > 240), [true, true, true]);
   });
 });
+
+describe('F3.3 · patrón de línea de olas', () => {
+  it('pinta arcos finos, solo dentro de su caja, y flojo con la opacidad pedida', async () => {
+    const olas = { id: 'o', tipo: 'patron', motivo: 'olas', caja: { x: 0, y: 0, w: 0.5, h: 1 }, color: '#FFFFFF', paso: 80, opacidad: 0.5 };
+    const r = await pintar(intencion([{ id: 'fondo', tipo: 'relleno', color: '@negro' }, olas], {}));
+    const png = await sharp(r.render.png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { width, height } = png.info;
+    let izquierda = 0;
+    let derecha = 0;
+    let maximo = 0;
+    for (let y = 0; y < height; y += 2) {
+      for (let x = 0; x < width; x += 2) {
+        const v = png.data[(y * width + x) * 3]!;
+        if (x < width / 2 - 4) izquierda += v > 60 ? 1 : 0;
+        else if (x > width / 2 + 4) derecha += v > 60 ? 1 : 0;
+        maximo = Math.max(maximo, v);
+      }
+    }
+    assert.ok(izquierda > 500, `líneas a la izquierda: ${izquierda}`);
+    assert.equal(derecha, 0, 'nada fuera de la caja');
+    assert.ok(maximo < 200, `flojo: ${maximo}`);
+  });
+});

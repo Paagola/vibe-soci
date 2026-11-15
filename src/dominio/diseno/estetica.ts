@@ -105,7 +105,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'Campos planos de dos colores de la marca partidos en diagonal; el producto es el único color fotográfico.',
       limites: { ...LIMITES_EDITORIALES, recursosMaximos: 3, vocesMaximas: 3 },
       graficos: { tipos: ['circulo', 'puntos'], maximo: 2 },
-      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO'],
+      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO', 'TRAMA', 'ICONOS_DE_LINEA'],
     },
   },
   MAXIMALISMO: {
@@ -125,7 +125,7 @@ export const ESTETICAS: Record<Estetica, ParametrosDeEstetica> = {
       color: 'Todos los colores de la marca a la vez, en bloques; tinta impresa y sellos.',
       limites: { saltoMinimo: 2.5, palabrasMaximas: 45, nivelesMaximos: 5, vocesMaximas: 3, gestosMaximos: 3, recursosMaximos: 5 },
       graficos: { tipos: ['mancha', 'circulo', 'puntos', 'filete'], maximo: 4 },
-      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO', 'TRAMA', 'COLLAGE'],
+      tratamientos: ['PEGATINA', 'PAPEL', 'PINCEL', 'TINTA', 'ILUSTRADO', 'TRAMA', 'ICONOS_DE_LINEA', 'COLLAGE'],
     },
   },
   MEDITERRANEO_LUMINOSO: {

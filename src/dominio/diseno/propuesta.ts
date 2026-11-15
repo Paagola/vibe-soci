@@ -103,7 +103,7 @@ const Plano = z.enum(['fondo', 'frente']).describe('fondo: por detrás del plato
 
 const CapaPatron = z.object({
   tipo: z.literal('patron'),
-  motivo: z.enum(['palabra', 'puntos', 'cuadros', 'rayas']),
+  motivo: z.enum(['palabra', 'puntos', 'cuadros', 'rayas', 'olas']).describe('olas: patrón de línea de olas japonesas (seigaiha), suave, de textura.'),
   caja: Celdas.optional().describe('Sin caja, todo el lienzo.'),
   color: Token,
   texto: Id.optional().describe('palabra: clave de «textos».'),
@@ -113,6 +113,7 @@ const CapaPatron = z.object({
   contornoAlterno: z.boolean().optional().describe('palabra: una fila rellena y otra en contorno.'),
   giro: Giro.optional(),
   desvanece: z.enum(['no', 'arriba', 'abajo', 'izquierda', 'derecha', 'centro']).optional().describe('puntos: hacia dónde se apagan.'),
+  suave: z.boolean().optional().describe('De textura: muy flojo (al 16 %), por detrás de todo.'),
   plano: Plano.optional(),
   tinta: NivelDeTinta.optional(),
 });
@@ -694,6 +695,8 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           ...(x.motivo === 'puntos' ? { paso: 20, tamano: [0.38, 0], desvanece: x.desvanece ?? 'abajo' } : {}),
           ...(x.motivo === 'cuadros' ? { paso: 36 } : {}),
           ...(x.motivo === 'rayas' ? { paso: 24, tamano: [0.5, 0.5], angulo: 60 } : {}),
+          ...(x.motivo === 'olas' ? { paso: 120 } : {}),
+          ...(x.suave ? { opacidad: 0.16 } : {}),
           ...(x.giro ? { giro: x.giro } : {}),
           ...(detras && sujetoFantasma ? { recortarCon: { sujeto: 'plato', modo: 'fuera' } } : {}),
           ...tintaDe(x.tinta),

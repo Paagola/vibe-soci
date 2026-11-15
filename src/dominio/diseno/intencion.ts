@@ -369,11 +369,12 @@ export const CapaSello = z.object({
  * - `palabra`: la palabra en filas a todo lo ancho; el producto tapa las del centro.
  * - `puntos`: un campo de semitonos, que puede desvanecerse (el «aire» con textura, no un degradado).
  * - `cuadros` y `rayas`: la tira de cuadros de post-5 y post-25, o un rayado.
+ * - `olas` (F3.3): un patrón de línea de olas japonesas (seigaiha), escamas de arcos concéntricos que se tapan por filas.
  */
 export const CapaPatron = z.object({
   ...base,
   tipo: z.literal('patron'),
-  motivo: z.enum(['palabra', 'puntos', 'cuadros', 'rayas']),
+  motivo: z.enum(['palabra', 'puntos', 'cuadros', 'rayas', 'olas']),
   /** Zona que ocupa; por defecto, todo el lienzo. Lo que se sale de la caja no se pinta. */
   caja: Caja.optional(),
   color: Color,

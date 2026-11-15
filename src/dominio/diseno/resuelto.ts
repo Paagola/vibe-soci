@@ -173,7 +173,7 @@ export type CapaResuelta = BaseResuelta &
       }
     | {
         tipo: 'patron';
-        motivo: 'palabra' | 'puntos' | 'cuadros' | 'rayas';
+        motivo: 'palabra' | 'puntos' | 'cuadros' | 'rayas' | 'olas';
         rect: Rect;
         color: string;
         giro: number;

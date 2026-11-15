@@ -333,6 +333,28 @@ export class CompositorSharp implements Compositor {
       return vectorial(lienzo, `<g opacity="${capa.opacidad}"${giro}><path d="${d}" fill="${capa.color}"${capa.giro ? '' : ' shape-rendering="crispEdges"'}/></g>`);
     }
 
+    if (capa.motivo === 'olas') {
+      // Seigaiha: escamas de radio R cada 2R, filas cada R/2 y las impares a media escama. Cada escama tapa con su relleno
+      // lo de las filas anteriores; se pinta en blanco sobre negro y eso hace de alfa del color (así tapa sin saber el fondo).
+      const R = capa.paso! / 2;
+      const linea = Math.max(1.5, R * 0.07).toFixed(2);
+      let escamas = '';
+      for (let j = 0, y = r.y - R; y <= r.y + r.h + R; j++, y += R / 2) {
+        for (let x = r.x - R + (j % 2 ? R : 0); x <= r.x + r.w + R; x += 2 * R) {
+          escamas += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><circle r="${R}" fill="#000"/>${[0.92, 0.66, 0.4].map((f) => `<circle r="${(R * f).toFixed(1)}" fill="none" stroke="#fff" stroke-width="${linea}"/>`).join('')}</g>`;
+        }
+      }
+      const mascara = await sharp(Buffer.from(documentoSvg(lienzo, `<rect width="${lienzo.ancho}" height="${lienzo.alto}" fill="#000"/><g clip-path="url(#marco)"><g${giro}>${escamas}</g></g>`, 1, marco)))
+        .extractChannel(0)
+        .linear(capa.opacidad, 0)
+        .raw()
+        .toBuffer();
+      return sharp({ create: { width: lienzo.ancho, height: lienzo.alto, channels: 3, background: capa.color } })
+        .joinChannel(mascara, { raw: { width: lienzo.ancho, height: lienzo.alto, channels: 1 } })
+        .png()
+        .toBuffer();
+    }
+
     if (capa.motivo === 'rayas') {
       const p = capa.paso!;
       const trama = `<pattern id="p" width="${p}" height="${p}" patternUnits="userSpaceOnUse" patternTransform="rotate(${capa.angulo} ${cx} ${cy})"><rect width="${p}" height="${(p * capa.radios![0]).toFixed(2)}" fill="${capa.color}"/></pattern>`;
