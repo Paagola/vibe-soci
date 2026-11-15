@@ -11,7 +11,7 @@ import sharp from 'sharp';
 import type { Activo } from '../../dominio/activos.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
-import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
+import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { FamiliaBiblioteca, ReferenciaLocal } from '../../dominio/referencia.js';
@@ -336,7 +336,7 @@ function queEspera(
 
 async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: number; alto: number }): Promise<DetallePropuesta | null> {
   const archivo = e.propuesta?.archivo ?? 'foto/propuesta.json';
-  let guardada: { director?: unknown; fecha?: unknown; propuesta?: unknown } | undefined;
+  let guardada: { director?: unknown; fecha?: unknown; propuesta?: unknown; opcionesPrompt?: OpcionesDePrompt } | undefined;
   try {
     guardada = (await leerJsonSiExiste(join(deps.proyectos, e.proyecto, archivo))) as typeof guardada;
   } catch (error) {
@@ -351,7 +351,7 @@ async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: numb
     valida: true,
     errores: [],
     contenido: leida.data,
-    prompt: montarPromptFotoNueva(leida.data.huecos),
+    prompt: montarPromptFotoNueva(leida.data.huecos, guardada.opcionesPrompt),
     problemas: problemasFotoNueva(leida.data, lado),
     toma: esOtraToma(leida.data.descripcion, leida.data.huecos.camara),
   };

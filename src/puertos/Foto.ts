@@ -1,4 +1,4 @@
-import type { PropuestaFotoNueva } from '../dominio/fotoNueva.js';
+import type { OpcionesDePrompt, PropuestaFotoNueva } from '../dominio/fotoNueva.js';
 
 /** Lo que recibe el director de fotografía para proponer la foto nueva. */
 export interface EncargoDeFoto {
@@ -8,6 +8,8 @@ export interface EncargoDeFoto {
   plato: string;
   /** La referencia del post: su ficha en palabras y, si la hay, su imagen (solo para el director). */
   referencia?: { id: string; resumen: string; imagen?: string };
+  /** Cómo se montará el prompt: si el generador verá la referencia (@image2) y su familia (F1/F3: fondo para recortar). */
+  alGenerador?: OpcionesDePrompt;
 }
 
 /** Rellena la plantilla de foto nueva (dominio/fotoNueva.ts). */

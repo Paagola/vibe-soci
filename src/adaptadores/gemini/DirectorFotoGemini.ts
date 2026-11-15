@@ -32,6 +32,7 @@ export class DirectorFotoGemini implements DirectorDeFoto {
       ancho: meta.width ?? 0,
       alto: meta.height ?? 0,
       ...(e.referencia ? { referencia: { id: e.referencia.id, resumen: e.referencia.resumen } } : {}),
+      ...(e.alGenerador ? { alGenerador: e.alGenerador } : {}),
     };
     const partes: ParteGemini[] = [
       { text: textoFotoNueva(encargo, problemasPrevios) },

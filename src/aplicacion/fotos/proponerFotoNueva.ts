@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
+import { montarPromptFotoNueva, problemasFotoNueva, type OpcionesDePrompt, type PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
 import type { DirectorDeFoto, EncargoDeFoto } from '../../puertos/Foto.js';
 
 export interface ResultadoPropuesta {
@@ -8,6 +8,8 @@ export interface ResultadoPropuesta {
   /** Lo que sigue sin cumplir tras el reintento (vacío si todo cumple). */
   problemas: string[];
   intentos: Array<{ problemas: string[] }>;
+  /** Cómo se montó el prompt (se guarda con la propuesta para volver a montarlo igual). */
+  opcionesPrompt: OpcionesDePrompt;
 }
 
 /**
@@ -27,5 +29,5 @@ export async function proponerFotoNueva(director: DirectorDeFoto, encargo: Encar
     if (problemas.length === 0) break;
   }
   if (!propuesta) throw new Error('El director no respondió.');
-  return { propuesta, prompt: montarPromptFotoNueva(propuesta.huecos), problemas, intentos };
+  return { propuesta, prompt: montarPromptFotoNueva(propuesta.huecos, encargo.alGenerador), problemas, intentos, opcionesPrompt: encargo.alGenerador ?? {} };
 }

@@ -36,7 +36,7 @@ La foto nueva puede cambiar libremente la cámara, la luz, el fondo, la superfic
 Mira la imagen 2 con mucho detalle, zona por zona, como si la ampliaras. Cuenta de verdad: cabezas, colas, cuerpos, piezas.
 Respondes solo con JSON.`;
 
-export function textoChecklist(lista: string): string {
+export function textoChecklist(lista: string, conReferencia = false): string {
   return `Lista confirmada de elementos de la foto real (tal como se pidió al generador):
 «${lista}»
 
@@ -45,8 +45,8 @@ Para la imagen 2:
 - "anatomia": problemas de anatomía o forma (una cabeza o una cola de más o de menos, cuerpos fundidos, piezas cortadas que no deberían). Vacío si no hay.
 - "anadidos": objetos, alimentos o vajilla de la imagen 2 que NO están en la lista (un posavasos, un plato de más, hierbas, un limón…). La superficie y el fondo no cuentan. Vacío si no hay.
 - "textoNuevo": letras, palabras o logotipos visibles en la imagen 2 que NO están en la imagen 1. Vacío si no hay.
-- "seguro": false si alguna respuesta es dudosa.
-JSON: {"elementos":[{"nombre":"…","esperado":2,"visto":2,"presente":true,"nota":"…"}],"anatomia":[],"anadidos":[],"textoNuevo":[],"seguro":true}`;
+${conReferencia ? '- "copiadoDeReferencia": lo que la imagen 2 ha copiado de la imagen 3 (el post de referencia): sus letras, palabras o logotipos, su comida, sus objetos (palillos, papel, ramas, códigos QR…) o su composición de elementos. Copiar su luz, su ángulo, su fondo o su color NO cuenta. Vacío si no hay.\n' : ''}- "seguro": false si alguna respuesta es dudosa.
+JSON: {"elementos":[{"nombre":"…","esperado":2,"visto":2,"presente":true,"nota":"…"}],"anatomia":[],"anadidos":[],"textoNuevo":[],${conReferencia ? '"copiadoDeReferencia":[],' : ''}"seguro":true}`;
 }
 
 export const INSTRUCCIONES_TOMA = `Eres un fotógrafo profesional. Te enseñan dos fotos del mismo plato: imagen 1 (la que hizo el restaurante) e imagen 2 (una foto nueva).
@@ -88,11 +88,10 @@ export class RevisorVisualGemini implements RevisorVisual {
   }
 
   async comprobarElementos(fotos: ParDeFotos, lista: string) {
-    return this.cliente.generarJson(
-      INSTRUCCIONES_CHECKLIST,
-      [{ text: 'Imagen 1 (foto real):' }, await jpeg(fotos.real, LADO_COMPARACION), { text: 'Imagen 2 (foto nueva):' }, await jpeg(fotos.generada, LADO_COMPARACION), { text: textoChecklist(lista) }],
-      ChecklistVisual,
-    );
+    const partes: ParteGemini[] = [{ text: 'Imagen 1 (foto real):' }, await jpeg(fotos.real, LADO_COMPARACION), { text: 'Imagen 2 (foto nueva):' }, await jpeg(fotos.generada, LADO_COMPARACION)];
+    if (fotos.referencia) partes.push({ text: 'Imagen 3 (post de referencia que vio el generador, SOLO de estilo):' }, await jpeg(fotos.referencia, 768));
+    partes.push({ text: textoChecklist(lista, Boolean(fotos.referencia)) });
+    return this.cliente.generarJson(INSTRUCCIONES_CHECKLIST, partes, ChecklistVisual);
   }
 
   async compararToma(fotos: ParDeFotos) {

@@ -31,13 +31,16 @@ export interface EncargoFoto {
   alto: number;
   /** Ficha de la referencia elegida para el post, en palabras (la imagen va aparte, solo para el director). */
   referencia?: { id: string; resumen: string };
+  /** Si el generador verá la referencia como @image2 (solo de estilo) y su familia. */
+  alGenerador?: { estiloDeReferencia?: boolean; familia?: string };
 }
 
 export function textoFotoNueva(e: EncargoFoto, problemasPrevios: string[] = []): string {
   const referencia = e.referencia
     ? `\n# Referencia elegida para el post (solo para ti: no se envía al generador)
 ${e.referencia.id}: ${e.referencia.resumen}
-La foto nueva tiene que dejar sitio a su composición (dónde irá el titular y qué tapa el producto) y encajar con su luz y su fondo. No copies su plato, sus objetos ni sus textos.\n`
+La foto nueva tiene que dejar sitio a su composición (dónde irá el titular y qué tapa el producto) y encajar con su luz y su fondo. No copies su plato, sus objetos ni sus textos.
+${e.alGenerador?.estiloDeReferencia ? 'ESTA VEZ EL GENERADOR TAMBIÉN VERÁ LA REFERENCIA, como @image2, solo como referencia de estilo (luz, ángulo, tratamiento del fondo, color y aire para el texto). El estudio añade esa frase al prompt: tú no la escribas, pero escribe la luz, el fondo y el aire pensando en ella, y no nombres nada de lo que sale en la referencia (su comida, sus objetos, sus textos).\n' : ''}${e.alGenerador?.familia && ['F1', 'F3'].includes(e.alGenerador.familia) ? `La referencia es de la familia ${e.alGenerador.familia}: el plato irá RECORTADO sobre un color plano. Pide un fondo limpio y uniforme, sin objetos alrededor ni sombras duras que lo toquen, y el plato entero dentro del encuadre (que la foto no lo corte por ningún lado): el estudio añade al prompt el fondo para recortar.\n` : ''}`
     : '';
   const problemas = problemasPrevios.length ? `\n# Problemas de tu respuesta anterior (corrígelos)\n${problemasPrevios.map((p) => `- ${p}`).join('\n')}\n` : '';
   return `# Encargo

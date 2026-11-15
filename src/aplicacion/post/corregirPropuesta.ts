@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
-import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
+import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
 import { validar } from '../../dominio/validacion.js';
 import { guardarEncargo, leerEncargo, type DepsPost } from './ordenPost.js';
 
@@ -30,7 +30,7 @@ export async function corregirPropuesta(deps: DepsPost, proyecto: string, entrad
 
   const real = await deps.activos.obtener(e.local, e.activoReal);
   const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
-  const prompt = montarPromptFotoNueva(propuesta.huecos);
+  const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt as OpcionesDePrompt | undefined);
   const ahora = deps.ahora();
 
   await writeFile(

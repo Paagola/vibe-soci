@@ -25,6 +25,8 @@ export const ChecklistVisual = z.object({
   anatomia: z.array(z.string()).default([]),
   anadidos: z.array(z.string()).default([]),
   textoNuevo: z.array(z.string()).default([]),
+  /** Lo que la foto nueva ha copiado del post de referencia (@image2): textos, logotipos, comida u objetos suyos. */
+  copiadoDeReferencia: z.array(z.string()).default([]),
   seguro: z.boolean(),
 });
 export type ChecklistVisual = z.infer<typeof ChecklistVisual>;
@@ -74,6 +76,7 @@ function motivosDeElementos(c: ChecklistVisual, a?: ConteoAnatomia): string[] {
     ...c.anatomia.map((x) => `anatomía: ${x}`),
     ...c.anadidos.map((x) => `añadido: ${x}`),
     ...c.textoNuevo.map((x) => `texto nuevo: ${x}`),
+    ...c.copiadoDeReferencia.map((x) => `copiado de la referencia: ${x}`),
   ];
   for (const p of a?.piezas ?? []) {
     const fuera = [

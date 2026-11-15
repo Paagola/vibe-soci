@@ -7,6 +7,7 @@ import { copyFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
+import sharp from 'sharp';
 import { ComponedorProyectos } from '../src/adaptadores/compositor/ComponedorProyectos.js';
 import { AlmacenActivosFicheros } from '../src/adaptadores/ficheros/AlmacenActivosFicheros.js';
 import { AlmacenLocalesFicheros } from '../src/adaptadores/ficheros/AlmacenLocalesFicheros.js';
@@ -166,5 +167,28 @@ describe('Orden única · de punta a punta (simulada)', () => {
     assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO');
     const foto = await d.activos.obtener('asador-etxebarri', 'manual-foto-1');
     assert.match(String(foto.activo.procedencia.generacion?.modelo), /importada a mano/);
+  });
+});
+
+describe('F3.2 (punto 9) · la orden manda la referencia como @image2 solo si el encargo lo pide', () => {
+  it('con «estiloDeReferencia»: la referencia reducida a 768 px va como @image2 y el prompt dice su papel', async () => {
+    const generador = new GeneradorFotoSimulado();
+    const d = deps({ generador });
+    await crearEncargo(d, { proyecto: 'estilo', local: 'asador-etxebarri', plato: 'Gamba roja de Palamós a la brasa con sal gruesa', foto: FOTO, referencia: 'ref-post-30', simulado: true, estiloDeReferencia: true });
+    await avanzar(d, 'estilo');
+    await avanzar(d, 'estilo', { confirmo: true });
+    const p = generador.peticiones[0]!;
+    assert.equal(p.referencias.length, 2);
+    assert.match(p.referencias[1]!.etiqueta, /^@image2/);
+    const meta = await sharp(p.referencias[1]!.ruta).metadata();
+    assert.ok(Math.max(meta.width ?? 0, meta.height ?? 0) <= 768);
+    assert.match(p.prompt, /@image2 is a published reference post used ONLY as a style reference/);
+    // Sin la opción, como siempre: solo la foto real.
+    const g2 = new GeneradorFotoSimulado();
+    const d2 = deps({ generador: g2 });
+    await nuevo(d2, 'sin-estilo', 'ref-post-30');
+    await avanzar(d2, 'sin-estilo');
+    await avanzar(d2, 'sin-estilo', { confirmo: true });
+    assert.equal(g2.peticiones[0]!.referencias.length, 1);
   });
 });

@@ -117,13 +117,34 @@ const conPunto = (s: string) => (/[.!?]$/.test(s.trim()) ? s.trim() : `${s.trim(
 const sinPunto = (s: string) => s.trim().replace(/[.]+$/, '');
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/**
+ * Cómo se monta el prompt:
+ * - `estiloDeReferencia`: el generador recibe también la imagen del post de referencia como @image2, solo de estilo
+ *   (punto 9, 15/11; desactivado por defecto hasta que la prueba A/B lo apruebe);
+ * - `familia`: con una referencia F1 o F3 (color plano y producto recortado), la foto pide un fondo limpio y uniforme
+ *   que facilite el recorte.
+ */
+export interface OpcionesDePrompt {
+  estiloDeReferencia?: boolean;
+  familia?: string;
+}
+
+/** El papel de @image2 en el prompt, tal como lo pidió el usuario. */
+export const ROL_DE_LA_REFERENCIA =
+  '@image2 is a published reference post used ONLY as a style reference: take its lighting, camera angle, background treatment, colour mood and how much clean space it leaves for typography. Never copy its food, props, text, logos or layout of elements; every element in the new photo comes from @image1.';
+
+/** Familias de referencia en las que el plato se recorta sobre color plano. */
+export const FAMILIAS_DE_RECORTE = ['F1', 'F3'];
+
 /** Monta el prompt con la estructura del prompt de la gamba. Determinista: el mismo hueco da el mismo texto. */
-export function montarPromptFotoNueva(h: HuecosFotoNueva): string {
+export function montarPromptFotoNueva(h: HuecosFotoNueva, o: OpcionesDePrompt = {}): string {
+  const recorte = o.familia && FAMILIAS_DE_RECORTE.includes(o.familia) ? ', on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly' : '';
   return [
     `@image1 is a real photo of ${sinPunto(h.plato)} ${sinPunto(h.origen)}. Use it only as the list of elements, not as a layout to copy.`,
+    ...(o.estiloDeReferencia ? [ROL_DE_LA_REFERENCIA] : []),
     `The new photograph must contain the same real elements: ${sinPunto(h.elementos)}.`,
     `${conPunto(h.recuento)} Nothing else added.`,
-    `New composition by a professional food photographer: ${sinPunto(h.camara.descripcion)}, ${h.camara.objetivoMm} mm lens at f/${h.camara.apertura}, ${sinPunto(h.ideaGrafica)}.`,
+    `New composition by a professional food photographer: ${sinPunto(h.camara.descripcion)}, ${h.camara.objetivoMm} mm lens at f/${h.camara.apertura}, ${sinPunto(h.ideaGrafica)}${recorte}.`,
     `${mayuscula(sinPunto(h.luz))}, ${sinPunto(h.colorDominante)}.`,
     'Photographic realism, no text.',
   ].join(' ');

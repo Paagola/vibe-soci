@@ -30,7 +30,7 @@ import { aireEn } from '../../dominio/diseno/mapaDeFoto.js';
 import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
-import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar } from '../../dominio/fotoNueva.js';
+import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas } from '../../puertos/ComponedorDePiezas.js';
@@ -79,6 +79,9 @@ export interface ResultadoAvance {
 const ASPECTO = '3:4';
 const TAMANO = '2K';
 const ETIQUETA_REAL = '@image1 (real photograph of the dish)';
+const ETIQUETA_ESTILO = '@image2 (published reference post: style reference only)';
+const ARCHIVO_REFERENCIA_DE_ESTILO = 'foto/referencia-estilo.jpg';
+const LADO_REFERENCIA_DE_ESTILO = 768;
 
 export const rutaEncargo = (deps: DepsPost, proyecto: string) => join(deps.proyectos, proyecto, 'post.json');
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
@@ -105,6 +108,7 @@ export async function crearEncargo(
     usoFotoReal?: 'PUBLICABLE' | 'SOLO_PRUEBA_COMPOSICION';
     simulado?: boolean;
     titularCreativo?: boolean;
+    estiloDeReferencia?: boolean;
   },
 ): Promise<EncargoPost> {
   if (await existe(rutaEncargo(deps, datos.proyecto))) throw new ErrorDeUsuario(`El encargo «${datos.proyecto}» ya existe: continúa con npm run post -- ${datos.proyecto}`);
@@ -121,6 +125,7 @@ export async function crearEncargo(
     ...(datos.referencia ? { referencia: datos.referencia } : {}),
     simulado: datos.simulado ?? false,
     titularCreativo: datos.titularCreativo ?? false,
+    estiloDeReferencia: datos.estiloDeReferencia ?? false,
     creadoEn: ahora,
     historial: [{ fecha: ahora, paso: 'REFERENCIA', nota: 'encargo creado' }],
   });
@@ -218,6 +223,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   async PROPUESTA(deps, e, _a, nota) {
     const real = await deps.activos.obtener(e.local, e.activoReal as string);
     let referencia: { id: string; resumen: string; imagen?: string } | undefined;
+    let familia: string | undefined;
     if (e.referencia) {
       const r = await deps.referencias.referencias.obtener(e.local, e.referencia);
       const f = r.ficha;
@@ -227,8 +233,16 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         resumen: f ? [f.titulo, f.familia, `capas: ${f.capas.join(' / ')}`, `retícula: ${f.reticula}`].join(' · ') : 'sin ficha',
         ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}),
       };
+      familia = f?.familia;
     }
-    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}) });
+    // Punto 9: con «estiloDeReferencia», el generador verá la referencia como @image2, reducida a 768 px.
+    const estilo = Boolean(e.estiloDeReferencia && referencia?.imagen);
+    if (estilo) {
+      await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
+      await sharp(referencia!.imagen!).rotate().resize(LADO_REFERENCIA_DE_ESTILO, LADO_REFERENCIA_DE_ESTILO, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 90 }).toFile(join(deps.proyectos, e.proyecto, ARCHIVO_REFERENCIA_DE_ESTILO));
+    }
+    const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}) };
+    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador });
     const archivo = 'foto/propuesta.json';
     await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
     await writeFile(join(deps.proyectos, e.proyecto, archivo), `${JSON.stringify({ director: deps.director.nombre, fecha: deps.ahora(), ...resultado }, null, 2)}\n`);
@@ -239,16 +253,16 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   async CONFIRMAR_ELEMENTOS(deps, e, accion, nota) {
     // La propuesta se puede corregir a mano (huecos y descripción) antes de confirmar: se vuelve a leer y a comprobar.
     const ruta = join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? 'foto/propuesta.json');
-    const guardada = JSON.parse(await readFile(ruta, 'utf8')) as { propuesta: unknown };
+    const guardada = JSON.parse(await readFile(ruta, 'utf8')) as { propuesta: unknown; opcionesPrompt?: OpcionesDePrompt };
     const propuesta = PropuestaFotoNueva.parse(guardada.propuesta);
     const real = await deps.activos.obtener(e.local, e.activoReal as string);
     const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
-    const prompt = montarPromptFotoNueva(propuesta.huecos);
+    const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt);
     await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, prompt, problemas }, null, 2)}\n`);
     const encargo = { ...e, propuesta: { archivo: e.propuesta?.archivo ?? 'foto/propuesta.json', prompt, problemas } };
 
     const disponible = deps.generador.disponible();
-    const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0)) : 0;
+    const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0, await rutaDeEstilo(deps, e))) : 0;
     const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''}${x.cortados ? ` (+${x.cortados} cortado por el borde)` : ''}${x.dudoso ? ' ¿?' : ''} (${x.estado})`).join('; ');
     const mirar = recuentosQueMirar(propuesta.descripcion);
     if (!accion.confirmo) {
@@ -293,7 +307,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       if (!disponible.ok) {
         return { encargo: e, parar: `No puedo generar: ${disponible.motivo}. Prompt para generarla a mano: ${relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''))}. Después: --importar <imagen>` };
       }
-      const foto = await deps.generador.generar(peticion(e, real.ruta, prompt, n));
+      const foto = await deps.generador.generar(peticion(e, real.ruta, prompt, n, await rutaDeEstilo(deps, e)));
       bytes = foto.bytes;
       generacion = { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle };
       nota(`Intento ${n} generado con ${deps.generador.nombre} (${foto.modelo}): ${foto.costeUsd.toFixed(4)} USD.`);
@@ -356,7 +370,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     }
     const revision = await comprobarFotoNueva(
       { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
-      { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas, ...(aire ? { aire } : {}) },
+      { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas, ...(aire ? { aire } : {}), ...((await rutaDeEstilo(deps, e)) ? { referencia: (await rutaDeEstilo(deps, e))! } : {}) },
     );
     const intentos = e.intentos.map((i) => (i.n === ultimo.n ? { ...i, final: revision.final, motivos: revision.motivos } : i));
     nota(`Comprobación del intento ${ultimo.n}: ${revision.final}${revision.motivos.length ? ` (${revision.motivos.join('; ')})` : ''}.`);
@@ -557,8 +571,16 @@ async function probarIntencion(deps: DepsPost, e: EncargoPost, rutaTokens: strin
 }
 
 /** La petición que la orden manda al generador para el intento `n` (también sirve para estimar su coste antes de autorizarlo). */
-export function peticion(e: EncargoPost, rutaReal: string, prompt: string, n: number): PeticionFoto {
-  return { id: `${e.proyecto}-foto-${n}`, prompt, referencias: [{ ruta: rutaReal, etiqueta: ETIQUETA_REAL }], aspectRatio: ASPECTO, tamano: TAMANO };
+export function peticion(e: EncargoPost, rutaReal: string, prompt: string, n: number, rutaEstilo?: string): PeticionFoto {
+  const referencias = [{ ruta: rutaReal, etiqueta: ETIQUETA_REAL }, ...(rutaEstilo ? [{ ruta: rutaEstilo, etiqueta: ETIQUETA_ESTILO }] : [])];
+  return { id: `${e.proyecto}-foto-${n}`, prompt, referencias, aspectRatio: ASPECTO, tamano: TAMANO };
+}
+
+/** La referencia reducida que va al generador como @image2, si este encargo la manda (se prepara en PROPUESTA). */
+async function rutaDeEstilo(deps: Pick<DepsPost, 'proyectos'>, e: EncargoPost): Promise<string | undefined> {
+  if (!e.estiloDeReferencia) return undefined;
+  const ruta = join(deps.proyectos, e.proyecto, ARCHIVO_REFERENCIA_DE_ESTILO);
+  return (await existe(ruta)) ? ruta : undefined;
 }
 
 /** Como mucho `max` caracteres, sin partir palabras. */

@@ -4,6 +4,8 @@ import type { ChecklistVisual, ComparacionToma, ConteoAnatomia } from '../domini
 export interface ParDeFotos {
   real: string;
   generada: string;
+  /** El post de referencia que vio el generador como @image2 (punto 9): se mira que no se haya copiado nada de él. */
+  referencia?: string;
 }
 
 /**

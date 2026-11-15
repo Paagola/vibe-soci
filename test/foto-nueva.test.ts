@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { DIFERENCIA_MINIMA_GRADOS, esOtraToma, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva, DescripcionFoto, recuentosQueMirar } from '../src/dominio/fotoNueva.js';
+import { DIFERENCIA_MINIMA_GRADOS, esOtraToma, montarPromptFotoNueva, problemasFotoNueva, type PropuestaFotoNueva, DescripcionFoto, recuentosQueMirar, ROL_DE_LA_REFERENCIA } from '../src/dominio/fotoNueva.js';
 import { instruccionesFoto, textoFotoNueva } from '../src/adaptadores/gemini/instruccionesFoto.js';
 
 // Los huecos del prompt de la gamba que gustó: el montaje tiene que dar ese mismo prompt.
@@ -113,5 +113,28 @@ describe('F3.2 (punto 5) · recuento: piezas enteras, cortadas por el borde y du
       'rollito de atún: 2 enteros y 1 cortado(s) por el borde',
       'rollito blanco con huevas: 1 enteros (dudoso) · medio tapado por la flor',
     ]);
+  });
+});
+
+describe('F3.2 (punto 9) · la referencia al generador como @image2, solo de estilo', () => {
+  const huecos = {
+    plato: 'a sushi board', origen: 'from a Japanese restaurant', elementos: 'four salmon nigiri with foie', recuento: 'Exactly four salmon nigiri.',
+    camara: { anguloGrados: 30, descripcion: 'a three-quarter view', objetivoMm: 85, apertura: 8 },
+    ideaGrafica: 'the board in the lower half, clean space above', luz: 'Soft window light from the left', colorDominante: 'salmon the only strong colour',
+  };
+  it('sin opciones, el prompt es el de siempre; con «estiloDeReferencia», lleva el papel de @image2 tal cual', () => {
+    assert.doesNotMatch(montarPromptFotoNueva(huecos), /@image2/);
+    const p = montarPromptFotoNueva(huecos, { estiloDeReferencia: true });
+    assert.ok(p.includes(ROL_DE_LA_REFERENCIA));
+    assert.match(p, /Never copy its food, props, text, logos/);
+  });
+  it('con una referencia F1 o F3 pide un fondo limpio y uniforme para recortar', () => {
+    assert.match(montarPromptFotoNueva(huecos, { familia: 'F3' }), /clean, plain, uniform background/);
+    assert.doesNotMatch(montarPromptFotoNueva(huecos, { familia: 'F4' }), /uniform background/);
+  });
+  it('el director de foto sabe que el generador verá la referencia', () => {
+    const t = textoFotoNueva({ plato: 'sushi', archivo: 'x.jpg', ancho: 1000, alto: 1000, referencia: { id: 'ref-pin-34', resumen: 'flyer' }, alGenerador: { estiloDeReferencia: true, familia: 'F3' } });
+    assert.match(t, /EL GENERADOR TAMBIÉN VERÁ LA REFERENCIA/);
+    assert.match(t, /familia F3: el plato irá RECORTADO/);
   });
 });

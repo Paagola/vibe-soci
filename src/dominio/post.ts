@@ -42,6 +42,11 @@ export const EncargoPost = z.object({
   usoFotoReal: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).default('PUBLICABLE'),
   /** Id de la referencia registrada con `npm run referencia` (obligatoria en las 5 primeras piezas). */
   referencia: z.string().optional(),
+  /**
+   * Punto 9 (15/11): el generador recibe también la imagen de la referencia como @image2, solo de estilo. Por defecto,
+   * no: se activa por encargo hasta que la prueba A/B diga que no copia (diseno/f3/img/sushita-ab-image2.jpg).
+   */
+  estiloDeReferencia: z.boolean().default(false),
   /** F3: el encargo permite UN titular creativo (una palabra de acción o sensorial que no es un dato). Por defecto, no. */
   titularCreativo: z.boolean().default(false),
   /** Con director, generador, revisor y máscara simulados: no gasta ni llama a nada. Los datos van aparte. */

@@ -22,6 +22,8 @@ export interface EntradaComprobacion {
   comprobarToma?: boolean;
   /** false: no se guarda en el activo (para ensayos). */
   guardar?: boolean;
+  /** La referencia que vio el generador como @image2: se comprueba que no se haya copiado nada de ella. */
+  referencia?: string;
   /** El aire que pidió el director de foto, ya medido con el mapa de la foto nueva. */
   aire?: AireMedido;
 }
@@ -33,7 +35,7 @@ export interface EntradaComprobacion {
 export async function comprobarFotoNueva(deps: DepsComprobacion, e: EntradaComprobacion): Promise<RevisionAutomatica> {
   const [generado, real] = await Promise.all([deps.activos.obtener(e.local, e.generado), deps.activos.obtener(e.local, e.real)]);
   if (generado.activo.tipo !== 'GENERADO') throw new Error(`«${e.generado}» no es una foto generada.`);
-  const fotos = { real: real.ruta, generada: generado.ruta };
+  const fotos = { real: real.ruta, generada: generado.ruta, ...(e.referencia ? { referencia: e.referencia } : {}) };
 
   const checklist = await deps.revisor.comprobarElementos(fotos, e.lista);
   const toma = e.comprobarToma === false ? undefined : await deps.revisor.compararToma(fotos);
