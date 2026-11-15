@@ -55,6 +55,22 @@
 
 **Comprobaciones:** `npm run typecheck` limpio y `npm test` con **219 de 219** [comprobado, 14/11].
 
+### 0d. F3.1, 14–15/11: el director elige el mecanismo y el código coloca (Torre de Vega)
+
+**Por qué:** los dos primeros posts reales de Torre de Vega salieron correctos pero de plantilla (titular arriba, foto debajo, todo «aparte»).
+
+| Qué | Resultado | Commit |
+|---|---|---|
+| Biblioteca de mecanismos (`src/dominio/diseno/mecanismos.ts`) | TITULAR_DETRAS, TITULAR_CON_ACENTO y ANOTACIONES; apoyo, firma, sello y una anotación como complementos. El código coloca desde el mapa de la foto: tamaño del titular según el aire, cruce con el plato del 20 al 45 % (lo ajusta el compositor), tinta según la luz medida, velo si hace falta | `af15618` |
+| Cruce y escala | Bloquean si hay máscara y aire, salvo «excepcion» razonada | `af15618` |
+| Voz de acento del estudio | Ballet, Bodoni Moda itálica o Sacramento, según el titular de la referencia; **pendiente de confirmar con el local** (lo dicen las notas de la intención) | `af15618` |
+| Arreglos del código y crítica visual | Velo y tinta clara si falta contraste; titular más alto si falta escala. Gemini mira la pieza junto a la referencia; su corrección solo se adopta si pasa todo lo medible | `af15618`, `271e002`, `3fb2040` |
+| **Entrecot v004** | **Le encanta al usuario.** TITULAR_CON_ACENTO: «ENTRECOT» monumental detrás de la carne y «directo de Galicia» en Ballet. Código exacto: `062ac7e` (comprobado recompilando su propuesta) → `diseno/f3/img/tdv-entrecot-v003-v004-y-31808bf.jpg` | `062ac7e` |
+| Ensalada v002 | Para comparar. **No mejora la v001:** solo el titular, que sangra, y sin firma. La foto tiene 3 filas de aire y el plato ocupa el 52 %. La v001 sigue intacta → `diseno/f3/img/tdv-ensalada-v001-v002.jpg` | — |
+| Ajustes que cambian el aspecto | Sangrado simétrico, tres voces y firma al borde: **pendientes de tu visto bueno**, porque cambiarían la v004 (tercera imagen) | `31808bf` |
+
+**Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
+
 ---
 
 ## 1. Objetivo del producto

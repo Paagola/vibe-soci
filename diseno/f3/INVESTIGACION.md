@@ -152,6 +152,17 @@ foto en alta: un modelo de lenguaje decide bien qué poner y mal dónde hay siti
 | Dónde hay aire en la foto | `smartcrop.js` | mapa de la foto, dado al director como texto | `mapaDeFoto.ts`, `MedidorDeFotoSharp.ts` |
 | El director escribe la intención | LayoutPrompter y OpenCOLE (el modelo decide, el código coloca) | propuesta de diseño (dialecto corto en la retícula) que el código comprueba y compila | `propuesta.ts`, `proponerDiseno.ts`, `DirectorDisenoGemini.ts` |
 
+### 3.7 Mecanismos (`src/dominio/diseno/mecanismos.ts`, F3.1)
+
+| Dato | Valor | De dónde sale |
+|---|---|---|
+| Los tres mecanismos | TITULAR_DETRAS, TITULAR_CON_ACENTO y ANOTACIONES | Los mecanismos de las fichas (`conocimiento/referencias`: TITULAR_EN_EL_AIRE, LOGOTIPO_TIPOGRAFICO…) y §4: «el titular toca al producto» (**[fuente]** `mono-color-skill`, `editorial-food-poster`) y las flechas que señalan ingredientes reales (**[fuente]** `editorial-food-poster`) |
+| Caja del titular | El aire de su lado; una fila más si es una sola palabra | **[decisión]**, tras ver los renders de Torre de Vega: si la caja entra en el plato, la segunda línea queda tapada |
+| El acento necesita | Cuatro filas de aire | **[decisión]**: dos del acento y dos del titular, sin compartir fila (si no, el titular lo tapa) |
+| Cuerpo del acento | 85 % del alto de su caja, girado −4° | **[decisión]**, para que el giro no lo saque de la zona segura |
+| Tinta | La que contrasta con la celda más clara y la más oscura que pisa, con un margen de 1,3 sobre WCAG | **[decisión]**: el mapa mide medias por celda, y el compositor vuelve a medir al pintar |
+| Voz de acento | Ballet (florituras), Bodoni Moda itálica (didona) o Sacramento (monolineal) | El titular de la ficha (`tipografia`). Las tres son OFL y ya estaban en el catálogo |
+
 ## 5. Lo que no se ha tomado, y por qué
 
 - **Reducir la foto del plato a una o dos tintas por defecto.** Es el centro de `mono-color-skill`, pero en un post de
