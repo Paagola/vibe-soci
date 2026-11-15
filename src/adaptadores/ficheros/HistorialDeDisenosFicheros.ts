@@ -1,6 +1,6 @@
 /**
  * El historial de diseños de un local en <datos>/disenos/<proyecto>/<id>/vNNN/intencion.json (la última versión de cada
- * diapositiva), y su huella tipográfica en <datos>/locales/<local>/huella-tipografica.json.
+ * diapositiva), y su huella tipográfica en <datos>/huellas/<local>.json (fuera de locales/: los datos del local no se tocan).
  */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -29,7 +29,7 @@ export class HistorialDeDisenosFicheros implements HistorialDeDisenos {
   }
 
   async guardarHuella(local: string, huella: HuellaTipografica): Promise<void> {
-    await mkdir(join(this.carpetaDatos, 'locales', local), { recursive: true });
-    await writeFile(join(this.carpetaDatos, 'locales', local, 'huella-tipografica.json'), `${JSON.stringify(huella, null, 2)}\n`);
+    await mkdir(join(this.carpetaDatos, 'huellas'), { recursive: true });
+    await writeFile(join(this.carpetaDatos, 'huellas', `${local}.json`), `${JSON.stringify(huella, null, 2)}\n`);
   }
 }
