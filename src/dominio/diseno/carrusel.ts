@@ -83,20 +83,29 @@ export function diapositivasDeCarrusel(
   // F3.3 (punto 11): con tomas propias, cada detalle es su foto entera (no un recorte de la portada). Los elementos sin
   // toma (o cuya toma se descartó) vuelven a la alternativa barata: el recorte de la portada.
   const conToma = new Set(tomas.map((t) => normal(t.elemento.nombre)));
+  // Si la portada recorta el plato (color pop, F1/F3), cada toma también va recortada, con el mismo filo y el mismo
+  // fondo (textura y patrón flojo): la serie se lee como una. Si no, la toma va en una banda, como foto.
+  const platoPortada = portada.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }> | undefined;
+  const decorado = portada.capas.filter((c) => c.tipo === 'textura' || (c.tipo === 'patron' && c.suave));
   for (const t of tomas.slice(0, 3)) {
     vistos.add(normal(t.elemento.nombre));
     const titulo = tituloCorto(t.elemento.nombre);
     const estado = estadoCorto(t.elemento.estado);
     const textos: TextoPropuesto[] = [{ clave: 'titular', texto: titulo, fuente: 'ELEMENTO', cita: t.elemento.nombre }];
+    const giro = diapositivas.length % 2 ? 6 : -6;
     const capas: CapaPropuesta[] = [
       { tipo: 'fondo', color: `@${campo}` },
-      { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, activo: t.papel },
+      ...decorado.filter((c) => c.tipo === 'patron'),
+      platoPortada
+        ? { tipo: 'plato', activo: t.papel, caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: 0.92, alinear: 'centro', giro, sombra: 'proyectada', ...(platoPortada.filo ? { filo: platoPortada.filo } : {}) }
+        : { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [7, 16] }, sangra: true, activo: t.papel },
       { tipo: 'texto', id: 'titular', texto: 'titular', voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [2, 4] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
     ];
     if (e.voces.anotacion) {
       textos.push({ clave: 'estado', texto: estado, fuente: 'ELEMENTO', cita: estado });
       capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [5, 6] }, vertical: 'centro', tamano: 46, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.72 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
     }
+    capas.push(...decorado.filter((c) => c.tipo === 'textura'));
     diapositivas.push({ id: `detalle-${diapositivas.length + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
   }
 

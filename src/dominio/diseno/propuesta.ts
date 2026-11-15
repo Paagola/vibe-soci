@@ -73,6 +73,8 @@ const CapaPlato = z.object({
   sangra: z.number().min(0).max(0.5).optional().describe('Fracción del plato que se sale por debajo de su caja.'),
   sombra: z.enum(['no', 'contacto', 'proyectada']).optional(),
   filo: Token.optional().describe('Filo de pegatina alrededor del plato recortado, en este color.'),
+  /** F3.3: qué foto se recorta (el papel, p. ej. «detalle1»); sin él, la foto nueva de la portada. */
+  activo: Id.optional(),
 });
 
 const CapaTexto = z.object({
@@ -626,7 +628,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         poner(Plano3.PLATO, {
           id: 'plato',
           tipo: 'recorte',
-          activo: 'foto',
+          activo: x.activo ?? 'foto',
           escala: { anchoSujeto: x.ancho },
           ancla: { caja: aFracciones(x.caja), alinear: x.alinear ?? 'centro' },
           ...(x.sangra ? { sangradoAbajo: x.sangra } : {}),
