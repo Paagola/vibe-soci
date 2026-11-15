@@ -1,0 +1,96 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "sushita-tabla-sushi",
+  "local": "sushita-chinitas",
+  "plato": "Tabla de sushi para compartir: nigiri de salmón con foie y trufa, gunkan de toro y maki de atún picante",
+  "fotoSubida": "/private/tmp/claude-501/-Users-padre-Documents-victor-pantallas/2c396ab9-435c-49b8-a650-e9ac1b4259ee/scratchpad/sushi/fotos-resena/Andrew-Forbes-Visits-Sushita-Chinitas-Malaga-4.jpg",
+  "usoFotoReal": "SOLO_PRUEBA_COMPOSICION",
+  "referencia": "ref-pin-34",
+  "titularCreativo": false,
+  "simulado": false,
+  "paso": "HECHO",
+  "activoReal": "sushita-tabla-sushi-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of assorted gourmet sushi board at a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board. Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower. Nothing else added. New composition by a professional food photographer: low-angle three-quarter view at 20 degrees, 85 mm lens at f/4, wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography. Hard studio flash from the side with short crisp shadows and glossy specular highlights, warm salmon orange and neutral timber tones. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-15T01:53:32.320Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.160456
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "sushita-tabla-sushi-foto-1",
+      "final": "PASA",
+      "motivos": [],
+      "costeUsd": 0.140676
+    }
+  ],
+  "fotoElegida": "sushita-tabla-sushi-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-15T01:52:17.130Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-15T01:52:56.538Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-pin-34» (F3). (0 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-15T01:52:56.543Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo sushita-tabla-sushi-real (1512 × 2016 px)."
+    },
+    {
+      "fecha": "2026-11-15T01:53:19.926Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-15T01:53:32.320Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.160 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-15T01:53:54.566Z",
+      "paso": "GENERAR",
+      "nota": "Intento 1 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1407 USD."
+    },
+    {
+      "fecha": "2026-11-15T01:54:33.292Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: PASA."
+    },
+    {
+      "fecha": "2026-11-15T01:54:40.895Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada."
+    },
+    {
+      "fecha": "2026-11-15T01:54:41.434Z",
+      "paso": "MASCARA",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 2118 px."
+    },
+    {
+      "fecha": "2026-11-15T01:55:42.546Z",
+      "paso": "INTENCION",
+      "nota": "Intención escrita por Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash) (3 propuesta(s)), con avisos: COBERTURA: El sujeto tapa 76 % de «titular» en su parte más tapada; se pedía entre el 20 % y el 45 %. | FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.. | CRITICA: El titular «SUSHI» al sangrar queda cortado y sepultado de forma descompensada tras la esquina superior de la tabla, perdiendo presencia e impacto visual. | CRITICA: Falta la jerarquía secundaria de la referencia: allí el titular convive con una línea de apoyo que lo contextualiza y equilibra. | CRITICA: La pieza se siente incompleta al no incorporar la firma del restaurante ni la vocación de la tabla («Para compartir»).. Crítica visual: no llega (El titular «SUSHI» al sangrar queda cortado y sepultado de forma descompensada tras la esquina superior de la tabla, perdiendo presencia e impacto visual.; Falta la jerarquía secundaria de la referencia: allí el titular convive con una línea de apoyo que lo contextualiza y equilibra.; La pieza se siente incompleta al no incorporar la firma del restaurante ni la vocación de la tabla («Para compartir»).)."
+    },
+    {
+      "fecha": "2026-11-15T01:55:43.438Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/sushita-tabla-sushi/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T01:55:43.438Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/sushita-tabla-sushi/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    }
+  ],
+  "creadoEn": "2026-11-15T01:52:17.130Z"
+}

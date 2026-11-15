@@ -1,0 +1,14 @@
+{
+  "nota": "Encargo sushita-tabla-sushi (orden única). Referencia: ref-pin-34.",
+  "local": "sushita-chinitas",
+  "marca": "../../marcas/sushita-chinitas/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-15",
+    "referencia": "ref-pin-34"
+  }
+}

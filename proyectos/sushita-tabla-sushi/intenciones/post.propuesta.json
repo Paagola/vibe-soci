@@ -1,0 +1,118 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "critico": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T01:55:42.544Z",
+  "propuesta": {
+    "idea": "La contundencia de una tabla de sushi para compartir condensada en un titular rotundo que se sumerge tras la tabla.",
+    "foco": "PLATO",
+    "seToma": [
+      "Titular monumental en la parte superior que ancla la lectura con fuerza tipográfica.",
+      "Jerarquía estricta donde el producto manda y la tipografía interactúa con él."
+    ],
+    "noSeCopia": [
+      "Recursos promocionales de flyer como códigos QR, porcentajes de descuento y botones.",
+      "El fondo rojo ilustrado con ramas y texturas añadidas."
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "SUSHI",
+        "fuente": "PLATO",
+        "cita": "Tabla de sushi para compartir: nigiri de salmón con foie y trufa, gunkan de toro y maki de atún picante"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "TITULAR_DETRAS",
+      "titular": "titular",
+      "lado": "arriba",
+      "sangra": true,
+      "tinta": "limpia"
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "COBERTURA: El sujeto tapa 76 % de «titular» en su parte más tapada; se pedía entre el 20 % y el 45 %.",
+    "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "CRITICA: El titular «SUSHI» al sangrar queda cortado y sepultado de forma descompensada tras la esquina superior de la tabla, perdiendo presencia e impacto visual.",
+    "CRITICA: Falta la jerarquía secundaria de la referencia: allí el titular convive con una línea de apoyo que lo contextualiza y equilibra.",
+    "CRITICA: La pieza se siente incompleta al no incorporar la firma del restaurante ni la vocación de la tabla («Para compartir»)."
+  ],
+  "critica": {
+    "llega": false,
+    "motivos": [
+      "El titular «SUSHI» al sangrar queda cortado y sepultado de forma descompensada tras la esquina superior de la tabla, perdiendo presencia e impacto visual.",
+      "Falta la jerarquía secundaria de la referencia: allí el titular convive con una línea de apoyo que lo contextualiza y equilibra.",
+      "La pieza se siente incompleta al no incorporar la firma del restaurante ni la vocación de la tabla («Para compartir»)."
+    ],
+    "adoptada": false
+  },
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [
+        "No cabe «Sushita Chinitas» sin pisar el plato ni el titular: quítalo o acórtalo."
+      ],
+      "avisos": [],
+      "arreglos": [
+        "Velo abajo: ninguna tinta de la marca contrasta lo bastante con la foto donde va «apoyo»."
+      ]
+    },
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "COBERTURA: El sujeto tapa 76 % de «titular» en su parte más tapada; se pedía entre el 20 % y el 45 %.",
+        "FIDELIDAD: «foto» usa el activo «sushita-tabla-sushi-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": []
+    },
+    {
+      "origen": "critica",
+      "problemas": [
+        "No cabe «Sushita Chinitas» sin pisar el plato ni el titular: quítalo o acórtalo."
+      ],
+      "avisos": [],
+      "arreglos": [
+        "Velo abajo: ninguna tinta de la marca contrasta lo bastante con la foto donde va «apoyo»."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        1,
+        12
+      ],
+      "fila": [
+        3,
+        16
+      ],
+      "area": 0.694
+    },
+    "libres": [
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          1,
+          2
+        ],
+        "luz": 0.102
+      },
+      {
+        "col": [
+          9,
+          12
+        ],
+        "fila": [
+          14,
+          16
+        ],
+        "luz": 0.299
+      }
+    ],
+    "vivo": "#955F35"
+  }
+}

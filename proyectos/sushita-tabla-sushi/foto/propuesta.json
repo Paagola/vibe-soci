@@ -1,0 +1,75 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T01:53:19.925Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 50,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Cenital inclinado a tres cuartos, tabla cortada en bordes y fondo con cristalería.",
+      "luz": "Luz ambiental de restaurante, difusa y cálida, con brillos en salsas.",
+      "elementos": [
+        {
+          "nombre": "nigiri de salmón flambeado con foie y glaseado",
+          "estado": "tostado y brillante",
+          "recuento": 4
+        },
+        {
+          "nombre": "uramaki con salsa cremosa verde y sésamo",
+          "estado": "bañado en salsa con sésamo espolvoreado",
+          "recuento": 4
+        },
+        {
+          "nombre": "rollitos con tartar de atún y microgreens",
+          "estado": "fresco con hierba picada",
+          "recuento": 4
+        },
+        {
+          "nombre": "pensamiento comestible amarillo y morado",
+          "estado": "fresco intacto",
+          "recuento": 1
+        },
+        {
+          "nombre": "tabla de madera clara",
+          "estado": "lisa y limpia",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Encuadre abarrotado",
+        "Elementos distractores al fondo",
+        "Falta de nitidez y contraste profesional"
+      ],
+      "utilizable": true,
+      "motivo": "Inventario claro de piezas, toppings y vajilla."
+    },
+    "huecos": {
+      "plato": "assorted gourmet sushi board",
+      "origen": "at a modern Japanese restaurant",
+      "elementos": "four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board",
+      "recuento": "Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower.",
+      "camara": {
+        "anguloGrados": 20,
+        "descripcion": "low-angle three-quarter view at 20 degrees",
+        "objetivoMm": 85,
+        "apertura": 4,
+        "giroGrados": 45,
+        "distancia": "PRIMER_PLANO"
+      },
+      "ideaGrafica": "wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography",
+      "luz": "hard studio flash from the side with short crisp shadows and glossy specular highlights",
+      "colorDominante": "warm salmon orange and neutral timber tones"
+    },
+    "decisiones": [
+      "Descenso de 50° a 20° para estilizar el volumen del sushi y evitar el aspecto cenital casero.",
+      "Composición en diagonal inspirada en ref-pin-34 para concentrar el producto en la mitad izquierda y liberar el tercio superior derecho para texto.",
+      "Flash duro directo con sombras cortas para emular el estilo fresco y publicitario de la referencia sin añadir elementos prohibidos como palillos inexistentes."
+    ]
+  },
+  "prompt": "@image1 is a real photo of assorted gourmet sushi board at a modern Japanese restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: four seared salmon nigiri with caramelized foie gras and glaze, four uramaki drenched in pale-green creamy sauce with sesame, four tuna rolls topped with tartare, one yellow pansy flower, on a light blonde wooden board. Exactly four salmon nigiri, four sauce uramaki, four tuna rolls, and one edible flower. Nothing else added. New composition by a professional food photographer: low-angle three-quarter view at 20 degrees, 85 mm lens at f/4, wooden board cutting diagonally from bottom-left toward center, leaving clean negative space in upper-right for typography. Hard studio flash from the side with short crisp shadows and glossy specular highlights, warm salmon orange and neutral timber tones. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ]
+}

@@ -416,6 +416,67 @@
         ]
       },
       "nota": "Tipografía de marca de Torre de Vega (datos/locales/torre-de-vega/marca.json). Rótulos."
+    },
+    {
+      "id": "abril-fatface",
+      "familia": "Abril Fatface",
+      "archivo": "abril-fatface/AbrilFatface-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/abrilfatface",
+      "descargada": "2026-11-15",
+      "clasificacion": [
+        "didona",
+        "display",
+        "alto-contraste"
+      ],
+      "nota": "Tipografía de marca de Sushita Chinitas (sacada de la hoja de estilos de sushita.com/sushita-chinitas/). Títulos."
+    },
+    {
+      "id": "lato",
+      "familia": "Lato",
+      "archivo": "lato/Lato-Regular.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/lato",
+      "descargada": "2026-11-15",
+      "clasificacion": [
+        "humanista",
+        "texto"
+      ],
+      "nota": "Tipografía de marca de Sushita Chinitas (sacada de la hoja de estilos de sushita.com/sushita-chinitas/). Textos."
+    },
+    {
+      "id": "lato-negrita",
+      "familia": "Lato",
+      "archivo": "lato/Lato-Bold.ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/lato",
+      "descargada": "2026-11-15",
+      "clasificacion": [
+        "humanista",
+        "texto",
+        "negrita"
+      ],
+      "nota": "Tipografía de marca de Sushita Chinitas (sacada de la hoja de estilos de sushita.com/sushita-chinitas/). Textos (negrita)."
+    },
+    {
+      "id": "jost",
+      "familia": "Jost",
+      "archivo": "jost/Jost[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/jost",
+      "descargada": "2026-11-15",
+      "clasificacion": [
+        "geometrica",
+        "variable",
+        "versalitas"
+      ],
+      "ejes": {
+        "wght": [
+          100,
+          900
+        ]
+      },
+      "nota": "Tipografía de marca de Sushita Chinitas (sacada de la hoja de estilos de sushita.com/sushita-chinitas/). Rótulos."
     }
   ]
 }
