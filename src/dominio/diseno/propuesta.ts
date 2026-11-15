@@ -143,6 +143,7 @@ const CapaAnotacion = z.object({
   color: Token,
   /** En vez de un punto del plato, un punto del LIENZO (0–1): para una foto en marco ampliada sobre un elemento. */
   hacia: Fraccion.optional(),
+  vertical: z.enum(['arriba', 'centro', 'abajo']).optional().describe('Dónde va el rótulo dentro de su caja (por defecto, arriba).'),
 });
 
 const CapaTrazo = z.object({
@@ -719,7 +720,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
         if (!haySujeto && !x.hacia) problemas.push(`${donde}: una anotación señala al plato; hace falta el plato recortado o una foto a sangre con máscara.`);
         if (fueraDeZonaSegura(x.caja)) problemas.push(`${donde}: las filas 1 y 16 quedan fuera de la zona segura (se cortan en 4:5); usa las filas 2–15.`);
         const caja = aFracciones(x.caja);
-        poner(Plano3.GESTO, { id: x.id, tipo: 'texto', texto: texto(x.texto, donde), estilo: voz(x.voz, donde), caja, ajuste: 'fijo', tamano: x.tamano ?? 46, color: color(x.color, donde) });
+        poner(Plano3.GESTO, { id: x.id, tipo: 'texto', texto: texto(x.texto, donde), estilo: voz(x.voz, donde), caja, ajuste: 'fijo', tamano: x.tamano ?? 46, color: color(x.color, donde), ...(x.vertical ? { vertical: x.vertical } : {}) });
         if (x.hacia) {
           // Hacia un punto del lienzo (el elemento ampliado en una diapositiva de detalle).
           const haciaLaDerecha = caja.x + caja.w / 2 < x.hacia.x;
