@@ -1,0 +1,69 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T13:58:47.649Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 55,
+      "distancia": "MEDIO",
+      "encuadre": "Plano cenital en 3/4 desde arriba sobre tonel de madera, mostrando todo el plato.",
+      "luz": "Luz ambiente de local con sombras duras y tono amarillento.",
+      "elementos": [
+        {
+          "nombre": "Entrecot cortado en tiras",
+          "estado": "poco hecho, centro rosado, costra marcada con sal gruesa",
+          "recuento": 1
+        },
+        {
+          "nombre": "Patatas fritas",
+          "estado": "doradas y alargadas",
+          "recuento": null
+        },
+        {
+          "nombre": "Pimientos del Padrón",
+          "estado": "fritos y fogueados",
+          "recuento": 2
+        },
+        {
+          "nombre": "Plato de barro",
+          "estado": "redondo artesanal marrón",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Luz plana y amarilla de bar",
+        "Perspectiva cenital poco atractiva para el corte de carne"
+      ],
+      "utilizable": true,
+      "motivo": "Inventario claro de producto y vajilla para recrear la toma."
+    },
+    "huecos": {
+      "plato": "cured beef ribeye steak",
+      "origen": "traditional Spanish steakhouse",
+      "elementos": "thick rare-cooked sliced ribeye with a dark seared crust and flaky salt, golden french fries, two blistered green Padron peppers, served on a round brown terracotta plate",
+      "recuento": "Exactly two Padron peppers and one sliced steak.",
+      "camara": {
+        "anguloGrados": 20,
+        "descripcion": "dramatic close-up low-angle view at 20 degrees, plate filling the lower-left frame",
+        "objetivoMm": 85,
+        "apertura": 2.8,
+        "giroGrados": 60,
+        "distancia": "PRIMER_PLANO"
+      },
+      "ideaGrafica": "low-key framing pushing the dish to the lower-left, creating clean dark background on the right for typography",
+      "luz": "dramatic low-key lighting with a single narrow hard side-light grazing the seared meat crust",
+      "colorDominante": "deep black environment with intense rare-red meat as the dominant contrast color"
+    },
+    "decisiones": [
+      "Se cambia a estilo Low-key (familia b) siguiendo la referencia ref-post-21 para transmitir elegancia nocturna.",
+      "Se baja el ángulo a 20° para dar volumen a la costra y el corte rojo de la carne.",
+      "Composición desplazada abajo-izquierda para dejar espacio libre a la tipografía elegante del diseño posterior."
+    ]
+  },
+  "prompt": "@image1 is a real photo of cured beef ribeye steak traditional Spanish steakhouse. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: thick rare-cooked sliced ribeye with a dark seared crust and flaky salt, golden french fries, two blistered green Padron peppers, served on a round brown terracotta plate. Exactly two Padron peppers and one sliced steak. Nothing else added. New composition by a professional food photographer: dramatic close-up low-angle view at 20 degrees, plate filling the lower-left frame, 85 mm lens at f/2.8, low-key framing pushing the dish to the lower-left, creating clean dark background on the right for typography. Dramatic low-key lighting with a single narrow hard side-light grazing the seared meat crust, deep black environment with intense rare-red meat as the dominant contrast color. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ]
+}

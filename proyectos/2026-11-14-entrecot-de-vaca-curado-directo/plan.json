@@ -1,0 +1,14 @@
+{
+  "nota": "Encargo 2026-11-14-entrecot-de-vaca-curado-directo (orden única). Referencia: ref-post-21.",
+  "local": "torre-de-vega",
+  "marca": "../../marcas/torre-de-vega/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-14",
+    "referencia": "ref-post-21"
+  }
+}

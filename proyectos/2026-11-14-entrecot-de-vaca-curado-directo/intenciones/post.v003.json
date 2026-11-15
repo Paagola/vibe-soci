@@ -1,0 +1,174 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 3,
+  "titulo": "Torre de Vega · Entrecot de vaca curado, directo de Galicia",
+  "notas": "Concepto: presencia imponente del entrecot curado gallego sobre fondo oscuro, que destaca el origen y la solera del restaurante con una jerarquía clara. Foco: el titular. Se toma de la referencia: fotografía low-key en penumbra con iluminación dramática sobre el producto; jerarquía tipográfica contrastada, con titular grande y datos secundarios en el margen inferior; voz tipográfica de acento para la marca del local. No se copia: la marca ni los textos de la referencia; el cóctel y los elementos decorativos de coctelería; la composición del monograma original.",
+  "marca": "torre-de-vega",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {
+      "plato": "#DDB377"
+    },
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@principal",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "2026-11-14-entrecot-de-vaca-curado-directo-foto-1"
+  },
+  "textos": {
+    "titular": "ENTRECOT DE VACA",
+    "origen": "Directo de Galicia",
+    "marca": "TORRE DE VEGA"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "plato",
+      "opacidad": 0,
+      "fusion": "normal",
+      "oculta": false,
+      "nota": "Silueta del plato de la foto a sangre: no se pinta. Sirve de sujeto para las relaciones de no solapamiento.",
+      "tipo": "recorte",
+      "activo": "foto",
+      "sangradoAbajo": 0,
+      "alineadoCon": "foto",
+      "bordeSuave": 0.8,
+      "contraerBorde": 0,
+      "giro": 0
+    },
+    {
+      "id": "capa-titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1068,
+        "w": 0.8667,
+        "h": 0.2
+      },
+      "ajuste": "fijo",
+      "tamano": 180,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@blanco"
+    },
+    {
+      "id": "capa-origen",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@origen",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.8448,
+        "w": 0.5,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 36,
+      "alinear": "izquierda",
+      "vertical": "abajo",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@blanco"
+    },
+    {
+      "id": "capa-marca",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@marca",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.5667,
+        "y": 0.8448,
+        "w": 0.3667,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "derecha",
+      "vertical": "abajo",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@principal"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "capa-titular",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "capa-origen",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "capa-marca",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "capa-titular",
+        "capa-origen",
+        "capa-marca"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ]
+}

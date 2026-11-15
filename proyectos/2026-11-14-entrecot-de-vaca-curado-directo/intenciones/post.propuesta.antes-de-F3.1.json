@@ -1,0 +1,178 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T14:34:45.842Z",
+  "propuesta": {
+    "idea": "Presencia imponente del entrecot curado gallegos en fondo oscuro, destacando el origen y la solera del restaurante con jerarquía clara.",
+    "foco": "TITULAR",
+    "seToma": [
+      "Fotografía low-key en penumbra con iluminación dramática sobre el producto",
+      "Jerarquía tipográfica contrastada con titular grande y datos secundarios en margen inferior",
+      "Uso de voz tipográfica de acento para la marca del local"
+    ],
+    "noSeCopia": [
+      "Marca y textos de la referencia",
+      "Cóctel y elementos decorativos de coctelería",
+      "Composición de monograma original"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "ENTRECOT DE VACA",
+        "fuente": "PLATO",
+        "cita": "Entrecot de vaca curado, directo de Galicia"
+      },
+      {
+        "clave": "origen",
+        "texto": "Directo de Galicia",
+        "fuente": "PLATO",
+        "cita": "Entrecot de vaca curado, directo de Galicia"
+      },
+      {
+        "clave": "marca",
+        "texto": "TORRE DE VEGA",
+        "fuente": "MARCA",
+        "cita": "Torre de Vega"
+      }
+    ],
+    "capas": [
+      {
+        "tipo": "foto",
+        "encuadre": "sangre",
+        "tratamiento": "natural"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-titular",
+        "texto": "titular",
+        "voz": "titular",
+        "caja": {
+          "col": [
+            1,
+            12
+          ],
+          "fila": [
+            2,
+            4
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 180,
+        "alinear": "izquierda",
+        "vertical": "arriba",
+        "color": "@blanco",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-origen",
+        "texto": "origen",
+        "voz": "texto",
+        "caja": {
+          "col": [
+            1,
+            12
+          ],
+          "fila": [
+            5,
+            5
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 34,
+        "alinear": "izquierda",
+        "vertical": "arriba",
+        "color": "@plato",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-marca",
+        "texto": "marca",
+        "voz": "rotulo",
+        "caja": {
+          "col": [
+            1,
+            12
+          ],
+          "fila": [
+            15,
+            15
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 34,
+        "alinear": "derecha",
+        "vertical": "abajo",
+        "color": "@principal",
+        "relacion": "aparte"
+      }
+    ]
+  },
+  "problemas": [
+    "CONTRASTE: «capa-origen» tiene un contraste de 1.7:1 con su fondo en su peor zona; se pide al menos 4.5:1."
+  ],
+  "avisos": [
+    "SEPARACION: «capa-titular» y «capa-origen» se montan 43 px: deja al menos 12 px para que respiren.",
+    "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Prueba «detras», «delante» o «contorno» en el titular, o una anotación que señale algo del plato; si es a propósito, dilo en la idea."
+  ],
+  "intentos": [
+    {
+      "problemas": [
+        "SOLAPE: «capa-marca» tapa el sujeto: el 6 % de sus letras queda encima (máximo 3 %)."
+      ],
+      "avisos": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 2.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ]
+    },
+    {
+      "problemas": [
+        "CONTRASTE: «capa-origen» tiene un contraste de 1.7:1 con su fondo en su peor zona; se pide al menos 4.5:1."
+      ],
+      "avisos": [
+        "SEPARACION: «capa-titular» y «capa-origen» se montan 43 px: deja al menos 12 px para que respiren.",
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Prueba «detras», «delante» o «contorno» en el titular, o una anotación que señale algo del plato; si es a propósito, dilo en la idea."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        1,
+        11
+      ],
+      "fila": [
+        6,
+        13
+      ],
+      "area": 0.346
+    },
+    "libres": [
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          1,
+          5
+        ],
+        "luz": 0.044
+      },
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          14,
+          16
+        ],
+        "luz": 0.101
+      }
+    ],
+    "vivo": "#DDB377"
+  }
+}

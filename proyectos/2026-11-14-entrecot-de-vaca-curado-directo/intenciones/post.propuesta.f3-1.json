@@ -1,0 +1,105 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T19:30:47.543Z",
+  "propuesta": {
+    "idea": "La contundencia del entrecot de vaca gallega curado presentado con elegancia oscura y contraste tipográfico.",
+    "foco": "PLATO",
+    "seToma": [
+      "Contraste entre tipografía condensada rotunda y voz script caligráfica con florituras",
+      "Composición sobre fondo oscuro cálido integrando el texto con la pieza gastronómica",
+      "Línea sutil de apoyo editorial y firma sobria"
+    ],
+    "noSeCopia": [
+      "La temática de coctelería y el nombre del café",
+      "Los datos de contacto ficticios y el logotipo ajeno"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "ENTRECOT",
+        "fuente": "PLATO",
+        "cita": "Entrecot de vaca curado, directo de Galicia"
+      },
+      {
+        "clave": "acento",
+        "texto": "directo de Galicia",
+        "fuente": "PLATO",
+        "cita": "directo de Galicia"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "Carnes a la brasa",
+        "fuente": "MARCA",
+        "cita": "gran variedad de carnes a la brasa"
+      },
+      {
+        "clave": "firma",
+        "texto": "Torre de Vega",
+        "fuente": "MARCA",
+        "cita": "Torre de Vega"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "TITULAR_CON_ACENTO",
+      "titular": "titular",
+      "acento": "acento",
+      "apoyo": "apoyo",
+      "firma": "firma",
+      "lado": "arriba",
+      "sangra": true,
+      "tinta": "limpia"
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "VOCES: Hay 4 familias tipográficas; el máximo son dos y, si acaso, una manuscrita que solo interrumpe.",
+    "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "CRITICA: El acento caligráfico 'directo de Galicia' queda flotando aislado y desvaído en el tercio superior oscuro, perdiendo la cohesión que en la referencia une el texto script con el titular.",
+    "CRITICA: El titular sangrado al 100 % resulta excesivamente tosco y masivo comparado con la finura y el aire de bistró sofisticado de la referencia.",
+    "CRITICA: Se pierde por completo el juego editorial de la referencia, que equilibra el bloque principal con apoyo de texto y sello/monograma en la cabecera."
+  ],
+  "critica": {
+    "llega": false,
+    "motivos": [
+      "El acento caligráfico 'directo de Galicia' queda flotando aislado y desvaído en el tercio superior oscuro, perdiendo la cohesión que en la referencia une el texto script con el titular.",
+      "El titular sangrado al 100 % resulta excesivamente tosco y masivo comparado con la finura y el aire de bistró sofisticado de la referencia.",
+      "Se pierde por completo el juego editorial de la referencia, que equilibra el bloque principal con apoyo de texto y sello/monograma en la cabecera."
+    ],
+    "adoptada": false
+  },
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "VOCES: Hay 4 familias tipográficas; el máximo son dos y, si acaso, una manuscrita que solo interrumpe.",
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": []
+    },
+    {
+      "origen": "director",
+      "problemas": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 1.8 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12. (obligatorio cuando la foto tiene plato recortable y aire; si es a propósito, explícalo en «excepcion»)"
+      ],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": [
+        "Arreglo del código: el titular, dos filas más alto (no había salto de escala)."
+      ]
+    },
+    {
+      "origen": "critica",
+      "problemas": [
+        "TAMANO_MINIMO: El texto de «sello» queda con mayúsculas de 17.2 px; el mínimo es 22. Agranda el sello o acorta el texto."
+      ],
+      "avisos": [
+        "ZONA_SEGURA: «sello» se sale de la zona segura: en 4:5 se cortará. Si es a propósito, comprueba que el dato se lee entero.",
+        "VOCES: Hay 4 familias tipográficas; el máximo son dos y, si acaso, una manuscrita que solo interrumpe.",
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": []
+    }
+  ]
+}
