@@ -12,11 +12,11 @@ export const COLOR = Object.freeze({
   amarillo: 0xf5c518,
   tinta: 0x151515,
   // Arquitectura
-  suelo: 0xd7d1c4,
-  sueloJunta: 0xc3bcae,
+  suelo: 0xc9c1b1,
+  sueloJunta: 0xb3ab9b,
   hormigon: 0xbab5ab,
   hormigonOscuro: 0x8f8a80,
-  pared: 0xeee7da,
+  pared: 0xddd3c2,
   cristal: 0xb9dde3,
   marco: 0x34363d,
   // Maderas y naturales
@@ -84,6 +84,9 @@ export function crearMateriales(look) {
     papel: look.flat(COLOR.blancoCalido),
     sombra: look.flat(0x000000, { transparent: true, opacity: 0.16, depthWrite: false }),
   });
+  // Follaje sin contorno por masa: con contorno, cada masa de la copa dibujaba su anillo de tinta y la copa parecía
+  // espuma. La copa se lee por el sombreado por escalones y por el contorno del tronco y la jardinera.
+  for (const nombre of ['hoja', 'hojaClara', 'hojaOscura', 'bosque', 'oliva', 'salvia']) m[`${nombre}Copa`] = t(COLOR[nombre], { outline: false });
   return m;
 }
 

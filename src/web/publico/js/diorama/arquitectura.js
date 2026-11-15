@@ -103,6 +103,13 @@ export function crearArquitectura(m, { hora = new Date().getHours() } = {}) {
   const raiz = new THREE.Group();
   raiz.name = 'arquitectura';
   const luz = cieloDeHora(hora);
+  /** Lo que se puede ocultar en un primer plano si se interpone entre la cámara y la estación (como los muros en los juegos). */
+  const ocultables = [];
+  const ocultable = (o) => {
+    vivo(o);
+    ocultables.push(o);
+    return o;
+  };
 
   // Losa: base grafito con una línea azul de marca en el canto, y suelo de hormigón pulido con juntas cada 1,5 m.
   pon(raiz, caja(ANCHO, grueso - 0.04, FONDO, 0.06), m.grafito, (x0 + x1) / 2, -grueso / 2 - 0.02, (z0 + z1) / 2, { sombra: false });
@@ -139,20 +146,20 @@ export function crearArquitectura(m, { hora = new Date().getHours() } = {}) {
   pon(raiz, plano(FONDO, 0.55), horizonteMat, x0 - 0.07, 0.82, (z0 + z1) / 2, { rot: [0, Math.PI / 2, 0], sombra: false, recibe: false });
 
   // Pilares y vigas vistas encima del jardín (la pérgola, de donde cuelgan las plantas).
-  for (const p of PILARES) pilar(raiz, m, p.x, p.z);
+  for (const p of PILARES) ocultable(pilar(raiz, m, p.x, p.z));
   const j = ZONAS.jardin.ocupa[0];
-  const pergola = grupo(raiz, (j.x0 + j.x1) / 2, 2.85, (j.z0 + j.z1) / 2);
-  for (const s of [-1, 1]) pon(pergola, caja(j.x1 - j.x0 + 0.5, 0.16, 0.14, 0.02), m.madera, 0, 0, (s * (j.z1 - j.z0)) / 2);
-  for (let i = 0; i <= 6; i++) pon(pergola, caja(0.09, 0.12, j.z1 - j.z0 + 0.4, 0.015), m.maderaClara, -((j.x1 - j.x0) / 2) + ((j.x1 - j.x0) * i) / 6, 0.12, 0);
+  const pergola = ocultable(grupo(raiz, (j.x0 + j.x1) / 2, 2.85, (j.z0 + j.z1) / 2));
+  for (const s of [-1, 1]) pon(pergola, caja(j.x1 - j.x0 + 0.4, 0.12, 0.11, 0.02), m.madera, 0, 0, (s * (j.z1 - j.z0)) / 2);
+  for (let i = 0; i <= 6; i++) pon(pergola, caja(0.065, 0.09, j.z1 - j.z0 + 0.3, 0.012), m.maderaClara, -((j.x1 - j.x0) / 2) + ((j.x1 - j.x0) * i) / 6, 0.1, 0);
   // Postes de la pérgola en las cuatro esquinas del jardín.
-  for (const [px, pz] of [[j.x0 + 0.1, j.z0 + 0.1], [j.x1 - 0.1, j.z0 + 0.1], [j.x0 + 0.1, j.z1 - 0.1], [j.x1 - 0.1, j.z1 - 0.1]]) pon(raiz, caja(0.12, 2.85, 0.12, 0.02), m.maderaOscura, px, 1.425, pz);
+  for (const [px, pz] of [[j.x0 + 0.1, j.z0 + 0.1], [j.x1 - 0.1, j.z0 + 0.1], [j.x0 + 0.1, j.z1 - 0.1], [j.x1 - 0.1, j.z1 - 0.1]]) ocultable(pon(raiz, caja(0.12, 2.85, 0.12, 0.02), m.maderaOscura, px, 1.425, pz));
 
   // Cristalera que separa el estudio de foto del laboratorio, y la sala de brainstorming acristalada.
-  const sep = grupo(raiz, -2.15, 0, -5.0, Math.PI / 2);
+  const sep = ocultable(grupo(raiz, -2.15, 0, -5.0, Math.PI / 2));
   cristalera(sep, m, 2.4, 2.3);
   const b = ZONAS.brainstorming.ocupa[0];
-  cristalera(grupo(raiz, (b.x0 + b.x1) / 2, 0, b.z0), m, b.x1 - b.x0, 2.3);
-  cristalera(grupo(raiz, b.x0, 0, (b.z0 + b.z1) / 2, Math.PI / 2), m, b.z1 - b.z0, 2.3, [-0.1, 0.85]);
+  cristalera(ocultable(grupo(raiz, (b.x0 + b.x1) / 2, 0, b.z0)), m, b.x1 - b.x0, 2.3);
+  cristalera(ocultable(grupo(raiz, b.x0, 0, (b.z0 + b.z1) / 2, Math.PI / 2)), m, b.z1 - b.z0, 2.3, [-0.1, 0.85]);
 
   // Paneles acústicos de fieltro sobre el laboratorio (hexágonos en azul petróleo y terracota).
   const hex = new THREE.CylinderGeometry(0.26, 0.26, 0.05, 6);
@@ -160,7 +167,7 @@ export function crearArquitectura(m, { hora = new Date().getHours() } = {}) {
   [[-1.2, 0, 'petroleo'], [-0.75, -0.24, 'petroleoClaro'], [-0.3, 0, 'petroleo'], [0.15, -0.24, 'terracota'], [0.6, 0, 'petroleo'], [1.05, -0.24, 'petroleoClaro']].forEach(([x, y, c]) => pon(acusticos, hex, m[c], x, y, 0, { rot: [Math.PI / 2, 0, Math.PI / 6] }));
 
   // Rótulo del estudio en la pared del fondo, sobre el estudio de foto.
-  return { grupo: raiz, cielo: { fondo: cieloFondo, izq: cieloIzq, material: cieloMat }, luz };
+  return { grupo: raiz, cielo: { fondo: cieloFondo, izq: cieloIzq, material: cieloMat }, luz, ocultables };
 }
 
 /** El jardín central: parterres de madera con tierra, piedras de paso y un banco. Los árboles van en vegetacion.js. */

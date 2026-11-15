@@ -134,7 +134,13 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true, hora = new D
   updateCamera(camera, CAMARA, 1.6, PUNTOS_AJUSTE);
   let orbit = null;
   const guion = new Guion();
-  const cargador = crearCargador({ alCargar: () => alCargarImagen() });
+  // Cuando llega una imagen real, se vuelve a repartir en sus soportes (y se redibuja si la escena está quieta).
+  const cargador = crearCargador({
+    alCargar: () => {
+      soportes(expuestoAntes === 'post');
+      alCargarImagen();
+    },
+  });
   let estado = null;
   let conectado = true;
 
@@ -436,8 +442,9 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true, hora = new D
     aplicar(t);
     look.render(scene, camera);
   }
-  function activarOrbita(alCambiar) {
+  function activarOrbita(alCambiar, alElegir = () => {}) {
     orbit = createDioramaOrbit(camera, lienzo, {
+      onSelect: alElegir,
       target: CAMARA.target,
       minDistance: camera.userData.distance * 0.18,
       maxDistance: camera.userData.distance * 1.4,
@@ -468,6 +475,22 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true, hora = new D
     rayo.setFromCamera({ x: ndcX, y: ndcY }, camera);
     const hit = rayo.intersectObjects(cajas.children, false)[0];
     return hit?.object.userData.estacion ?? null;
+  }
+  /** Rectángulo en pantalla (coordenadas normalizadas) que ocupa una estación con su entrega y su operario. */
+  function rectanguloDe(id) {
+    const p = PUESTOS[id];
+    const pts = [];
+    for (const r of p.ocupa) for (const x of [r.x0, r.x1]) for (const z of [r.z0, r.z1]) for (const y of [0, 2.0]) pts.push(new THREE.Vector3(x, y, z));
+    for (const q of [p.entrega, p.operario].filter(Boolean)) for (const y of [0, 1.8]) pts.push(new THREE.Vector3(q.x, y, q.z));
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const v of pts) {
+      v.project(camera);
+      x0 = Math.min(x0, v.x);
+      x1 = Math.max(x1, v.x);
+      y0 = Math.min(y0, v.y);
+      y1 = Math.max(y1, v.y);
+    }
+    return { x0, y0, x1, y1 };
   }
   /** Punto de anclaje de una estación (para el rótulo y la tarjeta) y su proyección en pantalla. */
   function anclaDe(id) {
@@ -511,6 +534,7 @@ export function crearEscena(lienzo, { maxDpr = 1.5, sombras = true, hora = new D
     activarOrbita,
     estacionEn,
     anclaDe,
+    rectanguloDe,
     proyectar,
     get estado() {
       return estado;

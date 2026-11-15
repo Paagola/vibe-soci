@@ -128,12 +128,12 @@ function entrada(m) {
   for (const s of [-1, 1]) pon(router, cil(0.005, 0.005, 0.12, 4), m.grafito, s * 0.07, 0.1, -0.04);
   const led = vivo(pon(router, esfera(0.012, 8, 6), m.pilotoVerde, 0.06, 0.045, 0.06, { sombra: false }));
   // Estanterías de clasificación detrás (contra la pared), con cajas etiquetadas por color.
-  const casillero = grupo(g, 0, 0, -0.85);
-  pon(casillero, caja(2.2, 1.6, 0.34, 0.02), m.maderaClara, 0, 0.8, 0);
-  for (let i = 0; i < 3; i++) for (let j = 0; j < 5; j++) pon(casillero, caja(0.36, 0.38, 0.3, 0.02), [m.terracota, m.crema, m.petroleoClaro, m.salvia, m.arena][(i + j) % 5], -0.88 + j * 0.44, 0.3 + i * 0.5, 0.04);
+  const casillero = grupo(g, 0, 0, -0.48);
+  pon(casillero, caja(2.2, 1.6, 0.3, 0.02), m.maderaClara, 0, 0.8, 0);
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 5; j++) pon(casillero, caja(0.36, 0.38, 0.26, 0.02), [m.terracota, m.crema, m.petroleoClaro, m.salvia, m.arena][(i + j) % 5], -0.88 + j * 0.44, 0.3 + i * 0.5, 0.04);
   // Rótulo con el nombre del local del encargo en foco, sobre la recepción.
-  const rotulo = lamina(g, 1.6, 0.36, 0, 2.55, -0.9);
-  pon(g, caja(1.7, 0.44, 0.04, 0.02), m.tinta, 0, 2.55, -0.93);
+  const rotulo = lamina(g, 1.6, 0.36, 0, 2.2, -0.58);
+  pon(g, caja(1.7, 0.44, 0.04, 0.02), m.tinta, 0, 2.2, -0.61);
   silla(g, m, 0.6, -0.55, Math.PI, m.terracota);
   return {
     grupo: g,
@@ -191,7 +191,8 @@ function directorFoto(m) {
   const pil = piloto(g, m, 1.05, ALTO_MESA + 0.02, 0.22);
   return {
     grupo: g,
-    spot: new THREE.Vector3(0.7, ALTO_MESA + 0.004, 0.15),
+    // El corredor entrega por el extremo derecho de la mesa (al lado, no entre la cámara y el director).
+    spot: new THREE.Vector3(0.98, ALTO_MESA + 0.004, 0.0),
     soportes: { fotoMesa, propuesta, pantalla },
     animar({ trabajando }) {
       luz.poner(trabajando, m.calidaEncendida);
@@ -346,8 +347,8 @@ function revisor(m) {
   // original y la nueva, REALES), sello, bandejas de aceptadas y devueltas y documentos de revisión.
   const g = new THREE.Group();
   mesa(g, m, { largo: 1.5, fondo: 0.66, tablero: m.blanco, patas: m.petroleo, x: 0, z: 0 });
-  const cajaLuz = vivo(pon(g, caja(0.5, 0.02, 0.4, 0.008), m.blancoCalido, 0.2, ALTO_MESA + 0.01, 0.05, { sombra: false }));
-  pon(g, caja(0.54, 0.018, 0.44, 0.008), m.grafito, 0.2, ALTO_MESA + 0.004, 0.05);
+  const cajaLuz = vivo(pon(g, caja(0.5, 0.02, 0.4, 0.008), m.blancoCalido, -0.45, ALTO_MESA + 0.01, 0.05, { sombra: false }));
+  pon(g, caja(0.54, 0.018, 0.44, 0.008), m.grafito, -0.45, ALTO_MESA + 0.004, 0.05);
   const original = monitor(g, m, -0.48, ALTO_MESA, -0.2, 0.25, 0.32, 0.4);
   const nueva = monitor(g, m, -0.08, ALTO_MESA, -0.24, 0.05, 0.32, 0.4);
   pon(g, caja(0.13, 0.03, 0.08, 0.008), m.grafito, 0.62, ALTO_MESA + 0.015, 0.18);
@@ -356,11 +357,12 @@ function revisor(m) {
   pon(g, caja(0.18, 0.04, 0.24, 0.006), m.rojo, 0.66, ALTO_MESA + 0.065, -0.12);
   pila(g, m, -0.6, ALTO_MESA, 0.18, 3, m.blancoCalido, 0.2, 0.26);
   const pil = piloto(g, m, 0.72, ALTO_MESA + 0.02, 0.26);
-  silla(g, m, -1.05, -0.5, 2.6, m.petroleoClaro);
+  silla(g, m, -0.55, -0.78, 2.6, m.petroleoClaro);
   estanteria(g, m, 0.95, -0.85, 0, { ancho: 0.9, alto: 1.5, baldas: 3, semilla: 9 });
   return {
     grupo: g,
-    spot: new THREE.Vector3(0.35, ALTO_MESA + 0.022, 0.15),
+    // La foto, en la caja de luz del extremo izquierdo: el corredor la deja desde el lado, no delante de la revisora.
+    spot: new THREE.Vector3(-0.6, ALTO_MESA + 0.022, 0.05),
     soportes: { original, nueva },
     animar({ trabajando }) {
       cajaLuz.material = trabajando ? m.calidaEncendida : m.blancoCalido;
@@ -412,7 +414,8 @@ function directorDiseno(m) {
   mesa(g, m, { largo: 1.6, fondo: 0.7, tablero: m.maderaClara, patas: m.terracota, x: 0, z: 0 });
   pon(g, caja(0.42, 0.012, 0.3, 0.006), m.grafito, 0.1, ALTO_MESA + 0.006, 0.0);
   pon(g, caja(0.36, 0.004, 0.24, 0.003), m.tinta, 0.1, ALTO_MESA + 0.013, 0.0, { sombra: false });
-  const pantalla = monitor(g, m, 0.25, ALTO_MESA, 0.24, Math.PI, 0.56, 0.36);
+  // Pantalla al extremo de la mesa, en ángulo: no tapa la cara del director desde la sala.
+  const pantalla = monitor(g, m, 0.62, ALTO_MESA, 0.12, Math.PI - 0.7, 0.5, 0.32);
   // Muestras de color en abanico, reglas y lápices.
   for (let i = 0; i < 6; i++) pon(g, caja(0.05, 0.004, 0.2, 0.002), [m.terracota, m.naranja, m.crema, m.oliva, m.petroleo, m.azul][i], 0.55, ALTO_MESA + 0.003 + i * 0.002, -0.1, { rot: [0, -0.5 + i * 0.18, 0], sombra: false });
   pon(g, caja(0.4, 0.004, 0.04, 0.002), m.metalClaro, -0.35, ALTO_MESA + 0.004, -0.2, { rot: [0, 0.3, 0], sombra: false });
