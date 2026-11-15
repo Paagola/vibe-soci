@@ -425,11 +425,12 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
         : { tipo: 'texto', id: 'apoyo', texto: comp.apoyo, voz: e.voces.apoyo, caja: { col: [1, 9], fila: [7, 7] }, ajuste: 'fijo', tamano: CUERPO_SEGUNDO, alinear: 'izquierda', vertical: 'arriba', color: `@${sobre(campo, e.colorDeVoz[e.voces.apoyo], 4.5).token}`, relacion: 'aparte' },
     );
   }
-  // PEGATINA: el plato recortado con un filo claro alrededor, como el producto de las referencias de flyer.
-  if (trata.has('PEGATINA')) {
+  // PEGATINA o ILUSTRADO: el plato recortado con un filo claro alrededor, como el producto de las referencias de flyer
+  // (en una pieza ilustrada el producto recortado va contorneado, como un dibujo o una pegatina más).
+  if (trata.has('PEGATINA') || trata.has('ILUSTRADO')) {
     const filo = [...deMarca].sort((a, b) => contraste(b.hex, '#000000') - contraste(a.hex, '#000000'))[0]!;
     (plato as Extract<CapaPropuesta, { tipo: 'plato' }>).filo = `@${filo.token}`;
-    notas.push(`Filo de pegatina @${filo.token} alrededor del plato (tratamiento de la referencia).`);
+    notas.push(`Filo de pegatina @${filo.token} alrededor del plato (tratamiento ${trata.has('PEGATINA') ? 'pegatina' : 'ilustrado'} de la referencia).`);
   }
   // TINTA: un subrayado a pincel bajo el titular, la interrupción a mano de la pieza.
   // Bajo el segundo nivel si lo hay (bajo el titular cruzaría el segundo nivel), en el color de la diagonal.

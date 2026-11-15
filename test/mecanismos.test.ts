@@ -279,6 +279,9 @@ describe('F3.3 · tratamiento de la referencia y elementos gráficos de la esté
     const conTrama = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: ['TRAMA'], graficos: { tipos: [], maximo: 0 } }));
     const olas = conTrama.capas.findIndex((c) => c.tipo === 'patron' && c.motivo === 'olas' && c.suave);
     assert.equal(olas, 1, 'justo encima del fondo');
+    // ILUSTRADO: el plato recortado, contorneado como un dibujo (el mismo filo que la pegatina).
+    const ilustrado = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: ['ILUSTRADO'], graficos: { tipos: [], maximo: 0 } }));
+    assert.ok((ilustrado.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>).filo);
     // Sin tratamientos ni gráficos (editorial), nada de eso.
     const sobrio = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: [], graficos: { tipos: [], maximo: 0 } }));
     assert.ok(!sobrio.capas.some((c) => c.tipo === 'textura' || c.tipo === 'patron' || c.tipo === 'trazo' || (c.tipo === 'forma' && c.figura === 'circulo')));
