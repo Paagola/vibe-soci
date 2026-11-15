@@ -72,6 +72,36 @@
 
 **Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
 
+### 0e. F3.2, 15/11: arreglos tras la prueba de punta a punta con Sushita Chinitas (rama `f3-2-arreglos`)
+
+| Punto | Qué se ha hecho | Validado |
+|---|---|---|
+| 1 · Carrusel | `formato` post o carrusel (CLI y web). Portada del director; de uno a tres detalles de la misma foto (zoom en el elemento, su nombre, su estado a mano con flecha) y cierre con firma, ciudad e Instagram, con la retícula, las voces y los colores de la portada (`carrusel.ts`). **Pendiente:** varias fotos | Sushita, real (abajo) |
+| 2 · Alta de un local | Tokens y fuentes (Google Fonts, OFL, Ñ y tildes comprobadas con fontkit; si no, la más parecida, pendiente); la web lo avisa | Con red, en una carpeta aparte |
+| 3 · Ficha automática | Analista de Gemini visión contra `FichaReferencia`; la orden ya no se para; referencia propia (imagen o enlace) desde la web | ref-pin-34 → F3, como la ficha a mano |
+| 4 · Mockups | Aptitud de la imagen (POST, MOCKUP, MARCA_DE_AGUA, CAPTURA, COLLAGE): los tres primeros, rechazados | El pin de «Xtreme Flyers» → MOCKUP, con su logotipo |
+| 5 · Recuento | Solo piezas enteras; «cortados» y «dudoso» aparte, y la parada los enseña | Ahora sí: atún 2 + 1 cortado. **Se le sigue escapando el rollito blanco con huevas** |
+| 6 · HECHO sin llegar | COBERTURA obligatoria (el código prueba el otro lado), firma obligatoria y crítica que no llega → EN REVISIÓN | Pruebas |
+| 7 · F1/F3 | PLATO_SOBRE_COLOR: campo plano partido en diagonal, plato recortado grande, girado y cortado por el borde, titular entero por delante, tres niveles | Portada de Sushita |
+| 8 · Aire | El director de foto declara `aire` y la comprobación lo mide con la máscara; por debajo del 60 % libre, descarta | foto-1 de Sushita: 33 % arriba a la derecha → se habría descartado |
+| 9 · @image2 | La referencia como estilo para el generador (frase acordada); se mira que no se copie nada. **Desactivado por defecto:** en la A/B casi no cambia nada | A/B, 2 fotos (`diseno/f3/img/sushita-ab-image2.jpg`) |
+| 10 · Estética | Seis estéticas (de las familias F1–F10) que leen la foto, el diseño, el crítico y los umbrales de oficio; se deduce de la ficha y avisa si choca | Sushita en color pop |
+| Revisión de la A/B | «mismaDistribucion»: si la foto nueva repite la colocación de la subida, no es otra toma y se descarta | Pruebas |
+
+**El carrusel de Sushita:**
+- `diseno/f3/img/sushita-ref-v001-portada.jpg` (referencia, v001 y portada nueva);
+- `diseno/f3/img/sushita-carrusel.jpg` (las cinco diapositivas, versión 2).
+
+Se ha juzgado así:
+- toma de la referencia el campo plano, la diagonal, el producto grande y cortado, y el titular gigante y entero;
+- **no** toma el producto aislado, una sola pieza heroica con palillos: la tabla llena la foto y la portada se lee como un recorte de la tabla.
+
+**Gasto de F3.2:**
+- 2 fotos (0,281 USD);
+- 8 llamadas de texto, con 47 928 fichas de entrada, 4 106 de salida y 6 883 de razonamiento.
+
+**Comprobaciones:** `npm test` con 285 de 285.
+
 ---
 
 ## 1. Objetivo del producto
