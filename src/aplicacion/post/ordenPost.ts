@@ -221,7 +221,22 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const estetica = e.estetica ?? esteticaDeFamilia(familia);
     const choque = choqueConFamilia(estetica, familia);
     nota(e.estetica ? `Estética elegida: ${ESTETICAS[estetica].nombre}.${choque ? ` AVISO: ${choque}` : ''}` : `Estética deducida de la referencia${familia ? ` (${familia})` : ''}: ${ESTETICAS[estetica].nombre}.`);
-    return { encargo: ir(e, 'FOTO_REAL', { estetica }) };
+    // F3.3 (punto 12): si la ficha (a mano) no dice el tratamiento de la referencia (ilustrado, tinta, pegatina…), lo
+    // mira el analista una vez; queda en el encargo, sin tocar la ficha.
+    let tratamiento = e.tratamiento;
+    if (e.referencia && !tratamiento && deps.analista) {
+      const r = await deps.referencias.referencias.obtener(e.local, e.referencia);
+      if (r.ficha && !r.ficha.tratamiento && r.origen.archivo) {
+        try {
+          const { ficha } = await deps.analista.analizar(deps.referencias.referencias.rutaArchivo(e.local, r.id, r.origen.archivo));
+          tratamiento = ficha.tratamiento ?? [];
+          nota(`Tratamiento de ${r.id} (lo mira ${deps.analista.nombre}; la ficha a mano no se toca): ${tratamiento.join(', ') || 'ninguno'}.`);
+        } catch (error) {
+          nota(`AVISO: no se ha podido mirar el tratamiento de ${r.id} (${(error as Error).message}); el diseño sigue sin él.`);
+        }
+      }
+    }
+    return { encargo: ir(e, 'FOTO_REAL', { estetica, ...(tratamiento ? { tratamiento } : {}) }) };
   },
 
   async FOTO_REAL(deps, e, _a, nota) {
@@ -670,7 +685,9 @@ export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsPropo
   if (e.referencia) {
     const r = await deps.referencias.referencias.obtener(e.local, e.referencia);
     const imagen = r.origen.archivo;
-    referencia = { id: r.id, ...(r.ficha ? { ficha: r.ficha } : {}), ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}) };
+    // F3.3: el tratamiento que miró el analista completa la ficha a mano que no lo decía.
+    const ficha = r.ficha && !r.ficha.tratamiento && e.tratamiento ? { ...r.ficha, tratamiento: e.tratamiento } : r.ficha;
+    referencia = { id: r.id, ...(ficha ? { ficha } : {}), ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}) };
   }
   const tokensMarca = Tokens.parse(JSON.parse(await readFile(rutaTokens, 'utf8')));
   // Punto 14: la huella tipográfica del local (sus piezas anteriores y su marca) y los efectos de la referencia.

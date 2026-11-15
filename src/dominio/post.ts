@@ -10,6 +10,7 @@
  */
 import { z } from 'zod';
 import type { VeredictoFinal } from './comprobacionSalida.js';
+import { Tratamiento } from './referencia.js';
 import { Estetica } from './diseno/estetica.js';
 
 export const PasoPost = z.enum(['REFERENCIA', 'FOTO_REAL', 'PROPUESTA', 'CONFIRMAR_ELEMENTOS', 'GENERAR', 'COMPROBAR', 'CONFIRMAR_FOTO', 'MASCARA', 'INTENCION', 'COMPONER', 'HECHO']);
@@ -82,6 +83,8 @@ export const EncargoPost = z.object({
   intentos: z.array(IntentoFoto).default([]),
   /** F3.3: las tomas de detalle de un carrusel (una foto por diapositiva de detalle). */
   tomas: z.array(TomaDelEncargo).default([]),
+  /** F3.3 (punto 12): el tratamiento de la referencia cuando su ficha a mano no lo dice (lo mira el analista; la ficha no se toca). */
+  tratamiento: z.array(Tratamiento).optional(),
   /** F3.3: fotos reales de más que sube el dueño para el carrusel, cada una con el elemento que enseña. */
   fotosExtra: z.array(z.object({ ruta: z.string().min(1), elemento: z.string().min(1), activo: z.string().optional() })).max(3).default([]),
   fotoElegida: z.string().optional(),

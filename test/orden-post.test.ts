@@ -14,6 +14,7 @@ import { AlmacenLocalesFicheros } from '../src/adaptadores/ficheros/AlmacenLocal
 import { AlmacenReferenciasFicheros } from '../src/adaptadores/ficheros/AlmacenReferenciasFicheros.js';
 import { BibliotecaDeReferenciasFicheros } from '../src/adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
 import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFicheros.js';
+import { AnalistaReferenciasSimulado, FICHA_SIMULADA } from '../src/adaptadores/simulado/AnalistaSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
 import { avanzar, cortarPorPalabras, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
 import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
@@ -190,5 +191,19 @@ describe('F3.2 (punto 9) · la orden manda la referencia como @image2 solo si el
     await avanzar(d2, 'sin-estilo');
     await avanzar(d2, 'sin-estilo', { confirmo: true });
     assert.equal(g2.peticiones[0]!.referencias.length, 1);
+  });
+});
+
+describe('F3.3 (punto 12) · el tratamiento de una referencia con ficha a mano', () => {
+  it('lo mira el analista una vez y queda en el encargo; la ficha a mano no se toca', async () => {
+    const ruta = join(carpeta, 'locales', 'asador-etxebarri', 'referencias', 'ref-post-30', 'referencia.json');
+    const antes = await readFile(ruta, 'utf8');
+    const analista = new AnalistaReferenciasSimulado([{ aptitud: { tipo: 'POST', problemas: [] }, ficha: { ...FICHA_SIMULADA, tratamiento: ['PEGATINA', 'TINTA'] } }]);
+    const d = { ...deps(), analista };
+    await nuevo(d, 'tratamiento', 'ref-post-30');
+    const r = await avanzar(d, 'tratamiento');
+    assert.deepEqual(r.encargo.tratamiento, ['PEGATINA', 'TINTA']);
+    assert.match(r.mensajes.join('\n'), /Tratamiento de ref-post-30 .*la ficha a mano no se toca.*PEGATINA, TINTA/);
+    assert.equal(await readFile(ruta, 'utf8'), antes, 'la referencia sigue igual');
   });
 });
