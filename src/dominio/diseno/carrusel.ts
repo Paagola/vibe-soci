@@ -56,9 +56,11 @@ export function diapositivasDeCarrusel(
   const problemas: string[] = [];
   const diapositivas: Diapositiva[] = [];
   const { campo, diagonal } = camposDeLaPortada(portada, e);
-  const fondo = (): CapaPropuesta[] => [
+  // La diagonal de la portada, repetida como una cuña entre los textos y la foto (en cada diapositiva, justo encima de
+  // su banda de foto: así ningún texto queda partido entre dos colores).
+  const fondo = (izquierda: number, derecha: number): CapaPropuesta[] => [
     { tipo: 'fondo', color: `@${campo}` },
-    ...(diagonal && e.conDiagonal ? [{ tipo: 'diagonal' as const, color: `@${diagonal}`, izquierda: 0.36, derecha: 0.3 }] : []),
+    ...(diagonal && e.conDiagonal ? [{ tipo: 'diagonal' as const, color: `@${diagonal}`, izquierda, derecha }] : []),
   ];
   const vistos = new Set<string>();
 
@@ -75,7 +77,7 @@ export function diapositivasDeCarrusel(
     const elemento = [...hechos.elementos].sort((a, b) => [...palabras].filter((p) => normal(b.nombre).includes(p)).length - [...palabras].filter((p) => normal(a.nombre).includes(p)).length)[0];
     const textos: TextoPropuesto[] = [nombre];
     const capas: CapaPropuesta[] = [
-      ...fondo(),
+      ...fondo(0.38, 0.3),
       // La foto, ampliada sobre el elemento: queda en el centro de la banda.
       { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [6, 16] }, sangra: true, zoom: 2.4, enfoque: d.punto },
       { tipo: 'texto', id: 'titular', texto: nombre.clave, voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [2, 3] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'abajo', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
@@ -84,7 +86,8 @@ export function diapositivasDeCarrusel(
       const estado = estadoCorto(elemento.estado);
       textos.push({ clave: 'estado', texto: estado, fuente: 'ELEMENTO', cita: estado });
       // La anotación, en el campo, con la flecha hasta el centro de la banda (donde quedó el elemento).
-      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [5, COLUMNAS], fila: [4, 5] }, tamano: 44, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.56, y: 0.66 }, color: `@${tintaSobre(campo, e, undefined, 3)}` });
+      // En el color de acento (el de la diagonal), si contrasta con el campo: es la voz humana de la serie.
+      capas.push({ tipo: 'anotacion', id: 'nota', texto: 'estado', voz: e.voces.anotacion, caja: { col: [6, COLUMNAS], fila: [4, 5] }, tamano: 58, apunta: { x: 0.5, y: 0.5 }, hacia: { x: 0.58, y: 0.66 }, color: `@${tintaSobre(campo, e, diagonal, 3)}` });
     }
     diapositivas.push({ id: `detalle-${i + 1}`, maqueta: { ...portada, textos, capas, excepcion: 'Diapositiva de detalle de un carrusel: la firma va en la portada y en el cierre.' } });
   }
@@ -96,11 +99,11 @@ export function diapositivasDeCarrusel(
   textos.push({ clave: 'ciudad', texto: ciudad, fuente: 'MARCA', cita: ciudad });
   if (l.instagram) textos.push({ clave: 'instagram', texto: `@${l.instagram.replace(/^@/, '')}`, fuente: 'MARCA', cita: l.instagram.replace(/^@/, '') });
   const capas: CapaPropuesta[] = [
-    ...fondo(),
+    ...fondo(0.66, 0.57),
     { tipo: 'foto', encuadre: 'marco', caja: { col: [1, COLUMNAS], fila: [10, 16] }, sangra: true },
     { tipo: 'texto', id: 'firma', texto: 'firma', voz: e.voces.titular, caja: { col: [1, COLUMNAS], fila: [3, 6] }, ajuste: 'caja', alinear: 'izquierda', vertical: 'abajo', color: `@${tintaSobre(campo, e, undefined, 3)}`, relacion: 'aparte' },
-    { tipo: 'texto', id: 'ciudad', texto: 'ciudad', voz: e.voces.firma, caja: { col: [1, 8], fila: [7, 7] }, ajuste: 'fijo', tamano: 40, alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' },
-    ...(l.instagram ? [{ tipo: 'texto' as const, id: 'instagram', texto: 'instagram', voz: e.voces.firma, caja: { col: [1, 8], fila: [8, 8] } as { col: number[]; fila: number[] }, ajuste: 'fijo' as const, tamano: 34, alinear: 'izquierda' as const, vertical: 'arriba' as const, color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' as const }] : []),
+    { tipo: 'texto', id: 'ciudad', texto: 'ciudad', voz: e.voces.firma, caja: { col: [1, 8], fila: [8, 8] }, ajuste: 'fijo', tamano: 40, alinear: 'izquierda', vertical: 'arriba', color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' },
+    ...(l.instagram ? [{ tipo: 'texto' as const, id: 'instagram', texto: 'instagram', voz: e.voces.firma, caja: { col: [1, 8], fila: [9, 9] } as { col: number[]; fila: number[] }, ajuste: 'fijo' as const, tamano: 34, alinear: 'izquierda' as const, vertical: 'arriba' as const, color: `@${tintaSobre(campo, e, undefined)}`, relacion: 'aparte' as const }] : []),
   ];
   diapositivas.push({ id: 'cierre', maqueta: { ...portada, textos, capas } });
   return { diapositivas, problemas };
