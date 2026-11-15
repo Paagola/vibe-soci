@@ -471,8 +471,8 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
   },
 };
 
-/** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. */
-async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {
+/** Reúne lo que el director de diseño necesita (hechos, referencia, foto, tokens) y le pide la intención. También sirve para rehacer el diseño de un encargo terminado (una versión nueva). */
+export async function disenarIntencion(deps: DepsPost, disenador: Omit<DepsProponerDiseno, 'probar'>, e: EncargoPost, marca: Marca, rutaTokens: string): Promise<ResultadoDiseno> {
   const foto = await deps.activos.obtener(e.local, e.fotoElegida as string);
   const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? 'foto/propuesta.json'), 'utf8')) as { propuesta: unknown };
   const propuestaFoto = PropuestaFotoNueva.parse(guardada.propuesta);
