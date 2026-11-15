@@ -292,6 +292,11 @@ describe('F3.3 · tratamiento de la referencia y elementos gráficos de la esté
     const iRama = conGraficos.capas.findIndex((c) => c.tipo === 'forma' && c.figura === 'rama');
     assert.ok(iRama >= 0 && iRama < conGraficos.capas.findIndex((c) => c.tipo === 'plato'));
     assert.ok(!conGraficos.capas.some((c) => c.tipo === 'patron' && c.motivo === 'puntos'));
+    // Cortado solo por la izquierda (un producto de cerca): pegado a ese canto, sin agrandarlo 1,5 veces.
+    const deCerca = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta: { x: 0, y: 700, w: 1000, h: 700, anchoFoto: 1200, altoFoto: 1600 }, tratamientos: [], graficos: { tipos: [], maximo: 0 } }));
+    const p2 = deCerca.capas.find((c) => c.tipo === 'plato') as Extract<CapaPropuesta, { tipo: 'plato' }>;
+    assert.equal(p2.alinear, 'abajo-izquierda');
+    assert.ok(p2.ancho! < 1.2);
     // Sin tratamientos ni gráficos (editorial), nada de eso.
     const sobrio = colocar(comp({ mecanismo: 'PLATO_SOBRE_COLOR', firma: 'firma' }), entorno(m, { silueta, tratamientos: [], graficos: { tipos: [], maximo: 0 } }));
     assert.ok(!sobrio.capas.some((c) => c.tipo === 'textura' || c.tipo === 'patron' || c.tipo === 'trazo' || (c.tipo === 'forma' && c.figura === 'circulo')));

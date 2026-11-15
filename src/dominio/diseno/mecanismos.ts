@@ -399,12 +399,18 @@ function platoSobreColor(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   const cortadoPorLosLados = toca.izquierda || toca.derecha;
   // Proporción de la silueta (ancho / alto); las celdas del mapa son cuadradas.
   const proporcion = s ? s.w / s.h : (sujeto.col[1] - sujeto.col[0] + 1) / (sujeto.fila[1] - sujeto.fila[0] + 1);
-  const plato: CapaPropuesta = cortadoPorLosLados
+  // Cortado por UN solo lado (un producto de cerca, como los nigiris de una toma de detalle): se pega a ese canto del
+  // lienzo, así el corte cae fuera; agrandarlo 1,5 veces lo dejaba ilegible (v005 de Sushita).
+  const unLado = toca.izquierda !== toca.derecha;
+  const plato: CapaPropuesta = unLado
+    ? { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: 1.02, alinear: toca.izquierda ? 'abajo-izquierda' : 'abajo-derecha', giro: toca.izquierda ? -6 : 6, sangra: 0.06, sombra: 'proyectada' }
+    : cortadoPorLosLados
     ? // 1,5 del ancho: los cortes de los lados quedan fuera del lienzo y el plato sigue más allá del borde de abajo.
       { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [10, 16] }, ancho: 1.5, alinear: 'arriba-centro', giro: -8, sombra: 'proyectada' }
     : // Entero: su alto, en torno al 55 % del lienzo, y el 12 % sale por abajo.
       { tipo: 'plato', caja: { col: [1, COLUMNAS], fila: [8, 16] }, ancho: Math.round(acotar((0.55 * 1440 * proporcion) / 1080, 0.55, 1.3) * 100) / 100, alinear: 'abajo-centro', giro: -10, sangra: 0.12, sombra: 'proyectada' };
-  if (cortadoPorLosLados) notas.push('La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.');
+  if (unLado) notas.push(`La foto corta el plato por la ${toca.izquierda ? 'izquierda' : 'derecha'}: se pega a ese canto, y el corte queda fuera del lienzo.`);
+  else if (cortadoPorLosLados) notas.push('La foto corta el plato por los lados: se agranda hasta que esos cortes quedan fuera del lienzo.');
 
   const capas: CapaPropuesta[] = [
     { tipo: 'fondo', color: `@${campo.token}` },
