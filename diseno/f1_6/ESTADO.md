@@ -72,6 +72,32 @@
 
 **Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
 
+### 0g. Productor, fase 1, 16/11: el orquestador en código, sin IA (rama `productor`, sin fusionar en `main`)
+
+**Por qué:** cada especialista tenía su recorte de la información y no había una verdad común (los «rollitos de papel de arroz» de Sushita v003); una parada la confirmó un script. **Qué es:** un módulo encima de la orden única, **apagado por defecto**. Con él apagado, la orden es la de siempre (las 305 pruebas de antes, sin tocar).
+
+| Qué | Dónde |
+|---|---|
+| **Brief del encargo** (`proyectos/<p>/brief.json`, con copia `brief.v00N.json` por versión y escritura atómica): marca, lienzo (lo dice `reglas.ts`: 1080×1440, exporta 3:4 y 4:5), nota del dueño, **inventario** (PROPUESTO → CONFIRMADO, con huella sha256, fecha y vía), datos por confirmar, plan de diapositivas por defecto, restricciones y presupuesto. En la fase 1, `idea: null` y `modo: CODIGO` | `src/dominio/brief.ts`, `src/adaptadores/ficheros/AlmacenBriefFicheros.ts` |
+| **El inventario solo lo confirma el usuario** (`confirmarInventario`, con vía `web` o `terminal`); después es inmutable (`cambiarBrief` lo rechaza) salvo otra confirmación suya | `src/dominio/brief.ts` |
+| **Cotejo determinista:** la propuesta de foto contra el inventario confirmado y la nota (diferencias, tomas que no son ningún elemento, otra preparación); los textos contra los hechos (preparaciones que no constan, precios, premios y reclamos) | `src/dominio/cotejo.ts`, `src/dominio/inventario.ts` |
+| **Bitácora** (`proyectos/<p>/bitacora.jsonl`): ENCARGO, INFORME de cada especialista (lo que anotó su paso), CONFIRMACION del usuario, PARADA, CONFLICTO, COTEJO, PRESUPUESTO, LLAMADA, DEGRADADO | `src/dominio/bitacora.ts` |
+| **Ganchos en la orden:** `antesDePaso` y `trasPaso` en el bucle de `avanzar` (unas 20 líneas; `PASOS` no cambia); `Accion.via` | `src/aplicacion/post/ordenPost.ts`, `src/aplicacion/post/ganchos.ts` |
+| **Orquestador:** crea el brief tras PROPUESTA (solo en encargos nuevos: los que empezaron sin él no se migran), añade el resumen del brief a la parada de elementos, congela el inventario con tu `--confirmo`, para con CONFLICTO si la propuesta se aparta del inventario confirmado, para con COTEJO DE TEXTOS antes de componer y controla el presupuesto de fotos y de llamadas | `src/aplicacion/productor/orquestador.ts` |
+| **Decoradores:** el brief en texto llega a los dos directores y al crítico (campo `contexto`, que los adaptadores de Gemini añaden tras las instrucciones fijas); el revisor recibe el inventario confirmado debajo de la lista; cada llamada de texto o visión pasa por el presupuesto y se apunta | `src/adaptadores/productor/decoradores.ts`, `src/contenedorProductor.ts` |
+| **Confirmaciones:** con el productor encendido, `--confirmo` y `--rechazo` exigen una terminal interactiva (la herramienta de un agente no lo es); la web manda `via: 'web'`; sin vía, CONFIRMACIÓN RECHAZADA | `src/herramientas/post.ts`, `src/web/rutas/encargos.ts` |
+
+**Encender:** `ESTUDIO_PRODUCTOR=si` (en el entorno, también para la web) o `npm run post -- … --productor`. **Apagar:** no poner ninguna de las dos (por defecto).
+
+**Lo que no hace la fase 1 (es la fase 2):** ninguna llamada de IA. No hay idea ni plan creativos (el plan es el de por defecto) y no resuelve conflictos: los para y te los presenta. El director de foto no ve el brief en su primera propuesta, porque el brief nace de ella. Las llamadas anteriores al brief (analista y director de foto) no cuentan para el presupuesto, ni tampoco los reintentos de reparación dentro de una misma llamada.
+
+**Comprobado:** `npm run typecheck` limpio y `npm test` con **372 de 372** (305 de antes + 67 nuevas), todo en simulado. Pruebas clave:
+- los «rollitos de papel de arroz» frente a «gunkan de toro» los rechaza el cotejo (propuesta y textos) y, con el inventario en su lista, el revisor (DESCARTA por «cambiado respecto a la foto real»);
+- una confirmación sin vía se rechaza, y la línea de comandos sin terminal también: comprobado a mano con `post.ts --confirmo --productor` desde un proceso sin terminal;
+- apagado, sin `brief.json` ni `bitacora.jsonl`.
+
+**Gasto: 0 USD,** sin llamadas a Gemini.
+
 ### 0f. F3.3, 15/11: carrusel con varias fotos, tratamiento ilustrado, gráficos y huella tipográfica (rama `f3-3`)
 
 | Punto | Qué se ha hecho | Validado |
