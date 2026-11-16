@@ -46,6 +46,10 @@ const Elemento = z.object({
   dudoso: z.boolean().optional(),
   /** Por qué es dudoso, o qué se ve cortado. */
   nota: z.string().optional(),
+  /** Productor: el elemento en inglés, con su estado y sin número, tal como irá al prompt (el prompt se arma desde aquí). */
+  ingles: z.string().min(3).optional(),
+  /** Productor: si la toma nueva (cámara e idea gráfica) enseña este elemento. */
+  enEncuadre: z.boolean().optional(),
 });
 export type ElementoFoto = z.infer<typeof Elemento>;
 
@@ -145,6 +149,8 @@ export interface OpcionesDePrompt {
   estetica?: Estetica;
   /** F3.3: es una toma de detalle del carrusel (la estética sin su encuadre de plato entero). */
   deDetalle?: boolean;
+  /** Productor: «elementos» y «recuento» del prompt salen del inventario (descripcion.elementos), no del texto libre de los huecos. */
+  desdeElInventario?: boolean;
 }
 
 /** El papel de @image2 en el prompt, tal como lo pidió el usuario. */
