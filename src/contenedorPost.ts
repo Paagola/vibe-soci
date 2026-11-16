@@ -34,6 +34,7 @@ import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, Seg
 import type { DepsDisenoPost } from './aplicacion/post/disenoDelPost.js';
 import type { DepsReferencias } from './aplicacion/referencias/dependencias.js';
 import { RAIZ, type Config } from './config.js';
+import { conProductor } from './contenedorProductor.js';
 import { ErrorDeUsuario } from './dominio/errores.js';
 import type { DirectorDeFoto } from './puertos/Foto.js';
 import type { ObtenedorEnlaces } from './puertos/ObtenedorEnlaces.js';
@@ -82,6 +83,7 @@ const enlacesSimulados: ObtenedorEnlaces = {
 
 export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost): Promise<DepsDisenoPost> {
   const { simular } = opciones;
+  const encender = opciones.productor ?? config.productor ?? false;
   const avisar = opciones.avisar ?? ((mensaje: string) => console.error(`  aviso: ${mensaje}`));
   const datos = simular ? config.carpetaDatosSimulado : config.carpetaDatos;
   const proyectos = simular ? join(config.carpetaDatosSimulado, 'proyectos') : join(RAIZ, 'proyectos');
@@ -114,7 +116,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   const medidor = new MedidorDeFotoSharp();
   const describirFuente = await descriptorDeFuentes(join(RAIZ, 'recursos', 'tipografias', 'catalogo.json'));
   if (simular) {
-    return {
+    const deps: DepsDisenoPost = {
       ...comunes,
       director: new DirectorFotoSimulado(),
       generador: new GeneradorFotoSimulado(),
@@ -123,12 +125,13 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado(), medidor, describirFuente },
       analista: new AnalistaReferenciasSimulado(),
     };
+    return encender ? conProductor(deps, { proyecto: opciones.proyecto }) : deps;
   }
 
   const { geminiApiKey } = config;
   const modelos = [config.geminiModelo, ...(config.geminiModeloRespaldo ? [config.geminiModeloRespaldo] : [])];
   const cliente = (clave: string, motivo: string) => new ClienteGemini(clave, modelos, { avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion) });
-  return {
+  const deps: DepsDisenoPost = {
     ...comunes,
     director: geminiApiKey ? new DirectorFotoGemini(cliente(geminiApiKey, 'director-foto'), await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia(), modelos) : directorSinClave,
     generador: new GeneradorFotoGemini({
@@ -146,6 +149,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     // Sin clave no hay director de diseño: INTENCION deja el borrador y se para, como antes de F3.
     ...(geminiApiKey ? { disenador: { ...disenadorGemini(new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos)), medidor, describirFuente } } : {}),
   };
+  return encender ? conProductor(deps, { proyecto: opciones.proyecto }) : deps;
 }
 
 async function analistaGemini(cliente: ClienteGemini, modelos: string[], biblioteca: DepsReferencias['biblioteca']): Promise<AnalistaReferenciasGemini> {
