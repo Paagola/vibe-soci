@@ -290,7 +290,7 @@ const GRAMATICALES = new Set(
  * Palabras que afirman algo del local o del producto aunque suenen a adorno. Un titular CREATIVO no puede llevarlas
  * salvo que consten en los datos: son justo las que un modelo añade para «vender».
  */
-const RECLAMOS = new Set(
+export const RECLAMOS = new Set(
   'mejor mejores premio premios premiada premiado ganador ganadora casero casera caseros caseras artesano artesana artesanal artesanales fresco fresca frescos frescas natural naturales ecologico ecologica tradicional tradicionales autentico autentica original originales unico unica nuevo nueva novedad gratis oferta ofertas descuento precio barato desde anos siempre famoso famosa legendario legendaria favorito favorita primero primera numero ahumado ahumada madurado madurada lena brasa horno'.split(
     ' ',
   ),
