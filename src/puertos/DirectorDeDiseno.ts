@@ -44,6 +44,8 @@ export interface EncargoDeDiseno {
   huella?: string;
   /** Punto 1: un carrusel lleva, además de la portada, los detalles («carrusel.detalles»). */
   formato?: 'post' | 'carrusel';
+  /** Productor: el brief del encargo en texto (la verdad común); el adaptador lo añade a lo que ve el modelo. */
+  contexto?: string;
 }
 
 export interface DirectorDeDiseno {
