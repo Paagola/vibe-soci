@@ -51,7 +51,7 @@ export class DirectorDisenoGemini implements DirectorDeDiseno, CriticoDeDiseno {
     ];
     if (e.referencia?.imagen) partes.push({ text: `La referencia «${e.referencia.id}»:` }, { inlineData: { mimeType: 'image/jpeg', data: await reducir(e.referencia.imagen) } });
     if (e.contexto) partes.push({ text: `Brief del encargo (la verdad común del estudio: manda sobre tu propia lectura del plato):\n${e.contexto}` });
-    const r =await this.cliente.generarJson(instruccionesDiseno(), partes, RespuestaDeCritica);
+    const r = await this.cliente.generarJson(instruccionesDiseno(), partes, RespuestaDeCritica);
     return { llega: r.llega, motivos: r.motivos, ...(!r.llega && r.propuesta ? { propuesta: r.propuesta } : {}) };
   }
 }
