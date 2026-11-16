@@ -22,7 +22,7 @@ const palabras = (t: string) => normal(t).split(/[^a-z0-9ñ]+/).filter((p) => p.
 /** La misma palabra o su plural (nigiri / nigiris, rollito / rollitos). */
 const igual = (a: string, b: string) => a === b || (Math.min(a.length, b.length) > 3 && (a.startsWith(b) || b.startsWith(a)) && Math.abs(a.length - b.length) <= 2);
 
-function preparacionesDe(t: string): string[] {
+export function preparacionesDe(t: string): string[] {
   const n = ` ${normal(t)} `;
   return PREPARACIONES.filter((p) => new RegExp(`[^a-z]${p}(e?s)?[^a-z]`).test(n));
 }
