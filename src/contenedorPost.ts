@@ -51,6 +51,8 @@ export interface OpcionesDepsPost {
    * En real no cambia nada: siempre son los de datos/.
    */
   datosDeReferencia?: 'REALES' | 'DEL_MODO';
+  /** Enciende el productor aunque la configuración no lo diga (la opción --productor). */
+  productor?: boolean;
 }
 
 const sinClave = (quien: string) => new ErrorDeUsuario(`Falta GEMINI_API_KEY en .env: ${quien} es Gemini. Añade la clave o usa el modo simulado.`);

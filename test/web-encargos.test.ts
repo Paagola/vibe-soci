@@ -73,6 +73,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
         carpetaDatosSimulado: join(carpeta, 'datos-simulado'),
         carpetaBiblioteca: biblioteca,
         zonaHoraria: 'Europe/Madrid',
+        productor: false,
       },
       { simuladoAlArrancar: true, carpetaPlantillas: join(RAIZ, 'plantillas') },
     );

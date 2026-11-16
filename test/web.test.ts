@@ -63,6 +63,7 @@ describe('API web (simulado)', () => {
         carpetaDatosSimulado: join(carpeta, 'datos-simulado'),
         carpetaBiblioteca: biblioteca,
         zonaHoraria: 'Europe/Madrid',
+        productor: false,
       },
       { simuladoAlArrancar: true, carpetaPlantillas: join(RAIZ, 'plantillas') },
     );
