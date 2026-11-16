@@ -14,6 +14,7 @@ import { AlmacenActivosFicheros } from './adaptadores/ficheros/AlmacenActivosFic
 import { AlmacenLocalesFicheros } from './adaptadores/ficheros/AlmacenLocalesFicheros.js';
 import { AlmacenPiezasFicheros } from './adaptadores/ficheros/AlmacenPiezasFicheros.js';
 import { AlmacenReferenciasFicheros } from './adaptadores/ficheros/AlmacenReferenciasFicheros.js';
+import { LocalesSuperpuestos, ReferenciasSuperpuestas } from './adaptadores/ficheros/Superpuestos.js';
 import { BibliotecaDeReferenciasFicheros } from './adaptadores/ficheros/BibliotecaDeReferenciasFicheros.js';
 import { BibliotecaFicheros } from './adaptadores/ficheros/BibliotecaFicheros.js';
 import { GaleriaDisenosFicheros } from './adaptadores/ficheros/GaleriaDisenosFicheros.js';
@@ -95,8 +96,13 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   const referencias: DepsReferencias = {
     piezas: new AlmacenPiezasFicheros(join(datosDeReferencia, 'piezas')),
     piezasHechas: new PiezasHechasFicheros(delModo ? proyectos : join(RAIZ, 'proyectos')),
-    locales: new AlmacenLocalesFicheros(join(datosDeReferencia, 'locales')),
-    referencias: new AlmacenReferenciasFicheros(join(datosDeReferencia, 'locales')),
+    // En la web en simulado, los locales y sus referencias reales se ven en solo lectura; lo que se escribe va a los simulados.
+    locales: delModo
+      ? new LocalesSuperpuestos(new AlmacenLocalesFicheros(join(datos, 'locales')), new AlmacenLocalesFicheros(join(config.carpetaDatos, 'locales')))
+      : new AlmacenLocalesFicheros(join(datosDeReferencia, 'locales')),
+    referencias: delModo
+      ? new ReferenciasSuperpuestas(new AlmacenReferenciasFicheros(join(datos, 'locales')), new AlmacenReferenciasFicheros(join(config.carpetaDatos, 'locales')))
+      : new AlmacenReferenciasFicheros(join(datosDeReferencia, 'locales')),
     biblioteca: new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(config.carpetaBiblioteca, 'referencias')),
     enlaces: simular ? enlacesSimulados : new ObtenedorEnlacesHttp(),
     leerArchivo: (ruta) => readFile(ruta),

@@ -7,6 +7,8 @@ import type { Dependencias } from '../aplicacion/dependencias.js';
 import type { DepsDisenoPost } from '../aplicacion/post/disenoDelPost.js';
 import type { Config } from '../config.js';
 import { crearContenedor } from '../contenedor.js';
+import { AlmacenLocalesFicheros } from '../adaptadores/ficheros/AlmacenLocalesFicheros.js';
+import { LocalesSuperpuestos } from '../adaptadores/ficheros/Superpuestos.js';
 import { crearDepsPost, gastoDeFotos, type GastoDeFotos } from '../contenedorPost.js';
 import { DirectorCronometrado, Estimador } from './estimacion.js';
 import { AlmacenSubidas } from './subidas.js';
@@ -49,6 +51,8 @@ export function crearEstudio(config: Config, opciones: OpcionesEstudio): Estudio
     let director: DirectorCronometrado | undefined;
     return {
       ...base,
+      // En simulado se ven también los locales reales, en solo lectura: lo que se guarda va a datos-simulado/.
+      ...(simulado ? { locales: new LocalesSuperpuestos(base.locales, new AlmacenLocalesFicheros(join(config.carpetaDatos, 'locales'))) } : {}),
       director: () => (director ??= new DirectorCronometrado(base.director(), (ms) => estimador.registrarDirector(simulado, ms))),
     };
   };

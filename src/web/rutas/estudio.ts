@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { crearLocal } from '../../aplicacion/crearLocal.js';
 import { prepararMarca } from '../../aplicacion/prepararMarca.js';
 import { GoogleFontsGithub } from '../../adaptadores/fuentes/GoogleFontsGithub.js';
+import { LocalesSuperpuestos } from '../../adaptadores/ficheros/Superpuestos.js';
 import { RAIZ } from '../../config.js';
 import { validar } from '../../dominio/validacion.js';
 import { ErrorHttp } from '../errores.js';
@@ -40,10 +41,13 @@ export function rutasDelEstudio(estudio: Estudio): Router {
   });
 
   rutas.get('/locales', async (_req, res) => {
-    const locales = await estudio.deps().locales.listar();
+    const almacen = estudio.deps().locales;
+    const locales = await almacen.listar();
     // Sin marcas/<local>/tokens.json el compositor no puede montar el post: se avisa al abrir el encargo.
     const conTokens = await Promise.all(locales.map((m) => stat(join(RAIZ, 'marcas', m.slug, 'tokens.json')).then(() => true, () => false)));
-    res.json({ locales: locales.map((m, i) => ({ ...m, tokens: conTokens[i] })) });
+    // En simulado, los locales reales que solo se ven (no se pueden modificar desde el modo simulado).
+    const soloLectura = await Promise.all(locales.map((m) => (almacen instanceof LocalesSuperpuestos ? almacen.esDeSoloLectura(m.slug) : false)));
+    res.json({ locales: locales.map((m, i) => ({ ...m, tokens: conTokens[i], soloLectura: soloLectura[i] })) });
   });
 
   /** Solo en simulado: da de alta el local de la plantilla (plantillas/marca.ejemplo.json) para probar la orden sin datos reales. */
