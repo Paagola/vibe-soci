@@ -109,6 +109,7 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       ...(cuerpo.confirmo ? { confirmo: true } : {}),
       ...(cuerpo.rechazo ? { rechazo: cuerpo.rechazo } : {}),
       ...(cuerpo.importar ? { importar: estudio.subidas.ruta(cuerpo.importar) } : {}),
+      ...(cuerpo.confirmo || cuerpo.rechazo ? { via: 'web' as const } : {}),
     };
     const trabajo = await lanzar(estudio, proyecto, async (deps, alProgresar) => {
       try {

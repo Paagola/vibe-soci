@@ -46,6 +46,7 @@ import type { AnalistaDeReferencias } from '../../puertos/AnalistaDeReferencias.
 import type { HistorialDeDisenos } from '../../puertos/HistorialDeDisenos.js';
 import { efectosDeLaReferencia, huellaDelLocal, textoDeHuella } from '../../dominio/diseno/huella.js';
 import type { DepsReferencias } from '../referencias/dependencias.js';
+import type { GanchosDeOrden, Via } from './ganchos.js';
 
 export interface DepsPost {
   /** Raíz del repositorio (para marcas/ y rutas relativas). */
@@ -68,12 +69,16 @@ export interface DepsPost {
   historial?: HistorialDeDisenos;
   /** Puntos 3 y 4: escribe la ficha de una referencia nueva (y mira si es un post de verdad). Sin él, se pide a mano. */
   analista?: AnalistaDeReferencias;
+  /** El productor (orquestador): observa cada paso, anota y puede parar la orden. Sin él, la orden es la de siempre. */
+  productor?: GanchosDeOrden;
   ahora: () => string;
 }
 
 export interface Accion {
   confirmo?: boolean;
   rechazo?: string;
+  /** De dónde viene la confirmación (la web o una terminal interactiva). */
+  via?: Via;
   /** Ruta de una foto hecha a mano para el paso GENERAR (sin facturación, o por el MCP). */
   importar?: string;
   /** F3.3, al confirmar la foto: la portada del carrusel sale de esta toma (un producto aislado); la foto confirmada queda para los recortes y el cierre. */
@@ -183,11 +188,27 @@ export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion =
     }
     const accionAhora = usada ? {} : accion;
     opciones.alEmpezarPaso?.(paso, e);
+    if (deps.productor) {
+      const antes = await deps.productor.antesDePaso(paso, e, accionAhora);
+      for (const n of antes.notas ?? []) nota(n);
+      if (antes.parar) {
+        await guardarEncargo(deps, e);
+        return { encargo: e, mensajes, parada: antes.parar };
+      }
+    }
+    const anterior = e;
     const r = await PASOS[paso](deps, e, accionAhora, nota);
     if (r.usaAccion) usada = true;
     e = r.encargo;
+    let parar = r.parar;
+    if (deps.productor) {
+      const tras = await deps.productor.trasPaso(paso, anterior, e, accionAhora, r.parar);
+      for (const n of tras.notas ?? []) nota(n);
+      if (parar && tras.textoParada) parar = `${parar}\n${tras.textoParada}`;
+      if (!parar && tras.parar) parar = tras.parar;
+    }
     await guardarEncargo(deps, e);
-    if (r.parar) return { encargo: e, mensajes, parada: r.parar };
+    if (parar) return { encargo: e, mensajes, parada: parar };
   }
   throw new Error('La orden no avanza (más de 30 pasos seguidos).');
 }

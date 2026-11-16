@@ -49,6 +49,7 @@ describe('flujo completo en simulado', () => {
         carpetaDatosSimulado: join(carpeta, 'datos-simulado'),
         carpetaBiblioteca: biblioteca,
         zonaHoraria: 'Europe/Madrid',
+        productor: false,
       },
       { simular: true, avisar: (m) => avisos.push(m) },
     );

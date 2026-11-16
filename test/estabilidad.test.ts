@@ -64,6 +64,7 @@ async function entorno(nombre: string): Promise<Config> {
     carpetaDatosSimulado: join(base, 'datos-simulado'),
     carpetaBiblioteca: join(base, 'biblioteca'),
     zonaHoraria: 'Europe/Madrid',
+    productor: false,
   };
 }
 

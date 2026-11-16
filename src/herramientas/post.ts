@@ -9,6 +9,7 @@
  *   npm run post -- <proyecto> --confirmo            confirma la parada (elementos y gasto, o la foto)
  *   npm run post -- <proyecto> --rechazo "motivo"    rechaza la foto propuesta (vuelve a generar si quedan intentos)
  *   npm run post -- <proyecto> --importar <imagen>   usa una foto hecha a mano en el paso de generar (sin facturación)
+ *   --productor: enciende el productor (o ESTUDIO_PRODUCTOR=si); con él, --confirmo y --rechazo exigen una terminal interactiva
  *   npm run post -- <proyecto> --confirmo [--sin-toma N]… [--portada-toma N]   en un carrusel: quita tomas de detalle que no
  *                                                    valen; hace la portada con una toma (producto aislado)
  *
@@ -28,6 +29,7 @@
 import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { viaDeLaTerminal } from '../aplicacion/post/ganchos.js';
 import { avanzar, crearEncargo, type DepsPost } from '../aplicacion/post/ordenPost.js';
 import { RAIZ, leerConfig } from '../config.js';
 import { crearDepsPost } from '../contenedorPost.js';
@@ -53,6 +55,7 @@ const { values, positionals } = parseArgs({
     confirmo: { type: 'boolean', default: false },
     rechazo: { type: 'string' },
     importar: { type: 'string' },
+    productor: { type: 'boolean', default: false },
   },
 });
 
@@ -69,7 +72,7 @@ const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 async function construirDeps(simulado: boolean, proyecto: string): Promise<DepsPost> {
   const config = leerConfig();
   if (!simulado && !config.geminiApiKey) throw new ErrorDeUsuario('Falta GEMINI_API_KEY en .env (o usa --simular).');
-  return crearDepsPost(config, { simular: simulado, proyecto, datosDeReferencia: 'REALES', avisar: (m) => console.error(`  aviso: ${m}`) });
+  return crearDepsPost(config, { simular: simulado, proyecto, datosDeReferencia: 'REALES', productor: values.productor || config.productor, avisar: (m) => console.error(`  aviso: ${m}`) });
 }
 
 async function principal(): Promise<void> {
@@ -91,12 +94,18 @@ async function principal(): Promise<void> {
 }
 
 async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
+  const via = viaDeLaTerminal({
+    productor: values.productor || leerConfig().productor,
+    confirmaORechaza: Boolean(values.confirmo || values.rechazo),
+    interactiva: Boolean(process.stdin.isTTY && process.stdout.isTTY),
+  });
   const r = await avanzar(deps, proyecto, {
     confirmo: values.confirmo,
     ...(values.rechazo ? { rechazo: values.rechazo } : {}),
     ...(values.importar ? { importar: values.importar } : {}),
     ...(values['portada-toma'] ? { portadaToma: Number(values['portada-toma']) } : {}),
     ...(values['sin-toma']?.length ? { sinToma: values['sin-toma'].map(Number) } : {}),
+    ...(via ? { via } : {}),
   });
   for (const m of r.mensajes) console.log(`· ${m}`);
   console.log(`\n■ ${r.encargo.paso}${r.encargo.simulado ? ' (simulado)' : ''} · ${r.parada}`);

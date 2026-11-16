@@ -27,6 +27,7 @@ const Entorno = z.object({
   ESTUDIO_DATOS: opcional(z.string()),
   ESTUDIO_DATOS_SIMULADO: opcional(z.string()),
   ESTUDIO_BIBLIOTECA: opcional(z.string()),
+  ESTUDIO_PRODUCTOR: opcional(z.enum(['si', 'no'])),
   ESTUDIO_ZONA_HORARIA: opcional(z.string().trim().refine(esZonaHoraria, 'tiene que ser una zona horaria IANA, p. ej. Europe/Madrid')),
 });
 
@@ -63,6 +64,8 @@ export interface Config {
   carpetaBiblioteca: string;
   /** Para saber qué es «hoy» en el límite diario. */
   zonaHoraria: string;
+  /** El productor (orquestador) del encargo: apagado salvo ESTUDIO_PRODUCTOR=si. */
+  productor: boolean;
 }
 
 export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
@@ -83,5 +86,6 @@ export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     carpetaDatosSimulado: ruta(e.ESTUDIO_DATOS_SIMULADO ?? 'datos-simulado'),
     carpetaBiblioteca: ruta(e.ESTUDIO_BIBLIOTECA ?? 'biblioteca'),
     zonaHoraria: e.ESTUDIO_ZONA_HORARIA ?? 'Europe/Madrid',
+    productor: e.ESTUDIO_PRODUCTOR === 'si',
   };
 }
