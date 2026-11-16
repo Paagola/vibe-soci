@@ -95,7 +95,7 @@ async function principal(): Promise<void> {
 
 async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
   const via = viaDeLaTerminal({
-    productor: values.productor || leerConfig().productor,
+    productor: values.productor || Boolean(leerConfig().productor),
     confirmaORechaza: Boolean(values.confirmo || values.rechazo),
     interactiva: Boolean(process.stdin.isTTY && process.stdout.isTTY),
   });

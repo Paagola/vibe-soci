@@ -66,7 +66,6 @@ describe('API web · procesos para el diorama (simulado, solo lectura)', () => {
         carpetaDatosSimulado: join(carpeta, 'datos-simulado'),
         carpetaBiblioteca: biblioteca,
         zonaHoraria: 'Europe/Madrid',
-        productor: false,
       },
       { simuladoAlArrancar: true, carpetaPlantillas: join(RAIZ, 'plantillas') },
     );

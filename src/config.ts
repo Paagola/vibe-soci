@@ -65,7 +65,7 @@ export interface Config {
   /** Para saber qué es «hoy» en el límite diario. */
   zonaHoraria: string;
   /** El productor (orquestador) del encargo: apagado salvo ESTUDIO_PRODUCTOR=si. */
-  productor: boolean;
+  productor?: boolean;
 }
 
 export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
