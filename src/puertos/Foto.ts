@@ -12,6 +12,8 @@ export interface EncargoDeFoto {
   formato?: 'post' | 'carrusel';
   /** Cómo se montará el prompt: si el generador verá la referencia (@image2) y su familia (F1/F3: fondo para recortar). */
   alGenerador?: OpcionesDePrompt;
+  /** Productor: el brief del encargo en texto (la verdad común); el adaptador lo añade a lo que ve el modelo. */
+  contexto?: string;
 }
 
 /** Rellena la plantilla de foto nueva (dominio/fotoNueva.ts). */

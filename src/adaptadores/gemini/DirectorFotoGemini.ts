@@ -46,6 +46,7 @@ export class DirectorFotoGemini implements DirectorDeFoto {
         { inlineData: { mimeType: 'image/jpeg', data: await reducir(e.referencia.imagen, 768) } },
       );
     }
+    if (e.contexto) partes.push({ text: `Brief del encargo (la verdad común del estudio: manda sobre tu propia lectura del plato):\n${e.contexto}` });
     return this.cliente.generarJson(instruccionesFoto(this.guia), partes, PropuestaFotoNueva);
   }
 }
