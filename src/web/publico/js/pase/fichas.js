@@ -7,6 +7,7 @@ const FOTOS = 'image/jpeg,image/png,image/webp';
 const MAX_BYTES = 10 * 1024 * 1024;
 const CAMARAS = { GENERAL: 'General', MEDIO: 'Plano medio', PRIMER_PLANO: 'Primer plano', MACRO: 'Macro' };
 const VEREDICTOS = { PASA: 'Pasa la revisión', REVISAR: 'Revisión manual', DESCARTA: 'Descartada', RECHAZADA: 'Rechazada', PENDIENTE: 'Pendiente de revisar' };
+const DICTAMENES = { APROBADA: 'Revisión editorial aprobada', CORREGIDA: 'Composición corregida tras la revisión', REVISION_HUMANA: 'Requiere revisión humana' };
 const etiqueta = (texto, control, detalle) => h('label', { class: 'campo' }, h('span', {}, texto), control, detalle ? h('small', { class: 'muted' }, detalle) : null);
 const opcion = (valor, nombre, seleccionado) => h('option', { value: valor, selected: seleccionado }, nombre);
 const detalles = (nombre, ...nodos) => h('details', {}, h('summary', {}, nombre), ...nodos);
@@ -213,28 +214,62 @@ export function portadaDe(version) {
   return version?.exportadas.find((x) => x.proporcion === '4:5')?.archivo ?? version?.exportadas[0]?.archivo ?? version?.diseno;
 }
 
+export function pideRevision(d) {
+  return d?.encargo.paso === 'COMPONER' && d.revisionEditorial?.estado === 'REVISION_HUMANA';
+}
+
+function dictamenDe(ctx, hojas) {
+  const revision = ctx.d.revisionEditorial;
+  if (!revision) return null;
+  const nombre = (id) => {
+    const i = hojas.findIndex((x) => x.id === id);
+    return i < 0 ? id : `${i + 1}. ${hojas[i].papel}`;
+  };
+  return h('section', { class: 'aviso-linea', 'data-alerta': revision.estado === 'REVISION_HUMANA' },
+    h('strong', {}, DICTAMENES[revision.estado]),
+    revision.modelo ? h('div', { class: 'muted' }, revision.modelo) : null,
+    lista(revision.incidencias.map((x) => `${nombre(x.id)} · v${x.version}. ${x.motivo}`)),
+    lista(revision.correcciones.map((x) => `${nombre(x.id)} · v${x.desde} → v${x.hasta}`)));
+}
+
 function fichaComposicion(ctx) {
   const { diseno, editorial, espera, encargo } = ctx.d;
+  const pendiente = pideRevision(ctx.d);
   const faseActiva = ['INTENCION', 'COMPOSICION', 'HECHO'].includes(espera.tipo) || Boolean(diseno.intencion);
   const hojas = hojasDe(diseno);
+  const hoja = hojaDe(ctx);
+  const incidencia = ctx.d.revisionEditorial?.incidencias.find((x) => x.id === hoja?.id);
+  const version = hoja?.versiones.find((v) => v.version === incidencia?.version) ?? hoja?.version;
+  const archivo = pendiente && !ctx.vistaPrevia ? portadaDe(version) : null;
+  const preview = ctx.vistaPrevia ?? (archivo ? ctx.urls.diseno(archivo, { lado: 480, sello: version.compuestaEn }) : null);
   const elegir = (id) => () => ctx.elegirHoja(id);
-  return [titulo('Composición'),
-    ctx.vistaPrevia ? foto(ctx.vistaPrevia, ctx.vistaPrevia, 'Vista previa de la composición') : null,
+  return [titulo(pendiente ? 'Revisa la composición' : 'Composición'),
+    dictamenDe(ctx, hojas),
+    preview ? foto(preview, archivo ? ctx.urls.diseno(archivo) : preview, 'Vista previa de la composición', archivo ? `${hoja.papel} · v${version.version}` : null) : null,
+    pendiente && diseno.intencion ? accion(boton(`Corregir ${hoja?.papel.toLowerCase() ?? 'composición'}`, () => ctx.abrirHerramientas(), true, ctx.ocupada)) : null,
     editorial?.plan?.hiloVisual ? nota(editorial.plan.hiloVisual) : nota(faseActiva ? 'Revisa los textos y prepara una vista previa de la pieza.' : 'La composición parte de la foto candidata aprobada.'),
     espera.tipo === 'TOKENS' ? [aviso(`Falta el perfil de diseño de ${ctx.d.local?.nombre ?? encargo.local}.`), accion(avanzar(ctx, 'Volver a comprobar la marca'))] : null,
-    faseActiva && hojas.length > 1 ? h('div', { class: 'grupo' }, hojas.map((x, i) => boton(`${i + 1}. ${x.papel}`, elegir(x.id)))) : null,
-    faseActiva ? accion(boton('Abrir editor de composición', () => ctx.abrirHerramientas(), true, ctx.ocupada)) : null,
-    ctx.actual === 'composicion' && espera.tipo === 'CONTINUAR' && !ctx.ocupada ? accion(avanzar(ctx, 'Continuar la composición')) : null];
+    faseActiva && hojas.length > 1 ? h('div', { class: 'grupo' }, hojas.map((x, i) => boton(`${i + 1}. ${x.papel}`, elegir(x.id), false, ctx.ocupada))) : null,
+    faseActiva && !pendiente ? accion(boton('Abrir editor de composición', () => ctx.abrirHerramientas(), true, ctx.ocupada)) : null,
+    !pendiente && ctx.actual === 'composicion' && espera.tipo === 'CONTINUAR' && !ctx.ocupada ? accion(avanzar(ctx, 'Continuar la composición')) : null];
 }
 
 function fichaEntrega(ctx) {
+  const dictamen = dictamenDe(ctx, hojasDe(ctx.d.diseno));
+  if (ctx.d.encargo.paso !== 'HECHO') {
+    const pendiente = pideRevision(ctx.d);
+    return [titulo('Entrega pendiente'), dictamen,
+      nota(pendiente ? 'La entrega estará disponible cuando se apruebe la revisión editorial.' : 'Los archivos aparecerán cuando termine la composición.'),
+      pendiente ? accion(boton('Ir a la composición', () => ctx.irActual(), true)) : null];
+  }
   const hojas = versionesDe(ctx);
   const hoja = hojaDe(ctx);
-  if (!hoja) return [titulo('Entrega'), nota('Los archivos aparecerán después de componer la pieza.'), ctx.d.espera.tipo === 'HECHO' ? aviso('El compositor no ha dejado archivos disponibles.') : null];
+  if (!hoja) return [titulo('Entrega'), dictamen, aviso('El compositor no ha dejado archivos disponibles.')];
   const v = hoja.version;
   const portada = portadaDe(v);
   const hayError = v.problemas?.some((p) => p.gravedad === 'ERROR');
   return [titulo(hayError ? 'Entrega por revisar' : 'Lista para descargar'),
+    dictamen,
     hojas.length > 1 ? etiqueta('Diapositiva', h('select', { onchange: (e) => ctx.elegirHoja(e.currentTarget.value) }, hojas.map((x, i) => opcion(x.id, `${i + 1}. ${x.papel}`, hoja.id === x.id)))) : null,
     foto(portada ? ctx.urls.diseno(portada, { lado: 480, sello: v.compuestaEn }) : null, portada ? ctx.urls.diseno(portada) : null, 'Pieza compuesta', `Versión ${v.version}`),
     hayError ? aviso('Esta versión tiene errores del compositor.') : accion(v.exportadas.map((x) => enlace(`Descargar ${x.proporcion}`, ctx.urls.descargar(x.archivo)))),

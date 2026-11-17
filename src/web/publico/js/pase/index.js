@@ -1,7 +1,7 @@
 import { api, seguirTrabajo } from '../api.js';
 import { avisar, bloqueError, formatearFecha, h, reemplazar } from '../ui.js';
 import { estadoDePaso, urlsDe } from '../orden.js';
-import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, portadaDe } from './fichas.js';
+import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, pideRevision, portadaDe } from './fichas.js';
 import { distribuir, ESTACIONES, pintarPlano, proyectar2d, puntoInventario } from './plano.js';
 
 const $ = (id) => document.getElementById(id);
@@ -49,7 +49,7 @@ function inventario() {
 
 function contexto() {
   return {
-    d, proyecto, seleccion, elemento, hoja, vistaPrevia, locales, simulado: procesos?.modo === 'SIMULADO',
+    d, proyecto, seleccion, elemento, hoja: hoja ?? (pideRevision(d) ? d.revisionEditorial.incidencias[0]?.id : null), vistaPrevia, locales, simulado: procesos?.modo === 'SIMULADO',
     actual: pasoDe(d), urls: proyecto ? urlsDe(proyecto) : null, ocupada: Boolean(ocupado || d?.trabajo?.estado === 'EN_CURSO'),
     faltaEditorial: Boolean(d?.encargo.productorEditorial && !d.editorial),
     seleccionar, elegirHoja, abrirHerramientas, confirmarInventario, enviarSubida, usarReferencia, guardarPropuesta, crearLocalDeEjemplo,
@@ -101,13 +101,14 @@ function materialesDe() {
   const foto = d.intentos.find((intento) => intento.elegida) ?? d.intentos.at(-1);
   const version = hojaDe(ctx)?.version;
   const portada = portadaDe(version);
+  const render = portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null;
   return {
     original: { url: d.fotoSubida.disponible ? ctx.urls.subida(880) : null },
     referencia: { url: d.referencia.conImagen ? ctx.urls.referencia(480) : null },
     elementos: { lineas: inventario().map((el) => el.nombre) },
     candidata: { url: foto?.disponible ? ctx.urls.activo(foto.activo, 680) : null },
-    composicion: { url: vistaPrevia, lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
-    entrega: { url: portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null },
+    composicion: { url: vistaPrevia ?? (pideRevision(d) ? render : null), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
+    entrega: { url: d.encargo.paso === 'HECHO' ? render : null },
   };
 }
 
@@ -174,7 +175,7 @@ function pintarMarco() {
   $('pie-encargo').textContent = datos?.proyecto ?? 'Sin encargo';
   $('pie-inventario').textContent = datos ? `${localizar.format(inventario().length)} elementos` : '—';
   $('pie-intentos').textContent = datos ? localizar.format(d.intentos.length) : '—';
-  $('pie-entrega').textContent = actual === 'entrega' ? 'Compuesta' : datos ? 'Pendiente' : '—';
+  $('pie-entrega').textContent = actual === 'entrega' ? 'Compuesta' : pideRevision(d) ? 'En revisión' : datos ? 'Pendiente' : '—';
   const entrada = datos?.historial?.at(-1);
   $('pie-actividad').textContent = entrada?.fecha ? formatearFecha(entrada.fecha) : '';
 }
@@ -360,9 +361,10 @@ async function recargar(saltar = false, esperado = proyecto) {
   const nuevo = await api('GET', `/encargos/${encodeURIComponent(esperado)}`);
   if (fecha !== turno) return;
   const antes = pasoDe(d);
+  const requiereCorreccion = pideRevision(nuevo);
   d = nuevo;
   const despues = pasoDe(d);
-  if (saltar && antes !== despues && seccion === 'mesa') {
+  if (saltar && (antes !== despues || requiereCorreccion) && seccion === 'mesa') {
     seleccion = despues;
     elemento = null;
     hoja = null;
