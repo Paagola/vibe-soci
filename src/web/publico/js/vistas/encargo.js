@@ -88,6 +88,10 @@ export async function vistaEncargo(elegido) {
   };
 
   function pintar() {
+    if (d.encargo.taller) {
+      reemplazar(detalle, cabecera(), h('a', { class: 'boton primario', href: '/pase.html?proyecto=' + encodeURIComponent(proyecto) }, 'Abrir el taller del cartel'), historial());
+      return;
+    }
     const enCurso = d.trabajo?.estado === 'EN_CURSO';
     // Un fallo del último trabajo se queda a la vista hasta la siguiente acción: dice qué ha pasado y por qué.
     if (!enCurso && siguiendo === null) reemplazar(panelTrabajo, d.trabajo?.estado === 'ERROR' ? panelDeTrabajo(d.trabajo) : null);

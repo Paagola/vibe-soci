@@ -22,7 +22,20 @@ En un clon nuevo, pulsa **Nuevo encargo → Usar el local de ejemplo** y sube un
 
 ## Un encargo en El pase
 
-1. Sube una foto y elige post o carrusel. Selecciona una referencia si el encargo la requiere.
+### Cartel integrado
+
+En **Nuevo encargo**, elige **Cartel integrado · 4:5**, sube la foto del local y escribe el nombre del plato. Una referencia de biblioteca ya tiene ficha. Para una imagen propia, puedes describir su encuadre, tipografía y orden de lectura dentro de El pase.
+
+1. Revisa la acción entre producto y letras, el encuadre, la materia y las palabras que se imprimirán. Puedes editar la dirección y seleccionar un fragmento literal de la nota como nombre público. Confirma esta versión.
+2. Descarga el ZIP con la foto fuente y la dirección. Entrega ambos a tu generador de imágenes e importa el cartel vertical con su permiso de uso. La descarga y la importación funcionan sin claves. También puedes autorizar un envío por Images API si el estudio tiene activado ese proveedor.
+3. Compara la imagen con la fuente, lee el cartel a 360 px y transcribe las palabras visibles. La lectura automática usa Vision cuando está disponible en macOS. Puedes devolver la versión con una observación que se incorpora a la siguiente dirección.
+4. Al aprobar se habilita el PNG de 1080 × 1350. El cartel es una imagen plana. Los encargos con foto o candidata de prueba conservan la vista de composición.
+
+El envío opcional por API usa `OPENAI_API_KEY` y un cupo acumulado `OPENAI_TALLER_ENVIOS` mayor que cero en modo real. Cada autorización reserva un envío de una imagen antes de contactar con OpenAI. Una respuesta incierta conserva la reserva y admite importación manual. El precio depende de los tokens de la foto, la instrucción y la imagen de salida. El adaptador utiliza `gpt-image-2` en alta calidad con la foto del producto como entrada y tamaño 1088 × 1360. [Guía de imágenes](https://developers.openai.com/api/docs/guides/image-generation) y [referencia de edición](https://developers.openai.com/api/reference/resources/images/methods/edit).
+
+### Post por capas y carrusel
+
+1. Sube una foto y elige post por capas o carrusel. Selecciona una referencia si el encargo la requiere.
 2. Revisa el inventario, la nueva toma y el plan editorial. La aprobación corresponde a la revisión que tienes en pantalla y autoriza la fotografía dentro del presupuesto indicado.
 3. Compara la candidata con la original y decide cuál usar. El compositor prepara las páginas y sus exportaciones 3:4 y 4:5. Puedes corregir una página concreta y conservar las demás y la foto aprobada.
 

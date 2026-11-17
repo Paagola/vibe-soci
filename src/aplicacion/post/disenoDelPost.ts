@@ -50,6 +50,7 @@ async function componer<T>(tarea: () => Promise<T>): Promise<T> {
 }
 
 async function comprobarIntencion(deps: DepsDisenoPost, e: EncargoPost, entrada: unknown): Promise<Intencion> {
+  if (e.taller) throw new ErrorDeUsuario('Este cartel se corrige desde la revisión de su imagen en el taller.');
   if (!PASOS_DE_DISENO.includes(e.paso)) throw new ErrorDeUsuario('La intención de diseño se escribe cuando la foto nueva está confirmada.');
   const intencion = validar(Intencion, entrada, 'La intención de diseño no es válida.');
   if (intencion.marca !== e.local) {

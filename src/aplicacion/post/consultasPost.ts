@@ -60,6 +60,7 @@ export function faseDe(paso: PasoPost): FasePost {
 
 /** Qué espera el encargo para seguir. Lo decide el estado guardado, sin llamar a nada. */
 export type EsperaPost =
+  | { tipo: 'DIRECCION_TALLER' | 'PRODUCCION_TALLER' | 'REVISION_TALLER' }
   /** Falta la referencia o no vale (sin ficha, enlace sin captura). */
   | { tipo: 'REFERENCIA'; motivo: string }
   /** ■ Parada 1: confirmar los elementos, el prompt y el gasto. Con `bloqueo`, tras dos fotos descartadas seguidas (y su explicación en llano). */
@@ -78,7 +79,7 @@ export type EsperaPost =
   | { tipo: 'CONTINUAR'; paso: PasoPost }
   | { tipo: 'HECHO' };
 
-export type PortadaDeEncargo = { tipo: 'DISENO'; archivo: string } | { tipo: 'ACTIVO'; activo: string } | { tipo: 'SUBIDA' };
+export type PortadaDeEncargo = { tipo: 'TALLER'; version: number } | { tipo: 'DISENO'; archivo: string } | { tipo: 'ACTIVO'; activo: string } | { tipo: 'SUBIDA' };
 
 export interface ResumenEncargo {
   proyecto: string;
@@ -237,7 +238,7 @@ export async function resumirEncargos(deps: DepsConsultasPost): Promise<ResumenE
       bloqueado: Boolean(e.bloqueo),
       simulado: e.simulado,
       referencia: e.referencia ?? null,
-      intentos: e.intentos.length,
+      intentos: e.taller?.candidatas.length ?? e.intentos.length,
       creadoEn: e.creadoEn,
       actualizadoEn: e.historial.at(-1)?.fecha ?? e.creadoEn,
       portada: await portadaDe(deps, e),
@@ -247,6 +248,8 @@ export async function resumirEncargos(deps: DepsConsultasPost): Promise<ResumenE
 
 /** La imagen que mejor representa el encargo ahora: el post compuesto, la foto nueva o la foto subida. */
 async function portadaDe(deps: DepsConsultasPost, e: EncargoPost): Promise<PortadaDeEncargo | null> {
+  const candidata = e.taller?.candidatas.at(-1);
+  if (candidata) return { tipo: 'TALLER', version: candidata.version };
   const intencion = await leerIntencion(deps, e).catch(() => null);
   if (intencion?.id) {
     const versiones = await deps.galeria.versiones(e.proyecto, intencion.id).catch(() => []);
@@ -309,12 +312,18 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
   // ---------------------------------------------------------------- Diseño
   const diseno = await leerDiseno(deps, e);
   const disponible = deps.generador.disponible();
-  const generador = { nombre: deps.generador.nombre, disponible: disponible.ok, motivo: disponible.ok ? null : disponible.motivo, maxIntentos: MAX_INTENTOS_SEGUIDOS };
+  const generador = e.taller ? {
+    nombre: deps.tallerApi ? 'gpt-image-2' : 'Importación del cartel', disponible: Boolean(deps.tallerApi),
+    motivo: deps.tallerApi ? null : 'Descarga el paquete e importa el arte realizado fuera del estudio.', maxIntentos: deps.tallerApi ? 1 : 0,
+  } : { nombre: deps.generador.nombre, disponible: disponible.ok, motivo: disponible.ok ? null : disponible.motivo, maxIntentos: MAX_INTENTOS_SEGUIDOS };
 
   const reservaPendiente = await generacionPendienteDeImportacion(deps.proyectos, e);
   const revisionEditorial = e.productorEditorial ? await leerRevisionEntrega(join(deps.proyectos, proyecto)) ?? null : null;
   const brief = await deps.productor?.leerBrief?.(proyecto);
-  const espera: EsperaPost = e.paso === 'COMPONER' && revisionEditorial?.estado === 'REVISION_HUMANA'
+  const espera: EsperaPost = e.taller && e.paso === 'CONFIRMAR_ELEMENTOS' ? { tipo: 'DIRECCION_TALLER' }
+    : e.taller && e.paso === 'GENERAR' ? { tipo: 'PRODUCCION_TALLER' }
+    : e.taller && e.paso === 'CONFIRMAR_FOTO' ? { tipo: 'REVISION_TALLER' }
+    : e.paso === 'COMPONER' && revisionEditorial?.estado === 'REVISION_HUMANA'
     ? { tipo: 'COMPOSICION', errores: revisionEditorial.incidencias.map(i => `${i.id} v${i.version}: ${i.motivo}`) }
     : reservaPendiente && !await deps.activos.existe(e.local, `${e.proyecto}-foto-${e.intentos.length + 1}`)
     ? { tipo: 'IMPORTAR_FOTO', motivo: 'El envío quedó reservado sin imagen recuperable. Importa la candidata para seguir.' }

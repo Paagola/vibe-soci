@@ -48,6 +48,8 @@ import type { DirectorDeFoto } from './puertos/Foto.js';
 import type { ObtenedorEnlaces } from './puertos/ObtenedorEnlaces.js';
 import type { RevisorVisual } from './puertos/RevisorVisual.js';
 
+import { GeneradorCartelOpenAI } from './adaptadores/openai/GeneradorCartel.js';
+
 export interface OpcionesDepsPost {
   simular: boolean;
   /** Para el registro de gasto: de qué encargo sale cada petición. */
@@ -100,7 +102,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     throw error;
   });
   const editorial = guardado?.productorEditorial === true || (!guardado && (opciones.productor ?? config.productor));
-  const encender = editorial || (opciones.productor ?? config.productor);
+  const encender = !guardado?.taller && (editorial || (opciones.productor ?? config.productor));
   // Los locales, sus referencias y lo que cuenta para el umbral de la referencia obligatoria.
   const delModo = simular && opciones.datosDeReferencia === 'DEL_MODO';
   const datosDeReferencia = delModo ? datos : config.carpetaDatos;
@@ -122,6 +124,10 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     ahora,
   };
   const comunes = {
+    ...(!simular && config.openaiApiKey && config.openaiTallerEnvios ? { tallerApi: {
+      generador: new GeneradorCartelOpenAI(config.openaiApiKey), limite: config.openaiTallerEnvios,
+      reservas: join(config.carpetaDatos, 'gasto', 'taller-openai'),
+    } } : {}),
     raiz: RAIZ,
     proyectos,
     activos: new AlmacenActivosFicheros(join(datos, 'locales')),

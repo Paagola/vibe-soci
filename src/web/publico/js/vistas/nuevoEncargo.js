@@ -77,7 +77,7 @@ export async function vistaNuevoEncargo() {
   );
   const proyecto = h('input', { pattern: '[a-z0-9]+(-[a-z0-9]+)*', maxlength: '80', placeholder: 'Se pone solo: fecha y plato' });
   // Formato y estética (puntos 1 y 10): la estética manda a la vez sobre la foto y sobre el diseño.
-  const formato = h('select', {}, h('option', { value: 'post' }, 'Post'), h('option', { value: 'carrusel' }, 'Carrusel (portada, detalles y cierre)'));
+  const formato = h('select', {}, h('option', { value: 'integrado' }, 'Cartel integrado · 4:5'), h('option', { value: 'post' }, 'Post por capas'), h('option', { value: 'carrusel' }, 'Carrusel (portada, detalles y cierre)'));
   const estetica = h(
     'select',
     {},
@@ -109,11 +109,13 @@ export async function vistaNuevoEncargo() {
           local: local.value,
           plato: plato.value.trim(),
           usoFotoReal: nodo.querySelector('input[name="uso"]:checked')?.value ?? 'PUBLICABLE',
-          formato: formato.value,
+          formato: formato.value === 'integrado' ? 'post' : formato.value,
+          ...(formato.value === 'integrado' ? { arte: 'INTEGRADO' } : {}),
           ...(estetica.value ? { estetica: estetica.value } : {}),
           ...(proyecto.value.trim() ? { proyecto: proyecto.value.trim() } : {}),
         });
-        location.hash = `#/encargo/${encargo.proyecto}`;
+        if (formato.value === 'integrado') location.assign('/pase.html?proyecto=' + encodeURIComponent(encargo.proyecto));
+        else location.hash = `#/encargo/${encargo.proyecto}`;
       } catch (error) {
         reemplazar(errores, bloqueError(error));
       }
@@ -125,7 +127,7 @@ export async function vistaNuevoEncargo() {
     { class: 'formulario', onsubmit: enviar },
     h('p', { class: 'sobretitulo' }, 'Orden única'),
     h('h1', {}, 'Nuevo post'),
-    h('p', { class: 'entrada' }, 'Sube la foto como la hizo el local. El estudio hará otra foto del mismo plato, con otra toma y otra luz, y montará el post encima de una referencia.'),
+    h('p', { class: 'entrada' }, 'Sube la foto del local y elige cómo producir la pieza. En el cartel integrado revisarás la dirección, el texto y la imagen final.'),
     h('fieldset', {}, h('legend', {}, 'Local'), campo('¿De qué local es?', local), muestras, avisoTokens),
     h(
       'fieldset',

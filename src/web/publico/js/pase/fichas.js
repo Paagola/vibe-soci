@@ -38,7 +38,7 @@ function subirA(archivo) {
 export function fichaDeSubida(ctx) {
   if (!ctx.locales.length) return [titulo('Añade un local'), nota('Cada encargo usa el perfil de su local.'), accion(ctx.simulado ? boton('Usar el local de ejemplo', (e) => ctx.crearLocalDeEjemplo(e.currentTarget), true) : null, enlace('Dar de alta un local', '/index.html#/local'))];
   const local = h('select', { name: 'local', required: true }, ctx.locales.map((l) => opcion(l.slug, l.nombre)));
-  const formato = h('select', { name: 'formato' }, opcion('post', 'Post'), opcion('carrusel', 'Carrusel'));
+  const formato = h('select', { name: 'formato' }, opcion('integrado', 'Cartel integrado · 4:5'), opcion('post', 'Post por capas'), opcion('carrusel', 'Carrusel'));
   const uso = h('select', { name: 'uso' }, opcion('PUBLICABLE', 'Foto del local'), opcion('SOLO_PRUEBA_COMPOSICION', 'Solo para una prueba'));
   const estetica = h('select', { name: 'estetica' }, opcion('', 'A partir de la referencia'), [
     ['EDITORIAL_SERENO', 'Editorial sereno'], ['EDITORIAL_OSCURO', 'Editorial oscuro'], ['COLOR_POP', 'Color pop'],
@@ -77,7 +77,7 @@ export function fichaDeSubida(ctx) {
       const plato = nombre.value.trim();
       if (plato.length < 3) throw new Error('Escribe el nombre del plato.');
       const subida = await subirA(fichero);
-      return { subidaId: subida.id, local: local.value, plato, formato: formato.value, usoFotoReal: uso.value, ...(estetica.value ? { estetica: estetica.value } : {}), productorEditorial: true };
+      return { subidaId: subida.id, local: local.value, plato, formato: formato.value === 'integrado' ? 'post' : formato.value, usoFotoReal: uso.value, ...(estetica.value ? { estetica: estetica.value } : {}), ...(formato.value === 'integrado' ? { arte: 'INTEGRADO' } : { productorEditorial: true }) };
     }, errores);
   });
   return [titulo('Empieza con una foto'), form];
@@ -94,7 +94,7 @@ function fichaReferencia(ctx) {
   const { referencia, espera, encargo } = ctx.d;
   const elegida = referencia.elegida;
   const ficha = elegida?.ficha;
-  const cambiar = espera.tipo === 'REFERENCIA' && !ctx.ocupada;
+  const cambiar = (espera.tipo === 'REFERENCIA' || encargo.taller && encargo.paso === 'REFERENCIA') && !ctx.ocupada;
   const elegir = (cuerpo) => (e) => ctx.usarReferencia(e.currentTarget, async () => cuerpo);
   const tarjeta = (id, nombre, url, cuerpo, disabled = false) => h('li', {},
     h('button', { type: 'button', disabled, onclick: elegir(cuerpo), title: nombre }, url ? h('img', { src: url, alt: '', loading: 'lazy' }) : h('span', { class: 'ref-vacia' }), h('span', {}, nombre || id)));

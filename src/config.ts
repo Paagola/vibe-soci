@@ -13,6 +13,8 @@ const vacioComoAusente = (valor: unknown) => (typeof valor === 'string' && valor
 const opcional = <T extends z.ZodType>(esquema: T) => z.preprocess(vacioComoAusente, esquema.optional());
 
 const Entorno = z.object({
+  OPENAI_API_KEY: opcional(z.string().trim()),
+  OPENAI_TALLER_ENVIOS: opcional(z.coerce.number().int().min(0).max(10000)),
   GEMINI_API_KEY: opcional(z.string().trim()),
   GEMINI_MODELO: opcional(z.string().trim()),
   GEMINI_MODELO_RESPALDO: opcional(z.string().trim()),
@@ -44,6 +46,8 @@ function esZonaHoraria(zona: string): boolean {
 }
 
 export interface Config {
+  openaiApiKey?: string;
+  openaiTallerEnvios?: number;
   geminiApiKey?: string;
   geminiModelo: string;
   /** Se usa si el principal está saturado. */
@@ -75,6 +79,7 @@ export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
   const e = validar(Entorno, entorno, 'La configuración (.env) no es válida.');
   const ruta = (carpeta: string) => (isAbsolute(carpeta) ? carpeta : resolve(RAIZ, carpeta));
   return {
+    openaiApiKey: e.OPENAI_API_KEY, openaiTallerEnvios: e.OPENAI_TALLER_ENVIOS ?? 0,
     geminiApiKey: e.GEMINI_API_KEY,
     geminiModelo: e.GEMINI_MODELO ?? 'gemini-3.8-flash',
     geminiModeloRespaldo: e.GEMINI_MODELO_RESPALDO ?? 'gemini-3.5-flash',

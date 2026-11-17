@@ -20,10 +20,12 @@ export class PiezasHechasFicheros implements PiezasHechas {
 
   async listar(): Promise<PiezaHecha[]> {
     const planes: string[] = [];
+    const talleres: string[] = [];
     const buscar = async (carpeta: string, nivel: number) => {
       const entradas = await readdir(carpeta, { withFileTypes: true }).catch(() => []);
       for (const e of entradas) {
         if (e.isFile() && e.name === 'plan.json' && nivel > 0) planes.push(join(carpeta, e.name));
+        if (e.isDirectory() && e.name === 'taller' && nivel === 1) talleres.push(carpeta);
         if (e.isDirectory() && nivel < 2) await buscar(join(carpeta, e.name), nivel + 1);
       }
     };
@@ -40,6 +42,17 @@ export class PiezasHechasFicheros implements PiezasHechas {
       });
       if (!pieza.success) throw new ErrorDeUsuario(`${ruta}: el campo "pieza" no es válido.`, pieza.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`));
       piezas.push(pieza.data);
+    }
+    for (const carpeta of talleres.sort()) {
+      const proyecto = relative(this.carpetaProyectos, carpeta);
+      if (piezas.some(p => p.proyecto === proyecto)) continue;
+      const post = JSON.parse(await readFile(join(carpeta, 'post.json'), 'utf8').catch(e => {
+        if ((e as NodeJS.ErrnoException).code === 'ENOENT') return 'null';
+        throw e;
+      }));
+      const aprobada = post?.taller?.candidatas?.at(-1);
+      if (post?.simulado !== false || post.paso !== 'HECHO' || post.usoFotoReal !== 'PUBLICABLE' || aprobada?.uso !== 'PUBLICABLE' || !aprobada.revision) continue;
+      piezas.push(PiezaHecha.parse({ proyecto, local: post.local, referencia: post.referencia, fecha: aprobada.revision.fecha.slice(0, 10) }));
     }
     return piezas;
   }

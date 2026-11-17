@@ -56,7 +56,11 @@ import type { DepsReferencias } from '../referencias/dependencias.js';
 import type { GanchosDeOrden, Via } from './ganchos.js';
 import { prepararRecuperacion } from './recuperarGeneracion.js';
 
+import { prepararTaller } from '../taller/taller.js';
+import type { GeneradorCartel } from '../../adaptadores/openai/GeneradorCartel.js';
+
 export interface DepsPost {
+  tallerApi?: { generador: GeneradorCartel; limite: number; reservas: string };
   /** Raíz del repositorio (para marcas/ y rutas relativas). */
   raiz: string;
   /** Carpeta de los proyectos (proyectos/ o, en simulado, datos-simulado/proyectos/). */
@@ -133,6 +137,7 @@ export async function crearEncargo(
   deps: DepsPost,
   datos: {
     proyecto: string;
+    arte?: 'INTEGRADO' | 'CAPAS';
     productorEditorial?: boolean;
     local: string;
     plato: string;
@@ -156,7 +161,7 @@ export async function crearEncargo(
   const ahora = deps.ahora();
   const encargo = EncargoPost.parse({
     esquema: 'post/encargo@1',
-    ...(datos.productorEditorial ? { productorEditorial: true } : {}),
+    ...(datos.arte === 'INTEGRADO' ? { taller: {} } : datos.productorEditorial ? { productorEditorial: true } : {}),
     proyecto: datos.proyecto,
     local: datos.local,
     plato: datos.plato,
@@ -184,6 +189,10 @@ export interface OpcionesAvance {
 /** Avanza el encargo hasta la siguiente parada o bloqueo. */
 export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion = {}, opciones: OpcionesAvance = {}): Promise<ResultadoAvance> {
   let e = await leerEncargo(deps, proyecto);
+  if (e.taller) {
+    if (Object.keys(accion).some(k => k !== 'via' && k !== 'revision')) throw new ErrorDeUsuario('Esta decisión corresponde al taller de arte integrado.');
+    return prepararTaller(deps, e);
+  }
   const mensajes: string[] = [];
   const nota = (texto: string) => {
     mensajes.push(texto);

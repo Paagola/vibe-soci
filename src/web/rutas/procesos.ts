@@ -89,7 +89,7 @@ export async function estadoDeProcesos(estudio: Estudio): Promise<EstadoProcesos
   const modo = simulado ? 'SIMULADO' : 'REAL';
   // Las portadas (el post compuesto, si lo hay) salen de la misma consulta que usa la lista de Posts.
   const resumenes = await resumirEncargos(deps).catch(() => []);
-  const postDe = new Map(resumenes.filter((r) => r.portada?.tipo === 'DISENO').map((r) => [r.proyecto, `${urlDePortada(r.proyecto, r.portada!)}?lado=${LADO}`]));
+  const postDe = new Map(resumenes.filter((r) => r.portada?.tipo === 'DISENO' || r.portada?.tipo === 'TALLER').map((r) => [r.proyecto, `${urlDePortada(r.proyecto, r.portada!)}?lado=${LADO}`]));
   return {
     modo,
     ahora: Date.now(),

@@ -15,6 +15,7 @@ import { Estetica } from '../../dominio/diseno/estetica.js';
 import { crearEncargo, type DepsPost } from './ordenPost.js';
 
 export const DatosNuevoEncargo = z.object({
+  arte: z.enum(['INTEGRADO', 'CAPAS']).optional(),
   productorEditorial: z.literal(true).optional(),
   local: z.string().min(1, 'Elige el local.'),
   /** La nota del dueño al subir la foto: qué plato es. */
@@ -46,6 +47,8 @@ const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: OpcionesAbrirEncargo): Promise<EncargoPost> {
   const datos = validar(DatosNuevoEncargo, entrada, 'No se puede abrir el encargo.');
 
+  if (datos.arte === 'INTEGRADO' && datos.formato !== 'post') throw new ErrorDeUsuario('El arte integrado se realiza como post individual.');
+
   // Todo se comprueba antes de escribir nada.
   await deps.referencias.locales.obtener(datos.local);
   if (datos.referencia) await deps.referencias.referencias.obtener(datos.local, datos.referencia);
@@ -74,6 +77,7 @@ export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: O
     const relativa = relative(deps.raiz, destino);
     return await crearEncargo(deps, {
       proyecto,
+      arte: datos.arte,
       ...(datos.productorEditorial ? { productorEditorial: true } : {}),
       local: datos.local,
       plato: datos.plato,

@@ -9,6 +9,7 @@
  * su propuesta no pasa las comprobaciones, deja un borrador y se para, como antes.
  */
 import { z } from 'zod';
+import { TallerDeArte } from './taller.js';
 import { Tratamiento } from './referencia.js';
 import { Estetica } from './diseno/estetica.js';
 
@@ -73,6 +74,7 @@ export const EncargoPost = z.object({
   /** Con director, generador, revisor y máscara simulados: no gasta ni llama a nada. Los datos van aparte. */
   simulado: z.boolean().default(false),
   productorEditorial: z.literal(true).optional(),
+  taller: TallerDeArte.optional(),
   paso: PasoPost.default('REFERENCIA'),
   /** Si está, la orden no sigue hasta que lo resuelvas (lo dice el texto). */
   bloqueo: z.string().optional(),

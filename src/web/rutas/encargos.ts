@@ -6,6 +6,9 @@
  */
 import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
+import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
+import { AccionTaller } from '../../dominio/taller.js';
+import { bytesDeCandidata, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
 import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -108,7 +111,48 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const deps = await estudio.post(proyecto);
     await exigirEncargo(deps, proyecto);
     const trabajo = ultimoTrabajo(estudio, proyecto);
-    res.json({ ...(await detalleDeEncargo(deps, proyecto)), base: baseDeEncargo(proyecto), trabajo: trabajo ? estudio.registro.vista(trabajo) : null });
+    const detalle = await detalleDeEncargo(deps, proyecto);
+    const api = detalle.encargo.taller && deps.tallerApi;
+    const tallerApi = api ? { modelo: MODELO_CARTEL, limite: api.limite, disponibles: await enviosDisponibles(api.reservas, api.limite) } : null;
+    res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo: trabajo ? estudio.registro.vista(trabajo) : null });
+  });
+
+  rutas.post('/:proyecto/taller', conEscritura(async (req, res) => {
+    const proyecto = proyectoDe(req);
+    const accion = validar(AccionTaller, req.body, 'La decisión del taller no es válida.');
+    const deps = await exigirLibre(estudio, proyecto);
+    const e = await leerEncargo(deps, proyecto);
+    await exigirRevision(deps, e, accion.revision);
+    if (accion.accion === 'GENERAR') {
+      if (!deps.tallerApi || e.simulado) throw new ErrorHttp(400, 'GENERADOR_DESACTIVADO', 'Generación automática desactivada. Puedes descargar el paquete e importar el cartel.');
+      if (e.paso !== 'GENERAR' || !e.taller?.comanda || e.taller.confirmada?.huella !== e.taller.comanda.huella) throw fueraDePaso('generar el cartel', e);
+      if (e.taller.envios.some(s => s.huella === e.taller!.comanda!.huella)) throw new ErrorHttp(409, 'ENVIO_RESERVADO', 'Ya se autorizó un envío para esta dirección.');
+      const trabajo = await lanzar(estudio, proyecto, async (_deps, alProgresar) => {
+        const nuevo = await decidirTaller(deps, e, accion, undefined, alProgresar);
+        return { proyecto, paso: nuevo.paso, version: nuevo.taller?.candidatas.at(-1)?.version };
+      });
+      res.status(202).json({ trabajo });
+      return;
+    }
+    const subida = accion.accion === 'IMPORTAR' ? estudio.subidas.ruta(accion.subidaId) : undefined;
+    const encargo = await decidirTaller(deps, e, accion, subida);
+    if (accion.accion === 'IMPORTAR') await estudio.subidas.borrar([accion.subidaId]);
+    res.json({ encargo });
+  }));
+  rutas.get('/:proyecto/taller/paquete', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const bytes = await descargarPaquete(deps, await leerEncargo(deps, proyecto));
+    res.set('Cache-Control', 'no-store').attachment(proyecto + '-direccion.zip').send(bytes);
+  });
+  rutas.get('/:proyecto/taller/candidatas/:version', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const { bytes, candidata } = await bytesDeCandidata(deps, await leerEncargo(deps, proyecto), Number(req.params.version));
+    res.set({ 'Cache-Control': 'no-store', 'X-Uso-Imagen': candidata.uso }).type('png').send(bytes);
+  });
+  rutas.get('/:proyecto/taller/exportacion', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const bytes = await exportarArte(deps, await leerEncargo(deps, proyecto));
+    res.set('Cache-Control', 'no-store').attachment(proyecto + '-4x5.png').send(bytes);
   });
 
   /** Lo que costaría la foto nueva, para la parada de elementos. No gasta nada. */
@@ -314,6 +358,7 @@ const codificar = (ruta: string) => ruta.split('/').map(encodeURIComponent).join
 
 export function urlDePortada(proyecto: string, portada: PortadaDeEncargo): string {
   const base = baseDeEncargo(proyecto);
+  if (portada.tipo === 'TALLER') return '/api/encargos/' + encodeURIComponent(proyecto) + '/taller/candidatas/' + portada.version;
   if (portada.tipo === 'DISENO') return `${base}disenos/${codificar(portada.archivo)}`;
   if (portada.tipo === 'ACTIVO') return `${base}activos/${encodeURIComponent(portada.activo)}?lado=640`;
   return `${base}subida?lado=640`;

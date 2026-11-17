@@ -4,6 +4,7 @@ import { estadoDePaso, urlsDe } from '../orden.js';
 import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, pideRevision, portadaDe } from './fichas.js';
 import { dibujarFotos, ESTACIONES, soporteDe } from './plano.js';
 import { ENCUADRES } from './renders.js';
+import { fichaManual, fichaTaller } from './taller.js';
 import { actividadDe, intervencionesDe } from './actividad.js';
 
 const $ = (id) => document.getElementById(id);
@@ -16,7 +17,13 @@ const dialogo = $('dialogo');
 const trabajoNodo = h('div');
 const panelActividad = $('actividad');
 const ETAPAS = { REFERENCIA: 'referencia', ELEMENTOS: 'elementos', FOTO: 'candidata', DISENO: 'composicion', RESULTADO: 'entrega' };
-const pasoDe = (d) => ETAPAS[d?.fase] ?? 'original';
+const pasoDe = (d) => d?.encargo.taller && d.encargo.paso === 'CONFIRMAR_FOTO' ? 'composicion' : ETAPAS[d?.fase] ?? 'original';
+const etapasDeTaller = {
+  elementos: { nombre: 'Dirección', accion: 'Dirección de arte', texto: 'Decide cómo se relacionan el producto, las palabras y la referencia.' },
+  candidata: { nombre: 'Producción', accion: 'Producción del cartel', texto: 'Lleva la dirección aprobada al generador o importa la imagen.' },
+  composicion: { nombre: 'Revisión', accion: 'Revisión del cartel', texto: 'Lee la imagen a escala móvil y contrasta el producto con la foto fuente.' },
+};
+const etapaDe = fase => d?.encargo.taller ? { ...fase, ...etapasDeTaller[fase.id] } : fase;
 const indiceDe = (id) => ESTACIONES.findIndex((s) => s.id === id);
 const nombreDe = (id) => ESTACIONES.find((s) => s.id === id)?.nombre ?? 'Original';
 const ordinal = (i) => String(i + 1).padStart(2, '0');
@@ -73,7 +80,7 @@ function contexto() {
   };
 }
 
-function faseVista() { return ESTACIONES[indiceDe(seleccion)] ?? ESTACIONES[0]; }
+function faseVista() { return etapaDe(ESTACIONES[indiceDe(seleccion)] ?? ESTACIONES[0]); }
 
 function pintarOptica() {
   const fase = faseVista();
@@ -126,14 +133,16 @@ function materialesDe() {
   const foto = ctx.candidata;
   const version = hojaDe(ctx)?.version;
   const portada = portadaDe(version);
-  const render = portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null;
+  const integrada = d.encargo.taller?.candidatas.at(-1);
+  const cartel = integrada ? '/api/encargos/' + proyecto + '/taller/candidatas/' + integrada.version : null;
+  const render = cartel ?? (portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null);
   return {
     original: { url: d.fotoSubida.disponible ? ctx.urls.subida(880) : null, original: ctx.urls.subida() },
     referencia: { url: d.referencia.conImagen ? ctx.urls.referencia(480) : null, original: ctx.urls.referencia() },
     elementos: { lineas: inventario().map((el) => el.nombre) },
     candidata: { url: foto?.disponible ? ctx.urls.activo(foto.activo, 680) : null, original: foto?.disponible ? ctx.urls.activo(foto.activo) : null },
     composicion: { url: vistaPrevia ?? render ?? originalElegida(ctx), original: vistaPrevia ?? (portada ? ctx.urls.diseno(portada) : originalElegida(ctx)), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
-    entrega: { url: d.encargo.paso === 'HECHO' ? render : null, original: portada ? ctx.urls.diseno(portada) : null },
+    entrega: { url: d.encargo.paso === 'HECHO' ? render : null, original: cartel ?? (portada ? ctx.urls.diseno(portada) : null) },
   };
 }
 
@@ -167,7 +176,8 @@ function pintarMateriales() {
 function pintarNavegacion() {
   const actual = pasoDe(d);
   const foco = recorrido.contains(document.activeElement) ? document.activeElement.dataset.paso : null;
-  reemplazar(recorrido, ESTACIONES.map((fase, i) => {
+  reemplazar(recorrido, ESTACIONES.map((estacion, i) => {
+    const fase = etapaDe(estacion);
     const completada = Boolean(d && (i < indiceDe(actual) || d.encargo.paso === 'HECHO'));
     return h('button', {
       type: 'button', 'data-paso': fase.id, 'data-estado': completada ? 'hecha' : '',
@@ -196,13 +206,16 @@ function pintarMarco() {
   $('fase-cabecera').textContent = seccion === 'encargos' ? 'Archivo de encargos' : fase.accion;
   $('local').textContent = seccion === 'encargos' ? 'Abre un encargo para retomar su producción.' : !datos && n === 0 ? 'Una foto original es el punto de partida de cada pieza.' : fase.texto;
   const abrirFicha = $('abrir-ficha');
-  const accion = seccion === 'encargos' ? 'Ver encargos' : !datos ? n === 0 ? 'Preparar encargo' : 'Ver ficha' : ['Ver original', 'Ver referencia', 'Revisar inventario', 'Comparar fotos', 'Ver composición', datos.paso === 'HECHO' ? 'Ver descargas' : 'Ver entrega'][n];
+  const accionTaller = datos?.taller && ['elementos', 'candidata', 'composicion'].includes(seleccion) ? 'Abrir ' + fase.nombre.toLowerCase() : null;
+  const accion = accionTaller ?? (seccion === 'encargos' ? 'Ver encargos' : !datos ? n === 0 ? 'Preparar encargo' : 'Ver ficha' : ['Ver original', 'Ver referencia', 'Revisar inventario', 'Comparar fotos', 'Ver composición', datos.paso === 'HECHO' ? 'Ver descargas' : 'Ver entrega'][n]);
   abrirFicha.firstChild.textContent = accion + ' ';
   $('encargo-titulo').textContent = datos?.plato ?? 'Nuevo encargo';
   $('encargo-local').textContent = datos ? d.local?.nombre ?? datos.local : 'Sin abrir';
   document.querySelector('.expediente').dataset.vacio = String(!datos);
-  $('pie-inventario').textContent = datos ? `${localizar.format(inventario().length)} ${inventario().length === 1 ? 'elemento' : 'elementos'}` : '—';
-  $('pie-intentos').textContent = datos ? localizar.format(d.intentos.length) : '—';
+  $('pie-inventario').previousElementSibling.textContent = datos?.taller ? 'Textos' : 'Inventario';
+  $('pie-intentos').previousElementSibling.textContent = datos?.taller ? 'Versiones' : 'Intentos';
+  $('pie-inventario').textContent = datos?.taller ? String(datos.taller.comanda?.textos.length ?? 0) : datos ? `${localizar.format(inventario().length)} ${inventario().length === 1 ? 'elemento' : 'elementos'}` : '—';
+  $('pie-intentos').textContent = datos ? localizar.format(datos.taller?.candidatas.length ?? d.intentos.length) : '—';
   $('pie-entrega').textContent = actual === 'entrega' ? 'Compuesta' : pideRevision(d) ? 'En revisión' : datos ? 'Pendiente' : '—';
   const entrada = datos?.historial?.at(-1);
   $('pie-actividad').textContent = entrada?.fecha ? `Actualizado el ${formatearFecha(entrada.fecha)}` : '';
@@ -215,7 +228,7 @@ function pintarMarco() {
 function pintarEncargos() {
   const entradas = lista.map((p) => {
     const resumen = procesos?.encargos.find((x) => x.proyecto === p.proyecto);
-    const url = resumen?.imagenes.subida ?? (p.miniatura ? urlsDe(p.proyecto).subida(120) : null);
+    const url = p.portada?.tipo === 'TALLER' ? p.miniatura : resumen?.imagenes.subida ?? (p.miniatura ? urlsDe(p.proyecto).subida(120) : null);
     const estado = estadoDePaso(p.paso, p).texto;
     return h('li', {}, h('button', { type: 'button', onclick: () => abrir(p.proyecto, { navegacion: true }) }, url ? h('img', { src: url, loading: 'lazy', alt: '' }) : h('span', { class: 'ref-vacia' }), h('span', {}, p.plato, h('br'), h('small', {}, p.nombreLocal ?? p.local)), h('span', { class: 'estado-encargo' }, estado)));
   });
@@ -235,7 +248,10 @@ function pintarFicha() {
   else if (seccion === 'encargos') reemplazar(cuerpo, pintarEncargos());
   else if (!d && seleccion === 'original') reemplazar(cuerpo, fichaDeSubida(ctx));
   else if (!d) reemplazar(cuerpo, h('h2', { id: 'ficha-titulo' }, nombreDe(seleccion)), h('p', { class: 'muted' }, 'Sube la foto original para iniciar el encargo.'), h('button', { type: 'button', class: 'primario', onclick: () => seleccionar('original', null, true) }, 'Añadir foto original'));
-  else {
+  else if (d.encargo.taller && seleccion !== 'original') {
+    reemplazar(cuerpo, trabajoNodo, seleccion === 'referencia' ? [fichas.referencia(ctx), fichaManual(ctx), d.encargo.paso !== 'REFERENCIA' ? h('button', { type: 'button', onclick: ctx.irActual }, 'Volver al cartel') : null] : ctx.actual !== seleccion ? [h('h2', { id: 'ficha-titulo' }, etapaDe(ESTACIONES[indiceDe(seleccion)]).nombre), h('button', { type: 'button', onclick: ctx.irActual }, 'Ir a la fase actual')] : fichaTaller(ctx));
+    pintarTrabajo(d.trabajo);
+  } else {
     const espera = d.espera;
     const seguir = ctx.actual === seleccion && espera.tipo === 'CONTINUAR' && !ctx.ocupada && !['candidata', 'composicion'].includes(seleccion);
     reemplazar(cuerpo, trabajoNodo, fichas[seleccion](ctx), seguir ? h('div', { class: 'acciones' }, h('button', { type: 'button', class: 'primario', onclick: (e) => avanzar(e.currentTarget) }, 'Continuar el encargo')) : null);
