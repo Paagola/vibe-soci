@@ -34,10 +34,15 @@ const CuerpoAvanzar = z
     revision: z.string().optional(),
     confirmo: z.enum(['CONFIRMAR_ELEMENTOS', 'CONFIRMAR_FOTO']).optional(),
     rechazo: z.string().trim().min(3, 'Di por qué la rechazas (mínimo 3 caracteres).').max(300).optional(),
+    foto: z.union([z.literal('original'), z.number().int().positive()]).optional(),
+    reintentar: z.boolean().optional(),
+    volverAlInventario: z.literal(true).optional(),
     /** Subida con la foto hecha a mano. */
     importar: z.string().optional(),
   })
-  .refine((c) => [c.confirmo, c.rechazo, c.importar].filter(Boolean).length <= 1, 'Una sola acción cada vez: confirmar, rechazar o importar.');
+  .refine((c) => [c.confirmo, c.rechazo, c.importar, c.volverAlInventario].filter(Boolean).length <= 1, 'Elige una sola acción cada vez.')
+  .refine((c) => c.foto === undefined || c.confirmo === 'CONFIRMAR_FOTO' || (c.rechazo && c.foto !== 'original'), 'Selecciona una foto al decidir sobre la candidata.')
+  .refine((c) => c.reintentar === undefined || Boolean(c.rechazo), 'Para pedir otra candidata hay que rechazar la que has revisado.');
 /** Una referencia ya registrada del local, o un post de la biblioteca del estudio (se registra con su ficha). */
 const CuerpoReferencia = z.union([
   z.object({ referencia: z.string().min(1) }),
@@ -123,19 +128,23 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const cuerpo = validar(CuerpoAvanzar, req.body ?? {}, 'La acción no es válida.');
     const deps = await exigirLibre(estudio, proyecto);
     const encargo = await leerEncargo(deps, proyecto);
-    if (cuerpo.confirmo || cuerpo.rechazo) await exigirRevision(deps, encargo, cuerpo.revision);
+    if (cuerpo.confirmo || cuerpo.rechazo || cuerpo.volverAlInventario) await exigirRevision(deps, encargo, cuerpo.revision);
 
     // Una confirmación vale para la parada que la persona está viendo, no para la siguiente que encuentre la orden.
     if (cuerpo.confirmo && encargo.paso !== cuerpo.confirmo) throw fueraDePaso('confirmar', encargo);
     if (cuerpo.rechazo && encargo.paso !== 'CONFIRMAR_FOTO') throw fueraDePaso('rechazar la foto', encargo);
+    if (cuerpo.volverAlInventario && encargo.paso !== 'CONFIRMAR_FOTO') throw fueraDePaso('volver al inventario', encargo);
     if (cuerpo.importar && encargo.paso !== 'GENERAR') throw fueraDePaso('importar una foto', encargo);
 
     const accion: Accion = {
       ...(cuerpo.revision ? { revision: cuerpo.revision } : {}),
       ...(cuerpo.confirmo ? { confirmo: true } : {}),
       ...(cuerpo.rechazo ? { rechazo: cuerpo.rechazo } : {}),
+      ...(cuerpo.foto !== undefined ? { foto: cuerpo.foto } : {}),
+      ...(cuerpo.reintentar !== undefined ? { reintentar: cuerpo.reintentar } : {}),
+      ...(cuerpo.volverAlInventario ? { volverAlInventario: true } : {}),
       ...(cuerpo.importar ? { importar: estudio.subidas.ruta(cuerpo.importar) } : {}),
-      ...(cuerpo.confirmo || cuerpo.rechazo ? { via: 'web' as const } : {}),
+      ...(cuerpo.confirmo || cuerpo.rechazo || cuerpo.volverAlInventario ? { via: 'web' as const } : {}),
     };
     const trabajo = await lanzar(estudio, proyecto, async (deps, alProgresar) => {
       try {

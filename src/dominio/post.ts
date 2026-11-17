@@ -9,7 +9,6 @@
  * su propuesta no pasa las comprobaciones, deja un borrador y se para, como antes.
  */
 import { z } from 'zod';
-import type { VeredictoFinal } from './comprobacionSalida.js';
 import { Tratamiento } from './referencia.js';
 import { Estetica } from './diseno/estetica.js';
 
@@ -19,7 +18,7 @@ export type PasoPost = z.infer<typeof PasoPost>;
 /** Los pasos en los que la orden se para y espera `--confirmo` (o `--rechazo`). */
 export const PARADAS: readonly PasoPost[] = ['CONFIRMAR_ELEMENTOS', 'CONFIRMAR_FOTO'];
 
-/** Regla de gasto del estudio: se para tras dos fotos descartadas seguidas. */
+/** Máximo de candidatas por autorización de la parada de inventario. */
 export const MAX_INTENTOS_SEGUIDOS = 2;
 
 export const IntentoFoto = z.object({
@@ -80,7 +79,10 @@ export const EncargoPost = z.object({
   activoReal: z.string().optional(),
   propuesta: z.object({ archivo: z.string(), prompt: z.string(), problemas: z.array(z.string()) }).optional(),
   /** Lo que autorizaste en la parada de elementos. */
-  autorizacion: z.object({ fecha: z.string(), maxIntentos: z.number().int().positive(), estimadoPorIntentoUsd: z.number().nonnegative() }).optional(),
+  autorizacion: z.object({
+    fecha: z.string(), maxIntentos: z.number().int().positive(), estimadoPorIntentoUsd: z.number().nonnegative(),
+    intentosPrevios: z.number().int().nonnegative().optional(),
+  }).optional(),
   intentos: z.array(IntentoFoto).default([]),
   /** F3.3: las tomas de detalle de un carrusel (una foto por diapositiva de detalle). */
   tomas: z.array(TomaDelEncargo).default([]),
@@ -107,17 +109,18 @@ export function descartesSeguidos(intentos: IntentoFoto[]): number {
   return n;
 }
 
-/**
- * Tras la comprobación de salida: PASA o REVISAR van a tu parada (REVISAR, con el aviso); DESCARTA vuelve a generar
- * si quedan intentos autorizados, y si no, se bloquea.
- */
-export function trasComprobar(final: VeredictoFinal, intentos: IntentoFoto[], maxIntentos = MAX_INTENTOS_SEGUIDOS): { paso: PasoPost; bloqueo?: string } {
-  if (final !== 'DESCARTA') return { paso: 'CONFIRMAR_FOTO' };
-  if (descartesSeguidos(intentos) >= maxIntentos) {
-    return {
-      paso: 'CONFIRMAR_ELEMENTOS',
-      bloqueo: `${maxIntentos} fotos descartadas seguidas: paro, como dice la regla de gasto. Revisa la propuesta (prompt y elementos) y vuelve a confirmar con --confirmo para otros ${maxIntentos} intentos.`,
-    };
-  }
-  return { paso: 'GENERAR' };
+/** Presenta los bloqueos antiguos de generación como decisiones de foto, sin escribir en el disco al leer. */
+export function recuperarRevisionFotografica(e: EncargoPost): EncargoPost {
+  const bloqueoAnterior = e.paso === 'CONFIRMAR_ELEMENTOS' && /^\d+ fotos descartadas seguidas:/.test(e.bloqueo ?? '');
+  const reintentoAutomatico = e.paso === 'GENERAR' && e.intentos.at(-1)?.final === 'DESCARTA';
+  if (e.fotoElegida || !(bloqueoAnterior || reintentoAutomatico) || !e.intentos.some(i => i.final !== 'PENDIENTE')) return e;
+  const { bloqueo: _anterior, ...encargo } = e;
+  return { ...encargo, paso: 'CONFIRMAR_FOTO' };
+}
+
+export function puedeReintentarFoto(e: EncargoPost, topeTotal?: number): boolean {
+  const intentosEnAutorizacion = e.intentos.length - (e.autorizacion?.intentosPrevios ?? 0);
+  const extras = e.tomas.filter(t => !t.real).length;
+  return intentosEnAutorizacion < (e.autorizacion?.maxIntentos ?? MAX_INTENTOS_SEGUIDOS) &&
+    (topeTotal === undefined || e.intentos.length + extras + 1 <= topeTotal);
 }

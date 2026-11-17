@@ -6,8 +6,8 @@
  *   PROPUESTA        el director rellena la plantilla de foto nueva; el código comprueba «otra toma» y lo demás
  *   CONFIRMAR_ELEMENTOS  ■ parada: confirmas los elementos, el prompt y el gasto (como mucho 2 intentos)
  *   GENERAR          la foto nueva (Gemini de pago, con el tope del código), o la que importes a mano
- *   COMPROBAR        comprobación de salida automática; DESCARTA → otro intento; 2 seguidos → se para
- *   CONFIRMAR_FOTO   ■ parada: confirmas la foto (o la rechazas con motivo)
+ *   COMPROBAR        comprobación de salida automática; sus avisos acompañan a la candidata
+ *   CONFIRMAR_FOTO   ■ parada: eliges una foto o autorizas otra candidata dentro del presupuesto
  *   MASCARA          la máscara del sujeto
  *   INTENCION        la intención de diseño: la escribe el director de diseño (F3) desde la ficha de la referencia y el
  *                    mapa de la foto, y pasa a post.json solo si cumple todo lo comprobable; si no hay director o no
@@ -40,7 +40,7 @@ import { montarPromptFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type Opci
 import { huecosDeTomaEfectivos, huecosEfectivos, opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
 import { explicarBloqueo } from '../../dominio/explicaciones.js';
 import { contradiccionesConLaNota } from '../../dominio/nota.js';
-import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost, type TomaDelEncargo } from '../../dominio/post.js';
+import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, puedeReintentarFoto, recuperarRevisionFotografica, type IntentoFoto, type PasoPost, type TomaDelEncargo } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas } from '../../puertos/ComponedorDePiezas.js';
 import type { DirectorDeFoto, GeneradorFoto, PeticionFoto, Segmentador } from '../../puertos/Foto.js';
@@ -87,6 +87,10 @@ export interface Accion {
   revision?: string;
   confirmo?: boolean;
   rechazo?: string;
+  foto?: 'original' | number;
+  /** Conserva la decisión humana y espera si es false. */
+  reintentar?: boolean;
+  volverAlInventario?: boolean;
   /** De dónde viene la confirmación (la web o una terminal interactiva). */
   via?: Via;
   /** Ruta de una foto hecha a mano para el paso GENERAR (sin facturación, o por el MCP). */
@@ -117,7 +121,7 @@ const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 export async function leerEncargo(deps: Pick<DepsPost, 'proyectos'>, proyecto: string): Promise<EncargoPost> {
   const ruta = join(deps.proyectos, proyecto, 'post.json');
   if (!(await existe(ruta))) throw new ErrorDeUsuario(`No existe el encargo «${proyecto}». Créalo con: npm run post -- nuevo ${proyecto} --local … --foto … --plato "…" --referencia …`);
-  return EncargoPost.parse(JSON.parse(await readFile(ruta, 'utf8')));
+  return recuperarRevisionFotografica(EncargoPost.parse(JSON.parse(await readFile(ruta, 'utf8'))));
 }
 
 export async function guardarEncargo(deps: DepsPost, e: EncargoPost): Promise<void> {
@@ -372,8 +376,8 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
           disponible.ok
             ? generadas.length
-              ? `  FOTOS: ${fotos} (la portada y ${generadas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD en total con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una); la portada puede reintentarse hasta ${MAX_INTENTOS_SEGUIDOS} veces (≤ ${(estimado * (fotos + MAX_INTENTOS_SEGUIDOS - 1)).toFixed(3)} USD como mucho). Un detalle que no pase usa un recorte de la portada.`
-              : `  Gasto: ≤ ${estimado.toFixed(3)} USD por intento con ${deps.generador.nombre}, como mucho ${MAX_INTENTOS_SEGUIDOS} intentos seguidos.`
+              ? `  FOTOS: ${fotos} (la portada y ${generadas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una). Podrás pedir otra portada después de ver la primera, dentro del límite de ${MAX_INTENTOS_SEGUIDOS} candidatas. Un detalle que no pase usa un recorte.`
+              : `  Gasto: ≤ ${estimado.toFixed(3)} USD por candidata con ${deps.generador.nombre}. Se hará una: podrás pedir otra después de verla, dentro del límite de ${MAX_INTENTOS_SEGUIDOS}.`
             : `  Generación por la API no disponible: ${disponible.motivo}.`,
           `  Para corregir: edita ${relative(deps.raiz, ruta)} («propuesta»). Para seguir: --confirmo`,
         ].join('\n'),
@@ -382,7 +386,9 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     nota(`Confirmado: elementos, prompt y hasta ${MAX_INTENTOS_SEGUIDOS} intentos${disponible.ok ? ` (≤ ${estimado.toFixed(3)} USD cada uno)` : ''}.`);
     const { bloqueo: _fuera, ...sinBloqueo } = encargo;
     return {
-      encargo: ir(sinBloqueo as EncargoPost, 'GENERAR', { autorizacion: { fecha: deps.ahora(), maxIntentos: MAX_INTENTOS_SEGUIDOS, estimadoPorIntentoUsd: estimado }, tomas }),
+      encargo: ir(sinBloqueo as EncargoPost, 'GENERAR', {
+        autorizacion: { fecha: deps.ahora(), maxIntentos: MAX_INTENTOS_SEGUIDOS, estimadoPorIntentoUsd: estimado, intentosPrevios: e.intentos.length }, tomas,
+      }),
       usaAccion: true,
     };
   },
@@ -488,7 +494,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const revision = await comprobarFotoNueva(
       { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
       { local: e.local, generado: ultimo.activo, real: e.activoReal as string, lista, piezas, ...(aire ? { aire } : {}), ...((await rutaDeEstilo(deps, e)) ? { referencia: (await rutaDeEstilo(deps, e))! } : {}) },
-    );
+    ).catch(error => {
+      if (!(error instanceof ErrorDeServicio)) throw error;
+      return { final: 'REVISAR' as const, motivos: ['La revisión automática no ha podido completarse. Compara la candidata con la foto original.'] };
+    });
     const intentos = e.intentos.map((i) => (i.n === ultimo.n ? { ...i, final: revision.final, motivos: revision.motivos } : i));
     nota(`Comprobación del intento ${ultimo.n}: ${revision.final}${revision.motivos.length ? ` (${revision.motivos.join('; ')})` : ''}.`);
     // F3.3: cada toma de detalle, por separado, frente a su propia lista (solo su elemento). Sin comparar la toma con la
@@ -514,51 +523,59 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       nota(`Comprobación de la toma de detalle ${t.n} («${t.elemento}»): ${r.final}${r.motivos.length ? ` (${r.motivos.join('; ')})` : ''}${r.final === 'DESCARTA' ? '. Su diapositiva usará un recorte de la portada.' : ''}.`);
       tomas.push({ ...t, intento: { ...t.intento, final: r.final, motivos: r.motivos } });
     }
-    const siguiente = trasComprobar(revision.final, intentos, e.autorizacion?.maxIntentos);
-    return { encargo: ir(e, siguiente.paso, { intentos, tomas, ...(siguiente.bloqueo ? { bloqueo: siguiente.bloqueo } : {}) }) };
+    return { encargo: ir(e, 'CONFIRMAR_FOTO', { intentos, tomas }) };
   },
 
   async CONFIRMAR_FOTO(deps, e, accion, nota) {
-    const ultimo = e.intentos[e.intentos.length - 1] as IntentoFoto;
-    const foto = await deps.activos.obtener(e.local, ultimo.activo);
+    if (accion.volverAlInventario) {
+      nota('El usuario volvió al inventario para ajustar la toma.');
+      return { encargo: ir(e, 'CONFIRMAR_ELEMENTOS'), parar: 'Revisa el inventario y la toma antes de autorizar otra candidata.', usaAccion: true };
+    }
+    const original = accion.foto === 'original';
+    const intento = typeof accion.foto === 'number' ? e.intentos.find(i => i.n === accion.foto) : e.intentos.at(-1);
     if (accion.rechazo) {
-      const intentos = e.intentos.map((i) => (i.n === ultimo.n ? { ...i, final: 'RECHAZADA' as const, motivos: [...i.motivos, `rechazada por ti: ${accion.rechazo}`] } : i));
-      nota(`Intento ${ultimo.n} rechazado: ${accion.rechazo}.`);
-      const siguiente = trasComprobar('DESCARTA', intentos, e.autorizacion?.maxIntentos);
-      return { encargo: ir(e, siguiente.paso, { intentos, ...(siguiente.bloqueo ? { bloqueo: siguiente.bloqueo } : {}) }), usaAccion: true };
+      if (!intento || original || intento.final === 'PENDIENTE') throw new ErrorDeUsuario('Elige una candidata revisada para rechazarla.');
+      const brief = await deps.productor?.leerBrief?.(e.proyecto);
+      const puedeGenerar = accion.reintentar !== false && deps.generador.disponible().ok && puedeReintentarFoto(e, brief?.presupuesto.fotos);
+      if (accion.reintentar && !puedeGenerar) throw new ErrorDeUsuario('No se puede pedir otra candidata con la autorización y el generador actuales.');
+      const intentos = e.intentos.map(i => i.n === intento.n ? { ...i, final: 'RECHAZADA' as const, motivos: [...i.motivos, `rechazada por ti: ${accion.rechazo}`] } : i);
+      nota(`Intento ${intento.n} rechazado: ${accion.rechazo}.`);
+      return {
+        encargo: ir(e, puedeGenerar ? 'GENERAR' : 'CONFIRMAR_FOTO', { intentos }),
+        ...(puedeGenerar ? {} : { parar: 'Revisa las fotos disponibles y elige con cuál continuar.' }),
+        usaAccion: true,
+      };
     }
     if (!accion.confirmo) {
+      const fotos = await Promise.all(e.intentos.map(async i => {
+        if (!await deps.activos.existe(e.local, i.activo)) return `  Intento ${i.n}: archivo no disponible.`;
+        const foto = await deps.activos.obtener(e.local, i.activo);
+        return `  Intento ${i.n}: ${relative(deps.raiz, foto.ruta)} · ${i.final}`;
+      }));
       return {
         encargo: e,
         parar: [
           'MIRA LA FOTO Y CONFIRMA',
-          `  Foto: ${relative(deps.raiz, foto.ruta)}`,
-          `  Comprobación automática: ${ultimo.final}${ultimo.motivos.length ? ` · ${ultimo.motivos.join('; ')}` : ''}`,
+          ...fotos,
+          ...(intento?.motivos.length ? [`  Avisos de la última candidata: ${intento.motivos.join('; ')}`] : []),
           ...(await Promise.all(
             e.tomas.filter((t) => t.real).map(async (t) => `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.elegida!)).ruta)}`),
           )),
           ...(await Promise.all(
             e.tomas.filter((t) => t.intento).map(async (t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.intento!.activo)).ruta)} · ${t.intento!.final}${t.intento!.final === 'DESCARTA' ? ' (no se usará: su diapositiva irá con un recorte de la portada)' : ''}`),
           )),
-          '  Si los elementos y la toma están bien: --confirmo (confirma también las tomas de detalle que no se descartaron) · si no: --rechazo "motivo"',
+          '  Elige con --confirmo [--foto N | --foto original]. Para descartar y pedir otra dentro del presupuesto: --rechazo "motivo".',
           ...(e.tomas.length ? ['  En un carrusel: --sin-toma N quita una toma de detalle que no vale · --portada-toma N hace la portada con esa toma (un producto aislado) y deja la foto para los recortes y el cierre'] : []),
         ].join('\n'),
       };
     }
-    await deps.activos.actualizar(e.local, ultimo.activo, {
-      fidelidad: {
-        frente: e.activoReal as string,
-        veredicto: 'CONSERVA',
-        metodo: `revisión humana en la orden única, tras la comprobación automática (${ultimo.final})`,
-        medidas: {},
-        notas: ultimo.motivos,
-        revisadoEn: deps.ahora(),
-      },
-    });
-    nota(`Foto del intento ${ultimo.n} confirmada.`);
+    if (!original && (!intento || intento.final === 'PENDIENTE')) throw new ErrorDeUsuario('Elige una foto que ya esté lista para revisar.');
+    const fotoElegida = original ? e.activoReal : intento?.activo;
+    if (!fotoElegida || !await deps.activos.existe(e.local, fotoElegida)) throw new ErrorDeUsuario('El archivo de la foto elegida no está disponible.');
+    if (original && e.usoFotoReal !== 'PUBLICABLE') throw new ErrorDeUsuario('La foto original está marcada solo para pruebas de composición.');
     const fuera = new Set(accion.sinToma ?? []);
     const tomas = e.tomas.map((t): TomaDelEncargo => {
-      if (fuera.has(t.n)) {
+      if (fuera.has(t.n) || (original && !t.real)) {
         const { elegida: _x, ...sin } = t;
         return sin;
       }
@@ -569,8 +586,23 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     if (confirmadas.length) nota(`Tomas de detalle confirmadas: ${confirmadas.map((t) => `${t.n} («${t.elemento}»)`).join(', ')}.`);
     const portada = accion.portadaToma !== undefined ? confirmadas.find((t) => t.n === accion.portadaToma) : undefined;
     if (accion.portadaToma !== undefined && !portada) return { encargo: e, parar: `La toma ${accion.portadaToma} no está confirmada: no puede ser la portada.`, usaAccion: true };
-    if (portada) nota(`La portada sale de la toma ${portada.n} («${portada.elemento}»); la foto del intento ${ultimo.n}, para los recortes y el cierre.`);
-    return { encargo: ir(e, 'MASCARA', { fotoElegida: ultimo.activo, tomas, ...(portada ? { portadaDeToma: portada.n } : {}) }), usaAccion: true };
+    if (original) {
+      nota('El usuario eligió la foto original para la composición.');
+    } else if (intento) {
+      await deps.activos.actualizar(e.local, intento.activo, {
+        fidelidad: {
+          frente: e.activoReal as string,
+          veredicto: 'CONSERVA',
+          metodo: `revisión humana en la orden única, tras la comprobación automática (${intento.final})`,
+          medidas: {},
+          notas: intento.motivos,
+          revisadoEn: deps.ahora(),
+        },
+      });
+      nota(`Foto del intento ${intento.n} confirmada por el usuario (comprobación automática: ${intento.final}).`);
+    }
+    if (portada) nota(`La portada sale de la toma ${portada.n} («${portada.elemento}»); los recortes y el cierre usan la foto confirmada.`);
+    return { encargo: ir(e, 'MASCARA', { fotoElegida, tomas, ...(portada ? { portadaDeToma: portada.n } : {}) }), usaAccion: true };
   },
 
   async MASCARA(deps, e, _a, nota) {

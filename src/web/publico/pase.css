@@ -152,6 +152,10 @@ summary{margin-bottom:6px;font-weight:560;font-size:.85rem}
 .comparacion-ficha{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-width:600px}
 .comparacion-ficha .foto-ficha{min-width:0}
 .comparacion-ficha img{height:clamp(115px,16vw,210px)}
+.selector-candidatas{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.ficha-cuerpo .selector-candidatas button{display:grid;gap:3px;padding:5px;text-align:center;background:none;font-size:.72rem}
+.ficha-cuerpo .selector-candidatas button[aria-pressed=true]{border-color:var(--cobre);background:#eee4d7;box-shadow:inset 0 0 0 1px var(--cobre)}
+.selector-candidatas img{width:72px;height:54px;object-fit:contain;background:#e6e2d8}
 .foto-ficha figcaption{font:10px var(--mono);margin-top:6px}
 .datos{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;margin:10px 0;font-size:.84rem}
 .datos dt{color:var(--suave)}

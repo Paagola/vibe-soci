@@ -6,7 +6,7 @@ import { editorDePropuesta, editorJsonDePropuesta, panelDeEspera, panelIntencion
 const FOTOS = 'image/jpeg,image/png,image/webp';
 const MAX_BYTES = 10 * 1024 * 1024;
 const CAMARAS = { GENERAL: 'General', MEDIO: 'Plano medio', PRIMER_PLANO: 'Primer plano', MACRO: 'Macro' };
-const VEREDICTOS = { PASA: 'Pasa la revisión', REVISAR: 'Revisión manual', DESCARTA: 'Descartada', RECHAZADA: 'Rechazada', PENDIENTE: 'Pendiente de revisar' };
+const VEREDICTOS = { PASA: 'Pasa la revisión', REVISAR: 'Sugiere revisión manual', DESCARTA: 'La revisión automática recomienda descartarla', RECHAZADA: 'Rechazada por ti', PENDIENTE: 'Pendiente de revisar' };
 const DICTAMENES = { APROBADA: 'Revisión editorial aprobada', CORREGIDA: 'Composición corregida tras la revisión', REVISION_HUMANA: 'Requiere revisión humana' };
 const etiqueta = (texto, control, detalle) => h('label', { class: 'campo' }, h('span', {}, texto), control, detalle ? h('small', { class: 'muted' }, detalle) : null);
 const opcion = (valor, nombre, seleccionado) => h('option', { value: valor, selected: seleccionado }, nombre);
@@ -178,21 +178,38 @@ function fichaElementos(ctx) {
 
 function fichaCandidata(ctx) {
   const d = ctx.d;
-  const candidata = d.intentos.find((i) => i.elegida) ?? d.intentos.at(-1);
+  const candidata = ctx.candidata;
   const fotoActual = d.espera.tipo === 'CONFIRMAR_FOTO';
+  const elegible = candidata && candidata.final !== 'PENDIENTE';
+  const puedeUsarOriginal = d.fotoSubida.registrada && d.fotoSubida.uso === 'PUBLICABLE';
+  const originalElegida = d.encargo.fotoElegida && d.encargo.fotoElegida === d.encargo.activoReal;
   const rechazo = h('textarea', { required: true, minlength: '3', maxlength: '300', rows: '3' });
-  const form = h('form', { onsubmit: (e) => { e.preventDefault(); ctx.avanzar(e.submitter, { rechazo: rechazo.value.trim() }); } }, etiqueta('Motivo del rechazo', rechazo), h('button', { type: 'submit', disabled: ctx.ocupada }, 'Rechazar candidata'));
-  const intentos = d.intentos.filter((i) => i !== candidata);
-  return [titulo(fotoActual ? 'Revisa la candidata' : 'Foto candidata'),
-    candidata?.disponible ? h('div', { class: 'comparacion-ficha', role: 'group', 'aria-label': 'Comparación de las fotografías' },
+  const coste = d.encargo.autorizacion?.estimadoPorIntentoUsd;
+  const form = h('form', { onsubmit: (e) => {
+    e.preventDefault();
+    ctx.avanzar(e.submitter, { rechazo: rechazo.value.trim(), foto: candidata.n, reintentar: true });
+  } }, etiqueta('Motivo del rechazo', rechazo),
+  nota(coste === undefined ? null : `Se generará una candidata. Coste estimado máximo: ${usd(coste)}.`),
+  h('button', { type: 'submit', disabled: ctx.ocupada }, 'Rechazar y generar otra'));
+  const intentos = d.intentos.filter(i => i.disponible);
+  return [titulo(fotoActual ? 'Elige la foto del post' : 'Foto candidata'),
+    candidata || d.fotoSubida.disponible ? h('div', { class: 'comparacion-ficha', role: 'group', 'aria-label': 'Comparación de las fotografías' },
       d.fotoSubida.disponible ? foto(ctx.urls.subida(480), ctx.urls.subida(), 'Foto original del local', 'Original') : null,
-      foto(ctx.urls.activo(candidata.activo, 480), ctx.urls.activo(candidata.activo), 'Foto candidata', `Candidata · Intento ${candidata.n} · ${VEREDICTOS[candidata.final] ?? candidata.final}`)) : null,
-    candidata?.motivos?.length ? detalles('Comprobación automática', lista(candidata.motivos)) : null,
-    fotoActual ? nota('Compara ambas fotografías. Comprueba los ingredientes, el recuento y la toma.') : !candidata ? nota('La candidata llegará después de revisar el inventario.') : null,
+      candidata ? foto(ctx.urls.activo(candidata.activo, 480), ctx.urls.activo(candidata.activo), `Foto candidata ${candidata.n}`, `Candidata ${candidata.n} · ${VEREDICTOS[candidata.final] ?? candidata.final}`) : null) : null,
+    intentos.length > 1 ? h('div', { class: 'selector-candidatas', role: 'group', 'aria-label': 'Candidatas disponibles' }, intentos.map(i =>
+      h('button', { type: 'button', 'data-intento': i.n, 'aria-pressed': String(i === candidata), onclick: () => ctx.elegirCandidata(i.n) },
+        h('img', { src: ctx.urls.activo(i.activo, 160), alt: '', loading: 'lazy' }), h('span', {}, `Candidata ${i.n}`)))) : null,
+    fotoActual ? accion(
+      elegible ? avanzar(ctx, `Usar candidata ${candidata.n}`, { confirmo: 'CONFIRMAR_FOTO', foto: candidata.n }) : null,
+      puedeUsarOriginal ? boton('Usar foto original', (e) => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO', foto: 'original' }), !elegible, ctx.ocupada) : null) : null,
+    candidata?.motivos?.length ? detalles(`Avisos de la comprobación (${candidata.motivos.length})`, lista(candidata.motivos)) : null,
+    originalElegida ? nota('Elegiste la foto original para el post.') : null,
+    fotoActual ? nota('La decisión sobre la foto es tuya. Puedes ampliarlas para comparar los ingredientes y la toma.') : !candidata ? nota('La candidata llegará después de revisar el inventario.') : null,
     d.espera.tipo === 'IMPORTAR_FOTO' ? [aviso(d.espera.motivo), accion(boton('Importar foto', () => ctx.abrirHerramientas(), true))] : null,
-    fotoActual ? [accion(avanzar(ctx, 'Confirmar esta foto', { confirmo: 'CONFIRMAR_FOTO' })), detalles('Rechazar y explicar', form)] : null,
-    d.espera.tipo === 'CONTINUAR' && ctx.actual === 'candidata' && !ctx.ocupada ? accion(avanzar(ctx, 'Continuar con la foto')) : null,
-    intentos.length ? detalles('Intentos anteriores', h('ul', { class: 'encargos-lista' }, intentos.map((i) => h('li', {}, i.disponible ? enlace(`Intento ${i.n} · ${VEREDICTOS[i.final] ?? i.final}`, ctx.urls.activo(i.activo), { target: '_blank', rel: 'noopener' }) : `Intento ${i.n} · ${VEREDICTOS[i.final] ?? i.final}`)))) : null];
+    fotoActual && elegible && d.espera.puedeReintentar ? detalles('Pedir otra candidata', form) : null,
+    fotoActual && !d.espera.puedeReintentar ? accion(
+      boton('Volver para ajustar la toma', e => ctx.avanzar(e.currentTarget, { volverAlInventario: true }), false, ctx.ocupada)) : null,
+    d.espera.tipo === 'CONTINUAR' && ctx.actual === 'candidata' && !ctx.ocupada ? accion(avanzar(ctx, 'Continuar con la foto')) : null];
 }
 
 function hojasDe(diseno) {

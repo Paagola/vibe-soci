@@ -219,7 +219,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
     },
     async antesDePaso(paso, e, accion) {
       const decide = (paso === 'CONFIRMAR_ELEMENTOS' && Boolean(accion.confirmo))
-        || (paso === 'CONFIRMAR_FOTO' && Boolean(accion.confirmo || accion.rechazo));
+        || (paso === 'CONFIRMAR_FOTO' && Boolean(accion.confirmo || accion.rechazo || accion.volverAlInventario));
       // Uno: con el productor encendido, las paradas solo las confirma el usuario (web o terminal interactiva).
       if (decide && accion.via !== 'web' && accion.via !== 'terminal') {
         if (await almacen.leer(e.proyecto)) {
@@ -237,7 +237,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
         return { parar: 'La comanda ha cambiado. Revisa la versión vigente antes de decidir.' };
       }
       pasoActual.set(e.proyecto, paso);
-      const r: ResultadoAntes = brief ? await comprobarAntes(paso, e, accion, brief) : {};
+      const r: ResultadoAntes = brief && !accion.volverAlInventario ? await comprobarAntes(paso, e, accion, brief) : {};
       desde.set(e.proyecto, e.historial.length + (r.notas?.length ?? 0));
       return r;
     },
@@ -249,7 +249,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
       let brief = await almacen.leer(proyecto);
       let paradaAnotada = false;
 
-      if (e.productorEditorial && brief?.editorial && e.paso === 'CONFIRMAR_ELEMENTOS' && e.bloqueo && _anterior.paso !== e.paso) {
+      if (e.productorEditorial && brief?.editorial && paso === 'CONFIRMAR_FOTO' && accion.volverAlInventario && e.paso === 'CONFIRMAR_ELEMENTOS') {
         // Antes de otra autorización se enseña el nuevo límite acumulado; el bloqueo impide generar entre tanto.
         const presupuesto = presupuestoAutorizado(0, { fotos: fotosUsadas(e), llamadasTexto: await llamadasUsadas(proyecto) });
         const renovado = cambiarBrief(brief, { ...brief, presupuesto }, deps.ahora());
@@ -345,14 +345,17 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
       }
 
       // Tres: lo que confirma o rechaza el usuario en la foto queda en la bitácora.
-      if (paso === 'CONFIRMAR_FOTO' && brief && e.paso !== 'CONFIRMAR_FOTO' && (accion.confirmo || accion.rechazo)) {
+      const decidioFoto = (accion.confirmo && e.paso !== 'CONFIRMAR_FOTO') || (accion.rechazo && e.intentos !== _anterior.intentos);
+      if (paso === 'CONFIRMAR_FOTO' && brief && decidioFoto) {
+        const revisada = typeof accion.foto === 'number' ? _anterior.intentos.find(i => i.n === accion.foto) : _anterior.intentos.at(-1);
         await anotar(
           proyecto,
           'usuario',
           paso,
           'CONFIRMACION',
           accion.rechazo ? `Foto rechazada (${accion.via}): ${accion.rechazo}` : `Foto confirmada (${accion.via}): ${e.fotoElegida}`,
-          { revisionVista: accion.revision, briefVersion: brief.version, candidata: _anterior.intentos.at(-1)?.activo, decision: accion.rechazo ? 'RECHAZADA' : 'CONFIRMADA' },
+          { revisionVista: accion.revision, briefVersion: brief.version, candidata: accion.foto === 'original' ? undefined : revisada?.activo,
+            fotoElegida: e.fotoElegida, decision: accion.rechazo ? 'RECHAZADA' : 'CONFIRMADA' },
         );
       }
 

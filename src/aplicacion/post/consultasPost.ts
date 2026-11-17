@@ -20,7 +20,7 @@ import { esOtraToma, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dom
 import { explicarBloqueo, type Explicacion } from '../../dominio/explicaciones.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
-import { EncargoPost, MAX_INTENTOS_SEGUIDOS, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
+import { EncargoPost, MAX_INTENTOS_SEGUIDOS, puedeReintentarFoto, recuperarRevisionFotografica, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { FamiliaBiblioteca, ReferenciaLocal } from '../../dominio/referencia.js';
 import { esExtensionDeFoto } from '../../dominio/reglas.js';
 import { describirProblemas } from '../../dominio/validacion.js';
@@ -67,7 +67,7 @@ export type EsperaPost =
   /** No se puede generar por la API: hay que importar una foto hecha a mano. */
   | { tipo: 'IMPORTAR_FOTO'; motivo: string }
   /** ■ Parada 2: confirmar o rechazar la foto nueva. */
-  | { tipo: 'CONFIRMAR_FOTO' }
+  | { tipo: 'CONFIRMAR_FOTO'; puedeReintentar: boolean }
   /** Faltan los tokens de la marca para el compositor (marcas/<local>/tokens.json). */
   | { tipo: 'TOKENS'; archivo: string }
   /** Falta la intención de diseño: la escribe una persona (hay un borrador). */
@@ -218,7 +218,7 @@ export async function listarEncargos(deps: Pick<DepsPost, 'proyectos'>): Promise
     const crudo = await leerJsonSiExiste(join(deps.proyectos, entrada.name, 'post.json')).catch(() => undefined);
     const encargo = EncargoPost.safeParse(crudo);
     // La carpeta manda: un post.json copiado a otra carpeta no es ese encargo.
-    if (encargo.success && encargo.data.proyecto === entrada.name) encargos.push(encargo.data);
+    if (encargo.success && encargo.data.proyecto === entrada.name) encargos.push(recuperarRevisionFotografica(encargo.data));
   }
   return encargos.sort((a, b) => b.creadoEn.localeCompare(a.creadoEn));
 }
@@ -313,18 +313,18 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
 
   const reservaPendiente = await generacionPendienteDeImportacion(deps.proyectos, e);
   const revisionEditorial = e.productorEditorial ? await leerRevisionEntrega(join(deps.proyectos, proyecto)) ?? null : null;
+  const brief = await deps.productor?.leerBrief?.(proyecto);
   const espera: EsperaPost = e.paso === 'COMPONER' && revisionEditorial?.estado === 'REVISION_HUMANA'
     ? { tipo: 'COMPOSICION', errores: revisionEditorial.incidencias.map(i => `${i.id} v${i.version}: ${i.motivo}`) }
     : reservaPendiente && !await deps.activos.existe(e.local, `${e.proyecto}-foto-${e.intentos.length + 1}`)
     ? { tipo: 'IMPORTAR_FOTO', motivo: 'El envío quedó reservado sin imagen recuperable. Importa la candidata para seguir.' }
-    : queEspera(e, { estado, errorReferencia, generador, diseno });
-  const brief = await deps.productor?.leerBrief?.(proyecto);
+    : queEspera(e, { estado, errorReferencia, generador, diseno, topeFotos: brief?.presupuesto.fotos });
   return { revisionEditorial, revision: await revisionDeEncargo(deps.proyectos, e, brief), brief: brief ?? null, editorial: brief?.editorial ?? null, encargo: e, fase: faseDe(e.paso), espera, local, referencia: { estado, elegida, conImagen: Boolean(elegida?.origen.archivo), error: errorReferencia, registradas, biblioteca }, fotoSubida, propuesta, generador, intentos, diseno };
 }
 
 function queEspera(
   e: EncargoPost,
-  contexto: { estado: EstadoReferencia | null; errorReferencia: string | null; generador: DetalleEncargo['generador']; diseno: DetalleDiseno },
+  contexto: { estado: EstadoReferencia | null; errorReferencia: string | null; generador: DetalleEncargo['generador']; diseno: DetalleDiseno; topeFotos?: number },
 ): EsperaPost {
   const { estado, errorReferencia, generador, diseno } = contexto;
   switch (e.paso) {
@@ -339,7 +339,7 @@ function queEspera(
     case 'GENERAR':
       return generador.disponible ? { tipo: 'CONTINUAR', paso: e.paso } : { tipo: 'IMPORTAR_FOTO', motivo: generador.motivo ?? 'el generador no está disponible' };
     case 'CONFIRMAR_FOTO':
-      return { tipo: 'CONFIRMAR_FOTO' };
+      return { tipo: 'CONFIRMAR_FOTO', puedeReintentar: generador.disponible && puedeReintentarFoto(e, contexto.topeFotos) };
     case 'INTENCION':
       if (!diseno.tokens.existe) return { tipo: 'TOKENS', archivo: diseno.tokens.archivo };
       // Sin borrador todavía, la orden lo crea al seguir. Con la intención escrita y válida, compone.

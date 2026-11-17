@@ -22,7 +22,7 @@ import { registrarReferencia } from '../src/aplicacion/referencias/registrarRefe
 import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
 import { RAIZ } from '../src/config.js';
 import { Marca } from '../src/dominio/modelos.js';
-import { descartesSeguidos, trasComprobar } from '../src/dominio/post.js';
+import { descartesSeguidos, puedeReintentarFoto } from '../src/dominio/post.js';
 import type { GeneradorFoto } from '../src/puertos/Foto.js';
 
 const FOTO = join(RAIZ, 'plantillas', 'fotos', 'gamba-roja-de-palamos.png');
@@ -66,12 +66,9 @@ const nuevo = (d: DepsPost, proyecto: string, referencia?: string) =>
   crearEncargo(d, { proyecto, local: 'asador-etxebarri', plato: 'Gamba roja de Palamós a la brasa con sal gruesa', foto: FOTO, ...(referencia ? { referencia } : {}), simulado: true });
 
 describe('Orden única · reglas del dominio', () => {
-  it('dos descartes seguidos bloquean; uno vuelve a generar; PASA y REVISAR van a tu parada', () => {
+  it('cuenta los descartes seguidos para interpretar bloqueos antiguos', () => {
     const i = (final: 'PASA' | 'DESCARTA' | 'RECHAZADA') => ({ n: 1, activo: 'x', final, motivos: [], costeUsd: 0 });
     assert.equal(descartesSeguidos([i('PASA'), i('DESCARTA'), i('RECHAZADA')]), 2);
-    assert.equal(trasComprobar('DESCARTA', [i('DESCARTA')]).paso, 'GENERAR');
-    assert.match(trasComprobar('DESCARTA', [i('DESCARTA'), i('DESCARTA')]).bloqueo ?? '', /2 fotos descartadas/);
-    assert.equal(trasComprobar('REVISAR', [i('DESCARTA')]).paso, 'CONFIRMAR_FOTO');
     assert.equal(cortarPorPalabras('Gamba roja de Palamós a la brasa con sal gruesa', 40), 'Gamba roja de Palamós a la brasa con sal');
   });
 });
@@ -119,22 +116,47 @@ describe('Orden única · de punta a punta (simulada)', () => {
     await readFile(join(carpeta, 'datos', 'disenos', 'gamba', 'post', 'v001', 'exportadas', '4x5.jpg'));
   });
 
-  it('dos fotos descartadas seguidas: se para; al volver a confirmar, otros dos intentos', async () => {
+  it('presenta cada descarte y permite escoger una foto del historial al agotar la autorización', async () => {
     const revisor = new RevisorVisualSimulado([{ checklist: { anadidos: ['un posavasos'] } }, { toma: { mismoPuntoDeVista: true } }, {}]);
     const generador = new GeneradorFotoSimulado();
     const d = deps({ revisor, generador });
     await nuevo(d, 'descartes', 'ref-post-30');
     await avanzar(d, 'descartes');
     let r = await avanzar(d, 'descartes', { confirmo: true });
-    assert.equal(generador.peticiones.length, 2, 'dos intentos, y no más');
-    assert.match(r.parada, /BLOQUEADO en CONFIRMAR_ELEMENTOS: Se han hecho 2 fotos seguidas.*para no gastar más/);
-    assert.match(r.parada, /aparece algo que no está en el plato: un posavasos/);
-    assert.deepEqual(r.encargo.intentos.map((i) => i.final), ['DESCARTA', 'DESCARTA']);
-    r = await avanzar(d, 'descartes');
-    assert.match(r.parada, /BLOQUEADO/, 'sin --confirmo no sigue');
-    r = await avanzar(d, 'descartes', { confirmo: true });
-    assert.equal(generador.peticiones.length, 3);
+    assert.equal(generador.peticiones.length, 1);
     assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.match(r.parada, /añadido: un posavasos/);
+    assert.deepEqual(r.encargo.intentos.map(i => i.final), ['DESCARTA']);
+    r = await avanzar(d, 'descartes');
+    assert.equal(generador.peticiones.length, 1, 'volver a abrir la orden no genera');
+    r = await avanzar(d, 'descartes', { rechazo: 'Hay un posavasos', foto: 1, reintentar: false });
+    assert.equal(generador.peticiones.length, 1, 'registrar solo el rechazo no genera');
+    r = await avanzar(d, 'descartes', { rechazo: 'Quiero comparar otra toma', foto: 1, reintentar: true });
+    assert.equal(generador.peticiones.length, 2, 'la decisión explícita autoriza una sola candidata');
+    assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.deepEqual(r.encargo.intentos.map(i => i.final), ['RECHAZADA', 'DESCARTA']);
+    assert.equal(puedeReintentarFoto(r.encargo), false);
+    await assert.rejects(avanzar(d, 'descartes', { rechazo: 'Sigue sin servir', reintentar: true }), /No se puede pedir otra candidata/);
+    // Un estado de la versión anterior también se puede recuperar sin generar ni alterar el dictamen original.
+    await guardarEncargo(d, { ...r.encargo, paso: 'CONFIRMAR_ELEMENTOS', bloqueo: '2 fotos descartadas seguidas: paro.' });
+    r = await avanzar(d, 'descartes', { confirmo: true, foto: 1 });
+    assert.equal(r.encargo.paso, 'INTENCION');
+    assert.equal(r.encargo.fotoElegida, 'descartes-foto-1');
+    assert.equal(generador.peticiones.length, 2);
+    assert.equal(r.encargo.intentos[1]?.final, 'DESCARTA');
+  });
+
+  it('puede continuar con la foto original del local sin generar otra', async () => {
+    const generador = new GeneradorFotoSimulado();
+    const d = deps({ generador });
+    await nuevo(d, 'usar-original', 'ref-post-30');
+    await avanzar(d, 'usar-original');
+    const revisada = await avanzar(d, 'usar-original', { confirmo: true });
+    const original = revisada.encargo.activoReal;
+    const r = await avanzar(d, 'usar-original', { confirmo: true, foto: 'original' });
+    assert.equal(r.encargo.paso, 'INTENCION');
+    assert.equal(r.encargo.fotoElegida, original);
+    assert.equal(generador.peticiones.length, 1);
   });
 
   it('si rechazas la foto, vuelve a generar', async () => {

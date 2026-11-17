@@ -8,6 +8,8 @@ export interface AccionVista {
   readonly revision?: string;
   readonly confirmo?: boolean;
   readonly rechazo?: string;
+  readonly foto?: 'original' | number;
+  readonly volverAlInventario?: boolean;
   readonly importar?: string;
   readonly via?: Via;
   readonly portadaToma?: number;

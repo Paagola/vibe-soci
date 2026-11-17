@@ -96,6 +96,13 @@ async function principal(): Promise<void> {
 }
 
 async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
+  const foto = values.foto === undefined || values.foto === 'original' ? values.foto : Number(values.foto);
+  if (foto !== undefined && (!values.confirmo || (foto !== 'original' && (!Number.isSafeInteger(foto) || foto < 1)))) {
+    throw new ErrorDeUsuario('Usa --confirmo --foto original o --confirmo --foto N.');
+  }
+  if (foto !== undefined && (await leerEncargo(deps, proyecto)).paso !== 'CONFIRMAR_FOTO') {
+    throw new ErrorDeUsuario('Solo puedes seleccionar una foto en la parada de revisión.');
+  }
   const via = viaDeLaTerminal({
     productor: Boolean(deps.productor),
     confirmaORechaza: Boolean(values.confirmo || values.rechazo),
@@ -104,6 +111,7 @@ async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
   const r = await avanzar(deps, proyecto, {
     ...(values.revision ? { revision: values.revision } : {}),
     confirmo: values.confirmo,
+    ...(foto !== undefined ? { foto } : {}),
     ...(values.rechazo ? { rechazo: values.rechazo } : {}),
     ...(values.importar ? { importar: values.importar } : {}),
     ...(values['portada-toma'] ? { portadaToma: Number(values['portada-toma']) } : {}),

@@ -580,14 +580,7 @@ function panelFoto(ctx) {
   const { d, urls } = ctx;
   const ultimo = d.intentos.at(-1);
   const revision = ultimo?.revision;
-  const max = d.encargo.autorizacion?.maxIntentos ?? d.generador.maxIntentos;
-  // Descartes seguidos antes de este intento: si lo rechazas, ¿queda otro autorizado?
-  let previos = 0;
-  for (const intento of d.intentos.slice(0, -1).reverse()) {
-    if (intento.final === 'DESCARTA' || intento.final === 'RECHAZADA') previos++;
-    else break;
-  }
-  const quedaOtro = previos + 1 < max;
+  const quedaOtro = d.espera.puedeReintentar;
 
   const motivo = h('textarea', { rows: '2', maxlength: '300', placeholder: 'Qué falla: «sobra una gamba», «es la misma toma», «la salsa no es la del plato»…' });
   const zonaRechazo = h(
@@ -595,7 +588,7 @@ function panelFoto(ctx) {
     { class: 'bloque', hidden: true },
     h('h3', {}, 'Rechazar la foto'),
     motivo,
-    h('p', { class: 'nota' }, quedaOtro ? `Se hará otra foto (intento ${d.intentos.length + 1}) dentro de lo que autorizaste.` : 'Es el último intento autorizado: la orden se parará y volverás a la parada de elementos.'),
+    h('p', { class: 'nota' }, quedaOtro ? `Se hará una candidata (intento ${d.intentos.length + 1}) dentro de lo que autorizaste.` : 'Se guardará el rechazo y podrás seguir con otra foto disponible.'),
     h(
       'div',
       { class: 'acciones' },
@@ -605,7 +598,7 @@ function panelFoto(ctx) {
           class: 'peligro lanza-trabajo',
           onclick: (evento) => {
             if (motivo.value.trim().length < 3) return avisar('Di por qué la rechazas (mínimo 3 caracteres).', 'error');
-            ctx.avanzar(evento.currentTarget, { rechazo: motivo.value.trim() });
+            ctx.avanzar(evento.currentTarget, { rechazo: motivo.value.trim(), reintentar: Boolean(quedaOtro) });
           },
         },
         quedaOtro ? 'Rechazar y probar otra' : 'Rechazar',
@@ -680,6 +673,9 @@ function panelFoto(ctx) {
       'div',
       { class: 'barra-acciones' },
       h('button', { class: 'primario lanza-trabajo', onclick: (e) => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO' }) }, 'Confirmar esta foto'),
+      d.fotoSubida.registrada && d.fotoSubida.uso === 'PUBLICABLE'
+        ? h('button', { class: 'secundario lanza-trabajo', onclick: e => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO', foto: 'original' }) }, 'Usar foto original') : null,
+      h('a', { href: `/pase.html?proyecto=${encodeURIComponent(d.encargo.proyecto)}` }, 'Comparar todas las candidatas'),
       h('button', { class: 'secundario', onclick: () => ((zonaRechazo.hidden = false), motivo.focus()) }, 'Rechazarla…'),
       h('span', { class: 'nota empuja' }, `Intento ${ultimo.n} · ${usd(ultimo.costeUsd)}`),
     ),

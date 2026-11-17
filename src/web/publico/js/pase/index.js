@@ -31,6 +31,7 @@ let proyecto;
 let seccion = 'mesa';
 let seleccion = 'original';
 let elemento = null;
+let intentoFoto = null;
 let hoja = null;
 let vistaPrevia;
 let seguimiento;
@@ -57,7 +58,8 @@ function inventario() {
 
 function contexto() {
   return {
-    d, proyecto, seleccion, elemento, hoja: hoja ?? (pideRevision(d) ? d.revisionEditorial.incidencias[0]?.id : null), vistaPrevia, locales, simulado: procesos?.modo === 'SIMULADO',
+    d, proyecto, seleccion, elemento, candidata: candidataVisible(), elegirCandidata,
+    hoja: hoja ?? (pideRevision(d) ? d.revisionEditorial.incidencias[0]?.id : null), vistaPrevia, locales, simulado: procesos?.modo === 'SIMULADO',
     actual: pasoDe(d), urls: proyecto ? urlsDe(proyecto) : null, ocupada: Boolean(ocupado || d?.trabajo?.estado === 'EN_CURSO'),
     faltaEditorial: Boolean(d?.encargo.productorEditorial && !d.editorial),
     seleccionar, elegirHoja, abrirHerramientas, confirmarInventario, enviarSubida, usarReferencia, guardarPropuesta, crearLocalDeEjemplo,
@@ -121,7 +123,7 @@ async function iniciarMotor() {
 function materialesDe() {
   if (!d) return {};
   const ctx = contexto();
-  const foto = d.intentos.find((intento) => intento.elegida) ?? d.intentos.at(-1);
+  const foto = ctx.candidata;
   const version = hojaDe(ctx)?.version;
   const portada = portadaDe(version);
   const render = portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null;
@@ -130,9 +132,28 @@ function materialesDe() {
     referencia: { url: d.referencia.conImagen ? ctx.urls.referencia(480) : null, original: ctx.urls.referencia() },
     elementos: { lineas: inventario().map((el) => el.nombre) },
     candidata: { url: foto?.disponible ? ctx.urls.activo(foto.activo, 680) : null, original: foto?.disponible ? ctx.urls.activo(foto.activo) : null },
-    composicion: { url: vistaPrevia ?? render, original: vistaPrevia ?? (portada ? ctx.urls.diseno(portada) : null), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
+    composicion: { url: vistaPrevia ?? render ?? originalElegida(ctx), original: vistaPrevia ?? (portada ? ctx.urls.diseno(portada) : originalElegida(ctx)), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
     entrega: { url: d.encargo.paso === 'HECHO' ? render : null, original: portada ? ctx.urls.diseno(portada) : null },
   };
+}
+
+function originalElegida(ctx) {
+  const e = ctx.d.encargo;
+  return e.fotoElegida && e.fotoElegida === e.activoReal ? ctx.urls.subida() : null;
+}
+
+function candidataVisible() {
+  return d?.intentos.find(i => i.disponible && i.n === intentoFoto) ??
+    d?.intentos.find(i => i.disponible && i.elegida) ??
+    d?.intentos.findLast(i => i.disponible);
+}
+
+function elegirCandidata(n) {
+  if (!d?.intentos.some(i => i.n === n && i.disponible)) return;
+  intentoFoto = n;
+  pintarMateriales();
+  pintarFicha();
+  $('ficha').querySelector(`[data-intento="${n}"]`)?.focus({ preventScroll: true });
 }
 
 function pintarMateriales() {
@@ -357,6 +378,7 @@ async function abrir(id, opciones = {}) {
   cargando = Boolean(id);
   errorInicial = null;
   hoja = null;
+  intentoFoto = null;
   vistaPrevia = undefined;
   seleccion = 'original';
   seccion = 'mesa';
@@ -407,6 +429,7 @@ async function recargar(saltar = false, esperado = proyecto) {
   const nuevo = await api('GET', `/encargos/${encodeURIComponent(esperado)}`);
   if (fecha !== turno) return;
   const antes = pasoDe(d);
+  if (nuevo.intentos.length !== d?.intentos.length) intentoFoto = null;
   const requiereCorreccion = pideRevision(nuevo);
   d = nuevo;
   const despues = pasoDe(d);
@@ -427,12 +450,24 @@ async function seguir(trabajo) {
   seguimiento = marca;
   trabajoSinSeguimiento = undefined;
   const fuera = () => turno !== fecha || seguimiento !== marca;
+  let pidiendoCandidata = false;
   try {
     const final = await seguirTrabajo(trabajo.id, (nuevo) => {
       if (!d || fuera()) return;
       d.trabajo = nuevo;
       pintarActividad();
       pintarTrabajo(nuevo);
+      if (nuevo.estado === 'EN_CURSO' && nuevo.paso === 'COMPROBAR' && !pidiendoCandidata) {
+        pidiendoCandidata = true;
+        api('GET', `/encargos/${encodeURIComponent(proyecto)}`).then(detalle => {
+          if (fuera() || d?.trabajo?.estado !== 'EN_CURSO' || d.trabajo.paso !== 'COMPROBAR' ||
+              detalle.intentos.length <= d.intentos.length) return;
+          if (seccion === 'mesa' && seleccion === pasoDe(d)) seleccion = 'candidata';
+          intentoFoto = null;
+          d = { ...detalle, trabajo: d.trabajo };
+          pintarTodo();
+        }).catch(() => { pidiendoCandidata = false; });
+      }
     }, fuera);
     if (fuera()) return;
     if (final.estado === 'ERROR') avisar(final.error?.message ?? 'El trabajo ha fallado.', 'error');
@@ -485,7 +520,7 @@ async function ejecutar(boton, tipo, fn, mostrarError) {
 async function lanzar(boton, metodo, ruta, cuerpo) {
   if (d?.trabajo?.estado === 'EN_CURSO') return;
   const fecha = turno;
-  const accion = d?.revision && (metodo === 'PUT' || cuerpo?.confirmo || cuerpo?.rechazo) ? { ...cuerpo, revision: d.revision } : cuerpo;
+  const accion = d?.revision && (metodo === 'PUT' || cuerpo?.confirmo || cuerpo?.rechazo || cuerpo?.volverAlInventario) ? { ...cuerpo, revision: d.revision } : cuerpo;
   const respuesta = await ejecutar(boton, 'avance', () => api(metodo, ruta, accion));
   if (fecha !== turno || !respuesta) return;
   if (respuesta.trabajo) {
