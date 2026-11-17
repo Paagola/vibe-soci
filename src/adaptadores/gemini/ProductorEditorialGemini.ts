@@ -27,6 +27,12 @@ estado y marca. No añadas precios, premios, eslóganes, logos ni afirmaciones.
 
 Devuelve un objeto JSON con "esquema": "post/editorial@1", "hiloVisual": "COLOR" | "LUZ" | "ENCUADRE"
 y "diapositivas". Cada página tiene "n", "papel" ("portada", "detalle" o "cierre") y "tratamiento" de esta lista:
+- "CARTEL" (solo portada): "estructura" ("EJE_VERTICAL" o "CABECERA"), "superficie" ("PAPEL" o "FOTOGRAFIA"),
+  "texto" (una referencia al dato que funciona como titular) y "firma" (booleano, nombre real del local).
+  Si la ficha organiza dos verticales o gira una palabra, elige EJE_VERTICAL. Para una palabra detrás del producto,
+  prueba CABECERA. PAPEL conserva la comida y utiliza su silueta sobre una tinta de la casa si hay máscara.
+  FOTOGRAFIA mantiene la escena. Decide por la geometría y por el peso del titular que observas.
+  Las voces y el orden de lectura se trasladan a datos del local. El color, la oferta y la frase de la muestra pertenecen a su autor.
 - "FOTO_LIMPIA" (portada o detalle): la foto, sin texto ni otros campos.
 - "FOTO_TEXTO_AL_BORDE" (portada o detalle): "borde" ("SUPERIOR" o "INFERIOR"), "gesto" ("CONTENIDO" o "ANUNCIO")
   y "texto" (una referencia). Solo para un detalle de la foto fuente: si un borde circular visible permite seguir

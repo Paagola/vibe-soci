@@ -177,7 +177,10 @@ export class ResolutorDiseno {
           break;
         }
         case 'texto': {
-          const resuelta = this.resolverTexto(capa, comun, rect(capa.caja), estilo(capa.estilo), color, texto(capa.texto));
+          const completo = texto(capa.texto);
+          const contenido = capa.linea === undefined ? completo : completo.split('\n')[capa.linea];
+          if (contenido === undefined || (capa.linea !== undefined && !contenido.trim())) throw new RangeError(`«${capa.id}» apunta a una línea de texto vacía o inexistente.`);
+          const resuelta = this.resolverTexto(capa, comun, rect(capa.caja), estilo(capa.estilo), color, contenido);
           const marcas = tinta(capa, resuelta.estilo.color);
           if (marcas) {
             const menor = Math.min(...resuelta.lineas.map((l) => this.motor.alturaMayusculas(resuelta.estilo, l.tamano)));

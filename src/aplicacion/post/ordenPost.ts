@@ -618,7 +618,9 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     if (e.productorEditorial) {
       const brief = await deps.productor?.leerBrief?.(e.proyecto);
       if (!brief?.editorial) return { encargo: e, parar: 'Falta el plan editorial aprobado de la comanda.' };
-      await materializarEditorial(carpeta, tokens, e, brief);
+      const medidor = deps.disenador?.medidor;
+      await materializarEditorial(carpeta, tokens, e, brief, medidor
+        ? async id => medidor.medir(await deps.activos.obtener(e.local, id)) : undefined);
       nota(`Composición lista: ${brief.editorial.plan.diapositivas.length} página(s), brief v${brief.version}.`);
       return { encargo: ir(e, 'COMPONER') };
     }

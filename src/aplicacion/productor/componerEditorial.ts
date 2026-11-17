@@ -7,19 +7,21 @@ import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import type { DiapositivaEditorial } from '../../dominio/editorial.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
-import { esquemaDelPlanEditorial, textoConfirmado } from './editorial.js';
+import type { MapaDeFoto } from '../../dominio/diseno/mapaDeFoto.js';
+import { componerCartel } from './componerCartel.js';
+import { cartelDePortada, fichaDeCartel, esquemaDelPlanEditorial, textoConfirmado } from './editorial.js';
 
 const lienzo = { x: 0, y: 0, w: 1, h: 1 };
 
 function intencionDePagina(
-  e: EncargoPost, brief: BriefDelEncargo, pagina: DiapositivaEditorial, marca: Tokens,
+  id: string, e: EncargoPost, brief: BriefDelEncargo, pagina: DiapositivaEditorial, marca: Tokens, mapa?: MapaDeFoto,
 ): Intencion {
-  const id = pagina.papel === 'portada' ? 'post' : pagina.papel === 'cierre' ? 'cierre' : `detalle-${pagina.n - 1}`;
   const propia = e.tomas.find(t => t.real && t.elemento === brief.plan[pagina.n - 1]?.elemento)?.elegida;
   // Los puntos del recorte se midieron en la foto original. Otras tomas pueden tener un encuadre distinto.
   const arco = pagina.tratamiento === 'FOTO_TEXTO_AL_BORDE' ? pagina.arco : undefined;
   const activo = pagina.tratamiento === 'RECORTE_DETALLE' || arco ? e.activoReal : propia ?? e.fotoElegida;
   if (!activo) throw new ErrorDeUsuario('Falta la fotografía aprobada para componer.');
+  if (pagina.tratamiento === 'CARTEL') return componerCartel(pagina, brief, marca, activo, mapa);
   const colores = Object.values(marca.colores);
   const fondo = colores.sort((a, b) => contraste(b, '#ffffff') - contraste(a, '#ffffff'))[0] ?? '#20201C';
   const clara = [...colores, '#ffffff'].sort((a, b) => contraste(b, fondo) - contraste(a, fondo))[0]!;
@@ -67,7 +69,7 @@ function intencionDePagina(
 }
 
 /** Publica primero cada intención y al final el índice completo. Una reanudación conserva las correcciones guardadas. */
-export async function materializarEditorial(carpeta: string, tokens: string, e: EncargoPost, brief: BriefDelEncargo): Promise<void> {
+export async function materializarEditorial(carpeta: string, tokens: string, e: EncargoPost, brief: BriefDelEncargo, medir?: (activo: string) => Promise<MapaDeFoto>): Promise<void> {
   if (!brief.editorial || brief.hechos.inventario.estado !== 'CONFIRMADO' || brief.editorial.inventarioSha256 !== brief.hechos.inventario.huella) {
     throw new ErrorDeUsuario('La composición requiere un plan y su inventario confirmado.');
   }
@@ -75,13 +77,18 @@ export async function materializarEditorial(carpeta: string, tokens: string, e: 
   const marca = Tokens.parse(JSON.parse(await readFile(tokens, 'utf8')));
   await mkdir(join(carpeta, 'intenciones'), { recursive: true });
   const diapositivas = [];
-  for (const pagina of plan.diapositivas) {
-    const intencion = intencionDePagina(e, brief, pagina, marca);
-    const archivo = `intenciones/${intencion.id}.json`;
+  const ficha = fichaDeCartel(brief.editorial.fichaReferencia);
+  for (const original of plan.diapositivas) {
+    const pagina = cartelDePortada(original, ficha, brief) ?? original;
+    const id = pagina.papel === 'portada' ? 'post' : pagina.papel === 'cierre' ? 'cierre' : `detalle-${pagina.n - 1}`;
+    const archivo = `intenciones/${id}.json`;
     try {
       Intencion.parse(JSON.parse(await readFile(join(carpeta, archivo), 'utf8')));
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      const mapa = pagina.tratamiento === 'CARTEL' && e.fotoElegida ? await medir?.(e.fotoElegida) : undefined;
+      const intencion = intencionDePagina(id, e, brief, pagina, marca, mapa);
+      comprobarEdicionEditorial(intencion, e, brief);
       await escribirJsonAtomico(join(carpeta, archivo), intencion);
     }
     diapositivas.push({ intencion: archivo, papel: pagina.papel });
@@ -110,11 +117,22 @@ export function comprobarEdicionEditorial(intencion: Intencion, e: EncargoPost, 
   const comprobarReferencia = (valor: string | undefined) => {
     if (valor && !(valor.startsWith('@') && Object.hasOwn(intencion.textos, valor.slice(1)))) verificar(valor);
   };
+  const lineas = new Map<string, Set<number>>();
   for (const capa of intencion.capas) {
     if ('texto' in capa) comprobarReferencia(capa.texto);
+    if (capa.tipo === 'texto' && capa.linea !== undefined && !capa.oculta && capa.opacidad > 0) {
+      const completo = capa.texto.startsWith('@') ? intencion.textos[capa.texto.slice(1)] : capa.texto;
+      if (!completo?.split('\n')[capa.linea]?.trim()) throw new ErrorDeUsuario('La voz tipográfica apunta a una línea inexistente.');
+      const visibles = lineas.get(completo) ?? new Set<number>();
+      visibles.add(capa.linea);
+      lineas.set(completo, visibles);
+    }
     if (capa.tipo === 'sello') {
       comprobarReferencia(capa.anillo?.texto);
       capa.lineas.forEach(linea => comprobarReferencia(linea.texto));
     }
+  }
+  for (const [completo, visibles] of lineas) {
+    if (visibles.size !== completo.split('\n').length) throw new ErrorDeUsuario('Las voces deben conservar el dato completo del brief.');
   }
 }

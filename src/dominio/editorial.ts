@@ -6,9 +6,19 @@ export const ReferenciaTextoEditorial = z.discriminatedUnion('fuente', [
 ]);
 export type ReferenciaTextoEditorial = z.infer<typeof ReferenciaTextoEditorial>;
 
+export const CartelEditorial = z.strictObject({
+  n: z.int().positive(), papel: z.literal('portada'), tratamiento: z.literal('CARTEL'),
+  estructura: z.enum(['EJE_VERTICAL', 'CABECERA']),
+  superficie: z.enum(['PAPEL', 'FOTOGRAFIA']),
+  texto: ReferenciaTextoEditorial,
+  firma: z.boolean(),
+});
+export type CartelEditorial = z.infer<typeof CartelEditorial>;
+
 const n = z.int().positive();
 const coordenada = z.number().min(0).max(1);
 export const DiapositivaEditorial = z.discriminatedUnion('tratamiento', [
+  CartelEditorial,
   z.strictObject({
     n,
     papel: z.enum(['portada', 'detalle']),

@@ -28,3 +28,12 @@ En este carrusel conceptual, una línea ondulada cruza entre dos cuadros y manti
 - **Ritmo de la serie.** Decide qué añade cada página y qué atributo del restaurante permanece entre páginas. Revisa el post en su formato final, el recorte y la miniatura. Si dos páginas cumplen la misma función, cambia la escala o reúne su contenido.
 
 Al plantear una dirección, identifica el recurso más obvio y prueba una alternativa que nazca del producto o del local. Conserva la que se entiende mejor al verla y anota el motivo para decidir en futuros encargos. [Antialgorithm](https://github.com/mankidev/antialgorithm)
+
+## Cartel de producto
+
+Una letra puede ocupar tanto espacio como el plato. La exposición *How Posters Work* de Cooper Hewitt propone observar cómo la escala, la superposición y el uso del texto como imagen dirigen la mirada. En la Nueva Tipografía, el bloque impreso y la fotografía se equilibran por su posición asimétrica. Para la comanda, toma esa relación espacial y asígnala al nombre confirmado y a la forma de la comida. [Cooper Hewitt, How Posters Work](https://www.cooperhewitt.org/2015/02/05/cooper-hewitt-to-present-special-exhibition-how-posters-work/) · [MoMA, The New Typography](https://www.moma.org/calendar/exhibitions/1013)
+
+- **Dos verticales.** Cuando la ficha gira la palabra, busca la columna tranquila de la toma elegida. La palabra ocupa ese canto y el plato ocupa el otro. Conserva la lectura completa si la silueta cruza alguna letra.
+- **Una cabecera.** Si la foto sostiene la escena, haz que su silueta alcance la base del nombre. Una inflexión corta del mismo nombre admite otra voz. La firma queda en tercer rango. El color sale del local o de la comida.
+- **Materia.** Una fibra fina sostiene la superficie de papel. Un canto rasgado puede alojar la firma. En una toma sin máscara, conserva la fotografía en un marco completo y reserva fuera de él el espacio de lectura.
+- **Lectura en el móvil.** Sigue las astas, las curvas y el pie de cada letra. Comprueba el nombre completo y el plato en 4:5. En este estudio se mide al menos 3:1 para el titular y 4,5:1 para la firma. En la maqueta con silueta, examina cualquier cruce incluso cuando el promedio de tinta oculta permita leer el resto.

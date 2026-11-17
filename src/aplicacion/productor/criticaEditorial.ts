@@ -2,7 +2,10 @@ import { z } from 'zod';
 import type { BriefDelEncargo } from '../../dominio/brief.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import { validar } from '../../dominio/validacion.js';
-import { esquemaDelPlanEditorial } from './editorial.js';
+import type { Intencion } from '../../dominio/diseno/intencion.js';
+import { lienzoDe, rectDeCaja } from '../../dominio/diseno/reticula.js';
+import type { DiapositivaEditorial } from '../../dominio/editorial.js';
+import { cartelDePortada, fichaDeCartel, esquemaDelPlanEditorial } from './editorial.js';
 
 interface ImagenEditorial {
   id: string;
@@ -42,6 +45,7 @@ export const CorreccionEditorial = z.discriminatedUnion('tipo', [
   z.strictObject({ tipo: z.literal('MEJORAR_CONTRASTE'), dato }),
   z.strictObject({ tipo: z.literal('AJUSTAR_TAMANO'), dato, factor: z.number().min(0.8).max(1.3) }),
   z.strictObject({ tipo: z.literal('AJUSTAR_MARGEN'), margen: z.number().min(0.05).max(0.14) }),
+  z.strictObject({ tipo: z.literal('DESPEJAR_TITULAR') }),
   z.strictObject({ tipo: z.literal('REVISION_HUMANA') }),
 ]);
 export type CorreccionEditorial = z.infer<typeof CorreccionEditorial>;
@@ -82,7 +86,8 @@ export function esquemaDeCriticaEditorial(encargo: EncargoCriticaEditorial) {
   if (referencia && idReferencia && referencia.id !== idReferencia) {
     throw new ErrorDeUsuario('La ficha de referencia no coincide con la referencia del brief.');
   }
-  const vistas = new Map(paginas.map((pagina, i) => [pagina.id, { version: pagina.version, editorial: diapositivas[i]! }]));
+  const ficha = fichaDeCartel(editorial.fichaReferencia);
+  const vistas = new Map(paginas.map((pagina, i) => [pagina.id, { version: pagina.version, editorial: cartelDePortada(diapositivas[i]!, ficha, brief) ?? diapositivas[i]! }]));
 
   return CriticaEditorial.superRefine(({ incidencias }, ctx) => {
     const revisadas = new Set<string>();
@@ -100,6 +105,9 @@ export function esquemaDeCriticaEditorial(encargo: EncargoCriticaEditorial) {
       const datos = tratamiento.tratamiento === 'CIERRE_TEXTO' ? tratamiento.textos.length
         : tratamiento.tratamiento === 'FOTO_TEXTO_AL_BORDE' && !tratamiento.arco ? 1 : 0;
       switch (correccion.tipo) {
+        case 'DESPEJAR_TITULAR':
+          if (tratamiento.tratamiento !== 'CARTEL') problema('correccion', 'El ajuste del titular pertenece a una portada de cartel.');
+          break;
         case 'AJUSTAR_RECORTE':
           if (tratamiento.tratamiento !== 'RECORTE_DETALLE' || !originales?.length) {
             problema('correccion', 'Solo se puede ajustar el recorte de un detalle con su foto fuente disponible.');
@@ -125,4 +133,25 @@ export class CriticoEditorialSimulado implements CriticoEditorial {
   async revisar(encargo: EncargoCriticaEditorial): Promise<CriticaEditorial> {
     return esquemaDeCriticaEditorial(encargo).parse({ incidencias: this.incidencias });
   }
+}
+
+/** Si la traducción se perdió entre agentes, una foto con un pie legible tampoco satisface un plan de cartel. */
+export function revisarEstructuraDelCartel(
+  brief: BriefDelEncargo, pagina: DiapositivaEditorial, intencion: Intencion,
+): IncidenciaEditorial | undefined {
+  const cartel = cartelDePortada(pagina, fichaDeCartel(brief.editorial?.fichaReferencia), brief);
+  if (!cartel) return undefined;
+  const lienzo = lienzoDe(intencion.lienzo.formato);
+  const legible = intencion.capas.some(c => {
+    if (c.oculta || c.opacidad === 0 || c.tipo !== 'texto') return false;
+    const caja = rectDeCaja(c.caja, lienzo, intencion.reticula);
+    return cartel.estructura === 'EJE_VERTICAL'
+      ? Math.abs(c.rotacion + c.giro) >= 60 && caja.h >= lienzo.alto * 0.40
+      : caja.y < lienzo.alto * 0.32 && caja.w >= lienzo.ancho * 0.50 && caja.h >= lienzo.alto * 0.095;
+  });
+  if (legible) return undefined;
+  return { id: intencion.id, version: intencion.version, correccion: { tipo: 'REVISION_HUMANA' },
+    motivo: cartel.estructura === 'EJE_VERTICAL'
+      ? 'El cartel perdió su eje. Falta una palabra girada que ocupe la columna junto a la foto.'
+      : 'El cartel perdió la jerarquía de cabecera. Falta el bloque tipográfico principal junto al producto.' };
 }

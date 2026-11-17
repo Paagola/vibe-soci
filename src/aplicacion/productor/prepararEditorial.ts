@@ -5,7 +5,7 @@ import { cambiarBrief, type BriefDelEncargo } from '../../dominio/brief.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
 import type { AlmacenBrief } from '../../puertos/AlmacenBrief.js';
-import { esquemaDelPlanEditorial, type ProductorEditorial } from './editorial.js';
+import { cartelDePortada, fichaDeCartel, esquemaDelPlanEditorial, type ProductorEditorial } from './editorial.js';
 
 export interface DireccionEditorial {
   productor: ProductorEditorial;
@@ -33,9 +33,11 @@ export async function prepararPlanEditorial(
     direccion.oficio(), direccion.ficha(e),
   ]);
   await reservar();
-  const plan = esquemaDelPlanEditorial(brief).parse(await direccion.productor.proponer({
+  const propuesto = esquemaDelPlanEditorial(brief).parse(await direccion.productor.proponer({
     brief, foto: { bytes, mimeType: 'image/jpeg' }, oficio, ...(fichaReferencia ? { fichaReferencia } : {}),
   }));
+  const ficha = fichaDeCartel(fichaReferencia);
+  const plan = { ...propuesto, diapositivas: propuesto.diapositivas.map(d => cartelDePortada(d, ficha, brief, true) ?? d) };
   const vigente = await almacen.leer(e.proyecto);
   if (vigente?.version !== brief.version) throw new ErrorDeUsuario('El brief ha cambiado durante la lectura editorial. Revisa la nueva versión.');
   const editorial = {
@@ -51,6 +53,7 @@ export async function prepararPlanEditorial(
     const original = d.tratamiento === 'FOTO_TEXTO_AL_BORDE' && d.arco;
     const foto = d.tratamiento === 'RECORTE_DETALLE' ? 'RECORTE' : original || (propia && d.papel === 'detalle') ? 'FOTO_DEL_DUENO' : 'FOTO_ELEGIDA';
     const para = {
+      CARTEL: 'cartel tipográfico con el nombre confirmado y la fotografía elegida',
       FOTO_LIMPIA: 'fotografía a sangre, sin texto',
       FOTO_TEXTO_AL_BORDE: original ? 'texto editable en arco sobre el borde observado del original' : 'dato del brief compuesto al borde de la fotografía',
       RECORTE_DETALLE: 'detalle por recorte de la foto original sobre el punto observado',

@@ -13,7 +13,7 @@ import type { PiezaCompuesta } from '../../puertos/ComponedorDePiezas.js';
 import { leerPlan, rutasDeIntencion } from '../post/consultasPost.js';
 import type { DepsPost } from '../post/ordenPost.js';
 import { comprobarEdicionEditorial } from './componerEditorial.js';
-import { CriticaEditorial, esquemaDeCriticaEditorial, type CorreccionEditorial } from './criticaEditorial.js';
+import { CriticaEditorial, esquemaDeCriticaEditorial, revisarEstructuraDelCartel, type CorreccionEditorial } from './criticaEditorial.js';
 
 const Incidencias = CriticaEditorial.shape.incidencias;
 const VersionVista = z.object({ id: z.string(), version: z.int().positive(), sha256: z.string() });
@@ -42,6 +42,18 @@ function corregirPagina(base: Intencion, correccion: CorreccionEditorial): Inten
   const nueva = structuredClone(base);
   switch (correccion.tipo) {
     case 'REVISION_HUMANA': return undefined;
+    case 'DESPEJAR_TITULAR': {
+      const titular = nueva.capas.find(c => c.id === 'titular' && c.tipo === 'texto');
+      if (titular?.tipo !== 'texto' || !('x' in titular.caja)) return undefined;
+      const caja = titular.caja;
+      if (titular.rotacion) {
+        if (titular.rotacion > 0) caja.x += caja.w * 0.15;
+        caja.w *= 0.85;
+      } else {
+        caja.h *= 0.81;
+      }
+      break;
+    }
     case 'AJUSTAR_RECORTE': {
       const foto = nueva.capas.find(c => c.tipo === 'imagen');
       if (!foto || !base.id.startsWith('detalle-')) return undefined;
@@ -80,7 +92,8 @@ const sha = (datos: Buffer | string) => createHash('sha256').update(datos).diges
 const vista = (ruta: string) => sharp(ruta).rotate().resize(800, 960, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 84 }).toBuffer();
 
 /** Una crítica por conjunto de píxeles/versiones. La devolución sólo cambia intenciones identificadas por el crítico. */
-export async function revisarEntrega(deps: DepsPost, e: EncargoPost, brief: BriefDelEncargo, pieza: PiezaCompuesta): Promise<'COMPONER' | RevisionEntrega> {
+export async function revisarEntrega(deps: Pick<DepsPost, 'proyectos' | 'activos' | 'criticoEditorial'>, e: EncargoPost, brief: BriefDelEncargo, pieza: PiezaCompuesta): Promise<'COMPONER' | RevisionEntrega> {
+  if (!brief.editorial) throw new ErrorDeUsuario('La revisión necesita el plan editorial confirmado.');
   const critico = deps.criticoEditorial;
   if (!critico) throw new ErrorDeUsuario('Falta el crítico editorial para revisar la entrega.');
   const carpeta = join(deps.proyectos, e.proyecto);
@@ -130,6 +143,13 @@ export async function revisarEntrega(deps: DepsPost, e: EncargoPost, brief: Brie
     informe = { huella, briefVersion: brief.version, modelo: critico.modelo, paginas: vistas, incidencias: resultado.incidencias };
     await escribirJsonAtomico(archivo, informe);
   }
+  // También sobre una lectura en caché. Una intención editada se deriva a revisión, sin reescribirla.
+  const incidencias = new Map(informe.incidencias.map(i => [i.id, i]));
+  for (const [i, pagina] of brief.editorial.plan.diapositivas.entries()) {
+    const perdida = revisarEstructuraDelCartel(brief, pagina, actuales[i]!);
+    if (perdida) incidencias.set(perdida.id, perdida);
+  }
+  informe = { ...informe, incidencias: [...incidencias.values()] };
   if (informe.incidencias.length && !segundaLectura) {
     const intenciones: Intencion[] = [];
     for (const incidencia of informe.incidencias) {

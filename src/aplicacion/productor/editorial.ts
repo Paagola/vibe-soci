@@ -1,5 +1,6 @@
 import type { BriefDelEncargo, DiapositivaDelPlan } from '../../dominio/brief.js';
-import { PlanEditorial, type DiapositivaEditorial, type ReferenciaTextoEditorial } from '../../dominio/editorial.js';
+import { PlanEditorial, type CartelEditorial, type DiapositivaEditorial, type ReferenciaTextoEditorial } from '../../dominio/editorial.js';
+import { FichaReferencia } from '../../dominio/referencia.js';
 
 export { DiapositivaEditorial, PlanEditorial, ReferenciaTextoEditorial } from '../../dominio/editorial.js';
 
@@ -37,6 +38,37 @@ export function textoConfirmado(brief: BriefDelEncargo, texto: ReferenciaTextoEd
   return textoDelBrief(brief, texto);
 }
 
+/** Traduce mecanismos de la ficha archivada. Sus ejemplos, paleta y textos nunca pasan a la composición. */
+export function fichaDeCartel(serializada?: string): FichaReferencia | undefined {
+  if (!serializada) return undefined;
+  try { return FichaReferencia.safeParse(JSON.parse(serializada)).data; } catch { return undefined; }
+}
+
+export function cartelDePortada(
+  pagina: DiapositivaEditorial, ficha: FichaReferencia | undefined, brief: BriefDelEncargo, nuevo = false,
+): CartelEditorial | undefined {
+  if (pagina.tratamiento === 'CARTEL') return pagina;
+  if (pagina.papel !== 'portada' || !ficha) return undefined;
+  const anuncio = pagina.tratamiento === 'FOTO_TEXTO_AL_BORDE' && pagina.gesto === 'ANUNCIO';
+  const grafico = nuevo && brief.estetica !== 'EDITORIAL_SERENO' && brief.estetica !== 'EDITORIAL_OSCURO';
+  if (!anuncio && !grafico) return undefined;
+  const vertical = ficha.mecanismos.includes('PALABRA_GIRADA');
+  const cabecera = ficha.mecanismos.some(m => ['PALABRA_DETRAS', 'CONTORNO_AL_CRUZAR', 'PATRON_REPETIDO'].includes(m));
+  if (!vertical && !cabecera) return undefined;
+  const elementos = brief.hechos.inventario.elementos;
+  const elegido = elementos.findIndex(e => e.origen === 'NOTA' && e.nombre.trim());
+  const indice = elegido >= 0 ? elegido : elementos.findIndex(e => e.nombre.trim());
+  const texto: ReferenciaTextoEditorial = pagina.tratamiento === 'FOTO_TEXTO_AL_BORDE' ? pagina.texto
+    : indice >= 0 ? { fuente: 'ELEMENTO', indice } : { fuente: 'MARCA' };
+  if (!textoDelBrief(brief, texto)) return undefined;
+  return {
+    n: pagina.n, papel: 'portada', tratamiento: 'CARTEL', texto,
+    estructura: vertical ? 'EJE_VERTICAL' : 'CABECERA',
+    superficie: ficha.mecanismos.includes('PAPEL_RASGADO') ? 'PAPEL' : 'FOTOGRAFIA',
+    firma: texto.fuente !== 'MARCA' && Boolean(brief.marca.nombre.trim()),
+  };
+}
+
 /** El plan debe respetar cada página y elemento que ya constan en el brief. */
 export function esquemaDelPlanEditorial(brief: BriefDelEncargo) {
   return PlanEditorial.superRefine((plan, ctx) => {
@@ -66,8 +98,8 @@ export function esquemaDelPlanEditorial(brief: BriefDelEncargo) {
           problema([...ruta, 'arco'], 'El arco debe caber en el encuadre 3:4 de un detalle de la foto fuente.');
         }
       }
-      if (diapositiva.tratamiento === 'FOTO_TEXTO_AL_BORDE' && !textoDelBrief(brief, diapositiva.texto)) {
-        problema([...ruta, 'texto'], 'El texto al borde debe referir a un dato disponible en el brief.');
+      if ((diapositiva.tratamiento === 'FOTO_TEXTO_AL_BORDE' || diapositiva.tratamiento === 'CARTEL') && !textoDelBrief(brief, diapositiva.texto)) {
+        problema([...ruta, 'texto'], 'El texto debe referir a un dato disponible en el brief.');
       }
 
       if (diapositiva.tratamiento === 'CIERRE_TEXTO') {
@@ -123,7 +155,12 @@ export function direccionParaLaFoto(brief: BriefDelEncargo | undefined): string 
   if (!brief?.editorial) return '';
   const { diapositivas, hiloVisual } = brief.editorial.plan;
   const portada = diapositivas[0];
-  const encuadre = portada?.tratamiento === 'FOTO_TEXTO_AL_BORDE'
+  const cartel = portada && cartelDePortada(portada, fichaDeCartel(brief.editorial.fichaReferencia), brief);
+  const encuadre = cartel
+    ? cartel.estructura === 'EJE_VERTICAL'
+      ? 'Place the dish to one side, with a continuous quiet vertical space beside it for one large word. Keep the edge of the dish clean.'
+      : 'Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space.'
+    : portada?.tratamiento === 'FOTO_TEXTO_AL_BORDE'
     ? `Leave quiet negative space at the ${portada.borde === 'SUPERIOR' ? 'top' : 'bottom'} for separate typesetting.`
     : 'Compose the cover as a standalone photograph, without reserving space for a headline.';
   const continuidad = { COLOR: 'Keep the characteristic colours of the ingredients consistent.', LUZ: 'Keep a coherent light direction and preserve the texture of the dish.', ENCUADRE: 'Frame the dish with a clear axis that can be repeated in the following views.' };

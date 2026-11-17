@@ -230,6 +230,8 @@ export const CapaTexto = z.object({
   tamano: z.number().positive().optional(),
   alinear: z.enum(['izquierda', 'centro', 'derecha']).default('izquierda'),
   vertical: z.enum(['arriba', 'centro', 'abajo']).default('arriba'),
+  /** Línea de un mismo texto con saltos explícitos (desde cero). Permite componer el nombre entero con dos voces. */
+  linea: z.int().nonnegative().optional(),
   /** −90: se lee de abajo arriba; 90: de arriba abajo. La caja es la que ocupa ya girado. */
   rotacion: z.union([z.literal(0), z.literal(90), z.literal(-90)]).default(0),
   /**
