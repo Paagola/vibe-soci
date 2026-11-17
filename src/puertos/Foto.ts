@@ -30,6 +30,10 @@ export interface PeticionFoto {
   referencias: Array<{ ruta: string; etiqueta: string }>;
   aspectRatio: string;
   tamano: '1K' | '2K' | '4K';
+  /** Estimación máxima que la persona aprobó para este intento. */
+  estimadoMaximoUsd?: number;
+  /** Reserva persistente de la orden. El adaptador la ejecuta antes de enviar la generación, tras las comprobaciones. */
+  antesDeEnviar?: () => Promise<void>;
 }
 
 export interface FotoGenerada {
@@ -44,6 +48,7 @@ export interface FotoGenerada {
 /** Genera la foto nueva (la vía de producción: Gemini de imagen de pago, decisión del 09/11/2026). */
 export interface GeneradorFoto {
   readonly nombre: string;
+  readonly reservaEnEnvio?: true;
   /** false si no puede generar ahora (p. ej. sin facturación), con el motivo. */
   disponible(): { ok: true } | { ok: false; motivo: string };
   /** Estimación por arriba del coste de un intento, antes de autorizarlo. */

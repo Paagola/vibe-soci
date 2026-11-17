@@ -3,16 +3,21 @@
  * herramientas/carrusel.ts; ahora lo usan también la orden única).
  *
  * Cada diapositiva se guarda como versión entera e inmutable en <datos>/disenos/<slug>/<id>/vNNN (la versión la pone la
- * intención; si ya existe, se usa tal cual). Con `borrador` se compone en una carpeta temporal y se sobrescribe.
+ * intención. Un resultado íntegro se puede reutilizar. Con `borrador` se compone en una carpeta temporal.
  *
  * Hojas (en <salida>/revision/<etiqueta>/): carrusel.jpg (en fila), movil.jpg (a 390 px) y capas-<id>.jpg.
  */
-import { mkdir, readFile, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import sharp, { type OverlayOptions } from 'sharp';
+import { z } from 'zod';
 import { componerDiseno, type ResultadoComponer } from '../../aplicacion/diseno/componerDiseno.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
+import { conTokensDeMarca } from '../../dominio/diseno/operaciones.js';
+import { nombreDeCapa } from '../../dominio/diseno/resuelto.js';
+import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas, DiapositivaCompuesta, PiezaCompuesta } from '../../puertos/ComponedorDePiezas.js';
 import { AlmacenActivosFicheros } from '../ficheros/AlmacenActivosFicheros.js';
 import { AlmacenDisenosFicheros } from '../ficheros/AlmacenDisenosFicheros.js';
@@ -25,6 +30,55 @@ interface Plan {
   local: string;
   marca: string;
   diapositivas: Array<{ intencion: string }>;
+}
+
+const ResueltoGuardado = z.object({
+  esquema: z.literal('diseno/resuelto@1'),
+  intencion: z.object({ id: z.string(), version: z.int() }),
+  capas: z.array(z.object({ id: z.string(), z: z.int() })),
+  problemas: z.array(z.object({ gravedad: z.enum(['ERROR', 'AVISO']), tipo: z.string(), mensaje: z.string() })),
+  activos: z.record(z.string(), z.object({ id: z.string(), sha256: z.string(), uso: z.string(), tipo: z.string(), alteraciones: z.array(z.string()) })),
+});
+
+const carpetaDeVersion = (version: number) => `v${String(version).padStart(3, '0')}`;
+const nombreDeExportacion = (i: Intencion) => i.lienzo.formato === 'HISTORIA_9_16' ? ['9x16.jpg'] : ['3x4.jpg', '4x5.jpg'];
+
+async function versionesEn(carpeta: string): Promise<number[]> {
+  const entradas = await readdir(carpeta).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  });
+  return entradas.filter((n) => /^v\d+$/.test(n)).map((n) => Number(n.slice(1))).sort((a, b) => b - a);
+}
+
+async function leerVersion(
+  base: string, version: number, intencion: Intencion, activos: AlmacenActivos,
+): Promise<DiapositivaCompuesta | undefined> {
+  const carpeta = join(base, carpetaDeVersion(version));
+  const leer = async (nombre: string) => JSON.parse(await readFile(join(carpeta, nombre), 'utf8')) as unknown;
+  const guardada = Intencion.safeParse(await leer('intencion.json').catch(() => undefined));
+  if (!guardada.success || !isDeepStrictEqual(guardada.data, { ...intencion, version })) return undefined;
+  const documento = ResueltoGuardado.safeParse(await leer('resuelto.json').catch(() => undefined));
+  if (!documento.success || documento.data.intencion.id !== intencion.id || documento.data.intencion.version !== version) return undefined;
+  const { capas, problemas } = documento.data;
+  const png = join(carpeta, 'diseno.png');
+  const baseDiapositiva = { id: intencion.id, version, carpeta, png, problemas };
+  const pngLegible = await sharp(png, { failOn: 'warning' }).stats().then(() => true, () => false);
+  if (!pngLegible) return undefined;
+  if (problemas.some((p) => p.gravedad === 'ERROR')) return { ...baseDiapositiva, reutilizada: false };
+
+  const ficheros = [
+    'diseno.svg', 'diseno-trazos.svg',
+    ...capas.map((c) => join('capas', nombreDeCapa(c))),
+    ...nombreDeExportacion(intencion).map((n) => join('exportadas', n)),
+  ];
+  if (!(await Promise.all(ficheros.map((nombre) => tieneContenido(join(carpeta, nombre))))).every(Boolean)) return undefined;
+  for (const [papel, id] of Object.entries(intencion.activos)) {
+    const { activo } = await activos.obtener(intencion.marca, id);
+    const actual = { id, sha256: activo.sha256, uso: activo.uso, tipo: activo.tipo, alteraciones: activo.alteraciones };
+    if (!isDeepStrictEqual(documento.data.activos[papel], actual)) return undefined;
+  }
+  return { ...baseDiapositiva, reutilizada: true };
 }
 
 /** Donde se componen los borradores (`borrador: true`): una carpeta por proyecto, que se sobrescribe cada vez. */
@@ -57,22 +111,27 @@ export class ComponedorProyectos implements ComponedorDePiezas {
     const renders: Array<{ id: string; png: string; resultado?: ResultadoComponer }> = [];
     const diapositivas: DiapositivaCompuesta[] = [];
     for (const [i, diapositiva] of plan.diapositivas.entries()) {
-      const intencion = Intencion.parse(JSON.parse(await readFile(join(proyecto, diapositiva.intencion), 'utf8')));
-      const carpeta = join(salida, intencion.id, `v${String(intencion.version).padStart(3, '0')}`);
-      const reutilizar = { id: intencion.id, version: intencion.version, carpeta, png: join(carpeta, 'diseno.png'), reutilizada: true, problemas: [] };
-      if (opciones.solo && opciones.solo !== String(i + 1)) {
-        if (await existe(join(carpeta, 'diseno.png'))) {
-          renders.push({ id: intencion.id, png: join(carpeta, 'diseno.png') });
-          diapositivas.push(reutilizar);
-        }
+      const solicitada = Intencion.parse(JSON.parse(await readFile(join(proyecto, diapositiva.intencion), 'utf8')));
+      const base = join(salida, solicitada.id);
+      const versiones = await versionesEn(base);
+      const aplicada = conTokensDeMarca(solicitada, tokensMarca);
+      let existente: DiapositivaCompuesta | undefined;
+      for (const version of versiones.filter((v) => v >= solicitada.version)) {
+        existente = await leerVersion(base, version, aplicada, deps.activos);
+        if (existente) break;
+      }
+      if (existente) {
+        const { id, version, png, reutilizada, problemas } = existente;
+        log(reutilizada ? `= ${id} v${version}: se reutiliza.` : `✖ ${id} v${version}: conserva sus errores de composición.`);
+        if (!reutilizada) for (const p of problemas) log(`  ${p.gravedad === 'ERROR' ? '✖' : '!'} ${p.tipo}: ${p.mensaje}`);
+        renders.push({ id, png });
+        diapositivas.push(existente);
         continue;
       }
-      if (await existe(join(carpeta, 'resuelto.json'))) {
-        log(`= ${intencion.id} v${intencion.version} ya existe: se usa tal cual (para cambiarla, sube la versión).`);
-        renders.push({ id: intencion.id, png: join(carpeta, 'diseno.png') });
-        diapositivas.push(reutilizar);
-        continue;
-      }
+      if (opciones.solo && opciones.solo !== String(i + 1)) continue;
+
+      const version = Math.max(solicitada.version, (versiones[0] ?? 0) + 1);
+      const intencion = { ...solicitada, version };
       const inicio = Date.now();
       const resultado = await componerDiseno(deps, intencion, intencion.id, { tokensMarca });
       informar(log, `${intencion.id} v${intencion.version}`, resultado, Date.now() - inicio);
@@ -144,4 +203,4 @@ async function hojaDeCapas(destino: string, capas: Array<{ png: Buffer; etiqueta
     .toFile(destino);
 }
 
-const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
+const tieneContenido = (ruta: string) => stat(ruta).then((f) => f.isFile() && f.size > 0, () => false);

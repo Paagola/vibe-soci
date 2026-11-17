@@ -1,5 +1,5 @@
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
 import { Activo } from '../../dominio/activos.js';
 import { RevisionAutomatica } from '../../dominio/comprobacionSalida.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
@@ -34,11 +34,21 @@ export class AlmacenActivosFicheros implements AlmacenActivos {
 
   async crear(activo: Activo, archivos: Record<string, Buffer>): Promise<void> {
     const valido = Activo.parse(activo);
-    if (await this.existe(valido.localSlug, valido.id)) throw new ErrorDeUsuario(`El activo ${valido.id} ya existe: un activo no se sobrescribe.`);
+    const duplicado = () => new ErrorDeUsuario(`El activo ${valido.id} ya existe: un activo no se sobrescribe.`);
+    if (await this.existe(valido.localSlug, valido.id)) throw duplicado();
     const carpeta = this.carpeta(valido.localSlug, valido.id);
-    await mkdir(carpeta, { recursive: true });
-    for (const [nombre, bytes] of Object.entries(archivos)) await writeFile(join(carpeta, nombre), bytes);
-    await escribirJson(join(carpeta, 'activo.json'), valido);
+    await mkdir(dirname(carpeta), { recursive: true });
+    const temporal = await mkdtemp(`${carpeta}.tmp-`);
+    try {
+      for (const [nombre, bytes] of Object.entries(archivos)) await writeFile(join(temporal, nombre), bytes);
+      await escribirJson(join(temporal, 'activo.json'), valido);
+      await rename(temporal, carpeta).catch((err: NodeJS.ErrnoException) => {
+        if (err.code === 'EEXIST' || err.code === 'ENOTEMPTY') throw duplicado();
+        throw err;
+      });
+    } finally {
+      await rm(temporal, { recursive: true, force: true });
+    }
   }
 
   async actualizar(localSlug: string, id: string, cambios: Partial<Activo>, archivos: Record<string, Buffer> = {}): Promise<void> {

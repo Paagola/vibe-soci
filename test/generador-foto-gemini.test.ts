@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import sharp from 'sharp';
-import { GeneradorFotoGemini, apuntarGastoGemini } from '../src/adaptadores/gemini/GeneradorFotoGemini.js';
+import { GeneradorFotoGemini, apuntarGastoGemini, gastoAcumuladoGemini } from '../src/adaptadores/gemini/GeneradorFotoGemini.js';
 import { RAIZ } from '../src/config.js';
 
 const FOTO = join(RAIZ, 'plantillas', 'fotos', 'gamba-roja-de-palamos.png');
@@ -66,5 +66,30 @@ describe('Generador de foto con Gemini de pago', () => {
     const g = new GeneradorFotoGemini({ apiKey: 'k', modelo: 'gemini-3-pro-image', facturacion: true, topeUsd: 1, carpetaDatos: carpeta, origen: 'prueba', fetch: fetchFalso(llamadas) });
     await assert.rejects(g.generar(peticion), /Se pasaría del tope de Gemini/);
     assert.deepEqual(llamadas, ['countTokens'], 'solo cuenta tokens (gratis): no llega a generar');
+  });
+
+  it('reserva el coste antes del envío y los 503 conservan el importe estimado', async () => {
+    const carpetaDatos = join(carpeta, 'concurrente');
+    const registro = join(carpetaDatos, 'gasto', 'gemini.jsonl');
+    const reservas: string[] = [];
+    let envios = 0;
+    const g = new GeneradorFotoGemini({
+      apiKey: 'k', modelo: 'gemini-3-pro-image', facturacion: true, topeUsd: 0.2, carpetaDatos, origen: 'prueba',
+      fetch: async (url) => {
+        if (String(url).endsWith(':countTokens')) return Response.json({ totalTokens: 1500 });
+        envios++;
+        assert.equal(reservas.length, 1);
+        assert.ok(await gastoAcumuladoGemini(registro) > 0);
+        return new Response('servidor sin respuesta', { status: 503 });
+      },
+    });
+    const alEnviar = async () => { reservas.push('reservada'); };
+    const dos = await Promise.allSettled([
+      g.generar({ ...peticion, antesDeEnviar: alEnviar }),
+      g.generar({ ...peticion, id: 'y-foto-1', antesDeEnviar: alEnviar }),
+    ]);
+    assert.equal(envios, 1);
+    assert.match(dos.map((r) => r.status === 'rejected' ? String(r.reason) : '').join('\n'), /pasaría del tope/);
+    assert.ok(await gastoAcumuladoGemini(registro) > 0);
   });
 });

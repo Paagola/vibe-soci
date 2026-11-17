@@ -16,7 +16,8 @@ import { BibliotecaDeReferenciasFicheros } from '../src/adaptadores/ficheros/Bib
 import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFicheros.js';
 import { AnalistaReferenciasSimulado, FICHA_SIMULADA } from '../src/adaptadores/simulado/AnalistaSimulado.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
-import { avanzar, cortarPorPalabras, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
+import { avanzar, cortarPorPalabras, crearEncargo, guardarEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
+import { generacionPendienteDeImportacion } from '../src/aplicacion/post/recuperarGeneracion.js';
 import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
 import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
 import { RAIZ } from '../src/config.js';
@@ -169,6 +170,54 @@ describe('Orden única · de punta a punta (simulada)', () => {
     assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO');
     const foto = await d.activos.obtener('asador-etxebarri', 'manual-foto-1');
     assert.match(String(foto.activo.procedencia.generacion?.modelo), /importada a mano/);
+  });
+
+  it('un fallo tras reservar deja la orden esperando la importación y no vuelve a enviar', async () => {
+    let envios = 0;
+    const d = deps({
+      generador: {
+        nombre: 'generador de prueba',
+        reservaEnEnvio: true,
+        disponible: () => ({ ok: true }),
+        estimarUsd: async () => 0.14,
+        generar: async (peticion) => {
+          await peticion.antesDeEnviar?.();
+          envios++;
+          throw new DOMException('Se agotó la espera', 'TimeoutError');
+        },
+      },
+    });
+    await nuevo(d, 'timeout-foto', 'ref-post-30');
+    await avanzar(d, 'timeout-foto');
+    const primera = await avanzar(d, 'timeout-foto', { confirmo: true });
+    assert.equal(primera.encargo.paso, 'GENERAR');
+    assert.match(primera.parada, /PENDIENTE DE IMPORTACION.*Se agotó la espera/);
+    assert.equal(await generacionPendienteDeImportacion(d.proyectos, primera.encargo), true);
+    const reanudada = await avanzar(d, 'timeout-foto');
+    assert.match(reanudada.parada, /PENDIENTE DE IMPORTACION/);
+    const recuperada = await avanzar(d, 'timeout-foto', { importar: FOTO });
+    assert.equal(recuperada.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.equal(recuperada.encargo.intentos[0]?.activo, 'timeout-foto-foto-1');
+    assert.equal(envios, 1);
+  });
+
+  it('recupera portada y detalle compatibles si los archivos quedaron guardados antes del post.json', async () => {
+    const generador = new GeneradorFotoSimulado();
+    const d = deps({ generador });
+    await nuevo(d, 'recuperar-fotos', 'ref-post-30');
+    await avanzar(d, 'recuperar-fotos');
+    const inicial = await avanzar(d, 'recuperar-fotos', { confirmo: true });
+    const toma = { n: 1, elemento: 'gamba', prompt: 'Detalle de la gamba' };
+    const checkpoint = { ...inicial.encargo, paso: 'GENERAR' as const, intentos: [], tomas: [toma] };
+    await guardarEncargo(d, checkpoint);
+    const primera = await avanzar(d, 'recuperar-fotos');
+    assert.equal(primera.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.deepEqual(generador.peticiones.map((p) => p.id), ['recuperar-fotos-foto-1', 'recuperar-fotos-toma-1']);
+    await guardarEncargo(d, checkpoint);
+    const recuperada = await avanzar(d, 'recuperar-fotos');
+    assert.equal(generador.peticiones.length, 2);
+    assert.equal(recuperada.encargo.tomas[0]?.intento?.activo, 'recuperar-fotos-toma-1');
+    assert.equal(recuperada.mensajes.filter((m) => m.includes('recuperada con su procedencia')).length, 2);
   });
 });
 
