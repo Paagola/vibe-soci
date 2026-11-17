@@ -20,6 +20,14 @@ export const DiapositivaEditorial = z.discriminatedUnion('tratamiento', [
     tratamiento: z.literal('FOTO_TEXTO_AL_BORDE'),
     borde: z.enum(['SUPERIOR', 'INFERIOR']),
     gesto: z.enum(['CONTENIDO', 'ANUNCIO']),
+    /** Arco medido sobre el encuadre 3:4 de la foto fuente. */
+    arco: z.strictObject({
+      centro: z.strictObject({ x: coordenada, y: coordenada }),
+      radio: z.number().min(0.07).max(0.4),
+      grados: z.number().min(30).max(155),
+      inicio: z.number().min(-180).max(180),
+      tinta: z.enum(['CLARA', 'OSCURA']),
+    }).optional(),
     texto: ReferenciaTextoEditorial,
   }),
   z.strictObject({

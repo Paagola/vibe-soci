@@ -46,6 +46,7 @@ export interface UsoGemini {
 
 export interface OpcionesClienteGemini {
   fetch?: typeof fetch;
+  antesDeEnviar?: (modelo: string) => Promise<void>;
   dormir?: (ms: number) => Promise<void>;
   avisar?: (mensaje: string) => void;
   /** Se llama tras cada respuesta con su recuento de tokens. */
@@ -59,6 +60,12 @@ export class ClienteGemini {
   private readonly alUsar: (uso: UsoGemini) => void;
   /** Si un modelo falla, las siguientes llamadas de esta ejecución empiezan por el de respaldo. */
   private primerModelo = 0;
+  private readonly antesDeEnviar: OpcionesClienteGemini['antesDeEnviar'];
+  private ultimoModelo?: string;
+
+  get modeloUtilizado(): string {
+    return this.ultimoModelo ?? this.modelos[this.primerModelo] ?? 'Gemini';
+  }
 
   /** `modelos`: el principal primero y después los de respaldo. */
   constructor(
@@ -66,6 +73,7 @@ export class ClienteGemini {
     private readonly modelos: string[],
     opciones: OpcionesClienteGemini = {},
   ) {
+    this.antesDeEnviar = opciones.antesDeEnviar;
     this.fetch = opciones.fetch ?? fetch;
     this.dormir = opciones.dormir ?? ((ms) => new Promise((resolver) => setTimeout(resolver, ms)));
     this.avisar = opciones.avisar ?? (() => {});
@@ -135,6 +143,7 @@ export class ClienteGemini {
   private async pedirAModelo(modelo: string, cuerpo: unknown): Promise<Response> {
     const url = `${BASE}/${encodeURIComponent(modelo)}:generateContent`;
     for (let intento = 0; ; intento++) {
+      await this.antesDeEnviar?.(modelo);
       let respuesta: Response | undefined;
       try {
         respuesta = await this.fetch(url, {
@@ -151,7 +160,10 @@ export class ClienteGemini {
         }
       }
 
-      if (respuesta?.ok) return respuesta;
+      if (respuesta?.ok) {
+        this.ultimoModelo = modelo;
+        return respuesta;
+      }
       if (respuesta) {
         if (respuesta.status === 400 || respuesta.status === 403) {
           throw new ErrorDeUsuario(`Gemini rechaza la petición (HTTP ${respuesta.status}). Revisa GEMINI_API_KEY y GEMINI_MODELO.`, [

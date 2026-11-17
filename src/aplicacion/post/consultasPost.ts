@@ -8,6 +8,11 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import sharp from 'sharp';
+import { leerRevisionEntrega, type RevisionEntrega } from '../productor/revisarEntrega.js';
+import { direccionParaLaFoto } from '../productor/editorial.js';
+import { generacionPendienteDeImportacion } from './recuperarGeneracion.js';
+import { revisionDeEncargo } from '../productor/revision.js';
+import type { BriefDelEncargo } from '../../dominio/brief.js';
 import type { Activo } from '../../dominio/activos.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
@@ -135,6 +140,7 @@ export interface DetalleIntencion {
 }
 
 export interface DetalleDiseno {
+  diapositivas: Array<{ id: string; papel: string; intencion: DetalleIntencion; versiones: VersionDeDiseno[] }>;
   tokens: { archivo: string; existe: boolean; valido: boolean; contenido: unknown };
   /** Si el plan ya declara la pieza, cuenta para el umbral de referencia. */
   pieza: { fecha: string; referencia?: string } | null;
@@ -150,6 +156,10 @@ export interface DetalleDiseno {
 }
 
 export interface DetalleEncargo {
+  revision: string;
+  revisionEditorial: RevisionEntrega | null;
+  brief: BriefDelEncargo | null;
+  editorial: NonNullable<BriefDelEncargo['editorial']> | null;
   encargo: EncargoPost;
   fase: FasePost;
   espera: EsperaPost;
@@ -301,8 +311,15 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
   const disponible = deps.generador.disponible();
   const generador = { nombre: deps.generador.nombre, disponible: disponible.ok, motivo: disponible.ok ? null : disponible.motivo, maxIntentos: MAX_INTENTOS_SEGUIDOS };
 
-  const espera = queEspera(e, { estado, errorReferencia, generador, diseno });
-  return { encargo: e, fase: faseDe(e.paso), espera, local, referencia: { estado, elegida, conImagen: Boolean(elegida?.origen.archivo), error: errorReferencia, registradas, biblioteca }, fotoSubida, propuesta, generador, intentos, diseno };
+  const reservaPendiente = await generacionPendienteDeImportacion(deps.proyectos, e);
+  const revisionEditorial = e.productorEditorial ? await leerRevisionEntrega(join(deps.proyectos, proyecto)) ?? null : null;
+  const espera: EsperaPost = e.paso === 'COMPONER' && revisionEditorial?.estado === 'REVISION_HUMANA'
+    ? { tipo: 'COMPOSICION', errores: revisionEditorial.incidencias.map(i => `${i.id} v${i.version}: ${i.motivo}`) }
+    : reservaPendiente && !await deps.activos.existe(e.local, `${e.proyecto}-foto-${e.intentos.length + 1}`)
+    ? { tipo: 'IMPORTAR_FOTO', motivo: 'El envío quedó reservado sin imagen recuperable. Importa la candidata para seguir.' }
+    : queEspera(e, { estado, errorReferencia, generador, diseno });
+  const brief = await deps.productor?.leerBrief?.(proyecto);
+  return { revisionEditorial, revision: await revisionDeEncargo(deps.proyectos, e, brief), brief: brief ?? null, editorial: brief?.editorial ?? null, encargo: e, fase: faseDe(e.paso), espera, local, referencia: { estado, elegida, conImagen: Boolean(elegida?.origen.archivo), error: errorReferencia, registradas, biblioteca }, fotoSubida, propuesta, generador, intentos, diseno };
 }
 
 function queEspera(
@@ -361,7 +378,7 @@ async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: numb
     errores: [],
     desdeElInventario: Boolean(opciones?.desdeElInventario),
     contenido: leida.data,
-    prompt: revision.prompt,
+    prompt: revision.prompt + (e.productorEditorial ? direccionParaLaFoto(await deps.productor?.leerBrief?.(e.proyecto)) : ''),
     problemas: revision.problemas,
     toma: esOtraToma(leida.data.descripcion, leida.data.huecos.camara),
   };
@@ -370,13 +387,13 @@ async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: numb
 /** Lo que la web lee del plan del proyecto (plan.json). */
 export interface PlanDelEncargo {
   marca?: unknown;
-  diapositivas?: Array<{ intencion?: unknown }>;
+  diapositivas?: Array<{ intencion?: unknown; papel?: unknown }>;
   pieza?: unknown;
 }
 
 /** Dónde está la intención del encargo: la que apunta el plan (o intenciones/post.json) y, si aún no existe, su borrador. */
-export function rutasDeIntencion(deps: Pick<DepsPost, 'proyectos'>, proyecto: string, plan?: PlanDelEncargo): { final: string; borrador: string } {
-  const declarada = plan?.diapositivas?.[0]?.intencion;
+export function rutasDeIntencion(deps: Pick<DepsPost, 'proyectos'>, proyecto: string, plan?: PlanDelEncargo, indice = 0): { final: string; borrador: string } {
+  const declarada = plan?.diapositivas?.[indice]?.intencion;
   const final = typeof declarada === 'string' && declarada ? declarada : 'intenciones/post.json';
   const base = resolve(deps.proyectos, proyecto);
   const ruta = resolve(base, final);
@@ -391,7 +408,10 @@ export async function leerPlan(deps: Pick<DepsPost, 'proyectos'>, proyecto: stri
 
 export async function leerIntencion(deps: Pick<DepsPost, 'proyectos'>, e: EncargoPost): Promise<DetalleIntencion | null> {
   const rutas = rutasDeIntencion(deps, e.proyecto, await leerPlan(deps, e.proyecto));
-  const carpeta = join(deps.proyectos, e.proyecto);
+  return leerIntencionDeRuta(join(deps.proyectos, e.proyecto), rutas);
+}
+
+async function leerIntencionDeRuta(carpeta: string, rutas: {final: string; borrador: string}): Promise<DetalleIntencion | null> {
   for (const [archivo, esBorrador] of [[rutas.final, false], [rutas.borrador, true]] as const) {
     let contenido: unknown;
     try {
@@ -429,6 +449,15 @@ async function leerDiseno(deps: DepsConsultasPost, e: EncargoPost): Promise<Deta
   const versiones = intencion?.id ? await deps.galeria.versiones(e.proyecto, intencion.id) : [];
   const vigente = versiones.filter((v) => !v.problemas.some((p) => p.gravedad === 'ERROR')).at(-1)?.version ?? null;
   return {
+    diapositivas: await Promise.all((plan?.diapositivas ?? []).map(async (d, indice) => {
+      const rutas = rutasDeIntencion(deps, e.proyecto, plan, indice);
+      const pagina = indice === 0 ? intencion : await leerIntencionDeRuta(join(deps.proyectos, e.proyecto), rutas);
+      if (!pagina?.id) return null;
+      return {
+        id: pagina.id, papel: typeof d.papel === 'string' ? d.papel : indice === 0 ? 'portada' : pagina.id === 'cierre' ? 'cierre' : 'detalle',
+        intencion: pagina, versiones: indice === 0 ? versiones : await deps.galeria.versiones(e.proyecto, pagina.id),
+      };
+    })).then(paginas => paginas.filter(p => p !== null)),
     tokens: { archivo: archivoTokens, existe: tokens !== undefined || !tokensLegibles, valido: tokens !== undefined && Tokens.safeParse(tokens).success, contenido: tokens ?? null },
     pieza,
     intencion,

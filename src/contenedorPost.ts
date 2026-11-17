@@ -20,6 +20,13 @@ import { BibliotecaFicheros } from './adaptadores/ficheros/BibliotecaFicheros.js
 import { GaleriaDisenosFicheros } from './adaptadores/ficheros/GaleriaDisenosFicheros.js';
 import { HistorialDeDisenosFicheros } from './adaptadores/ficheros/HistorialDeDisenosFicheros.js';
 import { PiezasHechasFicheros } from './adaptadores/ficheros/PiezasHechasFicheros.js';
+import { CriticoEditorialSimulado } from './aplicacion/productor/criticaEditorial.js';
+import { CriticoEditorialGemini } from './adaptadores/gemini/CriticoEditorialGemini.js';
+import { ProductorEditorialSimulado } from './aplicacion/productor/editorial.js';
+import { ProductorEditorialGemini } from './adaptadores/gemini/ProductorEditorialGemini.js';
+import type { Orquestador } from './aplicacion/productor/orquestador.js';
+import type { QuienLlama } from './puertos/FuenteDelBrief.js';
+import { leerEncargo } from './aplicacion/post/ordenPost.js';
 import { ClienteGemini } from './adaptadores/gemini/ClienteGemini.js';
 import { AnalistaReferenciasGemini } from './adaptadores/gemini/AnalistaReferenciasGemini.js';
 import { DirectorDisenoGemini } from './adaptadores/gemini/DirectorDisenoGemini.js';
@@ -84,10 +91,15 @@ const enlacesSimulados: ObtenedorEnlaces = {
 
 export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost): Promise<DepsDisenoPost> {
   const { simular } = opciones;
-  const encender = opciones.productor ?? config.productor ?? false;
   const avisar = opciones.avisar ?? ((mensaje: string) => console.error(`  aviso: ${mensaje}`));
   const datos = simular ? config.carpetaDatosSimulado : config.carpetaDatos;
   const proyectos = simular ? join(config.carpetaDatosSimulado, 'proyectos') : join(RAIZ, 'proyectos');
+  const guardado = await leerEncargo({ proyectos }, opciones.proyecto).catch(error => {
+    if (error instanceof ErrorDeUsuario) return undefined;
+    throw error;
+  });
+  const editorial = guardado?.productorEditorial === true || (!guardado && (opciones.productor ?? config.productor));
+  const encender = editorial || (opciones.productor ?? config.productor);
   // Los locales, sus referencias y lo que cuenta para el umbral de la referencia obligatoria.
   const delModo = simular && opciones.datosDeReferencia === 'DEL_MODO';
   const datosDeReferencia = delModo ? datos : config.carpetaDatos;
@@ -124,6 +136,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   if (simular) {
     const deps: DepsDisenoPost = {
       ...comunes,
+      ...(editorial ? { criticoEditorial: new CriticoEditorialSimulado() } : {}),
       director: new DirectorFotoSimulado(),
       generador: new GeneradorFotoSimulado(),
       revisor: new RevisorVisualSimulado(),
@@ -131,15 +144,24 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado(), medidor, describirFuente },
       analista: new AnalistaReferenciasSimulado(),
     };
-    return encender ? conProductor(deps, { proyecto: opciones.proyecto }) : deps;
+    return encender ? conProductor(deps, { proyecto: opciones.proyecto, ...(editorial ? { editorial: new ProductorEditorialSimulado() } : {}) }) : deps;
   }
 
   const { geminiApiKey } = config;
-  const modelos = [config.geminiModelo, ...(config.geminiModeloRespaldo ? [config.geminiModeloRespaldo] : [])];
-  const cliente = (clave: string, motivo: string) => new ClienteGemini(clave, modelos, { avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion) });
+  const respaldo = editorial ? config.geminiModeloProductorRespaldo : config.geminiModeloRespaldo;
+  const modelos = [editorial ? (config.geminiModeloProductor ?? 'gemini-4-hydrogen') : config.geminiModelo, ...(respaldo ? [respaldo] : [])];
+  let orquestador: Orquestador | undefined;
+  const cliente = (clave: string, motivo: string, quien: QuienLlama) => new ClienteGemini(clave, modelos, {
+    avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion),
+    ...(editorial ? { antesDeEnviar: async (modelo: string) => {
+      if (!orquestador) throw new Error('Falta el control de presupuesto.');
+      await orquestador.reservarLlamada(opciones.proyecto, quien, modelo);
+    } } : {}),
+  });
   const deps: DepsDisenoPost = {
     ...comunes,
-    director: geminiApiKey ? new DirectorFotoGemini(cliente(geminiApiKey, 'director-foto'), await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia(), modelos) : directorSinClave,
+    ...(editorial && geminiApiKey ? { criticoEditorial: new CriticoEditorialGemini(cliente(geminiApiKey, 'critica-editorial', 'critico')) } : {}),
+    director: geminiApiKey ? new DirectorFotoGemini(cliente(geminiApiKey, 'director-foto', 'director-foto'), await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia(), modelos) : directorSinClave,
     generador: new GeneradorFotoGemini({
       apiKey: geminiApiKey,
       modelo: config.geminiModeloImagen,
@@ -148,14 +170,20 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       carpetaDatos: config.carpetaDatos,
       origen: `orden-post:${opciones.proyecto}`,
     }),
-    revisor: geminiApiKey ? new RevisorVisualGemini(cliente(geminiApiKey, 'comprobacion-salida'), modelos) : revisorSinClave,
+    revisor: geminiApiKey ? new RevisorVisualGemini(cliente(geminiApiKey, 'comprobacion-salida', 'revisor'), modelos) : revisorSinClave,
     segmentador: new SegmentadorVision(RAIZ),
     // La ficha automática de una referencia nueva (puntos 3 y 4), con las familias del estudio y una ficha de ejemplo.
-    ...(geminiApiKey ? { analista: await analistaGemini(cliente(geminiApiKey, 'analista-referencias'), modelos, referencias.biblioteca) } : {}),
+    ...(geminiApiKey ? { analista: await analistaGemini(cliente(geminiApiKey, 'analista-referencias', 'analista'), modelos, referencias.biblioteca) } : {}),
     // Sin clave no hay director de diseño: INTENCION deja el borrador y se para, como antes de F3.
-    ...(geminiApiKey ? { disenador: { ...disenadorGemini(new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno'), modelos)), medidor, describirFuente } } : {}),
+    ...(geminiApiKey ? { disenador: { ...disenadorGemini(new DirectorDisenoGemini(cliente(geminiApiKey, 'director-diseno', 'director-diseno'), modelos)), medidor, describirFuente } } : {}),
   };
-  return encender ? conProductor(deps, { proyecto: opciones.proyecto }) : deps;
+  return encender ? conProductor(deps, {
+    proyecto: opciones.proyecto,
+    ...(editorial && geminiApiKey ? {
+      editorial: new ProductorEditorialGemini(cliente(geminiApiKey, 'productor-editorial', 'productor')),
+      conectarTransporte: orq => { orquestador = orq; },
+    } : {}),
+  }) : deps;
 }
 
 async function analistaGemini(cliente: ClienteGemini, modelos: string[], biblioteca: DepsReferencias['biblioteca']): Promise<AnalistaReferenciasGemini> {

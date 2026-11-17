@@ -29,7 +29,11 @@ Devuelve un objeto JSON con "esquema": "post/editorial@1", "hiloVisual": "COLOR"
 y "diapositivas". Cada página tiene "n", "papel" ("portada", "detalle" o "cierre") y "tratamiento" de esta lista:
 - "FOTO_LIMPIA" (portada o detalle): la foto, sin texto ni otros campos.
 - "FOTO_TEXTO_AL_BORDE" (portada o detalle): "borde" ("SUPERIOR" o "INFERIOR"), "gesto" ("CONTENIDO" o "ANUNCIO")
-  y "texto" (una referencia). Si ninguno de los bordes permite leer el texto sin tapar lo importante, deja la foto limpia.
+  y "texto" (una referencia). Solo para un detalle de la foto fuente: si un borde circular visible permite seguir
+  su contorno y leer la palabra, admite "arco": {"centro":{"x":0.5,"y":0.5},"radio":0.2,"grados":90,"inicio":-45,"tinta":"CLARA"}.
+  Mide el centro en el recorte central 3:4 de la foto (0 a 1), el radio en fracciones del ancho (0.07 a 0.4), inicio desde arriba
+  y sentido horario. El arco entero debe quedar dentro del cuadro. Elige CLARA u OSCURA según el fondo real.
+  Omite el arco cuando no se vea esa forma. Si ninguno de los bordes permite leer el texto sin tapar lo importante, deja la foto limpia.
 - "RECORTE_DETALLE" (solo detalle): "elemento" (índice del elemento asignado en el brief), "enfoque": { "x": 0.5,
   "y": 0.5 } (coordenadas entre 0 y 1 sobre la foto fuente, desde la esquina superior izquierda), "zoom" (de 1.2 a 4).
   Elige centro y aumento para el detalle que realmente ves. Si el elemento no se ve con claridad, usa otro tratamiento.

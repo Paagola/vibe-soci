@@ -5,9 +5,11 @@
  * intenciones/post.json y lanzando `npm run carrusel -- <proyecto> --borrador`; aquí se hace lo mismo con los mismos
  * adaptadores: el borrador se compone en la carpeta temporal y una versión guardada no se sobrescribe nunca.
  */
-import { mkdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { escribirJsonAtomico } from '../../adaptadores/ficheros/escribirJsonAtomico.js';
+import { comprobarEdicionEditorial } from '../productor/componerEditorial.js';
 import { Intencion } from '../../dominio/diseno/intencion.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
@@ -52,6 +54,11 @@ async function comprobarIntencion(deps: DepsDisenoPost, e: EncargoPost, entrada:
   const intencion = validar(Intencion, entrada, 'La intención de diseño no es válida.');
   if (intencion.marca !== e.local) {
     throw new ErrorDeUsuario(`La intención es de «${intencion.marca}» y el encargo es de «${e.local}»: el campo "marca" tiene que ser el local del encargo.`);
+  }
+  if (e.productorEditorial) {
+    const brief = await deps.productor?.leerBrief?.(e.proyecto);
+    if (!brief?.editorial) throw new ErrorDeUsuario('Falta el plan confirmado para corregir la composición.');
+    comprobarEdicionEditorial(intencion, e, brief);
   }
   const faltan: string[] = [];
   for (const [papel, id] of Object.entries(intencion.activos)) {
@@ -107,17 +114,37 @@ export async function guardarIntencion(deps: DepsDisenoPost, proyecto: string, e
   const compuestas = await deps.galeria.versiones(e.proyecto, intencion.id);
   if (compuestas.some((v) => v.version === intencion.version)) {
     const siguiente = Math.max(...compuestas.map((v) => v.version)) + 1;
-    throw new ErrorDeUsuario(`La versión ${intencion.version} de «${intencion.id}» ya está compuesta y no se sobrescribe: guarda la versión ${siguiente}.`);
+    if (!e.productorEditorial || intencion.version !== siguiente - 1) {
+      throw new ErrorDeUsuario(`La versión ${intencion.version} de «${intencion.id}» ya está compuesta y no se sobrescribe: guarda la versión ${siguiente}.`);
+    }
+    intencion.padre = intencion.version;
+    intencion.version = siguiente;
   }
-  const vista = await componerBorrador(deps, e, intencion, entrada);
+  const vista = await componerBorrador(deps, e, intencion, intencion);
   if (vista.errores.length) throw new ErrorDeUsuario('El compositor da errores con esta intención: no se guarda como versión.', vista.errores);
 
-  const { final } = rutasDeIntencion(deps, e.proyecto, await leerPlan(deps, e.proyecto));
+  const plan = await leerPlan(deps, e.proyecto);
+  let { final } = rutasDeIntencion(deps, e.proyecto, plan);
+  if (plan?.diapositivas?.length && (e.productorEditorial || plan.diapositivas.length > 1)) {
+    let encontrada = false;
+    for (const [indice] of plan.diapositivas.entries()) {
+      const ruta = rutasDeIntencion(deps, e.proyecto, plan, indice);
+      const previa = Intencion.parse(JSON.parse(await readFile(join(deps.proyectos, e.proyecto, ruta.final), 'utf8')));
+      if (previa.id !== intencion.id) continue;
+      final = ruta.final;
+      encontrada = true;
+      break;
+    }
+    if (!encontrada) throw new ErrorDeUsuario('La diapositiva que quieres corregir no pertenece al plan.');
+  }
   const ruta = join(deps.proyectos, e.proyecto, final);
   await mkdir(join(ruta, '..'), { recursive: true });
-  await writeFile(ruta, `${JSON.stringify(entrada, null, 2)}\n`);
-  const encargo: EncargoPost = { ...e, historial: [...e.historial, { fecha: deps.ahora(), paso: e.paso, nota: `Intención de diseño guardada: ${intencion.id} v${intencion.version} (${final}).` }] };
+  await escribirJsonAtomico(ruta, intencion);
+  const encargo: EncargoPost = { ...e, ...(e.productorEditorial && e.paso === 'HECHO' ? { paso: 'COMPONER' } : {}), historial: [...e.historial, { fecha: deps.ahora(), paso: e.paso, nota: `Intención de diseño guardada: ${intencion.id} v${intencion.version} (${final}).` }] };
   await guardarEncargo(deps, encargo);
+  await deps.productor?.registrarCorreccion?.(proyecto, e.paso, {
+    destino: intencion.id, archivo: final, version: intencion.version, foto: e.fotoElegida,
+  });
   return { encargo, archivo: final, id: intencion.id, version: intencion.version };
 }
 

@@ -25,6 +25,7 @@ export function crearApp(estudio: Estudio): express.Express {
     throw new ErrorHttp(404, 'NO_ENCONTRADO', 'Esa ruta de la API no existe.');
   });
   app.use('/archivos', rutasDeArchivos(estudio));
+  app.get('/', (_req, res) => res.redirect('/pase.html'));
   app.use(express.static(CARPETA_PUBLICA));
 
   const manejarError: ErrorRequestHandler = (error, _req, res, _next) => {

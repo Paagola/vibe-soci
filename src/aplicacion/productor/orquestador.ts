@@ -1,12 +1,12 @@
-/**
- * Productor (fase 1): el orquestador en código, sin IA. Implementa los ganchos de la orden única: escribe el brief del
- * encargo, congela el inventario solo cuando confirma el usuario, para la orden si algo se aparta del brief, controla el
- * presupuesto de fotos y de llamadas de texto, y lleva la bitácora.
- */
+/** Coordinación de la orden, aprobación de los hechos y límites por encargo. */
 import { readFile } from 'node:fs/promises';
+import { prepararPlanEditorial, type DireccionEditorial } from './prepararEditorial.js';
+import { revisionDeEncargo } from './revision.js';
 import { join } from 'node:path';
 import {
   actualizarInventarioPropuesto,
+  cambiarBrief,
+  presupuestoAutorizado,
   confirmarInventario,
   contextoDelBrief,
   crearBrief,
@@ -28,6 +28,8 @@ import type { AccionVista, GanchosDeOrden, ResultadoAntes, ResultadoTras } from 
 export interface DepsOrquestador {
   /** Carpeta de los proyectos (la misma que DepsPost.proyectos). */
   proyectos: string;
+  direccion?: DireccionEditorial;
+  presupuestoEnTransporte?: boolean;
   almacen: AlmacenBrief;
   locales: { obtener(local: string): Promise<Marca> };
   ahora: () => string;
@@ -36,6 +38,7 @@ export interface DepsOrquestador {
 export interface Orquestador extends GanchosDeOrden {
   /** Lo que los decoradores de los especialistas leen de este encargo. */
   fuente(proyecto: string): FuenteDelBrief;
+  reservarLlamada(proyecto: string, quien: QuienLlama, modelo?: string): Promise<void>;
 }
 
 const QUIEN_POR_PASO: Partial<Record<PasoPost, QuienEnBitacora>> = {
@@ -76,6 +79,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
   };
 
   const tomasDe = (e: Readonly<EncargoPost>, propuesta: Propuesta): TomaEntrada[] => {
+    if (e.productorEditorial) return []; // Los detalles editoriales se resuelven con recortes o fotos del dueño.
     if (e.tomas.length) {
       return e.tomas.map((t) => ({ elemento: t.elemento, ...(t.real ? { real: true } : {}), ...(t.intento ? { yaGenerada: true } : {}) }));
     }
@@ -156,7 +160,61 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
     }
   };
 
+  const registrarEnvio = async (proyecto: string, quien: QuienLlama, modelo?: string) => {
+    const brief = await almacen.leer(proyecto);
+    const paso = pasoActual.get(proyecto) ?? 'REFERENCIA';
+    // Desde el primer análisis de referencia, incluso antes de que exista un inventario.
+    if (!brief && !deps.direccion) return;
+    const usadas = await llamadasUsadas(proyecto);
+    const tope = brief?.presupuesto.llamadasTexto ?? 12;
+    if (usadas >= tope) {
+      await anotar(proyecto, 'productor', paso, 'PRESUPUESTO', `Llamada de ${quien} cortada: ${usadas} de ${tope}.`);
+      throw new ErrorDeUsuario(`Presupuesto de llamadas de texto agotado: ${usadas} de ${tope} autorizadas.`);
+    }
+    await anotar(proyecto, quien, paso, 'LLAMADA', `Llamada ${usadas + 1} de ${tope} (${quien}).`, {
+      briefVersion: brief?.version ?? null, ...(modelo ? { modelo } : {}),
+    });
+  };
+
+  let turnoDeReserva = Promise.resolve();
+  const reservarLlamada = (proyecto: string, quien: QuienLlama, modelo?: string) => {
+    const turno = turnoDeReserva.then(() => registrarEnvio(proyecto, quien, modelo));
+    turnoDeReserva = turno.catch(() => {});
+    return turno;
+  };
+
+  const prepararEditorial = async (e: Readonly<EncargoPost>) => {
+    if (!e.productorEditorial || !deps.direccion) return;
+    let brief = await almacen.leer(e.proyecto);
+    const propuesta = await leerPropuesta(e);
+    if (!brief || !propuesta) throw new ErrorDeUsuario('Falta el inventario para preparar la comanda.');
+    if (brief.hechos.inventario.estado === 'PROPUESTO') {
+      const actualizado = actualizarInventarioPropuesto(brief, { elementos: propuesta.descripcion.elementos, tomas: [] }, deps.ahora());
+      if (actualizado !== brief) {
+        delete actualizado.editorial;
+        await almacen.guardar(actualizado);
+        brief = actualizado;
+      }
+    }
+    const nuevo = await prepararPlanEditorial(deps.direccion, almacen, e, brief,
+      async () => { if (!deps.presupuestoEnTransporte) await reservarLlamada(e.proyecto, 'productor'); }, deps.ahora);
+    if (nuevo !== brief) await anotar(e.proyecto, 'productor', 'CONFIRMAR_ELEMENTOS', 'DECISION', 'Plan editorial preparado para revisión.', {
+      briefVersion: nuevo.version, dependeDe: nuevo.editorial?.briefVersion, modelo: nuevo.editorial?.modelo,
+      fotoSha256: nuevo.editorial?.fotoSha256, inventarioSha256: nuevo.editorial?.inventarioSha256,
+    });
+  };
+
   return {
+    leerBrief: proyecto => almacen.leer(proyecto),
+    prepararEditorial,
+    reservarLlamada,
+    async registrarCorreccion(proyecto, paso, datos) {
+      const brief = await almacen.leer(proyecto);
+      if (!brief?.editorial) return;
+      await anotar(proyecto, 'usuario', paso, 'DECISION', 'Corrección localizada de la comanda.', {
+        briefVersion: brief.version, inventarioSha256: brief.hechos.inventario.huella, ...datos,
+      });
+    },
     async antesDePaso(paso, e, accion) {
       const decide = (paso === 'CONFIRMAR_ELEMENTOS' && Boolean(accion.confirmo))
         || (paso === 'CONFIRMAR_FOTO' && Boolean(accion.confirmo || accion.rechazo));
@@ -169,7 +227,13 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
           parar: `CONFIRMACIÓN RECHAZADA: con el productor encendido, las paradas solo las confirma el usuario, desde la web o desde una terminal interactiva (npm run post -- ${e.proyecto} --confirmo). Esta acción no dice de dónde viene.`,
         };
       }
+      if (e.productorEditorial && paso === 'CONFIRMAR_ELEMENTOS') {
+        await prepararEditorial(e);
+      }
       const brief = await almacen.leer(e.proyecto);
+      if (e.productorEditorial && decide && (!accion.revision || accion.revision !== await revisionDeEncargo(deps.proyectos, e, brief))) {
+        return { parar: 'La comanda ha cambiado. Revisa la versión vigente antes de decidir.' };
+      }
       pasoActual.set(e.proyecto, paso);
       const r: ResultadoAntes = brief ? await comprobarAntes(paso, e, accion, brief) : {};
       desde.set(e.proyecto, e.historial.length + (r.notas?.length ?? 0));
@@ -183,6 +247,14 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
       let brief = await almacen.leer(proyecto);
       let paradaAnotada = false;
 
+      if (e.productorEditorial && brief?.editorial && e.paso === 'CONFIRMAR_ELEMENTOS' && e.bloqueo && _anterior.paso !== e.paso) {
+        // Antes de otra autorización se enseña el nuevo límite acumulado; el bloqueo impide generar entre tanto.
+        const presupuesto = presupuestoAutorizado(0, { fotos: fotosUsadas(e), llamadasTexto: await llamadasUsadas(proyecto) });
+        const renovado = cambiarBrief(brief, { ...brief, presupuesto }, deps.ahora());
+        await almacen.guardar(renovado);
+        brief = renovado;
+        await anotar(proyecto, 'productor', paso, 'PRESUPUESTO', 'Nuevo presupuesto pendiente de aprobación.', presupuesto);
+      }
       // Uno: la propuesta de la foto crea el brief (sin brief) o rehace el inventario propuesto (con brief propuesto).
       if (paso === 'PROPUESTA' && e.paso === 'CONFIRMAR_ELEMENTOS') {
         const propuesta = await leerPropuesta(e);
@@ -213,8 +285,8 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
               brief = nuevo;
               const n = nuevo.hechos.inventario.elementos.length;
               await anotar(proyecto, 'productor', paso, 'ENCARGO', `Brief v1 escrito por el código: inventario PROPUESTO (${textoDelInventario(nuevo.hechos.inventario.elementos)}).`);
-              await anotar(proyecto, 'productor', paso, 'DEGRADADO', 'Fase 1: el productor es solo código, sin IA; la idea queda vacía y el plan es el de por defecto.');
-              notas.push(`Productor: brief v1 en brief.json (código, sin IA; inventario PROPUESTO de ${n} elemento(s)).`);
+              if (!e.productorEditorial) await anotar(proyecto, 'productor', paso, 'DEGRADADO', 'Fase 1: el productor es solo código, sin IA; la idea queda vacía y el plan es el de por defecto.');
+              notas.push(`Productor: brief v1 en brief.json (inventario PROPUESTO de ${n} elemento(s)).`);
             }
           } else if (brief.hechos.inventario.estado === 'PROPUESTO') {
             const nuevo = actualizarInventarioPropuesto(brief, { elementos: propuesta.descripcion.elementos, tomas: tomasDe(e, propuesta) }, deps.ahora());
@@ -238,6 +310,9 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
             deps.ahora(),
             { fotos: fotosUsadas(e), llamadasTexto: await llamadasUsadas(proyecto) },
           );
+          if (e.productorEditorial && nuevo.editorial?.inventarioSha256 !== nuevo.hechos.inventario.huella) {
+            throw new ErrorDeUsuario('El inventario cambió después de preparar el plan. Revisa la comanda.');
+          }
           await almacen.guardar(nuevo);
           brief = nuevo;
           const { inventario } = nuevo.hechos;
@@ -247,6 +322,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
             paso,
             'CONFIRMACION',
             `Inventario confirmado (${accion.via}) y congelado en el brief v${nuevo.version}: ${textoDelInventario(inventario.elementos)}. Autoriza ≤ ${nuevo.presupuesto.fotos} fotos y ≤ ${nuevo.presupuesto.llamadasTexto} llamadas de texto.`,
+            { revisionVista: accion.revision, briefVersion: nuevo.version, inventarioSha256: inventario.huella, presupuesto: nuevo.presupuesto },
           );
           notas.push(`Productor: inventario confirmado por ti (${accion.via}) y congelado en el brief v${nuevo.version}.`);
         } else if (parada) {
@@ -274,6 +350,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
           paso,
           'CONFIRMACION',
           accion.rechazo ? `Foto rechazada (${accion.via}): ${accion.rechazo}` : `Foto confirmada (${accion.via}): ${e.fotoElegida}`,
+          { revisionVista: accion.revision, briefVersion: brief.version, candidata: _anterior.intentos.at(-1)?.activo, decision: accion.rechazo ? 'RECHAZADA' : 'CONFIRMADA' },
         );
       }
 
@@ -281,7 +358,10 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
       const inicio = desde.get(proyecto);
       if (brief && inicio !== undefined) {
         const nuevas = e.historial.slice(inicio).map((h) => h.nota);
-        if (nuevas.length) await anotar(proyecto, QUIEN_POR_PASO[paso] ?? 'codigo', paso, 'INFORME', nuevas.join(' · '));
+        if (nuevas.length) await anotar(proyecto, QUIEN_POR_PASO[paso] ?? 'codigo', paso, 'INFORME', nuevas.join(' · '), {
+          briefVersion: brief.version, inventarioSha256: brief.hechos.inventario.huella,
+          dependeDe: _anterior.paso, siguientePaso: e.paso, foto: e.fotoElegida ?? e.intentos.at(-1)?.activo ?? e.activoReal,
+        });
         if (parada && !paradaAnotada) await anotar(proyecto, 'productor', paso, 'PARADA', primeraLinea(parada));
         desde.delete(proyecto);
       }
@@ -307,16 +387,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
         },
 
         async antesDeLlamar(quien: QuienLlama): Promise<void> {
-          const brief = await almacen.leer(proyecto);
-          if (!brief) return;
-          const usadas = await llamadasUsadas(proyecto);
-          const tope = brief.presupuesto.llamadasTexto;
-          const paso = pasoActual.get(proyecto) ?? 'PROPUESTA';
-          if (usadas >= tope) {
-            await anotar(proyecto, 'productor', paso, 'PRESUPUESTO', `Llamada de ${quien} cortada: ${usadas} de ${tope}.`);
-            throw new ErrorDeUsuario(`Presupuesto de llamadas de texto agotado: ${usadas} de ${tope} autorizadas en brief.json. La orden se para; para seguir, vuelve a confirmar en una parada o crea un encargo nuevo.`);
-          }
-          await anotar(proyecto, quien, paso, 'LLAMADA', `Llamada ${usadas + 1} de ${tope} (${quien}).`);
+          if (!deps.presupuestoEnTransporte) await reservarLlamada(proyecto, quien);
         },
       };
     },

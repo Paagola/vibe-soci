@@ -1,6 +1,6 @@
 import type { ElementoComparable } from '../dominio/inventario.js';
 
-export type QuienLlama = 'director-foto' | 'revisor' | 'director-diseno' | 'critico' | 'analista';
+export type QuienLlama = 'productor' | 'director-foto' | 'revisor' | 'director-diseno' | 'critico' | 'analista';
 
 /** Lo que el productor da a los especialistas de un encargo. */
 export interface FuenteDelBrief {

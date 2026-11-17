@@ -59,6 +59,13 @@ export function esquemaDelPlanEditorial(brief: BriefDelEncargo) {
         }
       }
 
+      if (diapositiva.tratamiento === 'FOTO_TEXTO_AL_BORDE' && diapositiva.arco) {
+        const { centro, radio } = diapositiva.arco;
+        if (diapositiva.papel !== 'detalle' || centro.x - radio < 0.035 || centro.x + radio > 0.965 ||
+            centro.y - radio * 0.75 < 0.035 || centro.y + radio * 0.75 > 0.965) {
+          problema([...ruta, 'arco'], 'El arco debe caber en el encuadre 3:4 de un detalle de la foto fuente.');
+        }
+      }
       if (diapositiva.tratamiento === 'FOTO_TEXTO_AL_BORDE' && !textoDelBrief(brief, diapositiva.texto)) {
         problema([...ruta, 'texto'], 'El texto al borde debe referir a un dato disponible en el brief.');
       }
@@ -109,4 +116,16 @@ export class ProductorEditorialSimulado implements ProductorEditorial {
       diapositivas: brief.plan.map((pagina) => diapositivaSimulada(brief, pagina)),
     });
   }
+}
+
+/** Instrucciones de cámara derivadas del plan, visibles con el prompt antes de autorizar la imagen. */
+export function direccionParaLaFoto(brief: BriefDelEncargo | undefined): string {
+  if (!brief?.editorial) return '';
+  const { diapositivas, hiloVisual } = brief.editorial.plan;
+  const portada = diapositivas[0];
+  const encuadre = portada?.tratamiento === 'FOTO_TEXTO_AL_BORDE'
+    ? `Leave quiet negative space at the ${portada.borde === 'SUPERIOR' ? 'top' : 'bottom'} for separate typesetting.`
+    : 'Compose the cover as a standalone photograph, without reserving space for a headline.';
+  const continuidad = { COLOR: 'Keep the characteristic colours of the ingredients consistent.', LUZ: 'Keep a coherent light direction and preserve the texture of the dish.', ENCUADRE: 'Frame the dish with a clear axis that can be repeated in the following views.' };
+  return ` Editorial direction: ${encuadre} ${continuidad[hiloVisual]} Render no lettering or graphics.`;
 }

@@ -22,6 +22,11 @@ import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join, relative, resolve } from 'node:path';
 import sharp from 'sharp';
+import { escribirJsonAtomico } from '../../adaptadores/ficheros/escribirJsonAtomico.js';
+import type { CriticoEditorial } from '../productor/criticaEditorial.js';
+import { revisarEntrega } from '../productor/revisarEntrega.js';
+import { direccionParaLaFoto } from '../productor/editorial.js';
+import { materializarEditorial } from '../productor/componerEditorial.js';
 import { Activo } from '../../dominio/activos.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
@@ -49,6 +54,7 @@ import type { HistorialDeDisenos } from '../../puertos/HistorialDeDisenos.js';
 import { efectosDeLaReferencia, huellaDelLocal, textoDeHuella } from '../../dominio/diseno/huella.js';
 import type { DepsReferencias } from '../referencias/dependencias.js';
 import type { GanchosDeOrden, Via } from './ganchos.js';
+import { prepararRecuperacion } from './recuperarGeneracion.js';
 
 export interface DepsPost {
   /** Raíz del repositorio (para marcas/ y rutas relativas). */
@@ -73,10 +79,12 @@ export interface DepsPost {
   analista?: AnalistaDeReferencias;
   /** El productor (orquestador): observa cada paso, anota y puede parar la orden. Sin él, la orden es la de siempre. */
   productor?: GanchosDeOrden;
+  criticoEditorial?: CriticoEditorial;
   ahora: () => string;
 }
 
 export interface Accion {
+  revision?: string;
   confirmo?: boolean;
   rechazo?: string;
   /** De dónde viene la confirmación (la web o una terminal interactiva). */
@@ -114,13 +122,14 @@ export async function leerEncargo(deps: Pick<DepsPost, 'proyectos'>, proyecto: s
 
 export async function guardarEncargo(deps: DepsPost, e: EncargoPost): Promise<void> {
   await mkdir(join(deps.proyectos, e.proyecto), { recursive: true });
-  await writeFile(rutaEncargo(deps, e.proyecto), `${JSON.stringify(EncargoPost.parse(e), null, 2)}\n`);
+  await escribirJsonAtomico(rutaEncargo(deps, e.proyecto), EncargoPost.parse(e));
 }
 
 export async function crearEncargo(
   deps: DepsPost,
   datos: {
     proyecto: string;
+    productorEditorial?: boolean;
     local: string;
     plato: string;
     foto: string;
@@ -143,6 +152,7 @@ export async function crearEncargo(
   const ahora = deps.ahora();
   const encargo = EncargoPost.parse({
     esquema: 'post/encargo@1',
+    ...(datos.productorEditorial ? { productorEditorial: true } : {}),
     proyecto: datos.proyecto,
     local: datos.local,
     plato: datos.plato,
@@ -321,7 +331,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const hechos = opcionesPrompt?.desdeElInventario ? { marca: textoDeMarca(await deps.referencias.locales.obtener(e.local)) } : {};
     const revision = revisarPropuesta(propuesta, opcionesPrompt, { lado: { ancho: real.activo.ancho, alto: real.activo.alto }, nota: e.plato, ...hechos });
     const problemas = revision.problemas;
-    const prompt = revision.prompt;
+    const prompt = revision.prompt + (e.productorEditorial ? direccionParaLaFoto(await deps.productor?.leerBrief?.(e.proyecto)) : '');
     // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto: la foto de más que haya subido el
     // dueño para ese elemento (no se genera) o, si no, una toma nueva sacada de la misma foto real.
     // F3.3: un elemento que la nota del dueño llama con otra preparación no se confirma (gunkan / rollito de papel de arroz).
@@ -334,7 +344,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         ? []
         : [
             ...extras.filter((x) => x.nombre && x.activo).map((x) => ({ elemento: x.nombre!, prompt: '', real: true, elegida: x.activo })),
-            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(huecosDeTomaEfectivos(propuesta, t, opcionesPrompt), { ...opcionesPrompt, deDetalle: true }) })),
+            ...(e.productorEditorial ? [] : propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(huecosDeTomaEfectivos(propuesta, t, opcionesPrompt), { ...opcionesPrompt, deDetalle: true }) })),
           ]
             .slice(0, 3)
             .map((t, i) => ({ n: i + 1, ...t }));
@@ -382,42 +392,80 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const n = e.intentos.length + 1;
     const id = `${e.proyecto}-foto-${n}`;
     const prompt = e.propuesta?.prompt ?? '';
-    let bytes: Buffer;
-    let generacion: { modelo: string; costeUsd: number; tarifa: string };
-    if (accion.importar) {
-      bytes = await readFile(resolve(deps.raiz, accion.importar));
-      generacion = { modelo: 'importada a mano (fuera de la orden)', costeUsd: 0, tarifa: `importada de ${accion.importar}; el coste, si lo hubo, no pasa por la orden` };
-      nota(`Foto del intento ${n} importada de ${accion.importar}.`);
-    } else {
+    const estilo = await rutaDeEstilo(deps, e);
+    const resolverFoto = async (
+      solicitud: PeticionFoto, numero: number, descripcion: string, importar?: string, soloRecuperar = false,
+    ): Promise<{ intento?: IntentoFoto; parada?: string; pendiente?: true }> => {
+      const recuperar = async (p: PeticionFoto) => {
+        const recuperacion = await prepararRecuperacion(deps.proyectos, e, p, real, numero, deps.ahora);
+        const existe = await deps.activos.existe(e.local, p.id);
+        const intento = existe ? await recuperacion.recuperar(await deps.activos.obtener(e.local, p.id)) : undefined;
+        return { existe, intento, recuperacion };
+      };
+      const original = await recuperar(solicitud);
+      const idManual = `${solicitud.id}-manual`;
+      const manual = original.existe && !original.intento ? await recuperar({ ...solicitud, id: idManual }) : undefined;
+      const recuperado = original.intento ?? manual?.intento;
+      if (recuperado) {
+        nota(`Foto ${recuperado.activo} recuperada con su procedencia y sin otro envío.`);
+        return { intento: recuperado };
+      }
+      if (soloRecuperar) return {};
+      if (importar) {
+        const bytes = await readFile(resolve(deps.raiz, importar));
+        const acabado = manual ? idManual : solicitud.id;
+        if (manual?.existe) throw new ErrorDeUsuario(`El activo de importación ${acabado} ya existe y no coincide con esta solicitud.`);
+        const generacion = { modelo: 'importada a mano (fuera de la orden)', costeUsd: 0, tarifa: `importada de ${importar}; el coste, si lo hubo, no pasa por la orden` };
+        await registrarFotoGenerada(deps, e, real, { id: acabado, bytes, generacion, prompt: solicitud.prompt, n: numero, descripcion });
+        nota(`Foto ${acabado} importada de ${importar}.`);
+        return { intento: { n: numero, activo: acabado, final: 'PENDIENTE', motivos: [], costeUsd: 0 } };
+      }
+      if (original.existe || await original.recuperacion.reservada()) {
+        return { parada: 'Existe un intento anterior sin foto compatible.', pendiente: true };
+      }
       const disponible = deps.generador.disponible();
-      if (!disponible.ok) {
-        return { encargo: e, parar: `No puedo generar: ${disponible.motivo}. Prompt para generarla a mano: ${relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''))}. Después: --importar <imagen>` };
-      }
-      const foto = await deps.generador.generar(peticion(e, real.ruta, prompt, n, await rutaDeEstilo(deps, e)));
-      bytes = foto.bytes;
-      generacion = { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle };
-      nota(`Intento ${n} generado con ${deps.generador.nombre} (${foto.modelo}): ${foto.costeUsd.toFixed(4)} USD.`);
-    }
-    await registrarFotoGenerada(deps, e, real, { id, bytes, generacion, prompt, n, descripcion: `Foto nueva del encargo ${e.proyecto}, intento ${n}: ${e.plato}` });
-    const intento: IntentoFoto = { n, activo: id, final: 'PENDIENTE', motivos: [], costeUsd: generacion.costeUsd };
-    // F3.3 (punto 11): las tomas de detalle que aún no tienen foto, una vez cada una (con la foto importada a mano no hay
-    // generador: los detalles usarán recortes de la portada).
-    let tomas = e.tomas;
-    if (!accion.importar && tomas.some((t) => !t.intento && !t.real)) {
-      tomas = [];
-      for (const t of e.tomas) {
-        if (t.intento || t.real) {
-          tomas.push(t);
-          continue;
+      if (!disponible.ok) return { parada: disponible.motivo };
+      if (e.productorEditorial && !e.autorizacion) return { parada: 'Falta la autorización de gasto de la comanda.' };
+      const reservar = original.recuperacion.reservar;
+      try {
+        if (!deps.generador.reservaEnEnvio) await reservar();
+        const foto = await deps.generador.generar({
+          ...solicitud,
+          ...(e.productorEditorial && e.autorizacion ? { estimadoMaximoUsd: e.autorizacion.estimadoPorIntentoUsd } : {}),
+          ...(deps.generador.reservaEnEnvio ? { antesDeEnviar: reservar } : {}),
+        });
+        const generacion = { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle };
+        await registrarFotoGenerada(deps, e, real, { id: solicitud.id, bytes: foto.bytes, generacion, prompt: solicitud.prompt, n: numero, descripcion });
+        nota(`Foto ${solicitud.id} generada con ${deps.generador.nombre} (${foto.modelo}): ${foto.costeUsd.toFixed(4)} USD.`);
+        return { intento: { n: numero, activo: solicitud.id, final: 'PENDIENTE', motivos: [], costeUsd: foto.costeUsd } };
+      } catch (error) {
+        const posterior = await recuperar(solicitud);
+        if (posterior.intento) {
+          nota(`Foto ${posterior.intento.activo} recuperada con su procedencia y sin otro envío.`);
+          return { intento: posterior.intento };
         }
-        const idToma = `${e.proyecto}-toma-${t.n}`;
-        const foto = await deps.generador.generar({ ...peticion(e, real.ruta, t.prompt, 0, await rutaDeEstilo(deps, e)), id: idToma });
-        await registrarFotoGenerada(deps, e, real, { id: idToma, bytes: foto.bytes, generacion: { modelo: foto.modelo, costeUsd: foto.costeUsd, tarifa: foto.detalle }, prompt: t.prompt, n: 1, descripcion: `Toma de detalle ${t.n} del encargo ${e.proyecto}: ${t.elemento}` });
-        nota(`Toma de detalle ${t.n} («${t.elemento}») generada: ${foto.costeUsd.toFixed(4)} USD.`);
-        tomas.push({ ...t, intento: { n: 1, activo: idToma, final: 'PENDIENTE', motivos: [], costeUsd: foto.costeUsd } });
+        if (!(await original.recuperacion.reservada())) throw error;
+        return { parada: `El intento reservado no dejó una foto recuperable. ${(error as Error).message}`, pendiente: true };
       }
+    };
+    const portada = await resolverFoto(peticion(e, real.ruta, prompt, n, estilo), n, `Foto nueva del encargo ${e.proyecto}, intento ${n}: ${e.plato}`, accion.importar);
+    if (!portada.intento) {
+      const ruta = relative(deps.raiz, join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''));
+      const situacion = portada.pendiente ? 'GENERACION PENDIENTE DE IMPORTACION' : 'No puedo generar';
+      return { encargo: e, parar: `${situacion}: ${portada.parada}. Prompt para generarla a mano: ${ruta}. Después: --importar <imagen>` };
     }
-    return { encargo: ir(e, 'COMPROBAR', { intentos: [...e.intentos, intento], tomas }), usaAccion: Boolean(accion.importar) };
+    const tomas: TomaDelEncargo[] = [];
+    for (const t of e.tomas) {
+      if (t.intento || t.real) {
+        tomas.push(t);
+        continue;
+      }
+      const solicitud = { ...peticion(e, real.ruta, t.prompt, 0, estilo), id: `${e.proyecto}-toma-${t.n}` };
+      const detalle = await resolverFoto(solicitud, 1, `Toma de detalle ${t.n} del encargo ${e.proyecto}: ${t.elemento}`, undefined, Boolean(accion.importar));
+      if (detalle.parada) nota(`Toma de detalle ${t.n}: ${detalle.parada} Se usará un recorte de la foto confirmada.`);
+      tomas.push(detalle.intento ? { ...t, intento: detalle.intento } : t);
+    }
+    return { encargo: ir(e, 'COMPROBAR', { intentos: [...e.intentos, portada.intento], tomas }), usaAccion: Boolean(accion.importar) };
   },
 
   async COMPROBAR(deps, e, _a, nota) {
@@ -535,6 +583,13 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const carpeta = join(deps.proyectos, e.proyecto);
     const tokens = join(deps.raiz, 'marcas', e.local, 'tokens.json');
     if (!(await existe(tokens))) return { encargo: e, parar: `Falta marcas/${e.local}/tokens.json (los colores y estilos de la marca para el compositor).` };
+    if (e.productorEditorial) {
+      const brief = await deps.productor?.leerBrief?.(e.proyecto);
+      if (!brief?.editorial) return { encargo: e, parar: 'Falta el plan editorial aprobado de la comanda.' };
+      await materializarEditorial(carpeta, tokens, e, brief);
+      nota(`Composición lista: ${brief.editorial.plan.diapositivas.length} página(s), brief v${brief.version}.`);
+      return { encargo: ir(e, 'COMPONER') };
+    }
     const plan = join(carpeta, 'plan.json');
     if (!(await existe(plan))) {
       await writeFile(
@@ -601,6 +656,20 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const errores = pieza.diapositivas.flatMap((d) => d.problemas.filter((p) => p.gravedad === 'ERROR').map((p) => `${d.id} v${d.version}: ${p.tipo}: ${p.mensaje}`));
     if (errores.length) {
       return { encargo: e, parar: `El compositor da errores: ${errores.join(' | ')}. Corrige la intención, sube su versión y vuelve a lanzar la orden.` };
+    }
+    if (e.productorEditorial) {
+      const brief = await deps.productor?.leerBrief?.(e.proyecto);
+      if (!brief) throw new ErrorDeUsuario('Falta el brief con el que revisar la entrega.');
+      const decision = await revisarEntrega(deps, e, brief, pieza);
+      if (decision === 'COMPONER') {
+        nota('Crítica del render: devolución localizada para componer las versiones corregidas.');
+        return { encargo: e };
+      }
+      if (decision.estado === 'REVISION_HUMANA') {
+        const motivos = decision.incidencias.map(i => `${i.id} v${i.version}: ${i.motivo}`).join(' · ');
+        return { encargo: e, parar: `Revisión editorial pendiente. ${motivos}` };
+      }
+      nota(`Crítica del render (${decision.modelo}): ${decision.estado}.`);
     }
     const plan = join(carpeta, 'plan.json');
     const contenido = JSON.parse(await readFile(plan, 'utf8')) as Record<string, unknown>;

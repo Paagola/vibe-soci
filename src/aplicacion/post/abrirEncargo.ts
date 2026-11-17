@@ -15,6 +15,7 @@ import { Estetica } from '../../dominio/diseno/estetica.js';
 import { crearEncargo, type DepsPost } from './ordenPost.js';
 
 export const DatosNuevoEncargo = z.object({
+  productorEditorial: z.literal(true).optional(),
   local: z.string().min(1, 'Elige el local.'),
   /** La nota del dueño al subir la foto: qué plato es. */
   plato: z.string().trim().min(3, 'Di qué plato es (mínimo 3 caracteres).').max(300),
@@ -73,6 +74,7 @@ export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: O
     const relativa = relative(deps.raiz, destino);
     return await crearEncargo(deps, {
       proyecto,
+      ...(datos.productorEditorial ? { productorEditorial: true } : {}),
       local: datos.local,
       plato: datos.plato,
       foto: relativa.startsWith('..') ? destino : relativa,

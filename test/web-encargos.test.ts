@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, it } from 'node:test';
 import { RAIZ } from '../src/config.js';
+import type { EncargoCriticaEditorial } from '../src/aplicacion/productor/criticaEditorial.js';
 import { crearEstudio } from '../src/web/estudio.js';
 import { crearApp } from '../src/web/servidor.js';
 
@@ -19,6 +20,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
   let carpeta: string;
   let servidor: Server;
   let base: string;
+  const lecturas: Array<Array<[string, number]>> = [];
 
   const pedir = async (metodo: string, ruta: string, cuerpo?: unknown) => {
     const respuesta = await fetch(`${base}${ruta}`, {
@@ -76,6 +78,23 @@ describe('API web · encargos de la orden única (simulado)', () => {
       },
       { simuladoAlArrancar: true, carpetaPlantillas: join(RAIZ, 'plantillas') },
     );
+    // Doble de visión para ejercitar devoluciones por página sin depender de la salida determinista de SIMULADO.
+    const post = estudio.post.bind(estudio);
+    estudio.post = async proyecto => {
+      const deps = await post(proyecto);
+      if (proyecto !== 'critica-del-entrecot') return deps;
+      deps.criticoEditorial = {
+        modelo: 'crítico de prueba',
+        async revisar({ paginas }: EncargoCriticaEditorial) {
+          lecturas.push(paginas.map(p => [p.id, p.version]));
+          assert.ok(paginas.every(p => p.bytes[0] === 255 && p.bytes[1] === 216));
+          if (lecturas.length === 1) return { incidencias: [{ id: 'detalle-1', version: 1, motivo: 'Concentrar el recorte sobre la textura.', correccion: { tipo: 'AJUSTAR_RECORTE', enfoque: { x: 0.55, y: 0.47 }, zoom: 1.6 } }] };
+          if (lecturas.length === 2) return { incidencias: [{ id: 'cierre', version: 1, motivo: 'Revisar la alineación de la firma.', correccion: { tipo: 'REVISION_HUMANA' } }] };
+          return { incidencias: [] };
+        },
+      };
+      return deps;
+    };
     servidor = crearApp(estudio).listen(0, '127.0.0.1');
     await new Promise((r) => servidor.once('listening', r));
     base = `http://127.0.0.1:${(servidor.address() as AddressInfo).port}`;
@@ -175,6 +194,96 @@ describe('API web · encargos de la orden única (simulado)', () => {
     const v2 = await pedir('PUT', `/api/encargos/${proyecto}/intencion`, { intencion: { ...intencion, version: 2 } });
     assert.equal((await esperar(v2.datos.trabajo)).estado, 'TERMINADO');
     assert.deepEqual((await detalle(proyecto)).diseno.versiones.map((v: { version: number }) => v.version), [1, 2]);
+  });
+
+  it('El pase de entrecot conserva una foto y tres páginas al corregir únicamente el cierre', async () => {
+    // Se lee una foto ya versionada. La comanda y cada activo de la prueba viven en carpetas temporales.
+    const bytes = await readFile(join(RAIZ, 'proyectos', '2026-11-14-entrecot-de-vaca-curado-directo', 'foto', 'subida.webp'));
+    const subida = await subir('entrecot.webp', bytes);
+    const proyecto = 'pase-de-entrecot';
+    const ruta = `/api/encargos/${proyecto}`;
+    const nuevo = await pedir('POST', '/api/encargos', {
+      proyecto, local: 'asador-etxebarri', plato: 'Entrecot de vaca a la brasa', formato: 'carrusel',
+      referencia: 'ref-post-30', productorEditorial: true, subidaId: subida.id,
+    });
+    assert.equal(nuevo.status, 201);
+    await esperar(nuevo.datos.trabajo);
+    let d = await detalle(proyecto);
+    assert.equal(d.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+    assert.deepEqual(d.editorial.plan.diapositivas.map((p: {tratamiento: string}) => p.tratamiento), ['FOTO_LIMPIA', 'RECORTE_DETALLE', 'CIERRE_TEXTO']);
+    assert.match(d.brief.plan[0].para, /sin texto/);
+    assert.equal(d.intentos.length, 0);
+    const revisionAnterior = d.revision;
+    d.propuesta.contenido.descripcion.elementos[0].nombre = 'entrecot';
+    const guardar = await pedir('PUT', ruta + '/propuesta', { propuesta: d.propuesta.contenido, revision: d.revision });
+    assert.equal(guardar.status, 200, JSON.stringify(guardar.datos));
+    assert.equal((await pedir('POST', ruta + '/avanzar', { confirmo: 'CONFIRMAR_ELEMENTOS', revision: revisionAnterior })).status, 409);
+    d = await detalle(proyecto);
+    assert.equal(d.brief.hechos.inventario.estado, 'PROPUESTO');
+    assert.equal(d.editorial.inventarioSha256, d.brief.hechos.inventario.huella);
+    await avanzar(proyecto, { confirmo: 'CONFIRMAR_ELEMENTOS', revision: d.revision });
+    d = await detalle(proyecto);
+    assert.equal(d.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.equal(d.brief.hechos.inventario.estado, 'CONFIRMADO');
+    assert.equal(d.intentos.length, 1);
+    await avanzar(proyecto, { confirmo: 'CONFIRMAR_FOTO', revision: d.revision });
+    d = await detalle(proyecto);
+    assert.equal(d.encargo.paso, 'HECHO');
+    assert.equal(d.revisionEditorial.estado, 'APROBADA');
+    const [portada, recorte, cierre] = d.diseno.diapositivas;
+    assert.deepEqual(portada.intencion.contenido.textos, {});
+    assert.equal(recorte.intencion.contenido.activos.foto, d.encargo.activoReal);
+    assert.equal(recorte.intencion.contenido.capas[0].zoom, 2);
+    assert.ok(Object.values(cierre.intencion.contenido.textos).includes(d.brief.marca.nombre));
+    const original = await archivo(d.base + 'disenos/' + portada.versiones[0].exportadas[0].archivo);
+    const intencion = cierre.intencion.contenido;
+    intencion.capas.find((c: {tipo: string}) => c.tipo === 'texto').alinear = 'derecha';
+    const correccion = await pedir('PUT', ruta + '/intencion', { intencion, revision: d.revision });
+    assert.equal(correccion.status, 202);
+    const trabajo = await esperar(correccion.datos.trabajo);
+    assert.equal(trabajo.estado, 'TERMINADO', JSON.stringify(trabajo.error));
+    const final = await detalle(proyecto);
+    assert.deepEqual(final.diseno.diapositivas.map((p: {versiones: unknown[]}) => p.versiones.length), [1, 1, 2]);
+    assert.equal(final.encargo.fotoElegida, d.encargo.fotoElegida);
+    assert.equal(final.intentos.length, 1);
+    assert.equal(original.status, 200);
+    assert.deepEqual((await archivo(d.base + 'disenos/' + portada.versiones[0].exportadas[0].archivo)).bytes, original.bytes);
+    assert.equal((await pedir('PUT', ruta + '/intencion', { intencion, revision: d.revision })).status, 409);
+    const bitacora = (await readFile(join(carpeta, 'datos-simulado', 'proyectos', proyecto, 'bitacora.jsonl'), 'utf8'))
+      .trim().split('\n').map(linea => JSON.parse(linea));
+    assert.equal(bitacora.filter(m => m.quien === 'usuario' && m.tipo === 'CONFIRMACION').length, 2);
+    assert.ok(bitacora.filter(m => m.tipo === 'LLAMADA').length <= final.brief.presupuesto.llamadasTexto);
+    assert.ok(bitacora.some(m => m.tipo === 'LLAMADA' && m.datos.briefVersion === null));
+  });
+
+  it('revisa el render, corrige solo el detalle y conserva la candidata durante la revisión humana del cierre', async () => {
+    const proyecto = 'critica-del-entrecot';
+    const subida = await subir('entrecot.webp', await readFile(join(RAIZ, 'proyectos', '2026-11-14-entrecot-de-vaca-curado-directo', 'foto', 'subida.webp')));
+    const ruta = `/api/encargos/${proyecto}`;
+    const nuevo = await pedir('POST', '/api/encargos', { proyecto, local: 'asador-etxebarri', referencia: 'ref-post-30',
+      plato: 'Entrecot de vaca', formato: 'carrusel', productorEditorial: true, subidaId: subida.id });
+    await esperar(nuevo.datos.trabajo);
+    await avanzar(proyecto, { confirmo: 'CONFIRMAR_ELEMENTOS', revision: (await detalle(proyecto)).revision });
+    await avanzar(proyecto, { confirmo: 'CONFIRMAR_FOTO', revision: (await detalle(proyecto)).revision });
+    let d = await detalle(proyecto);
+    assert.equal(d.encargo.paso, 'COMPONER');
+    assert.deepEqual(lecturas, [[['post', 1], ['detalle-1', 1], ['cierre', 1]], [['post', 1], ['detalle-1', 2], ['cierre', 1]]]);
+    assert.equal(d.revisionEditorial.estado, 'REVISION_HUMANA');
+    assert.deepEqual(d.revisionEditorial.correcciones, [{ id: 'detalle-1', desde: 1, hasta: 2 }]);
+    const fotoAprobada = d.encargo.fotoElegida;
+    await avanzar(proyecto);
+    assert.equal(lecturas.length, 2, 'No repite el dictamen sobre los mismos píxeles y versiones.');
+    d = await detalle(proyecto);
+    const cierre = d.diseno.diapositivas[2].intencion.contenido;
+    cierre.capas.find((c: {tipo:string}) => c.tipo === 'texto').alinear = 'centro';
+    const respuesta = await pedir('PUT', ruta + '/intencion', { intencion: cierre, revision: d.revision });
+    assert.equal((await esperar(respuesta.datos.trabajo)).estado, 'TERMINADO');
+    const final = await detalle(proyecto);
+    assert.equal(final.encargo.paso, 'HECHO');
+    assert.equal(final.revisionEditorial.estado, 'APROBADA');
+    assert.equal(final.encargo.fotoElegida, fotoAprobada);
+    assert.equal(final.intentos.length, 1);
+    assert.deepEqual(lecturas[2], [['post', 1], ['detalle-1', 2], ['cierre', 2]]);
   });
 
   it('el local de ejemplo solo existe en simulado y las rutas no salen de su carpeta', async () => {

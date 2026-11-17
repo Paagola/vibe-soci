@@ -33,6 +33,18 @@ describe('ClienteGemini', () => {
     assert.match(cuerpos[1] ?? '', /Tu respuesta no es válida/);
   });
 
+  it('el presupuesto corta el reintento del transporte antes del siguiente envío', async () => {
+    let envios = 0;
+    let reservas = 0;
+    const cliente = new ClienteGemini('k', ['hydrogen', 'respaldo'], {
+      antesDeEnviar: async () => { if (++reservas > 1) throw new Error('Presupuesto agotado'); },
+      fetch: async () => { envios++; return new Response('', { status: 503 }); },
+      dormir: async () => {},
+    });
+    await assert.rejects(cliente.generarJson('i', [{ text: 'x' }], z.boolean()), /Presupuesto agotado/);
+    assert.equal(envios, 1);
+  });
+
   it('acepta JSON envuelto en un bloque de código', () => {
     assert.deepEqual(interpretarJson('```json\n{"a":1}\n```', z.object({ a: z.number() })), { ok: true, datos: { a: 1 } });
   });

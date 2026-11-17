@@ -30,7 +30,8 @@ import { stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { viaDeLaTerminal } from '../aplicacion/post/ganchos.js';
-import { avanzar, crearEncargo, type DepsPost } from '../aplicacion/post/ordenPost.js';
+import { revisionDeEncargo } from '../aplicacion/productor/revision.js';
+import { avanzar, crearEncargo, leerEncargo, type DepsPost } from '../aplicacion/post/ordenPost.js';
 import { RAIZ, leerConfig } from '../config.js';
 import { crearDepsPost } from '../contenedorPost.js';
 import { Estetica } from '../dominio/diseno/estetica.js';
@@ -52,6 +53,7 @@ const { values, positionals } = parseArgs({
     'foto-extra': { type: 'string', multiple: true },
     'portada-toma': { type: 'string' },
     'sin-toma': { type: 'string', multiple: true },
+    revision: { type: 'string' },
     confirmo: { type: 'boolean', default: false },
     rechazo: { type: 'string' },
     importar: { type: 'string' },
@@ -82,7 +84,7 @@ async function principal(): Promise<void> {
     if (!proyecto || !values.local || !values.foto || !values.plato) throw new ErrorDeUsuario('Uso: npm run post -- nuevo <proyecto> --local L --foto <ruta> --plato "…" [--referencia ref-id] [--simular]');
     const uso = values.uso === 'SOLO_PRUEBA_COMPOSICION' ? 'SOLO_PRUEBA_COMPOSICION' : 'PUBLICABLE';
     const deps = await construirDeps(values.simular, proyecto);
-    await crearEncargo(deps, { proyecto, local: values.local, plato: values.plato, foto: values.foto, usoFotoReal: uso, simulado: values.simular, titularCreativo: values['titular-creativo'], estiloDeReferencia: values['estilo-de-referencia'], ...(values.estetica ? { estetica: Estetica.parse(values.estetica) } : {}), formato: values.formato === 'carrusel' ? 'carrusel' : 'post', ...(values['foto-extra']?.length ? { fotosExtra: values['foto-extra'].map(fotoExtra) } : {}), ...(values.referencia ? { referencia: values.referencia } : {}) });
+    await crearEncargo(deps, { proyecto, productorEditorial: values.productor || Boolean(config.productor), local: values.local, plato: values.plato, foto: values.foto, usoFotoReal: uso, simulado: values.simular, titularCreativo: values['titular-creativo'], estiloDeReferencia: values['estilo-de-referencia'], ...(values.estetica ? { estetica: Estetica.parse(values.estetica) } : {}), formato: values.formato === 'carrusel' ? 'carrusel' : 'post', ...(values['foto-extra']?.length ? { fotosExtra: values['foto-extra'].map(fotoExtra) } : {}), ...(values.referencia ? { referencia: values.referencia } : {}) });
     console.log(`✓ Encargo ${proyecto} creado${values.simular ? ' (SIMULADO, en datos-simulado/)' : ''}.`);
     await seguir(deps, proyecto);
     return;
@@ -95,11 +97,12 @@ async function principal(): Promise<void> {
 
 async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
   const via = viaDeLaTerminal({
-    productor: values.productor || Boolean(leerConfig().productor),
+    productor: Boolean(deps.productor),
     confirmaORechaza: Boolean(values.confirmo || values.rechazo),
     interactiva: Boolean(process.stdin.isTTY && process.stdout.isTTY),
   });
   const r = await avanzar(deps, proyecto, {
+    ...(values.revision ? { revision: values.revision } : {}),
     confirmo: values.confirmo,
     ...(values.rechazo ? { rechazo: values.rechazo } : {}),
     ...(values.importar ? { importar: values.importar } : {}),
@@ -107,6 +110,11 @@ async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
     ...(values['sin-toma']?.length ? { sinToma: values['sin-toma'].map(Number) } : {}),
     ...(via ? { via } : {}),
   });
+  if (r.encargo.productorEditorial && ['CONFIRMAR_FOTO', 'CONFIRMAR_ELEMENTOS'].includes(r.encargo.paso)) {
+    const e = await leerEncargo(deps, proyecto);
+    const revision = await revisionDeEncargo(deps.proyectos, e, await deps.productor?.leerBrief?.(proyecto));
+    r.parada += `\nAñade --revision ${revision} a la decisión sobre esta versión.`;
+  }
   for (const m of r.mensajes) console.log(`· ${m}`);
   console.log(`\n■ ${r.encargo.paso}${r.encargo.simulado ? ' (simulado)' : ''} · ${r.parada}`);
 }

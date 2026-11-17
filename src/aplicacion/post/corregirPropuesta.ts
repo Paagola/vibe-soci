@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { huellaDelInventario } from '../../dominio/inventario.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import { esOtraToma, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
 import { opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
@@ -25,6 +26,10 @@ export async function corregirPropuesta(deps: DepsPost, proyecto: string, entrad
     throw new ErrorDeUsuario('La propuesta solo se corrige en la parada de elementos, antes de confirmarla.');
   }
   const propuesta = validar(PropuestaFotoNueva, entrada, 'La propuesta no es válida.');
+  const brief = await deps.productor?.leerBrief?.(proyecto);
+  if (e.productorEditorial && brief?.hechos.inventario.estado === 'CONFIRMADO' && brief.hechos.inventario.huella !== huellaDelInventario(propuesta.descripcion.elementos)) {
+    throw new ErrorDeUsuario('Este inventario ya está confirmado. Puedes ajustar la toma sin cambiar los hechos del plato.');
+  }
   const archivo = e.propuesta?.archivo ?? 'foto/propuesta.json';
   const ruta = join(deps.proyectos, e.proyecto, archivo);
   const guardada = JSON.parse(await readFile(ruta, 'utf8')) as Record<string, unknown>;
@@ -53,5 +58,10 @@ export async function corregirPropuesta(deps: DepsPost, proyecto: string, entrad
     propuesta: { archivo, prompt, problemas },
     historial: [...e.historial, { fecha: ahora, paso: e.paso, nota: `Propuesta corregida a mano${problemas.length ? `, con problemas: ${problemas.join(' | ')}` : ''}.` }],
   });
+  await deps.productor?.registrarCorreccion?.(proyecto, e.paso, {
+    destino: 'inventario', archivo, inventarioAnterior: brief?.hechos.inventario.huella,
+    inventarioPropuesto: huellaDelInventario(propuesta.descripcion.elementos),
+  });
+  await deps.productor?.prepararEditorial?.(e);
   return { propuesta, prompt, problemas, toma: esOtraToma(propuesta.descripcion, propuesta.huecos.camara) };
 }

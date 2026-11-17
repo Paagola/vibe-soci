@@ -3,6 +3,7 @@
  * (inmutable una vez lo confirma el usuario), plan de diapositivas, restricciones y presupuesto. Dominio puro.
  */
 import { z } from 'zod';
+import { PlanEditorial } from './editorial.js';
 import { Estetica } from './diseno/estetica.js';
 import { ErrorDeUsuario } from './errores.js';
 import { type ElementoComparable, huellaDelInventario, textoDelInventario } from './inventario.js';
@@ -88,6 +89,17 @@ export const BriefDelEncargo = z.object({
   estetica: Estetica.optional(),
   referencia: z.object({ id: z.string(), familia: z.string().optional() }).strict().optional(),
   plan: z.array(DiapositivaDelPlan).min(1),
+  editorial: z.object({
+    modelo: z.string().min(1),
+    briefVersion: z.number().int().positive(),
+    fotoSha256: z.string().regex(/^[0-9a-f]{64}$/),
+    inventarioSha256: z.string().regex(/^[0-9a-f]{64}$/),
+    referencia: z.string().optional(),
+    fichaReferencia: z.string().optional(),
+    fichaSha256: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+    oficioSha256: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+    plan: PlanEditorial,
+  }).strict().optional(),
   restricciones: z.object({
     fidelidad: z.enum(['FLEXIBLE', 'ESTRICTA']),
     noInventar: z.literal(true),
@@ -273,8 +285,10 @@ export function confirmarInventario(brief: BriefDelEncargo, d: { elementos: read
       },
       datosPorConfirmar: datosPorConfirmar(brief.hechos.nota, d.elementos),
     },
-    plan: planPorDefecto(brief.formato, d.elementos, d.tomas),
-    presupuesto: presupuestoAutorizado(tomasNuevasDe(d.tomas), usadas),
+    plan: brief.editorial ? brief.plan : planPorDefecto(brief.formato, d.elementos, d.tomas),
+    presupuesto: brief.editorial
+      ? brief.presupuesto
+      : presupuestoAutorizado(tomasNuevasDe(d.tomas), usadas),
   });
 }
 
@@ -307,6 +321,8 @@ export function actualizarInventarioPropuesto(brief: BriefDelEncargo, d: { eleme
     plan: planPorDefecto(brief.formato, d.elementos, d.tomas),
     presupuesto: presupuestoAutorizado(tomasNuevasDe(d.tomas), { fotos: 0, llamadasTexto: 0 }),
   });
+  // La planificación editorial sustituye la plantilla inicial para este mismo inventario.
+  if (brief.editorial && JSON.stringify(candidato.hechos) === JSON.stringify(brief.hechos)) return brief;
   const contenido = (b: BriefDelEncargo) => JSON.stringify([b.hechos.inventario, b.hechos.datosPorConfirmar, b.plan, b.presupuesto]);
   if (contenido(candidato) === contenido(brief)) return brief;
   return cambiarBrief(brief, candidato, ahora);
@@ -324,7 +340,7 @@ export function contextoDelBrief(brief: BriefDelEncargo): string {
     `Brief v${brief.version} del encargo ${brief.proyecto} (${brief.formato}; lienzo ${brief.lienzo.ancho}×${brief.lienzo.alto}, ${brief.lienzo.proporcion}; se exporta en ${brief.lienzo.exporta.join(' y ')}).`,
     `Nota del dueño (manda sobre cómo se llama cada cosa): «${brief.hechos.nota}».`,
     `Inventario ${confirmado ? 'CONFIRMADO por el usuario (inmutable)' : 'PROPUESTO (sin confirmar)'}: ${textoDelInventario(inventario.elementos)}.`,
-    `Plan: ${textoDelPlan(brief.plan)}.`,
+    `Plan: ${brief.editorial ? JSON.stringify(brief.editorial.plan) : textoDelPlan(brief.plan)}.`,
     `Restricciones: fidelidad ${brief.restricciones.fidelidad}; no inventar ningún dato del restaurante; ${brief.restricciones.reglasDeMarca.join(', ')}.`,
   ];
   if (datos.length > 0) lineas.push(`Datos por confirmar: ${datos.join(' ')}`);
@@ -335,13 +351,13 @@ export function contextoDelBrief(brief: BriefDelEncargo): string {
 export function resumenParaLaParada(brief: BriefDelEncargo): string {
   const { inventario, datosPorConfirmar: datos } = brief.hechos;
   const texto = textoDelInventario(inventario.elementos);
-  const lineas = ['  PRODUCTOR (código, sin IA; brief v' + brief.version + ' en brief.json):'];
+  const lineas = [`  PRODUCTOR (${brief.editorial?.modelo ?? 'código, sin IA'}; brief v${brief.version} en brief.json):`];
   if (inventario.estado === 'PROPUESTO') {
     lineas.push(`    Inventario que congela tu --confirmo: ${texto}`);
   } else {
     lineas.push(`    Inventario confirmado por ti el ${inventario.confirmadoEn} (${inventario.confirmadoPor?.via}): ${texto}. Si lo cambias en la propuesta, tu --confirmo lo vuelve a confirmar.`);
   }
-  lineas.push(`    Plan: ${textoDelPlan(brief.plan)}`);
+  lineas.push(`    Plan: ${brief.editorial?.plan.diapositivas.map(d => `${d.n} ${d.papel} · ${d.tratamiento}`).join(' / ') ?? textoDelPlan(brief.plan)}`);
   lineas.push(`    Datos por confirmar: ${datos.join(' ') || 'ninguno'}`);
   lineas.push(`    Presupuesto que autorizas: ≤ ${brief.presupuesto.fotos} fotos y ≤ ${brief.presupuesto.llamadasTexto} llamadas de texto en total.`);
   return lineas.join('\n');

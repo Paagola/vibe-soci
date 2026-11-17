@@ -1,9 +1,11 @@
 import { ErrorDeUsuario } from '../../dominio/errores.js';
+import type { BriefDelEncargo } from '../../dominio/brief.js';
 import type { EncargoPost, PasoPost } from '../../dominio/post.js';
 
 export type Via = 'web' | 'terminal';
 /** Lo que el gancho ve de la acción del usuario (solo lectura: el gancho nunca confirma). */
 export interface AccionVista {
+  readonly revision?: string;
   readonly confirmo?: boolean;
   readonly rechazo?: string;
   readonly importar?: string;
@@ -20,6 +22,9 @@ export interface ResultadoTras {
   parar?: string;
 }
 export interface GanchosDeOrden {
+  leerBrief?(proyecto: string): Promise<BriefDelEncargo | undefined>;
+  prepararEditorial?(encargo: Readonly<EncargoPost>): Promise<void>;
+  registrarCorreccion?(proyecto: string, paso: PasoPost, datos: Record<string, unknown>): Promise<void>;
   antesDePaso(paso: PasoPost, encargo: Readonly<EncargoPost>, accion: AccionVista): Promise<ResultadoAntes>;
   trasPaso(paso: PasoPost, anterior: Readonly<EncargoPost>, encargo: Readonly<EncargoPost>, accion: AccionVista, parada: string | undefined): Promise<ResultadoTras>;
 }
