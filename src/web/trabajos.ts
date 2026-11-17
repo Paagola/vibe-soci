@@ -6,6 +6,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { randomUUID } from 'node:crypto';
 import type { AlProgresar, Progreso } from '../aplicacion/progreso.js';
+import type { PasoPost } from '../dominio/post.js';
+import type { QuienLlama } from '../puertos/FuenteDelBrief.js';
 import { describirError, ErrorHttp, type ErrorApi } from './errores.js';
 import { restanteMs, type Medias } from './estimacion.js';
 
@@ -13,6 +15,11 @@ export type TipoTrabajo = 'CONCEPTOS' | 'PLAN' | 'GENERAR' | 'CORREGIR' | 'ENCAR
 export type EstadoTrabajo = 'EN_CURSO' | 'TERMINADO' | 'ERROR';
 /** Cada modo tiene sus propias piezas: el mismo id puede existir en los dos sin ser la misma pieza. */
 export type ModoTrabajo = 'REAL' | 'SIMULADO';
+
+export interface Intervencion {
+  especialista: QuienLlama;
+  modelo?: string;
+}
 
 export interface Trabajo {
   id: string;
@@ -22,6 +29,9 @@ export interface Trabajo {
   modo: ModoTrabajo;
   estado: EstadoTrabajo;
   mensaje: string;
+  paso?: PasoPost;
+  intervencion?: Intervencion;
+  intervenciones?: Intervencion[];
   hechas: number;
   total: number;
   iniciadoEn: number;
@@ -85,6 +95,8 @@ export class RegistroTrabajos {
     let pasoAnterior = '';
     const alProgresar = (progreso: Progreso) => {
       Object.assign(trabajo, { mensaje: progreso.mensaje, hechas: progreso.hechas, total: progreso.total });
+      trabajo.paso = progreso.paso;
+      delete trabajo.intervencion;
       // Solo se reestima al cambiar de paso: si no, cada imagen terminada «reiniciaría» la cuenta atrás.
       const paso = `${progreso.mensaje}|${progreso.pasosRestantes.director}|${progreso.pasosRestantes.tandas}`;
       if (paso !== pasoAnterior) {
@@ -103,6 +115,7 @@ export class RegistroTrabajos {
         trabajo.error = describirError(error).error;
         trabajo.mensaje = trabajo.error.message;
       } finally {
+        delete trabajo.intervencion;
         trabajo.terminadoEn = this.ahora();
       }
     });
@@ -123,6 +136,18 @@ export class RegistroTrabajos {
     const trabajo = this.trabajos.get(this.enCurso.getStore() ?? '');
     trabajo?.avisos.push(mensaje);
     return Boolean(trabajo);
+  }
+
+  /** Registra la intervención del modelo en el trabajo que hizo la llamada. */
+  intervencion(especialista: QuienLlama, modelo?: string): void {
+    const trabajo = this.trabajos.get(this.enCurso.getStore() ?? '');
+    if (trabajo?.tipo !== 'ENCARGO' || trabajo.estado !== 'EN_CURSO') return;
+    const actividad = { especialista, ...(modelo ? { modelo } : {}) };
+    trabajo.intervencion = actividad;
+    const anteriores = trabajo.intervenciones ?? [];
+    const ultima = anteriores.at(-1);
+    if (ultima?.especialista === especialista && ultima?.modelo === modelo) return;
+    trabajo.intervenciones = [...anteriores.slice(-7), actividad];
   }
 
   vista(trabajo: Trabajo): VistaTrabajo {

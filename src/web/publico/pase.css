@@ -45,6 +45,36 @@ p,h1,h2,h3,h4,figure,dl,dd{margin:0}
 .descripcion-hero{max-width:265px;color:#5d5d52}
 #fase-cabecera{font-weight:660;color:#393b32;font-size:.95rem;margin-bottom:4px}
 #local{font-size:.9rem;line-height:1.45}
+.presentacion:has(.actividad:not([hidden])) .descripcion-hero{display:none}
+.actividad{
+  display:grid;grid-template-columns:39px minmax(0,1fr);gap:11px;align-items:start;
+  width:min(100%,358px);padding:11px 12px;margin:0;
+  background:#282b24;color:#f0ebde;border:1px solid #75634a;border-radius:8px;
+  box-shadow:0 8px 19px #34281a1c;
+}
+.actividad-sello{
+  position:relative;display:grid;place-items:center;width:39px;aspect-ratio:1;border-radius:7px;
+  color:#f1c892;background:#24251f;border:1px solid #a18054;box-shadow:inset 0 0 0 3px #565144;
+}
+.actividad-sello::before{
+  position:absolute;content:"";inset:7px;border:1px solid #907045;border-radius:50%;
+  animation:visor-en-curso 1.9s ease-in-out infinite alternate;
+}
+.actividad-sello i{position:relative;display:block;width:12px;height:12px;border-radius:50%;border:2px solid currentColor}
+.actividad-sello i::after{content:"";position:absolute;inset:3px;background:currentColor;border-radius:50%}
+.actividad[data-oficio=analista] .actividad-sello i::after{inset:auto;width:6px;height:2px;right:-5px;bottom:-2px;transform:rotate(45deg)}
+.actividad[data-oficio=fotografia] .actividad-sello i{background:conic-gradient(from 30deg,currentColor 0 20deg,transparent 20deg 60deg,currentColor 60deg 80deg,transparent 80deg 120deg,currentColor 120deg 140deg,transparent 140deg 180deg,currentColor 180deg 200deg,transparent 200deg 240deg,currentColor 240deg 260deg,transparent 260deg 300deg,currentColor 300deg 320deg,transparent 320deg)}
+.actividad[data-oficio=productor] .actividad-sello i{width:5px;height:5px;border:0;background:currentColor;box-shadow:0 -7px,6px 4px,-6px 4px}
+.actividad[data-oficio=imagen] .actividad-sello i{border-radius:2px}
+.actividad[data-oficio=revision] .actividad-sello i{width:13px;height:7px;border-width:0 0 2px 2px;border-radius:0;transform:translateY(-2px) rotate(-45deg)}
+.actividad[data-oficio=diseno] .actividad-sello i{width:14px;height:2px;border:0;border-radius:0;background:currentColor;box-shadow:-2px -5px,2px 5px}
+.actividad[data-oficio=critico] .actividad-sello i{border-radius:0;border-top:0;border-bottom:0;width:14px}
+.actividad-texto .rotulo{color:#dec598;font-size:.59rem;letter-spacing:.11em}
+#actividad-modelo::before{content:" · ";white-space:pre}
+#actividad-oficio{margin-top:2px;font-size:.92rem;font-weight:650;line-height:1.25}
+#actividad-tarea{margin-top:3px;font-size:.78rem;color:#e1dbcd;line-height:1.35}
+.turnos-de-trabajo ol{padding:0 0 0 1.4em;font-size:.8rem;color:var(--suave)}
+@keyframes visor-en-curso{from{opacity:.55}to{opacity:1}}
 .abrir-ficha{margin-top:23px;pointer-events:auto;padding:8px 15px 8px 17px;font-size:.8rem;min-height:36px}
 .abrir-ficha span{font-size:1.04rem;font-weight:400;margin-left:7px}
 .espacio{position:absolute;inset:0 -1.8% 0 29%;z-index:0}
@@ -143,6 +173,7 @@ summary{margin-bottom:6px;font-weight:560;font-size:.85rem}
 .aviso-linea,.llamada,.error,.ficha-progress{padding:10px 12px;background:#efece3;border-left:2px solid #9e9b84;font-size:.83rem;margin:8px 0}
 .error,.aviso-linea[data-alerta=true],.llamada-alerta{border-color:#a05733;color:#764122;background:#f4e9dd}
 .ficha-progress progress{width:100%;height:6px;accent-color:var(--cobre)}
+.ficha-progress-controles{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
 .herramientas{overflow-wrap:anywhere;scroll-margin:15px}
 .herramientas .editor,.herramientas .resultado,.herramientas .comparar,.herramientas .dos-columnas{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
 .herramientas .panel-encargo>header h2{font-size:1.4rem;font-weight:500;letter-spacing:-.04em}
@@ -187,6 +218,8 @@ summary{margin-bottom:6px;font-weight:560;font-size:.85rem}
   .presentacion h1{grid-column:1/-1;margin:9px 0 8px;font-size:clamp(41px,12.5vw,77px);line-height:1.08;letter-spacing:-.07em}
   .presentacion h1 em{display:inline}
   .descripcion-hero{max-width:255px}#fase-cabecera{font-size:.83rem;margin:0}#local{font-size:.78rem;line-height:1.35}
+  .actividad{grid-column:1/-1;margin:5px 0 8px}
+  .presentacion:has(.actividad:not([hidden])) .abrir-ficha{justify-self:start;margin-left:0}
   .abrir-ficha{align-self:center;min-height:32px;margin:0 0 0 10px;font-size:.71rem;padding:5px 9px;gap:4px}.abrir-ficha span{margin:0}
   .espacio{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:1.72;margin:2px 0 16px}
   .vista{right:var(--margen);top:15px;font-size:9px;min-height:27px;padding:4px 8px}

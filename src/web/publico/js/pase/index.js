@@ -4,6 +4,7 @@ import { estadoDePaso, urlsDe } from '../orden.js';
 import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, pideRevision, portadaDe } from './fichas.js';
 import { dibujarFotos, ESTACIONES, soporteDe } from './plano.js';
 import { ENCUADRES } from './renders.js';
+import { actividadDe, intervencionesDe } from './actividad.js';
 
 const $ = (id) => document.getElementById(id);
 const escena = $('escena');
@@ -12,7 +13,8 @@ const respaldo = $('vista-2d');
 const recorrido = $('recorrido');
 const herramientas = $('herramientas');
 const dialogo = $('dialogo');
-const trabajoNodo = h('div', { role: 'status', 'aria-live': 'polite' });
+const trabajoNodo = h('div');
+const panelActividad = $('actividad');
 const ETAPAS = { REFERENCIA: 'referencia', ELEMENTOS: 'elementos', FOTO: 'candidata', DISENO: 'composicion', RESULTADO: 'entrega' };
 const pasoDe = (d) => ETAPAS[d?.fase] ?? 'original';
 const indiceDe = (id) => ESTACIONES.findIndex((s) => s.id === id);
@@ -45,6 +47,9 @@ let propio = new URLSearchParams(location.search).get('vista') === '2d' ? '2d' :
 let materiales = {};
 let revisionMaterial = '';
 let contextoHerramientas;
+let trabajoSinSeguimiento;
+let actividad;
+let huellaActividad;
 
 function inventario() {
   return d?.propuesta?.valida ? d.propuesta.contenido.descripcion.elementos : [];
@@ -107,6 +112,7 @@ async function iniciarMotor() {
       else pintarOptica();
     }, () => { falloMotor = true; motor = null; propio = '2d'; cambiarVista(); });
     motor.seleccionar(seleccion, false);
+    motor.activar(actividad?.figura);
     medir();
   } catch { falloMotor = true; propio = '2d'; cambiarVista(); }
   finally { iniciandoMotor = false; }
@@ -197,6 +203,7 @@ function pintarEncargos() {
 }
 
 function pintarFicha() {
+  pintarActividad();
   const ctx = contexto();
   const cuerpo = $('ficha-cuerpo');
   const focoElemento = cuerpo.contains(document.activeElement) && document.activeElement.closest('.lista-elementos');
@@ -216,18 +223,52 @@ function pintarFicha() {
   if (focoElemento && elemento != null) cuerpo.querySelectorAll('.lista-elementos button')[elemento]?.focus({ preventScroll: true });
 }
 
+function pintarActividad() {
+  const trabajo = d?.trabajo;
+  actividad = trabajo?.id && trabajo.id === trabajoSinSeguimiento ? null : actividadDe(trabajo, ocupado?.tipo);
+  const huella = JSON.stringify(actividad);
+  if (huella === huellaActividad) return;
+  huellaActividad = huella;
+  panelActividad.hidden = !actividad;
+  motor?.activar(actividad?.figura);
+  if (!actividad) return;
+  panelActividad.dataset.oficio = actividad.figura;
+  $('actividad-oficio').textContent = actividad.nombre;
+  $('actividad-tarea').textContent = actividad.tarea;
+  $('actividad-modelo').hidden = !actividad.modelo;
+  $('actividad-modelo').textContent = actividad.modelo ?? '';
+}
+
 function pintarTrabajo(trabajo) {
-  if (!trabajo || (trabajo.estado !== 'EN_CURSO' && trabajo.estado !== 'ERROR')) return reemplazar(trabajoNodo);
-  const fallido = trabajo.estado === 'ERROR';
-  const mensaje = (fallido ? trabajo.error?.message : trabajo.mensaje) ?? 'Procesando el encargo';
-  const texto = trabajoNodo.querySelector('p');
-  const progress = trabajoNodo.querySelector('progress');
-  if (texto && progress && !fallido && mensaje === texto.textContent) {
-    progress.value = trabajo.fraccion || 0;
-    return;
+  if (!trabajo) return reemplazar(trabajoNodo);
+  const relevos = intervencionesDe(trabajo);
+  if (trabajo.estado === 'TERMINADO') {
+    return reemplazar(trabajoNodo, relevos.length ? h('details', { class: 'turnos-de-trabajo' },
+      h('summary', {}, 'Intervenciones de este avance'),
+      h('ol', {}, relevos.map(texto => h('li', {}, texto)))) : null);
   }
-  reemplazar(trabajoNodo, h('div', { class: 'ficha-progress', 'data-error': fallido }, h('p', {}, mensaje), fallido ? null : h('progress', { value: Number(trabajo.fraccion || 0), max: 1, 'aria-label': 'Progreso del trabajo' }),
-    trabajo.avisos?.length ? h('small', {}, trabajo.avisos.at(-1)) : null));
+  const sinSeguimiento = trabajo.id === trabajoSinSeguimiento;
+  const fallido = trabajo.estado === 'ERROR' || sinSeguimiento;
+  const oficio = fallido ? null : actividadDe(trabajo);
+  const mensaje = sinSeguimiento ? 'Se ha interrumpido el seguimiento. Recarga la página para recuperar el estado.' :
+    (oficio?.tarea ?? trabajo.error?.message ?? trabajo.mensaje ?? 'Procesando el encargo');
+  const aviso = trabajo.avisos?.at(-1);
+  const div = trabajoNodo.firstElementChild;
+  if (div?.dataset.error === String(fallido) && div.querySelector('p')?.textContent === mensaje &&
+      div.querySelector('strong')?.textContent === oficio?.nombre && div.querySelector('small')?.textContent === aviso) return;
+  reemplazar(trabajoNodo, h('div', { class: 'ficha-progress', 'data-error': fallido },
+    oficio ? h('strong', {}, oficio.nombre) : null,
+    h('p', {}, mensaje),
+    fallido ? null : h('div', { class: 'ficha-progress-controles' },
+      h('progress', { 'aria-label': 'Trabajo en curso' }),
+      h('button', { type: 'button', onclick: mostrarActividad }, 'Ver actividad')),
+    aviso ? h('small', {}, aviso) : null));
+}
+
+function mostrarActividad() {
+  if (panelActividad.hidden) return;
+  panelActividad.focus({ preventScroll: true });
+  panelActividad.scrollIntoView({ behavior: reduccion.matches ? 'instant' : 'smooth', block: 'center' });
 }
 
 function pintarHerramientas() {
@@ -384,10 +425,13 @@ async function seguir(trabajo) {
   if (seguimiento?.id === trabajo.id && seguimiento.fecha === fecha) return;
   const marca = { id: trabajo.id, fecha };
   seguimiento = marca;
+  trabajoSinSeguimiento = undefined;
   const fuera = () => turno !== fecha || seguimiento !== marca;
   try {
     const final = await seguirTrabajo(trabajo.id, (nuevo) => {
-      if (d && !fuera()) d.trabajo = nuevo;
+      if (!d || fuera()) return;
+      d.trabajo = nuevo;
+      pintarActividad();
       pintarTrabajo(nuevo);
     }, fuera);
     if (fuera()) return;
@@ -395,7 +439,12 @@ async function seguir(trabajo) {
     await cargarIndice().catch(() => {});
     if (!fuera()) await recargar(true);
   } catch (error) {
-    if (!fuera()) avisar(error.message, 'error');
+    if (!fuera()) {
+      trabajoSinSeguimiento = trabajo.id;
+      pintarActividad();
+      pintarTrabajo(d?.trabajo);
+      avisar(error.message, 'error');
+    }
   } finally {
     if (seguimiento === marca) seguimiento = null;
   }
@@ -406,6 +455,7 @@ async function ejecutar(boton, tipo, fn, mostrarError) {
   const marca = { tipo };
   const fecha = turno;
   ocupado = marca;
+  pintarActividad();
   const etiqueta = boton?.textContent;
   if (boton) {
     boton.disabled = true;
@@ -424,6 +474,7 @@ async function ejecutar(boton, tipo, fn, mostrarError) {
     return undefined;
   } finally {
     if (ocupado === marca) ocupado = null;
+    pintarActividad();
     if (boton?.isConnected) {
       boton.disabled = false;
       boton.textContent = etiqueta;

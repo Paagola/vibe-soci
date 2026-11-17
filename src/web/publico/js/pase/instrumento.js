@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { AJUSTES, ANCHO, ALTO } from './plano.js';
 import { entorno, montarOptica } from './optica.js';
+import { montarSelectorDeOficio } from './agentes3d.js';
 
 export function crearInstrumento(contenedor, alDibujar, alPerder) {
   const renderer = new T.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'low-power' });
@@ -9,12 +10,14 @@ export function crearInstrumento(contenedor, alDibujar, alPerder) {
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.06;
   renderer.shadowMap.enabled = true;
+  renderer.shadowMap.autoUpdate = false;
   renderer.shadowMap.type = T.VSMShadowMap;
   const lienzo = renderer.domElement;
   contenedor.append(lienzo);
   const escena = new T.Scene();
   const ambiente = entorno(renderer, escena);
   const mecanismo = montarOptica(escena);
+  const selector = montarSelectorDeOficio(escena);
   const camara = new T.OrthographicCamera();
   const destino = new T.Vector3(.32,1.97,0);
   camara.position.copy(destino).add(new T.Vector3(4.1,2.25,10));
@@ -46,6 +49,7 @@ export function crearInstrumento(contenedor, alDibujar, alPerder) {
   const reduccion=matchMedia('(prefers-reduced-motion: reduce)');
   let estado=[...AJUSTES.original], origen=estado, objetivo=estado, inicio=0;
   let raf=0, ancho=0, alto=0, disponible=true, fase='original', visible=true;
+  let oficio, oficioDesde = 0, ultimoDibujo = 0, reproyectar = true;
   function colocar() {
     const [x,giro,iris,extension]=estado;
     const m=mecanismo;
@@ -70,29 +74,64 @@ export function crearInstrumento(contenedor, alDibujar, alPerder) {
     raf=0;
     if (!disponible || !ancho || !alto || !visible) return;
     const fraccion=inicio && !reduccion.matches ? Math.min(1,(ahora-inicio)/620) : 1;
+    const animarOficio = oficio && !reduccion.matches;
+    if (!inicio && !reproyectar && animarOficio && ahora - ultimoDibujo < 33) {
+      programar();
+      return;
+    }
+    ultimoDibujo = ahora;
     const t=1-(1-fraccion)**3;
     estado=objetivo.map((v,i)=>origen[i]+(v-origen[i])*t);
     colocar();
+    selector.respirar(animarOficio ? ahora - oficioDesde : null);
+    if (inicio || reproyectar) renderer.shadowMap.needsUpdate = true;
     renderer.render(escena,camara);
-    alDibujar([coordenadas(mecanismo.principal),coordenadas(mecanismo.testigo)]);
-    if(fraccion<1) programar(); else inicio=0;
+    if (inicio || reproyectar) {
+      alDibujar([coordenadas(mecanismo.principal),coordenadas(mecanismo.testigo)]);
+      reproyectar = false;
+    }
+    if(fraccion===1) inicio=0;
+    if(inicio || animarOficio) programar();
   }
-  function programar(){ if(!raf && disponible && visible) raf=requestAnimationFrame(dibujar); }
+  function programar(){ if(!raf && disponible && visible && !document.hidden) raf=requestAnimationFrame(dibujar); }
+  function activar(nombre) {
+    if (oficio === nombre) return;
+    oficio = nombre;
+    oficioDesde = performance.now();
+    selector.activar(nombre);
+    programar();
+  }
   function seleccionar(id,animar=true){
     const nuevo=AJUSTES[id] ? id : 'original';
     if(nuevo===fase && ancho) return;
-    fase=nuevo;origen=[...estado];objetivo=AJUSTES[fase];inicio=animar?performance.now():0;programar();
+    fase=nuevo;origen=[...estado];objetivo=AJUSTES[fase];inicio=animar?performance.now():0;
+    reproyectar = true;
+    programar();
   }
   function medir(w,h) {
     if(!w || !h || (w===ancho && h===alto)) return;
     ancho=w;alto=h;renderer.setSize(w,h,false);
     const altura=Math.max(4.92,4.92*ANCHO/ALTO/(w/h));
     camara.top=altura/2;camara.bottom=-camara.top;camara.right=altura*w/h/2;camara.left=-camara.right;
-    camara.updateProjectionMatrix();programar();
+    camara.updateProjectionMatrix();
+    reproyectar = true;
+    programar();
   }
-  function mostrar(activo){visible=activo;if(activo)programar();else {cancelAnimationFrame(raf);raf=0;}}
+  function mostrar(activo){
+    visible=activo;
+    if(activo) programar();
+    else {cancelAnimationFrame(raf);raf=0;}
+  }
+  function alRecuperarVista() {
+    if (!document.hidden) programar();
+  }
+  document.addEventListener('visibilitychange', alRecuperarVista);
+  reduccion.addEventListener('change', programar);
   lienzo.addEventListener('webglcontextlost',e=>{
-    e.preventDefault();disponible=false;cancelAnimationFrame(raf);ambiente.dispose();alPerder();
+    e.preventDefault();disponible=false;cancelAnimationFrame(raf);ambiente.dispose();
+    document.removeEventListener('visibilitychange', alRecuperarVista);
+    reduccion.removeEventListener('change', programar);
+    alPerder();
   },{once:true});
-  return { medir, seleccionar, mostrar };
+  return { medir, seleccionar, mostrar, activar };
 }

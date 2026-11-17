@@ -53,6 +53,7 @@ export interface OpcionesDepsPost {
   /** Para el registro de gasto: de qué encargo sale cada petición. */
   proyecto: string;
   avisar?: (mensaje: string) => void;
+  alIntervenir?: (especialista: QuienLlama, modelo?: string) => void;
   /**
    * De dónde salen, en simulado, los locales, las referencias y el recuento de piezas:
    * - `REALES` (la línea de comandos): se leen de datos/, sin tocarlos;
@@ -144,7 +145,11 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       disenador: { director: new DirectorDisenoSimulado(), critico: new CriticoDisenoSimulado(), medidor, describirFuente },
       analista: new AnalistaReferenciasSimulado(),
     };
-    return encender ? conProductor(deps, { proyecto: opciones.proyecto, ...(editorial ? { editorial: new ProductorEditorialSimulado() } : {}) }) : deps;
+    return encender ? conProductor(deps, {
+      proyecto: opciones.proyecto,
+      alIntervenir: opciones.alIntervenir,
+      ...(editorial ? { editorial: new ProductorEditorialSimulado() } : {}),
+    }) : deps;
   }
 
   const { geminiApiKey } = config;
@@ -153,9 +158,12 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   let orquestador: Orquestador | undefined;
   const cliente = (clave: string, motivo: string, quien: QuienLlama) => new ClienteGemini(clave, modelos, {
     avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion),
-    ...(editorial ? { antesDeEnviar: async (modelo: string) => {
-      if (!orquestador) throw new Error('Falta el control de presupuesto.');
-      await orquestador.reservarLlamada(opciones.proyecto, quien, modelo);
+    ...(editorial || opciones.alIntervenir ? { antesDeEnviar: async (modelo: string) => {
+      if (editorial) {
+        if (!orquestador) throw new Error('Falta el control de presupuesto.');
+        await orquestador.reservarLlamada(opciones.proyecto, quien, modelo);
+      }
+      opciones.alIntervenir?.(quien, modelo);
     } } : {}),
   });
   const deps: DepsDisenoPost = {

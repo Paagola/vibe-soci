@@ -207,7 +207,11 @@ describe('API web · encargos de la orden única (simulado)', () => {
       referencia: 'ref-post-30', productorEditorial: true, subidaId: subida.id,
     });
     assert.equal(nuevo.status, 201);
-    await esperar(nuevo.datos.trabajo);
+    const propuesta = await esperar(nuevo.datos.trabajo);
+    const especialistas: string[] = propuesta.intervenciones.map((turno: { especialista: string }) => turno.especialista);
+    assert.ok(especialistas.includes('director-foto'));
+    assert.ok(especialistas.lastIndexOf('productor') > especialistas.indexOf('director-foto'));
+    assert.equal(propuesta.intervencion, undefined);
     let d = await detalle(proyecto);
     assert.equal(d.encargo.paso, 'CONFIRMAR_ELEMENTOS');
     assert.deepEqual(d.editorial.plan.diapositivas.map((p: {tratamiento: string}) => p.tratamiento), ['FOTO_LIMPIA', 'RECORTE_DETALLE', 'CIERRE_TEXTO']);
@@ -226,7 +230,8 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal(d.encargo.paso, 'CONFIRMAR_FOTO');
     assert.equal(d.brief.hechos.inventario.estado, 'CONFIRMADO');
     assert.equal(d.intentos.length, 1);
-    await avanzar(proyecto, { confirmo: 'CONFIRMAR_FOTO', revision: d.revision });
+    const composicion = await avanzar(proyecto, { confirmo: 'CONFIRMAR_FOTO', revision: d.revision });
+    assert.ok(composicion.intervenciones.some((turno: { especialista: string }) => turno.especialista === 'critico'));
     d = await detalle(proyecto);
     assert.equal(d.encargo.paso, 'HECHO');
     assert.equal(d.revisionEditorial.estado, 'APROBADA');

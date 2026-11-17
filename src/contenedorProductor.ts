@@ -6,10 +6,12 @@ import { AlmacenBriefFicheros } from './adaptadores/ficheros/AlmacenBriefFichero
 import { analistaConPresupuesto, criticoConBrief, directorDisenoConBrief, directorFotoConBrief, revisorConInventario } from './adaptadores/productor/decoradores.js';
 import { crearOrquestador } from './aplicacion/productor/orquestador.js';
 import type { DepsPost } from './aplicacion/post/ordenPost.js';
+import type { QuienLlama } from './puertos/FuenteDelBrief.js';
 
 /** Enciende el productor sobre unas dependencias de la orden: los ganchos y los especialistas envueltos. No cambia nada más. */
 export function conProductor<T extends DepsPost>(deps: T, opciones: {
   proyecto: string; editorial?: ProductorEditorial; conectarTransporte?: (orquestador: Orquestador) => void;
+  alIntervenir?: (especialista: QuienLlama) => void;
 }): T {
   const orq = crearOrquestador({
     proyectos: deps.proyectos,
@@ -23,6 +25,7 @@ export function conProductor<T extends DepsPost>(deps: T, opciones: {
       ficha: async e => e.referencia ? JSON.stringify((await deps.referencias.referencias.obtener(e.local, e.referencia)).ficha) : undefined,
     } } : {}),
     presupuestoEnTransporte: Boolean(opciones.conectarTransporte),
+    alIntervenir: opciones.alIntervenir,
   });
   opciones.conectarTransporte?.(orq);
   const f = orq.fuente(opciones.proyecto);

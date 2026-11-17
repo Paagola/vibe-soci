@@ -30,6 +30,7 @@ export interface DepsOrquestador {
   proyectos: string;
   direccion?: DireccionEditorial;
   presupuestoEnTransporte?: boolean;
+  alIntervenir?: (especialista: QuienLlama) => void;
   almacen: AlmacenBrief;
   locales: { obtener(local: string): Promise<Marca> };
   ahora: () => string;
@@ -174,6 +175,7 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
     await anotar(proyecto, quien, paso, 'LLAMADA', `Llamada ${usadas + 1} de ${tope} (${quien}).`, {
       briefVersion: brief?.version ?? null, ...(modelo ? { modelo } : {}),
     });
+    deps.alIntervenir?.(quien);
   };
 
   let turnoDeReserva = Promise.resolve();

@@ -223,7 +223,7 @@ async function avanzarConProgreso(deps: DepsDisenoPost, proyecto: string, accion
 
 /** Qué está haciendo la orden en cada paso y cuánto queda, en el mejor caso, hasta la siguiente parada. */
 export function progresoDe(paso: PasoPost, encargo: Pick<EncargoPost, 'intentos'>): Progreso {
-  const progreso = (mensaje: string, director = 0, tandas = 0, otrosMs = 0): Progreso => ({ mensaje, hechas: 0, total: 0, pasosRestantes: { director, tandas }, otrosMs });
+  const progreso = (mensaje: string, director = 0, tandas = 0, otrosMs = 0): Progreso => ({ paso, mensaje, hechas: 0, total: 0, pasosRestantes: { director, tandas }, otrosMs });
   switch (paso) {
     case 'REFERENCIA':
       return progreso('Comprobando la referencia…', 1);

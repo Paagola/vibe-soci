@@ -65,7 +65,10 @@ export function crearEstudio(config: Config, opciones: OpcionesEstudio): Estudio
   return {
     config,
     deps: () => (simulado ? simuladas : real),
-    post: (proyecto = 'web') => crearDepsPost(config, { simular: simulado, proyecto, avisar, datosDeReferencia: 'DEL_MODO' }),
+    post: (proyecto = 'web') => crearDepsPost(config, {
+      simular: simulado, proyecto, avisar, datosDeReferencia: 'DEL_MODO',
+      alIntervenir: (especialista, modelo) => registro.intervencion(especialista, modelo),
+    }),
     gastoDeFotos: () => gastoDeFotos(config),
     simulado: () => simulado,
     cambiarModo: (valor) => {
