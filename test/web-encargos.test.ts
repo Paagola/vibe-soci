@@ -15,6 +15,11 @@ import type { EncargoCriticaEditorial } from '../src/aplicacion/productor/critic
 import { crearEstudio } from '../src/web/estudio.js';
 import { crearApp } from '../src/web/servidor.js';
 
+function imagenDeLectura(textos: Array<{ texto: string }>, fondo: string, alto = 450) {
+  const lineas = textos.map((b, i) => '<text x="20" y="' + (55 + i * 45) + '" font-size="24" fill="white">' + b.texto + '</text>').join('');
+  return sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="' + alto + '"><rect width="360" height="' + alto + '" fill="' + fondo + '"/>' + lineas + '</svg>')).png().toBuffer();
+}
+
 const FOTO = join(RAIZ, 'plantillas', 'fotos', 'gamba-roja-de-palamos.png');
 
 describe('API web · encargos de la orden única (simulado)', () => {
@@ -314,7 +319,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal((await pedir('POST', ruta + '/taller', { accion: 'REABRIR_DIRECCION', revision: d.revision })).status, 409);
     assert.equal((await archivo(ruta + '/taller/paquete')).bytes.readUInt32LE(0), 0x04034b50);
     assert.notEqual((await decidir('GENERAR', { autorizarUnEnvio: true })).status, 202);
-    const subirCartel = async (alto: number, color: string) => (await subir('cartel.png', await sharp({ create: { width: 360, height: alto, channels: 3, background: color } }).png().toBuffer())).id;
+    const subirCartel = async (alto: number, color: string) => (await subir('cartel.png', await imagenDeLectura(comanda.textos, color, alto))).id;
     const importar = async (alto: number, color: string) => decidir('IMPORTAR', { subidaId: await subirCartel(alto, color), usoCandidata: 'PUBLICABLE' });
     assert.notEqual((await importar(360, '#654123')).status, 200);
     assert.equal((await importar(450, '#012345')).status, 200);
@@ -347,12 +352,18 @@ describe('API web · encargos de la orden única (simulado)', () => {
     const c = (await detalle(proyecto)).encargo.taller.comanda;
     assert.match(c.direccion.escena, /macro/i);
     assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
-    const bytes = await sharp({ create: { width: 360, height: 450, channels: 3, background: '#ffeedd' } }).png().toBuffer();
+    const vacia = await subir('vacia.png', await sharp({ create: { width: 360, height: 450, channels: 3, background: 'white' } }).png().toBuffer());
+    assert.equal((await decidir('IMPORTAR', { subidaId: vacia.id, usoCandidata: 'PUBLICABLE' })).status, 200);
+    const comprobaciones = { producto: true, legibilidad: true, gesto: true, transcripcion: c.textos.map((b: { texto: string }) => b.texto) };
+    assert.notEqual((await decidir('APROBAR', { version: 1, ...comprobaciones })).status, 200);
+    assert.equal((await decidir('DEVOLVER', { version: 1, motivo: 'Falta toda la imagen' })).status, 200);
+    assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
+    const bytes = await imagenDeLectura(c.textos, '#223344');
     const candidata = await subir('cafe.png', bytes);
     assert.equal((await decidir('IMPORTAR', { subidaId: candidata.id, usoCandidata: 'PUBLICABLE' })).status, 200);
-    const aprobada = await decidir('APROBAR', { version: 1, producto: true, legibilidad: true, gesto: true, transcripcion: c.textos.map((b: { texto: string }) => b.texto) });
+    const aprobada = await decidir('APROBAR', { version: 2, ...comprobaciones });
     assert.equal(aprobada.status, 200, JSON.stringify(aprobada.datos));
-    assert.equal((await detalle(proyecto)).encargo.taller.candidatas[0].uso, 'SOLO_PRUEBA_COMPOSICION');
+    assert.equal((await detalle(proyecto)).encargo.taller.candidatas[1].uso, 'SOLO_PRUEBA_COMPOSICION');
     assert.notEqual((await archivo(ruta + '/taller/exportacion')).status, 200);
     assert.equal((await archivo(ruta + '/taller/candidatas/1')).status, 200);
   });

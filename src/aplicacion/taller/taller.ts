@@ -95,12 +95,19 @@ export async function exportarArte(deps: DepsPost, e: EncargoPost) {
   return (await bytesDeCandidata(deps, e, ultima.version)).bytes;
 }
 
+async function superficieUniforme(bytes: Buffer): Promise<boolean> {
+  const movil = await sharp(bytes).resize(360, 450).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const medidas = await sharp(movil.data, { raw: movil.info }).stats();
+  return medidas.channels.every(c => c.stdev < 1);
+}
+
 async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte, bytes: Buffer, origen: Candidata['origen'], uso: Candidata['uso']) {
   const taller = e.taller!;
   if (!bytes.length || bytes.length > 32 * 1024 * 1024) throw new ErrorDeUsuario('La candidata no contiene una imagen del tamaño admitido.');
   const imagen = sharp(bytes, { failOn: 'warning', limitInputPixels: 36_000_000 });
   const meta = await imagen.metadata().catch(() => { throw new ErrorDeUsuario('La candidata debe poder abrirse como PNG, JPEG o WebP.'); });
   const { width, height } = meta.autoOrient;
+  if (width < 360 || height < 450) throw new ErrorDeUsuario('El cartel debe alcanzar al menos 360 × 450 píxeles para revisarlo a tamaño móvil.');
   if (!['png', 'jpeg', 'webp'].includes(meta.format) || (meta.pages ?? 1) !== 1 || Math.abs(width - 0.8 * height) > 2) {
     throw new ErrorDeUsuario('Importa una imagen fija vertical en proporción 4:5. El taller conserva el encuadre completo.');
   }
@@ -110,7 +117,8 @@ async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte
   await mkdir(carpeta(deps, e), { recursive: true });
   const ruta = join(carpeta(deps, e), sha256 + '.png');
   await writeFile(ruta, png);
-  const lectura = await leerCartel(ruta, comanda.textos.map(b => b.texto));
+  const [ocr, uniforme] = await Promise.all([leerCartel(ruta, comanda.textos.map(b => b.texto)), superficieUniforme(png)]);
+  const lectura = { ...ocr, superficieUniforme: uniforme };
   taller.candidatas.push({ version: taller.candidatas.length + 1, sha256, comanda: comanda.huella,
     origen, uso: e.usoFotoReal === 'PUBLICABLE' ? uso : 'SOLO_PRUEBA_COMPOSICION', fecha: deps.ahora(), lectura });
   return registrar(deps, e, 'CONFIRMAR_FOTO', 'Cartel raster 4:5 listo para cotejo con el producto y lectura en móvil.');
@@ -185,13 +193,14 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   if (e.paso !== 'CONFIRMAR_FOTO' || !ultimo || ultimo.version !== accion.version || ultimo.comanda !== comanda.huella) {
     throw new ErrorDeUsuario('La decisión debe corresponder a la candidata vigente.');
   }
-  await bytesDeCandidata(deps, e, ultimo.version);
+  const { bytes } = await bytesDeCandidata(deps, e, ultimo.version);
   if (accion.accion === 'DEVOLVER') {
     ultimo.devolucion = accion.motivo;
     delete taller.confirmada;
     taller.comanda = await redactar(deps, e, comanda.direccion);
     return registrar(deps, e, 'CONFIRMAR_ELEMENTOS', 'Candidata devuelta. Revisa la corrección antes de otra producción.');
   }
+  if (ultimo.lectura.superficieUniforme ?? await superficieUniforme(bytes)) throw new ErrorDeUsuario('La imagen aparece uniforme a 360 px. Devuelve esta versión e importa una imagen donde se lean el producto y el texto.');
   if (!coincideTexto(comanda.textos.map(b => b.texto), accion.transcripcion)) throw new ErrorDeUsuario('La transcripción de los bloques visibles no coincide con el copy confirmado.');
   await imagenFuente(deps, e, comanda);
   ultimo.revision = { fecha: deps.ahora(), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };

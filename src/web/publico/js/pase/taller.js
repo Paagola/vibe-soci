@@ -5,7 +5,7 @@ const titulo = texto => h('h2', { id: 'ficha-titulo' }, texto);
 const campo = (texto, control) => h('label', { class: 'campo' }, h('span', {}, texto), control);
 const texto = (nombre, min, max, valor = '') => h('textarea', { name: nombre, required: true, rows: 3, minlength: min, maxlength: max, value: valor });
 const opciones = (nombre, pares, valor) => h('select', { name: nombre }, pares.map(([key, label]) => h('option', { value: key, selected: key === valor }, label)));
-const accion = nombre => h('button', { type: 'submit', class: 'primario' }, nombre);
+const accion = (nombre, disabled = false) => h('button', { type: 'submit', class: 'primario', disabled }, nombre);
 const detalle = (titulo, ...contenido) => h('details', {}, h('summary', {}, titulo), contenido);
 const enlace = (titulo, href) => h('a', { class: 'boton', href, download: true }, titulo);
 const gestos = [['EMERGER', 'Emerger de una superficie'], ['LUZ_Y_SOMBRA', 'Luz y sombra'], ['RITMO', 'Ritmo entre letra y producto'], ['MACRO', 'Encuadre de detalle']];
@@ -97,9 +97,10 @@ export function fichaTaller(ctx) {
   const casillas = [['producto', 'He cotejado el producto y su preparación con la foto.'], ['gesto', 'En el cartel se ve la acción descrita en la dirección.'], ['legibilidad', 'He leído todas las palabras en la vista a 360 px.']].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
   const motivo = texto('motivo', 3, 480);
   return [titulo('Revisar el cartel'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), detalle('Foto fuente y dirección', h('img', { src: ctx.urls.subida(360), alt: e.plato, style: { maxWidth: '100%' } }), h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
+    ultima.lectura.superficieUniforme ? h('p', { class: 'aviso-linea' }, 'La imagen aparece uniforme en la vista móvil. Devuelve esta versión e importa la imagen con el producto y sus palabras.') : null,
     ultima.lectura.coincide === false ? h('p', { class: 'aviso-linea' }, 'El lector automático encontró diferencias. Amplía la imagen y coteja también las palabras pequeñas.') : null,
     detalle('Lectura automática de la imagen', h('p', {}, ultima.lectura.lineas.join(' · ') || 'Requiere lectura manual.'), h('p', {}, ultima.lectura.coincide === true ? 'El lector local reconoce los bloques confirmados.' : 'Comprueba las letras en la imagen, especialmente las cursivas.')),
     formulario(ctx, () => ({ accion: 'APROBAR', version: ultima.version, transcripcion: transcripcion.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean), ...Object.fromEntries(casillas.map(([k, , box]) => [k, box.checked])) }),
-      campo('Transcribe todo el texto que ves, un bloque por línea', transcripcion), casillas.map(([, label, control]) => h('label', {}, control, ' ' + label)), accion('Aprobar esta versión')),
+      campo('Transcribe todo el texto que ves, un bloque por línea', transcripcion), casillas.map(([, label, control]) => h('label', {}, control, ' ' + label)), accion('Aprobar esta versión', ultima.lectura.superficieUniforme)),
     detalle('Pedir una corrección', formulario(ctx, () => ({ accion: 'DEVOLVER', version: ultima.version, motivo: motivo.value }), campo('Qué debe cambiar en la imagen', motivo), accion('Devolver a dirección')))];
 }

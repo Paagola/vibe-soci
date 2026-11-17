@@ -30,7 +30,7 @@ export const TallerDeArte = z.object({
   candidatas: z.array(z.object({
     version: z.int().positive(), sha256: hash, comanda: hash, fecha: z.string(),
     origen: z.enum(['IMPORTACION', 'IMAGES_API']), uso: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']),
-    lectura: z.object({ motor: z.string(), lineas: z.array(z.string()), coincide: z.boolean().nullable() }),
+    lectura: z.object({ motor: z.string(), lineas: z.array(z.string()), coincide: z.boolean().nullable(), superficieUniforme: z.boolean().optional() }),
     devolucion: z.string().optional(), revision: revision.optional(),
   })).default([]),
   envios: z.array(z.object({ huella: hash, fecha: z.string(), numero: z.int().positive() })).default([]),
