@@ -28,6 +28,8 @@ En un clon nuevo, pulsa **Nuevo encargo → Usar el local de ejemplo** y sube un
 
 El productor editorial usa Hydrogen para la dirección y las tareas de texto y visión. Recibe los bytes de la foto fuente, el brief y ejemplos de oficio. El compositor resuelve las capas con los recursos locales. El modelo de fotografía se configura por separado. Cada envío de texto o visión consume cupo del encargo, incluidos los reintentos. Si se corta una generación de imagen, la orden recupera una candidata que coincida con la procedencia guardada. Si queda un envío reservado sin foto recuperable, te pide importar la candidata antes de continuar.
 
+La crítica editorial lee las páginas ya renderizadas. Señala la diapositiva y la versión que requieren un ajuste. El productor puede aplicar una corrección acotada por tanda conservando la fotografía aprobada. Si la incidencia persiste, la comanda vuelve a revisión humana y la ficha abre la página afectada.
+
 La mesa admite selección con teclado y vista 2D. La escena se adapta al ajuste de movimiento reducido del dispositivo.
 
 Para abrir un encargo editorial desde terminal, añade `--productor` al comando `npm run post -- nuevo`. En cada parada, copia la huella que muestra la orden y usa `--confirmo --revision <huella>` o `--rechazo "motivo" --revision <huella>` en una terminal interactiva.
