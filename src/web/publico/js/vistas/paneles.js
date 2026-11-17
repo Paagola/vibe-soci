@@ -397,7 +397,7 @@ function cajasDeGasto(p) {
 }
 
 /** Corregir la propuesta: la lista de elementos y los huecos que más se tocan; el resto, en el JSON completo. */
-function editorDePropuesta(ctx, original) {
+export function editorDePropuesta(ctx, original) {
   const propuesta = structuredClone(original);
   // Con el productor encendido, los elementos y el recuento del prompt se arman con la lista.
   const conInventario = Boolean(ctx.d.propuesta.desdeElInventario);
@@ -510,7 +510,7 @@ function editorDePropuesta(ctx, original) {
   );
 }
 
-function editorJsonDePropuesta(ctx, contenido) {
+export function editorJsonDePropuesta(ctx, contenido) {
   const errores = h('div');
   const texto = h('textarea', { class: 'codigo', spellcheck: 'false', wrap: 'off', value: JSON.stringify(contenido ?? {}, null, 2) });
   const guardar = (evento) =>
@@ -529,7 +529,7 @@ function editorJsonDePropuesta(ctx, contenido) {
 
 async function enviarPropuesta(ctx, propuesta, errores) {
   try {
-    const r = await api('PUT', `/encargos/${ctx.proyecto}/propuesta`, { propuesta });
+    const r = await api('PUT', `/encargos/${ctx.proyecto}/propuesta`, { propuesta, ...(ctx.d.revision ? { revision: ctx.d.revision } : {}) });
     avisar(r.problemas.length ? `Guardada, con ${r.problemas.length} problema(s) por corregir.` : 'Propuesta corregida: cumple la plantilla.', r.problemas.length ? 'info' : 'ok');
     await ctx.recargar();
   } catch (error) {
@@ -699,7 +699,7 @@ function panelTokens(ctx) {
 
 // ---------------------------------------------------------------- Diseño: la intención
 
-function panelIntencion(ctx, modo) {
+export function panelIntencion(ctx, modo) {
   const { d, urls, proyecto } = ctx;
   const diseno = d.diseno;
   const intencion = diseno.intencion;
@@ -767,6 +767,7 @@ function panelIntencion(ctx, modo) {
         const { vista } = await api('POST', `/encargos/${proyecto}/vista-previa`, { intencion: valor });
         reemplazar(lienzo, h('img', { src: `${vista.base}${vista.diseno.split('/').map(encodeURIComponent).join('/')}?v=${vista.sello}`, alt: 'Vista previa del post' }));
         reemplazar(problemas, listaDeProblemas(vista.problemas, vista.contraste));
+        ctx.alMostrarVista?.(vista);
       } catch (error) {
         reemplazar(lienzo, h('p', { class: 'nota' }, 'No se ha podido componer.'));
         reemplazar(problemas, bloqueError(error));

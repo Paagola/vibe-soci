@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>El pase · Society</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/pase.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three/three.module.min.js","three/addons/":"/vendor/three/addons/"}}</script>
+  <script type="module" src="/js/pase/index.js"></script>
+</head>
+<body>
+  <a class="skip" href="#ficha">Ir a la ficha</a>
+  <div class="estudio-pase">
+    <aside class="rail" aria-label="Society">
+      <a class="marca" href="/pase.html" aria-label="Society, ir a El pase">S<span>.</span></a>
+      <nav aria-label="Espacio de trabajo">
+        <button id="ir-mesa" class="nav-pase" type="button" aria-current="page"><i class="simbolo simbolo-mesa" aria-hidden="true"></i>Mesa</button>
+        <button id="ir-encargos" class="nav-pase" type="button"><i class="simbolo simbolo-encargos" aria-hidden="true"></i>Encargos</button>
+      </nav>
+      <a class="nav-pase rail-estudio" href="/index.html"><i class="simbolo simbolo-estudio" aria-hidden="true"></i>Estudio</a>
+    </aside>
+    <header class="cabecera">
+      <div class="ruta"><b>Society</b><span aria-hidden="true">/</span><span>El pase</span></div>
+      <div class="acciones-cabecera">
+        <span id="modo" class="modo" hidden></span>
+        <button id="nuevo" class="boton contraste" type="button"><b aria-hidden="true">+</b> Nuevo encargo</button>
+      </div>
+    </header>
+    <main id="mesa" class="puesto">
+      <section class="presentacion" aria-labelledby="titulo">
+        <div><p class="rotulo" id="local">Society · Estudio creativo</p><h1 id="titulo">El pase<span>.</span></h1></div>
+        <div id="fase-cabecera" class="fase-cabecera" hidden></div>
+      </section>
+      <div class="columnas">
+        <section class="tablero" aria-label="Mesa de trabajo">
+          <div class="borde-superior">
+            <h2><i aria-hidden="true"></i> Mesa de trabajo</h2>
+            <button id="cambiar-vista" class="boton vista" type="button" hidden>Vista 2D</button>
+          </div>
+          <div id="escena" class="escena" data-vista="2d">
+            <div id="vista-2d" class="vista-2d" aria-hidden="true"></div>
+            <div id="vista-3d" class="vista-3d" aria-hidden="true"></div>
+            <div id="anclas" class="anclas"></div>
+          </div>
+          <nav id="recorrido" class="recorrido" aria-label="Recorrido del encargo"></nav>
+        </section>
+        <div class="columna-fichas">
+          <section id="ficha" class="ficha" aria-labelledby="ficha-titulo" tabindex="-1">
+            <div class="ficha-borde"><span id="ficha-rotulo" class="rotulo">Ficha de trabajo</span><span id="ficha-avance" class="ficha-avance"></span></div>
+            <div id="ficha-cuerpo" class="ficha-cuerpo"><h2 id="ficha-titulo">Abriendo El pase…</h2></div>
+          </section>
+          <section id="herramientas" class="herramientas" aria-label="Herramientas de la fase" hidden></section>
+        </div>
+      </div>
+      <footer class="borde-inferior" aria-label="Resumen del encargo">
+        <div><span>Encargo</span><b id="pie-encargo">—</b></div>
+        <div><span>Inventario</span><b id="pie-inventario">—</b></div>
+        <div><span>Intentos</span><b id="pie-intentos">—</b></div>
+        <div><span>Entrega</span><b id="pie-entrega">—</b></div>
+        <span id="pie-actividad" class="actualizacion"></span>
+      </footer>
+    </main>
+    <div id="avisos" class="avisos" aria-live="polite"></div>
+    <dialog id="dialogo" class="dialogo" aria-labelledby="dialogo-titulo"></dialog>
+  </div>
+</body>
+</html>
