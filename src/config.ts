@@ -6,6 +6,7 @@ import { validar } from './dominio/validacion.js';
 
 /** Carpeta del proyecto, para que los comandos funcionen desde cualquier directorio. */
 export const RAIZ = fileURLToPath(new URL('..', import.meta.url));
+export const MODELO_PRODUCTOR_GEMINI = 'gemini-4-hydrogen';
 
 const vacioComoAusente = (valor: unknown) => (typeof valor === 'string' && valor.trim() === '' ? undefined : valor);
 /** Una variable vacía en .env cuenta como no puesta: así se aplica el valor por defecto. */
@@ -15,6 +16,8 @@ const Entorno = z.object({
   GEMINI_API_KEY: opcional(z.string().trim()),
   GEMINI_MODELO: opcional(z.string().trim()),
   GEMINI_MODELO_RESPALDO: opcional(z.string().trim()),
+  GEMINI_MODELO_PRODUCTOR: opcional(z.string().trim()),
+  GEMINI_MODELO_PRODUCTOR_RESPALDO: opcional(z.string().trim()),
   GEMINI_FACTURACION: opcional(z.enum(['si', 'no'])),
   GEMINI_TOPE_USD: opcional(z.coerce.number().positive()),
   GEMINI_MODELO_IMAGEN: opcional(z.string().trim()),
@@ -45,10 +48,10 @@ export interface Config {
   geminiModelo: string;
   /** Se usa si el principal está saturado. */
   geminiModeloRespaldo?: string;
-  /**
-   * La clave de Gemini tiene la facturación activada (vía de generación elegida el 09/11/2026). Por defecto, no:
-   * entonces la imagen no se puede generar por la API y lo demás va al tier gratuito.
-   */
+  /** Modelo de texto y visión de la orden con Productor. */
+  geminiModeloProductor?: string;
+  geminiModeloProductorRespaldo?: string;
+  /** Indica si la clave tiene facturación activa. La generación de imágenes por la API la requiere. */
   geminiFacturacion: boolean;
   /** Tope acumulado de gasto en Gemini (imagen), que comprueba el código antes de cada envío. Google solo avisa. */
   geminiTopeUsd: number;
@@ -75,6 +78,8 @@ export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     geminiApiKey: e.GEMINI_API_KEY,
     geminiModelo: e.GEMINI_MODELO ?? 'gemini-3.8-flash',
     geminiModeloRespaldo: e.GEMINI_MODELO_RESPALDO ?? 'gemini-3.5-flash',
+    geminiModeloProductor: e.GEMINI_MODELO_PRODUCTOR ?? MODELO_PRODUCTOR_GEMINI,
+    geminiModeloProductorRespaldo: e.GEMINI_MODELO_PRODUCTOR_RESPALDO,
     geminiFacturacion: e.GEMINI_FACTURACION === 'si',
     geminiTopeUsd: e.GEMINI_TOPE_USD ?? 1,
     geminiModeloImagen: e.GEMINI_MODELO_IMAGEN ?? 'gemini-3-pro-image',
