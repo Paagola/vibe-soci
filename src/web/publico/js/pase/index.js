@@ -2,11 +2,13 @@ import { api, seguirTrabajo } from '../api.js';
 import { avisar, bloqueError, formatearFecha, h, reemplazar } from '../ui.js';
 import { estadoDePaso, urlsDe } from '../orden.js';
 import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, pideRevision, portadaDe } from './fichas.js';
-import { distribuir, ESTACIONES, pintarPlano, proyectar2d, puntoInventario } from './plano.js';
+import { dibujarFotos, ESTACIONES, soporteDe } from './plano.js';
+import { ENCUADRES } from './renders.js';
 
 const $ = (id) => document.getElementById(id);
 const escena = $('escena');
-const anclas = $('anclas');
+const fotogramas = $('fotogramas');
+const respaldo = $('vista-2d');
 const recorrido = $('recorrido');
 const herramientas = $('herramientas');
 const dialogo = $('dialogo');
@@ -36,9 +38,10 @@ let cargando = true;
 let errorInicial;
 let motor;
 let dibujada = false;
-let plano;
+let puntos3d;
+let iniciandoMotor = false;
+let falloMotor = false;
 let propio = new URLSearchParams(location.search).get('vista') === '2d' ? '2d' : '3d';
-let marcadores = [];
 let materiales = {};
 let revisionMaterial = '';
 let contextoHerramientas;
@@ -63,36 +66,50 @@ function contexto() {
   };
 }
 
-function medir() {
-  const ancho = escena.clientWidth;
-  const alto = escena.clientHeight;
-  if (!ancho || !alto) return;
-  plano = distribuir(ancho, alto);
-  pintarPlano($('vista-2d'), plano, materiales);
-  motor?.actualizar(plano, materiales, ancho, alto);
-  anclar();
+function faseVista() { return ESTACIONES[indiceDe(seleccion)] ?? ESTACIONES[0]; }
+
+function pintarOptica() {
+  const fase = faseVista();
+  if (escena.dataset.vista === '2d') {
+    if (respaldo.dataset.fase !== fase.id) {
+      respaldo.dataset.fase = fase.id;
+      respaldo.style.backgroundImage = `url("/img/optica/${fase.id}.webp")`;
+    }
+  }
+  const esquinas = escena.dataset.vista === '3d' ? puntos3d : ENCUADRES[fase.id];
+  dibujarFotos(fotogramas, esquinas, fase.id, soporteDe(fase.id, materiales));
 }
 
-function anclar() {
-  if (!plano) return;
-  const estacionActiva = seccion === 'mesa' ? seleccion : '';
-  for (const papel of $('vista-2d').children) papel.classList.toggle('activa', papel.dataset.tipo === estacionActiva);
-  for (const { nodo, id, fila } of marcadores) {
-    const papel = plano.papeles[indiceDe(id)];
-    const [x, z] = fila == null ? [papel.x, papel.anclaZ] : puntoInventario(papel, fila);
-    const [px, py] = motor && escena.dataset.vista === '3d' ? motor.proyectar(x, z, id) : proyectar2d(plano, x, z);
-    nodo.style.left = `${px}%`;
-    nodo.style.top = `${py}%`;
-  }
+function medir() {
+  motor?.medir(escena.clientWidth, escena.clientHeight);
+  pintarOptica();
 }
 
 function cambiarVista() {
-  const vista = motor && dibujada && propio === '3d' ? '3d' : '2d';
-  escena.dataset.vista = vista;
-  $('cambiar-vista').hidden = !dibujada;
-  $('cambiar-vista').textContent = vista === '3d' ? 'Vista 2D' : 'Vista 3D';
-  $('cambiar-vista').setAttribute('aria-label', vista === '3d' ? 'Cambiar a vista 2D' : 'Cambiar a vista 3D');
-  anclar();
+  const activa = propio === '3d' && Boolean(motor && dibujada);
+  escena.dataset.vista = activa ? '3d' : '2d';
+  const control = $('cambiar-vista');
+  control.hidden = falloMotor || !(motor || propio === '2d');
+  control.querySelector('span').textContent = activa ? 'Vista 2D' : 'Vista 3D';
+  control.setAttribute('aria-label', activa ? 'Cambiar a vista 2D' : 'Cambiar a vista 3D');
+  motor?.mostrar(propio === '3d');
+  pintarOptica();
+}
+
+async function iniciarMotor() {
+  if (motor || iniciandoMotor || falloMotor) return;
+  iniciandoMotor = true;
+  try {
+    const { crearInstrumento } = await import('./instrumento.js');
+    motor = crearInstrumento($('vista-3d'), (esquinas) => {
+      puntos3d = esquinas;
+      if (!dibujada) { dibujada = true; cambiarVista(); }
+      else pintarOptica();
+    }, () => { falloMotor = true; motor = null; propio = '2d'; cambiarVista(); });
+    motor.seleccionar(seleccion, false);
+    medir();
+  } catch { falloMotor = true; propio = '2d'; cambiarVista(); }
+  finally { iniciandoMotor = false; }
 }
 
 function materialesDe() {
@@ -103,12 +120,12 @@ function materialesDe() {
   const portada = portadaDe(version);
   const render = portada ? ctx.urls.diseno(portada, { lado: 680, sello: version.compuestaEn }) : null;
   return {
-    original: { url: d.fotoSubida.disponible ? ctx.urls.subida(880) : null },
-    referencia: { url: d.referencia.conImagen ? ctx.urls.referencia(480) : null },
+    original: { url: d.fotoSubida.disponible ? ctx.urls.subida(880) : null, original: ctx.urls.subida() },
+    referencia: { url: d.referencia.conImagen ? ctx.urls.referencia(480) : null, original: ctx.urls.referencia() },
     elementos: { lineas: inventario().map((el) => el.nombre) },
-    candidata: { url: foto?.disponible ? ctx.urls.activo(foto.activo, 680) : null },
-    composicion: { url: vistaPrevia ?? (pideRevision(d) ? render : null), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
-    entrega: { url: d.encargo.paso === 'HECHO' ? render : null },
+    candidata: { url: foto?.disponible ? ctx.urls.activo(foto.activo, 680) : null, original: foto?.disponible ? ctx.urls.activo(foto.activo) : null },
+    composicion: { url: vistaPrevia ?? render, original: vistaPrevia ?? (portada ? ctx.urls.diseno(portada) : null), lineas: d.editorial?.plan?.diapositivas?.map((x) => x.papel) ?? (d.diseno.intencion ? Object.values(d.diseno.intencion.contenido?.textos ?? {}).filter((x) => typeof x === 'string') : []) },
+    entrega: { url: d.encargo.paso === 'HECHO' ? render : null, original: portada ? ctx.urls.diseno(portada) : null },
   };
 }
 
@@ -122,44 +139,26 @@ function pintarMateriales() {
 
 function pintarNavegacion() {
   const actual = pasoDe(d);
-  const activos = seccion === 'mesa';
-  const inventariados = inventario();
-  const pintarBoton = (s, i, espacial) => {
-    const marcado = activos && s.id === seleccion;
-    const pasado = d && (i < indiceDe(actual) || (actual === 'entrega' && i === 5));
-    const identificador = ordinal(i);
-    const tecla = espacial ? h('i', { 'aria-hidden': 'true' }, identificador) : h('small', { 'aria-hidden': 'true' }, pasado ? '✓' : identificador);
-    const estrecho = !espacial && s.id === 'composicion';
-    const b = h('button', {
-      type: 'button', class: espacial ? 'ancla' : '', 'aria-pressed': String(marcado), 'aria-current': s.id === actual ? 'step' : undefined,
-      'aria-controls': 'ficha', 'aria-label': estrecho ? s.nombre : undefined, 'data-paso': s.id, 'data-disponible': String(Boolean(d && (pasado || materiales[s.id]?.url || s.id === actual))),
-      'data-estado': pasado ? 'hecha' : '', onclick: () => seleccionar(s.id, null, !espacial),
-    }, tecla, h('span', { class: estrecho ? 'nombre-amplio' : '' }, s.nombre), estrecho ? h('span', { class: 'nombre-estrecho', 'aria-hidden': 'true' }, 'Diseño') : null);
-    return b;
-  };
-  const foco = document.activeElement;
-  const focoEnRecorrido = recorrido.contains(foco) && foco.dataset.paso;
-  const focoEnEscena = anclas.contains(foco) && (foco.dataset.paso || foco.dataset.fila);
-  marcadores = ESTACIONES.map((s, i) => ({ id: s.id, nodo: pintarBoton(s, i, true) }));
-  inventariados.slice(0, 5).forEach((el, i) => {
-    const nodo = h('button', { type: 'button', class: 'ancla ancla-objeto', 'aria-label': `Revisar ${el.nombre}`, 'aria-controls': 'ficha', 'aria-pressed': String(activos && seleccion === 'elementos' && elemento === i), 'data-fila': String(i), title: el.nombre, onclick: () => seleccionar('elementos', i) }, i + 1);
-    marcadores.push({ id: 'elementos', fila: i, nodo });
-  });
-  reemplazar(anclas, marcadores.map((m) => m.nodo));
-  reemplazar(recorrido, ESTACIONES.map((s, i) => pintarBoton(s, i, false)));
-  if (focoEnEscena) (foco.dataset.fila != null ? anclas.querySelector(`[data-fila="${focoEnEscena}"]`) : anclas.querySelector(`[data-paso="${focoEnEscena}"]`))?.focus({ preventScroll: true });
-  if (focoEnRecorrido) recorrido.querySelector(`[data-paso="${focoEnRecorrido}"]`)?.focus({ preventScroll: true });
-  anclar();
+  const foco = recorrido.contains(document.activeElement) ? document.activeElement.dataset.paso : null;
+  reemplazar(recorrido, ESTACIONES.map((fase, i) => {
+    const completada = Boolean(d && (i < indiceDe(actual) || d.encargo.paso === 'HECHO'));
+    return h('button', {
+      type: 'button', 'data-paso': fase.id, 'data-estado': completada ? 'hecha' : '',
+      'aria-label': fase.nombre, 'aria-pressed': String(seccion === 'mesa' && fase.id === seleccion),
+      'aria-current': d && fase.id === actual ? 'step' : undefined, 'aria-controls': 'ficha',
+      onclick: () => seleccionar(fase.id),
+    }, h('small', { 'aria-hidden': 'true' }, ordinal(i)), h('span', {}, fase.nombre), h('i', { 'aria-hidden': 'true' }, completada ? '✓' : ''));
+  }));
+  if (foco) recorrido.querySelector(`[data-paso="${foco}"]`)?.focus({ preventScroll: true });
 }
 
 function pintarMarco() {
   const ctx = contexto();
-  const principal = $('titulo');
-  const local = $('local');
-  const fase = $('fase-cabecera');
   const modo = $('modo');
   const actual = pasoDe(d);
   const datos = d?.encargo;
+  const fase = faseVista();
+  const n = indiceDe(fase.id);
   $('ir-mesa').toggleAttribute('aria-current', seccion === 'mesa');
   if (seccion === 'mesa') $('ir-mesa').setAttribute('aria-current', 'page');
   $('ir-encargos').toggleAttribute('aria-current', seccion === 'encargos');
@@ -167,19 +166,25 @@ function pintarMarco() {
   $('nuevo').disabled = Boolean(ocupado?.tipo === 'alta');
   modo.hidden = !procesos;
   modo.textContent = ctx.simulado ? 'Modo simulado' : 'Modo real';
-  local.textContent = datos ? d.local?.nombre ?? datos.local : 'Society · Estudio creativo';
-  reemplazar(principal, datos?.plato ?? ['El pase', h('span', {}, '.')]);
-  fase.hidden = !datos;
-  fase.textContent = datos ? `${nombreDe(actual)} · ${indiceDe(actual) + 1} de ${ESTACIONES.length}` : '';
-  fase.dataset.estado = actual === 'entrega' ? 'listo' : '';
-  $('pie-encargo').textContent = datos?.proyecto ?? 'Sin encargo';
-  $('pie-inventario').textContent = datos ? `${localizar.format(inventario().length)} elementos` : '—';
+  $('fase-cabecera').textContent = seccion === 'encargos' ? 'Archivo de encargos' : fase.accion;
+  $('local').textContent = seccion === 'encargos' ? 'Abre un encargo para retomar su producción.' : !datos && n === 0 ? 'Una foto original es el punto de partida de cada pieza.' : fase.texto;
+  const abrirFicha = $('abrir-ficha');
+  const accion = seccion === 'encargos' ? 'Ver encargos' : !datos ? n === 0 ? 'Preparar encargo' : 'Ver ficha' : ['Ver original', 'Ver referencia', 'Revisar inventario', 'Comparar fotos', 'Ver composición', datos.paso === 'HECHO' ? 'Ver descargas' : 'Ver entrega'][n];
+  abrirFicha.firstChild.textContent = accion + ' ';
+  $('encargo-titulo').textContent = datos?.plato ?? 'Nuevo encargo';
+  $('encargo-local').textContent = datos ? d.local?.nombre ?? datos.local : 'Sin abrir';
+  document.querySelector('.expediente').dataset.vacio = String(!datos);
+  $('pie-inventario').textContent = datos ? `${localizar.format(inventario().length)} ${inventario().length === 1 ? 'elemento' : 'elementos'}` : '—';
   $('pie-intentos').textContent = datos ? localizar.format(d.intentos.length) : '—';
   $('pie-entrega').textContent = actual === 'entrega' ? 'Compuesta' : pideRevision(d) ? 'En revisión' : datos ? 'Pendiente' : '—';
   const entrada = datos?.historial?.at(-1);
-  $('pie-actividad').textContent = entrada?.fecha ? formatearFecha(entrada.fecha) : '';
+  $('pie-actividad').textContent = entrada?.fecha ? `Actualizado el ${formatearFecha(entrada.fecha)}` : '';
+  const leyenda = $('leyenda');
+  leyenda.querySelector('span').textContent = 'Fig. ' + ordinal(n);
+  leyenda.querySelector('b').textContent = ['Óptica de captación','Portarreferencia','Registro de la toma','Comparador óptico','Guía de encuadre','Salida de la pieza'][n];
+  escena.setAttribute('aria-label', `Instrumento óptico · ${leyenda.textContent}. ${fase.texto}`);
+  pintarOptica();
 }
-
 function pintarEncargos() {
   const entradas = lista.map((p) => {
     const resumen = procesos?.encargos.find((x) => x.proyecto === p.proyecto);
@@ -195,9 +200,9 @@ function pintarFicha() {
   const ctx = contexto();
   const cuerpo = $('ficha-cuerpo');
   const focoElemento = cuerpo.contains(document.activeElement) && document.activeElement.closest('.lista-elementos');
-  $('ficha-rotulo').textContent = seccion === 'encargos' ? 'Society Studio' : d ? 'Ficha de trabajo' : 'Nuevo encargo';
+  $('ficha-rotulo').textContent = seccion === 'encargos' ? 'Archivo' : d ? 'Ficha de trabajo' : 'Preparación';
   $('ficha-avance').textContent = seccion === 'mesa' ? `${ordinal(indiceDe(seleccion))} / ${ordinal(ESTACIONES.length - 1)}` : '';
-  if (cargando) reemplazar(cuerpo, h('h2', { id: 'ficha-titulo' }, 'Abriendo El pase…'));
+  if (cargando) reemplazar(cuerpo, h('h2', { id: 'ficha-titulo' }, 'Abriendo el estudio…'));
   else if (errorInicial) reemplazar(cuerpo, h('h2', { id: 'ficha-titulo' }, 'No se ha podido abrir'), bloqueError(errorInicial), h('button', { type: 'button', onclick: iniciar }, 'Volver a conectar'));
   else if (seccion === 'encargos') reemplazar(cuerpo, pintarEncargos());
   else if (!d && seleccion === 'original') reemplazar(cuerpo, fichaDeSubida(ctx));
@@ -252,7 +257,7 @@ function pintarTodo() {
   pintarNavegacion();
   pintarFicha();
   pintarHerramientas();
-  motor?.seleccionar(seccion === 'mesa' ? seleccion : null, false);
+  motor?.seleccionar(seleccion);
 }
 
 function seleccionar(id, i = null, trasladarFoco = false) {
@@ -295,7 +300,7 @@ function nuevo() {
   navegacion(null);
   abrir(null);
   $('ficha').focus({ preventScroll: true });
-  if (matchMedia('(max-width: 800px)').matches) $('ficha').scrollIntoView({ block: 'nearest' });
+  $('ficha').scrollIntoView({ block: 'start' });
 }
 
 function tareaActual() {
@@ -513,35 +518,32 @@ $('ir-encargos').addEventListener('click', () => {
   if (ocupado?.tipo === 'alta') return;
   seccion = 'encargos';
   pintarTodo();
+  enfocarFicha();
   cargarIndice().then(() => { if (seccion === 'encargos') pintarFicha(); }).catch((error) => avisar(error.message, 'error'));
 });
+function enfocarFicha() {
+  $('ficha').focus({ preventScroll: true });
+  $('ficha').scrollIntoView({ behavior: reduccion.matches ? 'instant' : 'smooth', block: 'start' });
+}
+$('abrir-ficha').addEventListener('click', enfocarFicha);
 $('cambiar-vista').addEventListener('click', () => {
   propio = propio === '3d' ? '2d' : '3d';
+  if (propio === '3d' && !motor) iniciarMotor();
   cambiarVista();
 });
+recorrido.addEventListener('keydown', (e) => {
+  const delta = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+  if (!delta && e.key !== 'Home' && e.key !== 'End') return;
+  const i = indiceDe(e.target.dataset.paso);
+  if (i < 0) return;
+  e.preventDefault();
+  const proximo = e.key === 'End' ? ESTACIONES.length - 1 : e.key === 'Home' ? 0 : (i + delta + ESTACIONES.length) % ESTACIONES.length;
+  seleccionar(ESTACIONES[proximo].id);
+  recorrido.children[proximo].focus({ preventScroll: true });
+});
+for (const img of fotogramas.querySelectorAll('img')) img.addEventListener('error', () => { img.hidden = true; });
 window.addEventListener('popstate', () => abrir(new URLSearchParams(location.search).get('proyecto')));
-escena.addEventListener('click', (e) => {
-  if (e.target.closest('button')) return;
-  const caja = escena.getBoundingClientRect();
-  const id = escena.dataset.vista === '3d' ? motor?.tocar((e.clientX - caja.left) / caja.width, (e.clientY - caja.top) / caja.height) : e.target.closest('.plano-material')?.dataset.tipo;
-  if (id) seleccionar(id);
-});
 new ResizeObserver(medir).observe(escena);
-import('./mesa.js').then(({ crearMesa }) => {
-  motor = crearMesa($('vista-3d'), () => {
-    if (dibujada) anclar();
-    else {
-      dibujada = true;
-      cambiarVista();
-    }
-  }, () => {
-    motor = undefined;
-    dibujada = false;
-    cambiarVista();
-  });
-  medir();
-  cambiarVista();
-  motor.seleccionar(seleccion, false);
-}).catch(() => cambiarVista());
-
+cambiarVista();
+if (propio === '3d') iniciarMotor();
 iniciar();

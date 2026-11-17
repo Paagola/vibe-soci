@@ -69,7 +69,7 @@ export function fichaDeSubida(ctx) {
   zona.addEventListener('dragleave', () => delete zona.dataset.arrastre);
   zona.addEventListener('drop', (e) => { e.preventDefault(); delete zona.dataset.arrastre; elegir(e.dataTransfer.files[0]); });
   const form = h('form', {}, zona, etiqueta('Local', local), etiqueta('Plato', nombre), etiqueta('Formato', formato), detalles('Uso y estética', etiqueta('Uso de la imagen', uso), etiqueta('Estética', estetica)), errores,
-    h('button', { type: 'submit', class: 'primario' }, 'Colocar en la mesa'));
+    h('button', { type: 'submit', class: 'primario' }, 'Crear encargo'));
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     reemplazar(errores);
@@ -165,7 +165,7 @@ function fichaElementos(ctx) {
     propuesta && !propuesta.valida ? [aviso('Hay que corregir la propuesta.'), lista(propuesta.errores)] : null,
     !propuesta ? nota('El estudio registrará lo que se ve en la foto original.') : null,
     espera.bloqueo ? aviso(espera.explicacion?.queHaPasado ?? 'La orden se ha detenido. Revisa los elementos y la toma.') : null,
-    elementos.length ? nota(puedeEditar ? 'Selecciona una fila de la mesa para revisar sus datos.' : 'Elementos anotados en la foto original.') : null,
+    elementos.length ? nota(puedeEditar ? 'Selecciona un elemento para revisar sus datos.' : 'Elementos anotados en la foto original.') : null,
     elementos.length ? h('ol', { class: 'lista-elementos' }, elementos.map((el, i) => h('li', {}, h('button', { type: 'button', 'aria-pressed': String(ctx.elemento === i), onclick: () => ctx.seleccionar('elementos', i, true) }, h('i', {}, i + 1), h('span', {}, el.nombre), h('small', {}, el.recuento == null ? 'Sin recuento' : `${el.recuento} ud.`))))) : null,
     actual ? [h('h3', {}, actual.nombre), actual.nota ? nota(actual.nota) : null, puedeEditar ? editorElemento(ctx, ctx.elemento) : par([['Estado', actual.estado], ['Cortadas', actual.cortados], ['En la toma', actual.enEncuadre === true ? 'Sí' : actual.enEncuadre === false ? 'Queda fuera' : 'Por revisar']])] : null,
     camara ? detalles('Toma propuesta', par([['Ángulo', `${camara.anguloGrados}°`], ['Plano', CAMARAS[camara.distancia]], ['Óptica', `${camara.objetivoMm} mm · f/${camara.apertura}`], ['Descripción', camara.descripcion], ['Luz', propuesta.contenido.huecos.luz]])) : null,
@@ -184,9 +184,11 @@ function fichaCandidata(ctx) {
   const form = h('form', { onsubmit: (e) => { e.preventDefault(); ctx.avanzar(e.submitter, { rechazo: rechazo.value.trim() }); } }, etiqueta('Motivo del rechazo', rechazo), h('button', { type: 'submit', disabled: ctx.ocupada }, 'Rechazar candidata'));
   const intentos = d.intentos.filter((i) => i !== candidata);
   return [titulo(fotoActual ? 'Revisa la candidata' : 'Foto candidata'),
-    foto(candidata?.disponible ? ctx.urls.activo(candidata.activo, 480) : null, candidata?.disponible ? ctx.urls.activo(candidata.activo) : null, 'Foto candidata', candidata ? `Intento ${candidata.n} · ${VEREDICTOS[candidata.final] ?? candidata.final}` : null),
+    candidata?.disponible ? h('div', { class: 'comparacion-ficha', role: 'group', 'aria-label': 'Comparación de las fotografías' },
+      d.fotoSubida.disponible ? foto(ctx.urls.subida(480), ctx.urls.subida(), 'Foto original del local', 'Original') : null,
+      foto(ctx.urls.activo(candidata.activo, 480), ctx.urls.activo(candidata.activo), 'Foto candidata', `Candidata · Intento ${candidata.n} · ${VEREDICTOS[candidata.final] ?? candidata.final}`)) : null,
     candidata?.motivos?.length ? detalles('Comprobación automática', lista(candidata.motivos)) : null,
-    fotoActual ? nota('Compara con la foto original en la mesa. Comprueba ingredientes, recuento y toma.') : !candidata ? nota('La candidata llegará después de revisar el inventario.') : null,
+    fotoActual ? nota('Compara ambas fotografías. Comprueba los ingredientes, el recuento y la toma.') : !candidata ? nota('La candidata llegará después de revisar el inventario.') : null,
     d.espera.tipo === 'IMPORTAR_FOTO' ? [aviso(d.espera.motivo), accion(boton('Importar foto', () => ctx.abrirHerramientas(), true))] : null,
     fotoActual ? [accion(avanzar(ctx, 'Confirmar esta foto', { confirmo: 'CONFIRMAR_FOTO' })), detalles('Rechazar y explicar', form)] : null,
     d.espera.tipo === 'CONTINUAR' && ctx.actual === 'candidata' && !ctx.ocupada ? accion(avanzar(ctx, 'Continuar con la foto')) : null,

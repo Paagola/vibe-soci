@@ -1,62 +1,62 @@
-import { h, reemplazar } from '../ui.js';
-
 export const ESTACIONES = [
-  { id: 'original', nombre: 'Original', capa: '#fffaee' },
-  { id: 'referencia', nombre: 'Referencia', capa: '#f4d8e7' },
-  { id: 'elementos', nombre: 'Inventario', capa: '#efe5ff' },
-  { id: 'candidata', nombre: 'Candidata', capa: '#fffcf6' },
-  { id: 'composicion', nombre: 'Composición', capa: '#e7efbf' },
-  { id: 'entrega', nombre: 'Entrega', capa: '#e3ceef' },
+  { id: 'original', nombre: 'Original', accion: 'Captación', texto: 'La fotografía que da origen al encargo.' },
+  { id: 'referencia', nombre: 'Referencia', accion: 'Referencia', texto: 'La imagen que orienta el lenguaje visual de la pieza.' },
+  { id: 'elementos', nombre: 'Inventario', accion: 'Inventario', texto: 'Revisa los elementos, el encuadre y la luz de la toma.' },
+  { id: 'candidata', nombre: 'Candidata', accion: 'Comparación', texto: 'Contrasta la foto candidata con la toma original.' },
+  { id: 'composicion', nombre: 'Composición', accion: 'Composición', texto: 'Encuadre, texto y jerarquía de cada diapositiva.' },
+  { id: 'entrega', nombre: 'Entrega', accion: 'Entrega', texto: 'Las piezas finales y sus formatos de exportación.' },
 ];
 
-const AMPLIO = [
-  [-2.55, -.56, 4.12, 3.2, -7], [1.03, -1.64, 1.7, 1.83, 7], [3.54, -1.48, 2.24, 2.25, -6],
-  [1.37, 1.34, 3.02, 2.12, -6], [-3.45, 1.98, 2.35, 1.08, 5], [4.4, 1.58, 1.48, 1.8, 8],
-];
+// Carriage position, carriage angle, iris angle and comparison slide extension.
+export const AJUSTES = {
+  original:    [1.56, -.20, -.03, 0],
+  referencia:  [1.16, -.06,  .13, 0],
+  elementos:   [ .72,  .08, -.24, 0],
+  candidata:   [2.86, -.16,  .24, 1],
+  composicion: [1.36,  .12, -.12, 0],
+  entrega:     [2.68, -.12,  .32, 0],
+};
+export const ANCHO = 1040;
+export const ALTO = 600;
+export function soporteDe(fase, materiales) {
+  const principal = fase === 'elementos' ? 'original' : fase === 'composicion' && !materiales.composicion?.url ? 'candidata' : fase;
+  const foto = (id) => ({ ...materiales[id], nombre: ESTACIONES.find(s => s.id === id).nombre });
+  return [foto(principal), fase === 'candidata' ? foto('original') : {}];
+}
 
-const COMPACTO = [
-  [-1.33, -2.02, 2.46, 1.84, -6], [1.36, -2.02, 1.65, 1.72, 5], [1.37, .17, 1.74, 1.62, -3],
-  [-1.34, .30, 2.36, 1.60, 4], [-1.33, 2.26, 2.07, 1.04, -5], [1.35, 2.29, 1.40, 1.30, 6],
-];
-
-export function distribuir(ancho, alto) {
-  const proporcion = ancho / alto;
-  const compacto = proporcion < 1.35;
-  const base = compacto ? COMPACTO : AMPLIO;
-  const altura = Math.max(6.65, (compacto ? 5.65 : 11.9) / proporcion);
-  const anchura = altura * proporcion;
-  const papeles = ESTACIONES.map((estacion, i) => {
-    const [x, z, w, d, giro] = base[i];
-    return { ...estacion, x, z, w, d, giro, anclaZ: z + d * .5 + (compacto ? .19 : .22) };
+export function dibujarFotos(contenedor, esquinas, fase, fotos) {
+  const ancho = contenedor.clientWidth;
+  const alto = contenedor.clientHeight;
+  const escala = Math.min(ancho / ANCHO, alto / ALTO);
+  const margenX = (ancho - escala * ANCHO) / 2;
+  const margenY = (alto - escala * ALTO) / 2;
+  Array.from(contenedor.children).forEach((carril, i) => {
+    const foto = fotos[i];
+    const puntos = esquinas?.[i];
+    carril.hidden = !puntos || (!foto.url && (i || !['elementos','composicion'].includes(fase)));
+    if (carril.hidden) return;
+    const imagen = carril.querySelector('img');
+    if (imagen.getAttribute('src') !== foto.url) {
+      imagen.hidden = !foto.url;
+      if (foto.url) imagen.setAttribute('src', foto.url);
+      else imagen.removeAttribute('src');
+    }
+    const enlace = carril.querySelector('a');
+    if (foto.url) {
+      enlace.href = foto.original || foto.url;
+      enlace.setAttribute('aria-label', 'Abrir ' + foto.nombre.toLowerCase() + ' a tamaño completo');
+    } else {
+      enlace.removeAttribute('href');
+      enlace.removeAttribute('aria-label');
+    }
+    const nombre = carril.querySelector('small');
+    nombre.textContent = fase === 'candidata' && foto.url ? foto.nombre : '';
+    carril.dataset.guia = fase === 'elementos' ? 'inventario' : fase === 'composicion' ? 'encuadre' : '';
+    const [a,b,c] = puntos;
+    carril.style.transform = 'matrix(' + [
+      (b[0]-a[0])*escala/192, (b[1]-a[1])*escala/192,
+      (c[0]-a[0])*escala/270, (c[1]-a[1])*escala/270,
+      margenX+a[0]*escala, margenY+a[1]*escala,
+    ].join(',') + ')';
   });
-  return { anchura, altura, compacto, papeles };
-}
-
-export function proyectar2d({ anchura, altura }, x, z) {
-  return [50 + (x / anchura) * 100, 50 + (z / altura) * 100];
-}
-
-export function pintarPlano(contenedor, plano, materiales) {
-  reemplazar(contenedor, plano.papeles.map((p) => {
-    const material = materiales[p.id] ?? {};
-    const [x, z] = proyectar2d(plano, p.x, p.z);
-    const imagen = material.url ? h('img', { src: material.url, alt: '' }) : null;
-    const dibujado = imagen || material.lineas?.length;
-    const papel = h('div', {
-      class: 'plano-material', 'data-tipo': p.id, 'data-vacio': !dibujado, style: { left: `${x}%`, top: `${z}%` },
-    }, imagen ?? (material.lineas?.length ? h('ol', { class: 'plano-lineas' }, material.lineas.slice(0, 5).map((texto) => h('li', {}, texto))) : null));
-    papel.style.setProperty('--giro', `${p.giro}deg`);
-    papel.style.setProperty('--material-ancho', `${p.w / plano.anchura * 100}%`);
-    papel.style.setProperty('--material-alto', `${p.d / plano.altura * 100}%`);
-    papel.style.setProperty('--material-papel', p.capa);
-    imagen?.addEventListener('error', () => { imagen.remove(); papel.dataset.vacio = ''; });
-    return papel;
-  }));
-}
-
-export function puntoInventario(papel, indice) {
-  const giro = papel.giro * Math.PI / 180;
-  const x = -papel.w * .36;
-  const z = papel.d * (-.27 + indice * .137);
-  return [papel.x + Math.cos(giro) * x - Math.sin(giro) * z, papel.z + Math.sin(giro) * x + Math.cos(giro) * z];
 }
