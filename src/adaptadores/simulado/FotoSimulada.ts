@@ -17,7 +17,7 @@ export class DirectorFotoSimulado implements DirectorDeFoto {
 
   async proponer(e: EncargoDeFoto): Promise<PropuestaFotoNueva> {
     const n = e.formato === 'carrusel' ? (this.opciones.tomas ?? 0) : 0;
-    const piezas = Array.from({ length: n }, (_, i) => ({ nombre: `pieza simulada ${i + 1}`, estado: `cortada en dos, simulada ${i + 1}`, recuento: 1 }));
+    const piezas = Array.from({ length: n }, (_, i) => ({ nombre: `pieza simulada ${i + 1}`, estado: `cortada en dos, simulada ${i + 1}`, recuento: 1, ...(e.alGenerador?.desdeElInventario ? { ingles: `simulated piece ${i + 1}, cut in half`, enEncuadre: true } : {}) }));
     const base = this.base(e);
     if (!n) return base;
     return {
@@ -37,7 +37,7 @@ export class DirectorFotoSimulado implements DirectorDeFoto {
         distancia: 'MEDIO',
         encuadre: 'plano medio en ¾ (simulado)',
         luz: 'luz de día plana (simulado)',
-        elementos: [{ nombre: 'plato', estado: e.plato, recuento: 1 }],
+        elementos: [{ nombre: 'plato', estado: e.plato, recuento: 1, ...(e.alGenerador?.desdeElInventario ? { ingles: `the dish described as «${e.plato}», on its own plate`, enEncuadre: true } : {}) }],
         defectos: ['simulado: resolución sin comprobar'],
         utilizable: true,
         motivo: 'simulado',

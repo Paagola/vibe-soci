@@ -72,7 +72,7 @@
 
 **Gasto en pruebas reales (texto, Gemini de pago):** 7 llamadas a `gemini-3.8-flash`, con 39 518 fichas de entrada, 3 465 de salida y 10 571 de razonamiento (`datos/gasto/gemini-texto.jsonl`). Ninguna imagen generada.
 
-### 0g. Productor, fase 1, 16/11: el orquestador en código, sin IA (rama `productor`, sin fusionar en `main`)
+### 0g. Productor, fase 1, 16/11 · el orquestador en código (`cd0672a` en `main`)
 
 **Por qué:** cada especialista tenía su recorte de la información y no había una verdad común (los «rollitos de papel de arroz» de Sushita v003); una parada la confirmó un script. **Qué es:** un módulo encima de la orden única, **apagado por defecto**. Con él apagado, la orden es la de siempre (las 305 pruebas de antes, sin tocar).
 
@@ -97,6 +97,14 @@
 - apagado, sin `brief.json` ni `bitacora.jsonl`.
 
 **Gasto: 0 USD,** sin llamadas a Gemini.
+
+#### Arreglos de Torre de Vega · 17/11
+
+- Con el productor encendido, el prompt y el recuento de la toma principal salen de `descripcion.elementos`. Las tomas de detalle usan la descripción de su elemento. Se comparte esa lista con el revisor. Las propuestas antiguas que vuelven a la parada de elementos pasan por estas comprobaciones al usar el productor.
+- La orden revisa las afirmaciones de plato, origen y descripción de elementos antes de aceptar la confirmación. Un elemento sin frase, fuera de la toma principal o con encuadre pendiente detiene la orden antes de generar. El director recibe instrucciones para rellenar `ingles` y `enEncuadre`, y el doble simulado devuelve ambos campos. Las correcciones manuales pueden usar la descripción del elemento en castellano.
+- En la parada de elementos se pueden editar plato, origen y encuadre. Tras los descartes, la web y la terminal explican la parada y muestran los motivos. La web simulada permite consultar los locales reales en solo lectura y guarda los cambios en los datos simulados.
+- Verificado con `npm run typecheck`, **398 pruebas en verde** y un recorrido en Chrome con un encargo simulado. Las pruebas de integración reproducen afirmaciones inventadas, un elemento sin frase, un elemento fuera de la toma y un encuadre pendiente. En los cuatro casos se intentó confirmar y el generador recibió cero peticiones. También se comprobó que una corrección válida llega al generador con el prompt reconstruido. Las 392 pruebas del punto de partida pasaron y el fallo intermitente referido en el relevo no se reprodujo.
+- **Consumo de esta tanda:** 0 USD, 0 llamadas y 0 tokens de Gemini. El encargo real `2026-11-16-jamon-con-pata-cortado-a` conserva sus dos descartes y espera en la parada de elementos. Hace falta revisar su encuadre y autorizar aparte cualquier nuevo intento real.
 
 ### 0f. F3.3, 15/11: carrusel con varias fotos, tratamiento ilustrado, gráficos y huella tipográfica (rama `f3-3`)
 

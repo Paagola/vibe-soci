@@ -5,6 +5,7 @@
  * sin que la nota del dueño lo dijera, y los platos del inventario no salieron en la foto.
  */
 import { normalizarTexto } from './inventario.js';
+import type { Marca } from './modelos.js';
 import { RECLAMOS } from './diseno/propuesta.js';
 import { montarPromptFotoNueva, problemasFotoNueva, type ElementoFoto, type HuecosFotoNueva, type OpcionesDePrompt, type PropuestaFotoNueva, type TomaDeDetalle } from './fotoNueva.js';
 
@@ -71,6 +72,14 @@ export const AFIRMACIONES_EN_INGLES: ReadonlyArray<{ patron: RegExp; constaSi: r
 
 export interface HechosDelPrompt { nota: string; marca?: string }
 
+export const textoDeMarca = (marca: Pick<Marca, 'nombre' | 'ciudad' | 'descripcion'>): string =>
+  [marca.nombre, marca.ciudad, marca.descripcion].join(' ');
+
+/** También se puede aplicar a un encargo antiguo cuando vuelve a la parada de elementos con el productor encendido. */
+export function opcionesDeRevision(opciones: OpcionesDePrompt | undefined, productor: boolean): OpcionesDePrompt | undefined {
+  return productor && !opciones?.desdeElInventario ? { ...opciones, desdeElInventario: true } : opciones;
+}
+
 /** Palabras de RECLAMOS que no son afirmaciones de calidad o de origen en este contexto. */
 const PALABRAS_PERMITIDAS = new Set(['natural', 'naturales', 'original', 'originales']);
 
@@ -115,6 +124,10 @@ export function problemasDelInventario(p: PropuestaFotoNueva, hechos: HechosDelP
     { texto: p.huecos.plato, donde: 'qué es el plato' },
     { texto: p.huecos.origen, donde: 'el tipo de local' },
     ...elementos.filter((e) => e.ingles?.trim()).map((e) => ({ texto: e.ingles ?? '', donde: `la frase de «${e.nombre}»` })),
+    ...(p.tomas ?? []).flatMap((t) => [
+      { texto: t.huecos.plato, donde: `qué muestra el detalle de «${t.elemento}»` },
+      { texto: t.huecos.origen, donde: `el tipo de local en el detalle de «${t.elemento}»` },
+    ]),
   ];
 
   const vistos = new Set<string>();
@@ -150,7 +163,7 @@ export function revisarPropuesta(p: PropuestaFotoNueva, o: OpcionesDePrompt | un
   const huecos = huecosEfectivos(p, o);
   const prompt = montarPromptFotoNueva(huecos, o);
   const problemas = [
-    ...problemasFotoNueva(p, c.lado),
+    ...problemasFotoNueva({ ...p, huecos }, c.lado),
     ...(o?.desdeElInventario ? problemasDelInventario(p, { nota: c.nota, ...(c.marca ? { marca: c.marca } : {}) }) : []),
   ];
   return { huecos, prompt, problemas };

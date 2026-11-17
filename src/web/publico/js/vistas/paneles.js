@@ -263,6 +263,7 @@ function panelElementos(ctx) {
   const { descripcion, huecos, decisiones } = propuesta.contenido;
   const { camara } = huecos;
   const conProblemas = propuesta.problemas.length > 0;
+  const conEncuadre = propuesta.desdeElInventario || descripcion.elementos.some((x) => x.enEncuadre !== undefined);
 
   const confirmarParada = async (evento) => {
     const boton = evento.currentTarget;
@@ -298,11 +299,13 @@ function panelElementos(ctx) {
       entrada: 'Confirma la lista de elementos, la toma nueva y el gasto. Hasta aquí no se ha gastado nada en fotos.',
     }),
     espera.bloqueo
-      ? llamada(
-          `${generador.maxIntentos} fotos descartadas seguidas`,
-          'La orden se ha parado por la regla de gasto. Revisa la propuesta (los elementos y la toma) y vuelve a confirmar para otros intentos.',
-          'alerta',
-        )
+      ? espera.explicacion
+        ? llamada('Se ha parado para no gastar más', h('div', {}, h('p', {}, espera.explicacion.queHaPasado), h('p', {}, h('strong', {}, 'Qué puedes hacer:')), lista(espera.explicacion.quePuedesHacer)), 'alerta')
+        : llamada(
+            `${generador.maxIntentos} fotos descartadas seguidas`,
+            'La orden se ha parado por la regla de gasto. Revisa la propuesta (los elementos y la toma) y vuelve a confirmar para otros intentos.',
+            'alerta',
+          )
       : null,
     h(
       'div',
@@ -318,8 +321,21 @@ function panelElementos(ctx) {
           h(
             'table',
             { class: 'tabla' },
-            h('thead', {}, h('tr', {}, h('th', {}, 'Elemento'), h('th', {}, 'Cómo está'), h('th', {}, 'Nº'))),
-            h('tbody', {}, descripcion.elementos.map((x) => h('tr', {}, h('td', {}, h('strong', {}, x.nombre)), h('td', {}, x.estado), h('td', { class: 'cifra' }, x.recuento ?? '—')))),
+            h('thead', {}, h('tr', {}, h('th', {}, 'Elemento'), h('th', {}, 'Cómo está'), h('th', {}, 'Nº'), conEncuadre ? h('th', {}, 'En la toma') : null)),
+            h(
+              'tbody',
+              {},
+              descripcion.elementos.map((x) =>
+                h(
+                  'tr',
+                  {},
+                  h('td', {}, h('strong', {}, x.nombre)),
+                  h('td', {}, x.estado),
+                  h('td', { class: 'cifra' }, x.recuento ?? '—'),
+                  conEncuadre ? h('td', {}, x.enEncuadre === true ? 'Sí' : x.enEncuadre === false ? 'Queda fuera' : 'Por revisar') : null,
+                ),
+              ),
+            ),
           ),
           datos([
             ['Encuadre', descripcion.encuadre],
@@ -383,6 +399,9 @@ function cajasDeGasto(p) {
 /** Corregir la propuesta: la lista de elementos y los huecos que más se tocan; el resto, en el JSON completo. */
 function editorDePropuesta(ctx, original) {
   const propuesta = structuredClone(original);
+  // Con el productor encendido, los elementos y el recuento del prompt se arman con la lista.
+  const conInventario = Boolean(ctx.d.propuesta.desdeElInventario);
+  const ayudaPlato = 'Solo lo que dice tu nota o tu lista: nada de origen, raza o calidad que no conste.';
   const errores = h('div');
   const filas = h('tbody');
 
@@ -390,8 +409,32 @@ function editorDePropuesta(ctx, original) {
     const nombre = h('input', { value: x.nombre, placeholder: 'gamba', 'aria-label': 'Elemento' });
     const estado = h('input', { value: x.estado, placeholder: 'entera, a la brasa', 'aria-label': 'Cómo está' });
     const recuento = h('input', { type: 'number', min: '1', value: x.recuento ?? '', placeholder: '—', style: { width: '4.5rem' }, 'aria-label': 'Número' });
-    const fila = h('tr', {}, h('td', {}, nombre), h('td', {}, estado), h('td', {}, recuento), h('td', {}, h('button', { type: 'button', class: 'secundario pequeno', onclick: () => fila.remove() }, 'Quitar')));
-    fila.leer = () => ({ nombre: nombre.value.trim(), estado: estado.value.trim(), recuento: recuento.value ? Number(recuento.value) : null });
+    const celdas = [h('td', {}, nombre), h('td', {}, estado), h('td', {}, recuento)];
+    let ingles = null;
+    let encuadre = null;
+    if (conInventario) {
+      ingles = h('input', { value: x.ingles ?? '', placeholder: 'white plates with ham slices in a spiral', 'aria-label': 'En la foto (inglés)' });
+      encuadre = h('select', { 'aria-label': 'Entra en la toma' },
+        h('option', { value: '', selected: x.enEncuadre === undefined }, 'Por revisar'),
+        h('option', { value: 'si', selected: x.enEncuadre === true }, 'Sí'),
+        h('option', { value: 'no', selected: x.enEncuadre === false }, 'Queda fuera'),
+      );
+      celdas.push(h('td', {}, ingles), h('td', {}, encuadre));
+    }
+    const fila = h('tr', {}, ...celdas, h('td', {}, h('button', { type: 'button', class: 'secundario pequeno', onclick: () => fila.remove() }, 'Quitar')));
+    // Se conservan los campos que el editor no enseña (cortados, dudoso, nota…).
+    fila.leer = () => {
+      const r = { ...x, nombre: nombre.value.trim(), estado: estado.value.trim(), recuento: recuento.value ? Number(recuento.value) : null };
+      if (conInventario) {
+        const frase = ingles.value.trim();
+        const cambioElemento = r.nombre !== x.nombre || r.estado !== x.estado;
+        if (frase && (!cambioElemento || frase !== x.ingles?.trim())) r.ingles = frase;
+        else delete r.ingles;
+        if (encuadre.value) r.enEncuadre = encuadre.value === 'si';
+        else delete r.enEncuadre;
+      }
+      return r;
+    };
     filas.append(fila);
   };
   propuesta.descripcion.elementos.forEach(filaElemento);
@@ -399,6 +442,8 @@ function editorDePropuesta(ctx, original) {
   const area = (valor, filasTexto = 2) => h('textarea', { rows: String(filasTexto), value: valor });
   const elementosEn = area(propuesta.huecos.elementos, 3);
   const recuentoEn = h('input', { value: propuesta.huecos.recuento });
+  const plato = h('input', { value: propuesta.huecos.plato ?? '' });
+  const origen = h('input', { value: propuesta.huecos.origen ?? '' });
   const angulo = h('input', { type: 'number', min: '-45', max: '90', value: propuesta.huecos.camara.anguloGrados });
   const distancia = h('select', {}, Object.entries(DISTANCIAS).map(([valor, texto]) => h('option', { value: valor, selected: propuesta.huecos.camara.distancia === valor }, texto)));
   const camara = area(propuesta.huecos.camara.descripcion);
@@ -410,7 +455,8 @@ function editorDePropuesta(ctx, original) {
     conBoton(evento.currentTarget, async () => {
       reemplazar(errores);
       propuesta.descripcion.elementos = [...filas.children].map((fila) => fila.leer()).filter((x) => x.nombre);
-      Object.assign(propuesta.huecos, { elementos: elementosEn.value.trim(), recuento: recuentoEn.value.trim(), luz: luz.value.trim(), ideaGrafica: idea.value.trim() });
+      Object.assign(propuesta.huecos, { luz: luz.value.trim(), ideaGrafica: idea.value.trim(), plato: plato.value.trim(), origen: origen.value.trim() });
+      if (!conInventario) Object.assign(propuesta.huecos, { elementos: elementosEn.value.trim(), recuento: recuentoEn.value.trim() });
       Object.assign(propuesta.huecos.camara, { anguloGrados: Number(angulo.value), distancia: distancia.value, descripcion: camara.value.trim() });
       await enviarPropuesta(ctx, propuesta, errores);
     });
@@ -418,16 +464,46 @@ function editorDePropuesta(ctx, original) {
   return h(
     'div',
     { class: 'formulario', style: { maxWidth: 'none' } },
-    h('p', { class: 'nota' }, 'La lista es lo que la comprobación de salida busca en la foto nueva. Los textos de la toma van en inglés: son el prompt, que vuelve a montar el código.'),
+    h('p', { class: 'nota' }, 'La lista es lo que se buscará en la foto nueva. Los textos en inglés son las instrucciones para la foto; el estudio las vuelve a montar al guardar.'),
     h(
       'table',
       { class: 'tabla' },
-      h('thead', {}, h('tr', {}, h('th', {}, 'Elemento'), h('th', {}, 'Cómo está'), h('th', {}, 'Nº'), h('th', {}))),
+      h(
+        'thead',
+        {},
+        h(
+          'tr',
+          {},
+          h('th', {}, 'Elemento'),
+          h('th', {}, 'Cómo está'),
+          h('th', {}, 'Nº'),
+          conInventario ? h('th', {}, 'En la foto (inglés)') : null,
+          conInventario ? h('th', {}, 'Entra en la toma') : null,
+          h('th', {}),
+        ),
+      ),
       filas,
     ),
     h('button', { type: 'button', class: 'secundario pequeno', onclick: () => filaElemento() }, 'Añadir elemento'),
-    h('div', { class: 'dos-columnas', style: { marginTop: '1rem' } }, h('div', {}, campo('Elementos (prompt)', elementosEn), campo('Recuento (prompt)', recuentoEn, 'Por ejemplo: «Exactly one plate.»')), h('div', {}, campo('Ángulo de la cámara (°)', angulo, '0 = a ras de mesa · 90 = cenital'), campo('Distancia', distancia), campo('Cámara (prompt)', camara))),
+    h(
+      'div',
+      { class: 'dos-columnas', style: { marginTop: '1rem' } },
+      h(
+        'div',
+        {},
+        conInventario
+          ? h('p', { class: 'nota' }, 'Con el productor, los elementos y el recuento de la foto se arman con esta lista: si añades o quitas un elemento, cambia la foto que se pide.')
+          : [campo('Elementos (prompt)', elementosEn), campo('Recuento (prompt)', recuentoEn, 'Por ejemplo: «Exactly one plate.»')],
+      ),
+      h('div', {}, campo('Ángulo de la cámara (°)', angulo, '0 = a ras de mesa · 90 = cenital'), campo('Distancia', distancia), campo('Cámara (prompt)', camara)),
+    ),
     h('div', { class: 'dos-columnas' }, campo('Luz (prompt)', luz), campo('Idea gráfica (prompt)', idea)),
+    h(
+      'div',
+      { class: 'dos-columnas' },
+      campo('Qué es el plato (inglés, va a la foto)', plato, ayudaPlato),
+      campo('Tipo de local (inglés, va a la foto)', origen, ayudaPlato),
+    ),
     errores,
     h('div', { class: 'acciones' }, h('button', { type: 'button', onclick: guardar }, 'Guardar la corrección')),
     h('details', {}, h('summary', {}, 'Editar el JSON completo'), editorJsonDePropuesta(ctx, original)),

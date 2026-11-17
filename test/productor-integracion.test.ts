@@ -15,6 +15,7 @@ import { BibliotecaDeReferenciasFicheros } from '../src/adaptadores/ficheros/Bib
 import { PiezasHechasFicheros } from '../src/adaptadores/ficheros/PiezasHechasFicheros.js';
 import { MedidorDeFotoSharp } from '../src/adaptadores/imagen/MedidorDeFotoSharp.js';
 import { DirectorFotoSimulado, GeneradorFotoSimulado, RevisorVisualSimulado, SegmentadorSimulado } from '../src/adaptadores/simulado/FotoSimulada.js';
+import { corregirPropuesta } from '../src/aplicacion/post/corregirPropuesta.js';
 import { avanzar, crearEncargo, type DepsPost } from '../src/aplicacion/post/ordenPost.js';
 import { registrarReferencia } from '../src/aplicacion/referencias/registrarReferencia.js';
 import type { DepsReferencias } from '../src/aplicacion/referencias/dependencias.js';
@@ -49,8 +50,8 @@ class DirectorSushi implements DirectorDeFoto {
       descripcion: {
         ...propuesta.descripcion,
         elementos: [
-          { nombre: 'nigiri de salmón', estado: 'salmón sobre arroz', recuento: 4 },
-          { nombre: 'gunkan de toro', estado: 'tartar de toro sobre arroz y alga', recuento: 2 },
+          { nombre: 'nigiri de salmón', estado: 'salmón sobre arroz', recuento: 4, ingles: 'salmon nigiri on rice', enEncuadre: true },
+          { nombre: 'gunkan de toro', estado: 'tartar de toro sobre arroz y alga', recuento: 2, ingles: 'toro tartare gunkan with rice and seaweed', enEncuadre: true },
         ],
       },
     };
@@ -187,6 +188,103 @@ describe('Productor · la confirmación necesita vía', () => {
     const r = await avanzar(d, 'sin-via', { confirmo: true });
     assert.match(r.parada, /CONFIRMACIÓN RECHAZADA/);
     assert.equal(r.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+  });
+});
+
+describe('Productor · la toma de jamón se valida antes de gastar', () => {
+  const nota = 'Pata de jamón y dos platos blancos de lonchas en espiral';
+  const jamon = { nombre: 'Pata de jamón', estado: 'sobre el jamonero', recuento: 1, ingles: 'ham leg on the ham stand', enEncuadre: true };
+  const platos = { nombre: 'Platos blancos', estado: 'con lonchas en espiral', recuento: 2, ingles: 'white plates with ham slices in a spiral', enEncuadre: true };
+  const base = new DirectorFotoSimulado();
+
+  async function propuestaDeJamon(e: EncargoDeFoto): Promise<PropuestaFotoNueva> {
+    const propuesta = await base.proponer(e);
+    propuesta.descripcion.elementos = [{ ...jamon }, { ...platos }];
+    propuesta.huecos.plato = 'ham on a stand';
+    // Un texto antiguo o del modelo que omite los platos no es la lista que se envía al generador.
+    propuesta.huecos.elementos = 'only the ham leg on the ham stand';
+    propuesta.huecos.recuento = 'un texto viejo';
+    return propuesta;
+  }
+
+  const casos: Array<{ id: string; cambiar: (p: PropuestaFotoNueva) => void; problema: RegExp }> = [
+    {
+      id: 'jamon-inventado',
+      cambiar(p) {
+        p.huecos.plato = 'acorn-fed ibérico ham';
+        p.huecos.origen = 'in a bodega';
+      },
+      problema: /iberico.*acorn-fed.*bodega/s,
+    },
+    {
+      id: 'jamon-sin-frase',
+      cambiar(p) { delete p.descripcion.elementos[1]!.ingles; },
+      problema: /Platos blancos» no tiene su frase/,
+    },
+    {
+      id: 'jamon-fuera-de-toma',
+      cambiar(p) { p.descripcion.elementos[1]!.enEncuadre = false; },
+      problema: /deja fuera «Platos blancos»/,
+    },
+    {
+      id: 'jamon-encuadre-sin-revisar',
+      cambiar(p) { delete p.descripcion.elementos[1]!.enEncuadre; },
+      problema: /No consta si «Platos blancos» entra/,
+    },
+  ];
+
+  for (const { id, cambiar, problema } of casos) {
+    it(`detiene ${id} antes de generar, aunque se intente confirmar`, async () => {
+      const generador = new GeneradorFotoSimulado();
+      const motivosDeRevision: string[][] = [];
+      const director: DirectorDeFoto = {
+        nombre: 'director jamón simulado',
+        async proponer(e, problemas) {
+          motivosDeRevision.push(problemas);
+          const propuesta = await propuestaDeJamon(e);
+          cambiar(propuesta);
+          return propuesta;
+        },
+      };
+      const d = conProductor({ ...deps({ director }), generador }, { proyecto: id });
+      await nuevo(d, id, nota);
+      const primera = await avanzar(d, id);
+      assert.equal(primera.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+      assert.equal(motivosDeRevision.length, 2);
+      assert.match(motivosDeRevision[1]!.join(' '), problema);
+
+      const confirmada = await avanzar(d, id, { confirmo: true, via: 'web' });
+      assert.equal(confirmada.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+      assert.match(confirmada.parada, problema);
+      assert.equal(generador.peticiones.length, 0);
+      assert.ok(!(await bitacora(id)).some((e) => e.tipo === 'CONFIRMACION'));
+    });
+  }
+
+  it('monta el prompt desde el inventario y usa la corrección guardada tras confirmar', async () => {
+    const id = 'jamon-corregido';
+    const generador = new GeneradorFotoSimulado();
+    const director = { nombre: 'director jamón simulado', proponer: propuestaDeJamon };
+    const d = conProductor({ ...deps({ director }), generador }, { proyecto: id });
+    await nuevo(d, id, nota);
+    const r = await avanzar(d, id);
+    assert.equal(r.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+    assert.match(r.encargo.propuesta?.prompt ?? '', /2 × white plates with ham slices in a spiral/);
+    assert.equal(generador.peticiones.length, 0);
+
+    const archivo = join(carpetaDe(id), 'foto', 'propuesta.json');
+    const { propuesta } = JSON.parse(await readFile(archivo, 'utf8')) as { propuesta: PropuestaFotoNueva };
+    const elemento = propuesta.descripcion.elementos[1]!;
+    elemento.estado = 'lonchas finas en espiral';
+    delete elemento.ingles;
+    const correccion = await corregirPropuesta(d, id, propuesta);
+    assert.deepEqual(correccion.problemas, []);
+    assert.match(correccion.prompt, /2 × Platos blancos, lonchas finas en espiral/);
+
+    const segunda = await avanzar(d, id, { confirmo: true, via: 'web' });
+    assert.equal(segunda.encargo.paso, 'CONFIRMAR_FOTO');
+    assert.equal(generador.peticiones.length, 1);
+    assert.equal(generador.peticiones[0]?.prompt, correccion.prompt);
   });
 });
 

@@ -1,7 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
-import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { esOtraToma, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
 import { validar } from '../../dominio/validacion.js';
 import { guardarEncargo, leerEncargo, type DepsPost } from './ordenPost.js';
 
@@ -27,15 +28,25 @@ export async function corregirPropuesta(deps: DepsPost, proyecto: string, entrad
   const archivo = e.propuesta?.archivo ?? 'foto/propuesta.json';
   const ruta = join(deps.proyectos, e.proyecto, archivo);
   const guardada = JSON.parse(await readFile(ruta, 'utf8')) as Record<string, unknown>;
+  const opciones = opcionesDeRevision(guardada.opcionesPrompt as OpcionesDePrompt | undefined, Boolean(deps.productor));
+
+  // Con el productor, cada elemento sin su frase en inglés recibe la de castellano (la escribió una persona; el generador la entiende).
+  if (opciones?.desdeElInventario) {
+    for (const x of propuesta.descripcion.elementos) if (!x.ingles?.trim()) x.ingles = `${x.nombre}, ${x.estado}`;
+  }
 
   const real = await deps.activos.obtener(e.local, e.activoReal);
-  const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
-  const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt as OpcionesDePrompt | undefined);
+  const revision = revisarPropuesta(propuesta, opciones, {
+    lado: { ancho: real.activo.ancho, alto: real.activo.alto },
+    nota: e.plato,
+    ...(opciones?.desdeElInventario ? { marca: textoDeMarca(await deps.referencias.locales.obtener(e.local)) } : {}),
+  });
+  const { problemas, prompt } = revision;
   const ahora = deps.ahora();
 
   await writeFile(
     ruta,
-    `${JSON.stringify({ ...guardada, propuestaDelDirector: guardada.propuestaDelDirector ?? guardada.propuesta, propuesta, prompt, problemas, corregidaEn: ahora }, null, 2)}\n`,
+    `${JSON.stringify({ ...guardada, propuestaDelDirector: guardada.propuestaDelDirector ?? guardada.propuesta, propuesta, opcionesPrompt: opciones, prompt, problemas, corregidaEn: ahora }, null, 2)}\n`,
   );
   await guardarEncargo(deps, {
     ...e,

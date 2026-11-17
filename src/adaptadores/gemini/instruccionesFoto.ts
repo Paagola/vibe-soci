@@ -2,9 +2,9 @@
  * Instrucciones de la FASE DE FOTO, separadas de las de diseño (instrucciones.ts): aquí la foto va sin texto,
  * así que no aplica la regla «foto y texto en una sola imagen». La plantilla está en dominio/fotoNueva.ts.
  */
-import { DIFERENCIA_MINIMA_GRADOS, DIFERENCIA_PARCIAL_GRADOS, GIRO_MINIMO_GRADOS } from '../../dominio/fotoNueva.js';
+import { DIFERENCIA_MINIMA_GRADOS, DIFERENCIA_PARCIAL_GRADOS, GIRO_MINIMO_GRADOS, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
 import type { GuiaCreativa } from '../../puertos/BibliotecaCreativa.js';
-import { ESTETICAS, type Estetica } from '../../dominio/diseno/estetica.js';
+import { ESTETICAS } from '../../dominio/diseno/estetica.js';
 
 export function instruccionesFoto(guia: GuiaCreativa): string {
   return `Eres el director de fotografía de un estudio que hace fotos de producto para restaurantes y bares reales.
@@ -33,12 +33,13 @@ export interface EncargoFoto {
   /** Ficha de la referencia elegida para el post, en palabras (la imagen va aparte, solo para el director). */
   referencia?: { id: string; resumen: string };
   /** Si el generador verá la referencia como @image2 (solo de estilo) y su familia. */
-  alGenerador?: { estiloDeReferencia?: boolean; familia?: string; estetica?: Estetica };
+  alGenerador?: Pick<OpcionesDePrompt, 'estiloDeReferencia' | 'familia' | 'estetica' | 'desdeElInventario'>;
   /** F3.3: un carrusel pide también las tomas de detalle. */
   formato?: 'post' | 'carrusel';
 }
 
 export function textoFotoNueva(e: EncargoFoto, problemasPrevios: string[] = []): string {
+  const desdeElInventario = e.alGenerador?.desdeElInventario === true;
   const referencia = e.referencia
     ? `\n# Referencia elegida para el post (solo para ti: no se envía al generador)
 ${e.referencia.id}: ${e.referencia.resumen}
@@ -65,6 +66,8 @@ ${referencia}${textoEstetica}
   - "recuento" son solo las piezas que se ven ENTERAS; las que corta el borde de la foto van en "cortados" (una pieza cortada puede ser una entera en el plato real, o no: no la des por entera);
   - piezas parecidas pero distintas son elementos distintos (un rollito blanco con huevas no es un rollito de atún): no las juntes;
   - si alguna pieza queda tapada, borrosa o no sabes de qué tipo es, pon "dudoso": true y explícalo en "nota". Mejor dudoso que inventado.
+${desdeElInventario ? `  - "ingles": escribe para cada elemento una frase en inglés que describa solo su nombre y estado, sin añadir ingredientes, origen, raza, calidad ni recuento. El estudio construye la lista del prompt con estas frases.
+  - "enEncuadre": después de planear la cámara de la toma principal, comprueba cada elemento. Pon true solo si se verá en esa toma y false si queda fuera u oculto. Si algo queda fuera, abre el plano, cambia la altura o recoloca el plato para que se vea. Mantén el elemento en la lista aunque el encuadre todavía no lo enseñe.` : ''}
 - "defectos": lo que tiene de foto rápida (resolución, luz plana, cosas que sobran en el encuadre, manchas).
 - "utilizable" y "motivo": si sirve como lista de elementos o hay que pedir otra foto.
 
@@ -72,6 +75,7 @@ ${referencia}${textoEstetica}
 El estudio monta el prompt con esta estructura exacta (no la escribas tú):
 "@image1 is a real photo of <plato> <origen>. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: <elementos>. <recuento> Nothing else added. New composition by a professional food photographer: <camara.descripcion>, <objetivoMm> mm lens at f/<apertura>, <ideaGrafica>. <luz>, <colorDominante>. Photographic realism, no text."
 - "plato" y "origen": qué es y de qué tipo de local, sin nombre propio.
+${desdeElInventario ? '- Usa únicamente el nombre y la preparación que consten en la nota o sean visibles. Si desconoces el tipo de local, usa «at a restaurant». La referencia solo aporta estilo.' : ''}
 - "elementos": todos los de la foto, con su estado, incluida la vajilla. Superficie y fondo son libres.
 - "recuento": «Exactly …» con el número de cada pieza que se pueda contar.
 - "camara": altura en grados, "giroGrados" (cuánto gira alrededor del plato respecto a la foto subida: 0 el mismo lado, 45 un ¾ desde la esquina, 90 de costado), "distancia" (otro tamaño de plano si cambia), una frase que describa el resultado visible, objetivo y apertura. Tiene que ser otra toma (regla de arriba).
@@ -90,5 +94,5 @@ Nada que no esté en la foto subida.
 En "decisiones", explica en español cada decisión y de qué ejemplo o referencia la sacas.
 ${problemas}
 Responde solo con este JSON (los números son de relleno: pon los tuyos):
-{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","aire":"arriba-derecha","luz":"…","colorDominante":"…"},"decisiones":["…"]${e.formato === 'carrusel' ? ',"tomas":[{"elemento":"…","huecos":{…la misma forma que "huecos"…}}]' : ''}}`;
+{"descripcion":{"anguloGrados":0,"distancia":"MEDIO","encuadre":"…","luz":"…","elementos":[{"nombre":"…","estado":"…","recuento":2,"cortados":1,"dudoso":false,"nota":"…"${desdeElInventario ? ',"ingles":"…","enEncuadre":true' : ''}}],"defectos":["…"],"utilizable":true,"motivo":"…"},"huecos":{"plato":"…","origen":"…","elementos":"…","recuento":"…","camara":{"anguloGrados":0,"giroGrados":0,"distancia":"MEDIO","descripcion":"…","objetivoMm":0,"apertura":0},"ideaGrafica":"…","aire":"arriba-derecha","luz":"…","colorDominante":"…"},"decisiones":["…"]${e.formato === 'carrusel' ? ',"tomas":[{"elemento":"…","huecos":{…la misma forma que "huecos"…}}]' : ''}}`;
 }

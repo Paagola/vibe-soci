@@ -126,7 +126,8 @@ describe('Orden única · de punta a punta (simulada)', () => {
     await avanzar(d, 'descartes');
     let r = await avanzar(d, 'descartes', { confirmo: true });
     assert.equal(generador.peticiones.length, 2, 'dos intentos, y no más');
-    assert.match(r.parada, /BLOQUEADO en CONFIRMAR_ELEMENTOS: 2 fotos descartadas/);
+    assert.match(r.parada, /BLOQUEADO en CONFIRMAR_ELEMENTOS: Se han hecho 2 fotos seguidas.*para no gastar más/);
+    assert.match(r.parada, /aparece algo que no está en el plato: un posavasos/);
     assert.deepEqual(r.encargo.intentos.map((i) => i.final), ['DESCARTA', 'DESCARTA']);
     r = await avanzar(d, 'descartes');
     assert.match(r.parada, /BLOQUEADO/, 'sin --confirmo no sigue');

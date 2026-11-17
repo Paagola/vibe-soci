@@ -33,29 +33,21 @@ export function motivoLlano(m: string): string {
   return m;
 }
 
-/**
- * Qué ha pasado y qué puedes hacer cuando la orden se para tras los descartes (para la web: sin comandos ni nombres de fichero).
- * undefined si `e.bloqueo` no está. k = descartesSeguidos(e.intentos); motivos = los de los k últimos intentos, con motivoLlano, sin repetidos.
- * queHaPasado = `Se han hecho ${k} fotos seguidas y la comprobación automática las ha descartado, así que la orden se ha parado para no gastar más. Motivos: ${motivos.join('; ')}.`
- * quePuedesHacer = [
- *   'Mira en la lista de esta parada si la toma nueva deja sitio a todo lo que hay en el plato: si falta algo en la foto, cambia la toma (más abierta o desde más arriba) o quita ese elemento de la lista si no tiene que salir.',
- *   'Corrige la lista o la toma en el formulario de esta parada y guarda la corrección.',
- *   `Cuando esté bien, vuelve a confirmar: se harán como mucho ${MAX_INTENTOS_SEGUIDOS} fotos más${est > 0 ? ` (≤ ${(est * MAX_INTENTOS_SEGUIDOS).toFixed(2)} USD)` : ''}.`,
- * ]  con est = e.autorizacion?.estimadoPorIntentoUsd ?? 0.
- */
+/** Explica un bloqueo por descartes para el formulario y la terminal. */
 export function explicarBloqueo(e: Pick<EncargoPost, 'bloqueo' | 'intentos' | 'autorizacion'>): Explicacion | undefined {
   if (!e.bloqueo) return undefined;
   const k = descartesSeguidos(e.intentos);
-  // slice(-0) devolvería la lista entera: con k = 0 no hay intentos descartados que contar.
-  const ultimos = k > 0 ? e.intentos.slice(-k) : [];
+  if (!k) return undefined;
+  const ultimos = e.intentos.slice(-k);
   const motivos = [...new Set(ultimos.flatMap((i) => i.motivos).map(motivoLlano))];
+  const quien = ultimos.every((i) => i.final === 'DESCARTA') ? 'la comprobación automática las ha descartado' : 'han sido descartadas';
   const est = e.autorizacion?.estimadoPorIntentoUsd ?? 0;
   return {
-    queHaPasado: `Se han hecho ${k} fotos seguidas y la comprobación automática las ha descartado, así que la orden se ha parado para no gastar más. Motivos: ${motivos.join('; ')}.`,
+    queHaPasado: `Se han hecho ${k} fotos seguidas y ${quien}, así que la orden se ha parado para no gastar más.${motivos.length ? ` Motivos: ${motivos.join('; ')}.` : ''}`,
     quePuedesHacer: [
-      'Mira en la lista de esta parada si la toma nueva deja sitio a todo lo que hay en el plato: si falta algo en la foto, cambia la toma (más abierta o desde más arriba) o quita ese elemento de la lista si no tiene que salir.',
-      'Corrige la lista o la toma en el formulario de esta parada y guarda la corrección.',
-      `Cuando esté bien, vuelve a confirmar: se harán como mucho ${MAX_INTENTOS_SEGUIDOS} fotos más${est > 0 ? ` (≤ ${(est * MAX_INTENTOS_SEGUIDOS).toFixed(2)} USD)` : ''}.`,
+      'Comprueba que todo lo que hay en el plato cabe en la toma. Si algo queda fuera, prueba un plano más abierto o una cámara más alta.',
+      'Corrige la lista o la toma y guarda la corrección antes de confirmar.',
+      `Cuando esté bien, vuelve a confirmar: se podrán hacer hasta ${MAX_INTENTOS_SEGUIDOS} intentos de la foto principal${est > 0 ? ` (≤ ${(est * MAX_INTENTOS_SEGUIDOS).toFixed(2)} USD)` : ''}.`,
     ],
   };
 }

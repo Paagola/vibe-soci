@@ -31,7 +31,9 @@ import { choqueConFamilia, ESTETICAS, esteticaDeFamilia, type Estetica } from '.
 import { ErrorDeServicio, ErrorDeUsuario } from '../../dominio/errores.js';
 import type { Marca } from '../../dominio/modelos.js';
 import { proponerDiseno, type DepsProponerDiseno, type EntradaDiseno, type PruebaDeIntencion, type ResultadoDiseno } from '../diseno/proponerDiseno.js';
-import { montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { montarPromptFotoNueva, PropuestaFotoNueva, recuentosQueMirar, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { huecosDeTomaEfectivos, huecosEfectivos, opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
+import { explicarBloqueo } from '../../dominio/explicaciones.js';
 import { contradiccionesConLaNota } from '../../dominio/nota.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, PARADAS, trasComprobar, type IntentoFoto, type PasoPost, type TomaDelEncargo } from '../../dominio/post.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
@@ -101,7 +103,6 @@ const ETIQUETA_REAL = '@image1 (real photograph of the dish)';
 const ETIQUETA_ESTILO = '@image2 (published reference post: style reference only)';
 const ARCHIVO_REFERENCIA_DE_ESTILO = 'foto/referencia-estilo.jpg';
 const LADO_REFERENCIA_DE_ESTILO = 768;
-
 export const rutaEncargo = (deps: DepsPost, proyecto: string) => join(deps.proyectos, proyecto, 'post.json');
 const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 
@@ -179,7 +180,9 @@ export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion =
   for (let vueltas = 0; vueltas < 30; vueltas++) {
     if (e.bloqueo && !(accion.confirmo && e.paso === 'CONFIRMAR_ELEMENTOS' && !usada)) {
       await guardarEncargo(deps, e);
-      return { encargo: e, mensajes, parada: `BLOQUEADO en ${e.paso}: ${e.bloqueo}` };
+      const explicacion = explicarBloqueo(e);
+      const motivo = explicacion ? [explicacion.queHaPasado, ...explicacion.quePuedesHacer].join('\n') : e.bloqueo;
+      return { encargo: e, mensajes, parada: `BLOQUEADO en ${e.paso}: ${motivo}` };
     }
     const paso: PasoPost = e.paso;
     if (paso === 'HECHO') {
@@ -298,8 +301,9 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
       await sharp(referencia!.imagen!).rotate().resize(LADO_REFERENCIA_DE_ESTILO, LADO_REFERENCIA_DE_ESTILO, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 90 }).toFile(join(deps.proyectos, e.proyecto, ARCHIVO_REFERENCIA_DE_ESTILO));
     }
-    const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}), ...(e.estetica ? { estetica: e.estetica } : {}) };
-    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador, formato: e.formato });
+    const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}), ...(e.estetica ? { estetica: e.estetica } : {}), ...(deps.productor ? { desdeElInventario: true } : {}) };
+    const hechos = deps.productor ? { marca: textoDeMarca(await deps.referencias.locales.obtener(e.local)) } : {};
+    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador, formato: e.formato }, hechos);
     const archivo = 'foto/propuesta.json';
     await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
     await writeFile(join(deps.proyectos, e.proyecto, archivo), `${JSON.stringify({ director: deps.director.nombre, fecha: deps.ahora(), ...resultado }, null, 2)}\n`);
@@ -313,9 +317,11 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const guardada = JSON.parse(await readFile(ruta, 'utf8')) as { propuesta: unknown; opcionesPrompt?: OpcionesDePrompt };
     const propuesta = PropuestaFotoNueva.parse(guardada.propuesta);
     const real = await deps.activos.obtener(e.local, e.activoReal as string);
-    const problemas = problemasFotoNueva(propuesta, { ancho: real.activo.ancho, alto: real.activo.alto });
-    const prompt = montarPromptFotoNueva(propuesta.huecos, guardada.opcionesPrompt);
-    await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, prompt, problemas }, null, 2)}\n`);
+    const opcionesPrompt = opcionesDeRevision(guardada.opcionesPrompt, Boolean(deps.productor));
+    const hechos = opcionesPrompt?.desdeElInventario ? { marca: textoDeMarca(await deps.referencias.locales.obtener(e.local)) } : {};
+    const revision = revisarPropuesta(propuesta, opcionesPrompt, { lado: { ancho: real.activo.ancho, alto: real.activo.alto }, nota: e.plato, ...hechos });
+    const problemas = revision.problemas;
+    const prompt = revision.prompt;
     // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto: la foto de más que haya subido el
     // dueño para ese elemento (no se genera) o, si no, una toma nueva sacada de la misma foto real.
     // F3.3: un elemento que la nota del dueño llama con otra preparación no se confirma (gunkan / rollito de papel de arroz).
@@ -328,12 +334,14 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         ? []
         : [
             ...extras.filter((x) => x.nombre && x.activo).map((x) => ({ elemento: x.nombre!, prompt: '', real: true, elegida: x.activo })),
-            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(t.huecos, { ...guardada.opcionesPrompt, deDetalle: true }) })),
+            ...(propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(huecosDeTomaEfectivos(propuesta, t, opcionesPrompt), { ...opcionesPrompt, deDetalle: true }) })),
           ]
             .slice(0, 3)
             .map((t, i) => ({ n: i + 1, ...t }));
     const generadas = tomas.filter((t) => !t.real);
     const encargo = { ...e, propuesta: { archivo: e.propuesta?.archivo ?? 'foto/propuesta.json', prompt, problemas } };
+    await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, opcionesPrompt, prompt, problemas }, null, 2)}\n`);
+    if (accion.confirmo && problemas.length) return { encargo, parar: `No se puede confirmar con problemas: ${problemas.join(' | ')}. Corrige ${relative(deps.raiz, ruta)}.`, usaAccion: true };
 
     const disponible = deps.generador.disponible();
     const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0, await rutaDeEstilo(deps, e))) : 0;
@@ -348,6 +356,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           `  Elementos: ${elementos}`,
           ...(mirar.length ? [`  MIRA ESTOS RECUENTOS EN LA FOTO SUBIDA (el director no está seguro o hay piezas cortadas): ${mirar.join(' | ')}`] : []),
           `  Cámara: de ${propuesta.descripcion.anguloGrados}° a ${propuesta.huecos.camara.anguloGrados}° · ${propuesta.huecos.camara.descripcion}`,
+          ...(opcionesPrompt?.desdeElInventario && propuesta.descripcion.elementos.every((x) => x.enEncuadre === true) ? ['  Toma: entran todos los elementos de la lista.'] : []),
           `  Prompt${tomas.length ? ' de la portada' : ''}: ${prompt}`,
           ...tomas.map((t) => (t.real ? `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, tal cual (no se genera).` : `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`)),
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
@@ -360,7 +369,6 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         ].join('\n'),
       };
     }
-    if (problemas.length) return { encargo, parar: `No se puede confirmar con problemas: ${problemas.join(' | ')}. Corrige ${relative(deps.raiz, ruta)}.`, usaAccion: true };
     nota(`Confirmado: elementos, prompt y hasta ${MAX_INTENTOS_SEGUIDOS} intentos${disponible.ok ? ` (≤ ${estimado.toFixed(3)} USD cada uno)` : ''}.`);
     const { bloqueo: _fuera, ...sinBloqueo } = encargo;
     return {
@@ -414,9 +422,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
 
   async COMPROBAR(deps, e, _a, nota) {
     const ultimo = e.intentos[e.intentos.length - 1] as IntentoFoto;
-    const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''), 'utf8')) as { propuesta: unknown };
+    const guardada = JSON.parse(await readFile(join(deps.proyectos, e.proyecto, e.propuesta?.archivo ?? ''), 'utf8')) as { propuesta: unknown; opcionesPrompt?: OpcionesDePrompt };
     const propuesta = PropuestaFotoNueva.parse(guardada.propuesta);
-    const lista = `${propuesta.huecos.elementos.replace(/[.\s]+$/, '')}. ${propuesta.huecos.recuento}`;
+    const h = huecosEfectivos(propuesta, guardada.opcionesPrompt);
+    const lista = `${h.elementos.replace(/[.\s]+$/, '')}. ${h.recuento}`;
     // Un recuento dudoso no sirve de patrón para contar piezas en la foto nueva.
     const piezas = propuesta.descripcion.elementos.filter((x) => x.recuento !== null && x.recuento > 0 && !x.dudoso).map((x) => ({ nombre: x.nombre, esperado: x.recuento as number }));
     // El aire que pidió el director de foto, medido con la máscara de la foto nueva (que se guarda ya para el diseño).
@@ -443,6 +452,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         tomas.push(t);
         continue;
       }
+      const ht = huecosDeTomaEfectivos(propuesta, hueco, guardada.opcionesPrompt);
       let aireToma: AireMedido | undefined;
       if (hueco.huecos.aire && hueco.huecos.aire !== 'ninguno' && deps.disenador) {
         await asegurarMascara(deps, e.local, t.intento.activo, nota);
@@ -451,7 +461,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       }
       const r = await comprobarFotoNueva(
         { activos: deps.activos, revisor: deps.revisor, ahora: deps.ahora },
-        { local: e.local, generado: t.intento.activo, real: e.activoReal as string, lista: `${hueco.huecos.elementos.replace(/[.\s]+$/, '')}. ${hueco.huecos.recuento}`, comprobarToma: false, ...(aireToma ? { aire: aireToma } : {}) },
+        { local: e.local, generado: t.intento.activo, real: e.activoReal as string, lista: `${ht.elementos.replace(/[.\s]+$/, '')}. ${ht.recuento}`, comprobarToma: false, ...(aireToma ? { aire: aireToma } : {}) },
       );
       nota(`Comprobación de la toma de detalle ${t.n} («${t.elemento}»): ${r.final}${r.motivos.length ? ` (${r.motivos.join('; ')})` : ''}${r.final === 'DESCARTA' ? '. Su diapositiva usará un recorte de la portada.' : ''}.`);
       tomas.push({ ...t, intento: { ...t.intento, final: r.final, motivos: r.motivos } });

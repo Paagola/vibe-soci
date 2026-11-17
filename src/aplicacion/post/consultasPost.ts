@@ -11,8 +11,10 @@ import sharp from 'sharp';
 import type { Activo } from '../../dominio/activos.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
-import { esOtraToma, montarPromptFotoNueva, problemasFotoNueva, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { esOtraToma, PropuestaFotoNueva, type OpcionesDePrompt } from '../../dominio/fotoNueva.js';
+import { explicarBloqueo, type Explicacion } from '../../dominio/explicaciones.js';
 import type { Marca } from '../../dominio/modelos.js';
+import { opcionesDeRevision, revisarPropuesta, textoDeMarca } from '../../dominio/promptFiel.js';
 import { EncargoPost, MAX_INTENTOS_SEGUIDOS, type IntentoFoto, type PasoPost } from '../../dominio/post.js';
 import type { FamiliaBiblioteca, ReferenciaLocal } from '../../dominio/referencia.js';
 import { esExtensionDeFoto } from '../../dominio/reglas.js';
@@ -55,8 +57,8 @@ export function faseDe(paso: PasoPost): FasePost {
 export type EsperaPost =
   /** Falta la referencia o no vale (sin ficha, enlace sin captura). */
   | { tipo: 'REFERENCIA'; motivo: string }
-  /** ■ Parada 1: confirmar los elementos, el prompt y el gasto. Con `bloqueo`, tras dos fotos descartadas seguidas. */
-  | { tipo: 'CONFIRMAR_ELEMENTOS'; bloqueo?: string }
+  /** ■ Parada 1: confirmar los elementos, el prompt y el gasto. Con `bloqueo`, tras dos fotos descartadas seguidas (y su explicación en llano). */
+  | { tipo: 'CONFIRMAR_ELEMENTOS'; bloqueo?: string; explicacion?: Explicacion }
   /** No se puede generar por la API: hay que importar una foto hecha a mano. */
   | { tipo: 'IMPORTAR_FOTO'; motivo: string }
   /** ■ Parada 2: confirmar o rechazar la foto nueva. */
@@ -111,6 +113,8 @@ export interface DetallePropuesta {
   valida: boolean;
   /** Si no es válida: qué campos fallan. */
   errores: string[];
+  /** Con el productor, el prompt sale del inventario (y se revisa antes de gastar). */
+  desdeElInventario: boolean;
   /** La propuesta tal como está guardada (válida o no), para poder corregirla. */
   contenido: unknown;
   /** El prompt montado por el código con los huecos actuales. Vacío si la propuesta no es válida. */
@@ -269,7 +273,7 @@ export async function detalleDeEncargo(deps: DepsConsultasPost, proyecto: string
     const meta = ruta ? await sharp(ruta).metadata().catch(() => null) : null;
     fotoSubida = { ...fotoSubida, disponible: Boolean(meta), ancho: meta?.width ?? 0, alto: meta?.height ?? 0 };
   }
-  const propuesta = await leerPropuesta(deps, e, { ancho: fotoSubida.ancho, alto: fotoSubida.alto });
+  const propuesta = await leerPropuesta(deps, e, { ancho: fotoSubida.ancho, alto: fotoSubida.alto }, local);
 
   // ---------------------------------------------------------------- Intentos
   const intentos: DetalleIntento[] = await Promise.all(
@@ -311,8 +315,10 @@ function queEspera(
       if (errorReferencia) return { tipo: 'REFERENCIA', motivo: errorReferencia };
       if (estado && !estado.paso.puede) return { tipo: 'REFERENCIA', motivo: estado.paso.motivo };
       return { tipo: 'CONTINUAR', paso: e.paso };
-    case 'CONFIRMAR_ELEMENTOS':
-      return { tipo: 'CONFIRMAR_ELEMENTOS', ...(e.bloqueo ? { bloqueo: e.bloqueo } : {}) };
+    case 'CONFIRMAR_ELEMENTOS': {
+      const explicacion = explicarBloqueo(e);
+      return { tipo: 'CONFIRMAR_ELEMENTOS', ...(e.bloqueo ? { bloqueo: e.bloqueo } : {}), ...(explicacion !== undefined ? { explicacion } : {}) };
+    }
     case 'GENERAR':
       return generador.disponible ? { tipo: 'CONTINUAR', paso: e.paso } : { tipo: 'IMPORTAR_FOTO', motivo: generador.motivo ?? 'el generador no está disponible' };
     case 'CONFIRMAR_FOTO':
@@ -335,25 +341,28 @@ function queEspera(
   }
 }
 
-async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: number; alto: number }): Promise<DetallePropuesta | null> {
+async function leerPropuesta(deps: DepsPost, e: EncargoPost, lado: { ancho: number; alto: number }, marca: Marca | null): Promise<DetallePropuesta | null> {
   const archivo = e.propuesta?.archivo ?? 'foto/propuesta.json';
   let guardada: { director?: unknown; fecha?: unknown; propuesta?: unknown; opcionesPrompt?: OpcionesDePrompt } | undefined;
   try {
     guardada = (await leerJsonSiExiste(join(deps.proyectos, e.proyecto, archivo))) as typeof guardada;
   } catch (error) {
-    return { archivo, director: null, fecha: null, valida: false, errores: [`El archivo no es JSON válido: ${mensajeDe(error)}`], contenido: null, prompt: '', problemas: [], toma: null };
+    return { archivo, director: null, fecha: null, valida: false, errores: [`El archivo no es JSON válido: ${mensajeDe(error)}`], desdeElInventario: false, contenido: null, prompt: '', problemas: [], toma: null };
   }
   if (!guardada) return null;
   const base = { archivo, director: typeof guardada.director === 'string' ? guardada.director : null, fecha: typeof guardada.fecha === 'string' ? guardada.fecha : null };
   const leida = PropuestaFotoNueva.safeParse(guardada.propuesta);
-  if (!leida.success) return { ...base, valida: false, errores: describirProblemas(leida.error), contenido: guardada.propuesta ?? null, prompt: '', problemas: [], toma: null };
+  if (!leida.success) return { ...base, valida: false, errores: describirProblemas(leida.error), desdeElInventario: false, contenido: guardada.propuesta ?? null, prompt: '', problemas: [], toma: null };
+  const opciones = opcionesDeRevision(guardada.opcionesPrompt, e.paso === 'CONFIRMAR_ELEMENTOS' && Boolean(deps.productor));
+  const revision = revisarPropuesta(leida.data, opciones, { lado, nota: e.plato, ...(marca ? { marca: textoDeMarca(marca) } : {}) });
   return {
     ...base,
     valida: true,
     errores: [],
+    desdeElInventario: Boolean(opciones?.desdeElInventario),
     contenido: leida.data,
-    prompt: montarPromptFotoNueva(leida.data.huecos, guardada.opcionesPrompt),
-    problemas: problemasFotoNueva(leida.data, lado),
+    prompt: revision.prompt,
+    problemas: revision.problemas,
     toma: esOtraToma(leida.data.descripcion, leida.data.huecos.camara),
   };
 }

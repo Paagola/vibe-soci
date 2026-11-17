@@ -14,7 +14,7 @@ export async function vistaNuevoEncargo() {
   const campo = (etiqueta, control, ayuda) => h('label', { class: 'campo' }, h('span', {}, etiqueta), control, ayuda ? h('small', {}, ayuda) : null);
 
   // ------------------------------------------------ Local
-  const local = h('select', {}, locales.map((m) => h('option', { value: m.slug }, `${m.nombre} · ${m.ciudad}`)));
+  const local = h('select', {}, locales.map((m) => h('option', { value: m.slug }, `${m.nombre} · ${m.ciudad}${m.soloLectura ? ' · datos reales (solo lectura)' : ''}`)));
   const avisoTokens = h('p', { class: 'aviso-linea', hidden: true }, 'Este local aún no tiene marcas/<local>/tokens.json: la orden llegará hasta la foto nueva, pero no podrá componer el post.');
   const actualizarLocal = () => {
     const elegido = locales.find((m) => m.slug === local.value);

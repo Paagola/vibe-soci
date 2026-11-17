@@ -251,4 +251,19 @@ describe('adaptador real de Gemini con el brief', () => {
     assert.equal(cuerpos.length, 1);
     assert.equal(cuerpos[0]!.includes('Brief del encargo'), false);
   });
+
+  it('con inventario pide la frase y la revisión del encuadre de cada elemento', async () => {
+    const { director, cuerpos } = directorConFetchFalso();
+    await assert.rejects(director.proponer({
+      foto: join(RAIZ, 'plantillas', 'fotos', 'gamba-roja-de-palamos.png'),
+      plato: 'Gamba',
+      alGenerador: { desdeElInventario: true },
+    }, ['Hay un elemento fuera de la toma.']));
+    assert.equal(cuerpos.length, 1);
+    const { contents } = JSON.parse(cuerpos[0]!) as { contents: Array<{ parts: Array<{ text?: string }> }> };
+    const texto = contents.flatMap((mensaje) => mensaje.parts.map((parte) => parte.text ?? '')).join('\n');
+    assert.match(texto, /"ingles": escribe para cada elemento/);
+    assert.match(texto, /"enEncuadre".*Pon true.*false/);
+    assert.match(texto, /Hay un elemento fuera de la toma/);
+  });
 });
