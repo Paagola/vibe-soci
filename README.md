@@ -1,8 +1,8 @@
-# Estudio de contenido (MVP local)
+# Estudio de contenido de SOCIETY
 
 Convierte **una idea y una foto real del plato** en una pieza para Instagram: un post, un carrusel o una historia. La pieza es creativa, fiel al plato y lleva la identidad del local.
 
-El sistema no rellena una plantilla. Un *director creativo* (Gemini) mira tus fotos, lee lo que ha gustado antes (`biblioteca/`) y te propone 3 conceptos distintos. Tú eliges uno, él escribe el plan y después se generan las imágenes.
+En **El pase**, el productor organiza la foto original, la referencia, el inventario, la toma candidata y la entrega en una sola mesa. El flujo de conceptos y generación de piezas del estudio se puede abrir desde **Estudio**.
 
 - Diseño, decisiones y modelo de datos: [diseno/ARQUITECTURA.md](diseno/ARQUITECTURA.md)
 - Diagrama de flujo, director creativo y arquitectura: [diseno/diagrama_flujo.drawio](diseno/diagrama_flujo.drawio)
@@ -12,18 +12,27 @@ El sistema no rellena una plantilla. Un *director creativo* (Gemini) mira tus fo
 ## Puesta en marcha
 
 ```bash
-cd estudio-contenido
 npm install
-cp .env.ejemplo .env      # rellena GEMINI_API_KEY y HF_KEY
-npm run estudio           # abre http://localhost:4321
-npm test                  # pruebas, sin claves ni gasto
+npm run estudio:simulado
 ```
 
-`npm run estudio:simulado` arranca en **modo simulado**: el director y el generador son falsos y no gastan nada. También se puede activar o desactivar con el interruptor de la cabecera de la web.
-- El modo simulado tiene **sus propios datos** en `datos-simulado/` (locales, piezas y votos). Nada de lo que hagas en simulado aparece en el modo real ni enseña al director real.
-- Al cambiar de modo, la web vuelve a la lista de piezas de ese modo.
+Abre [El pase](http://localhost:4321). Si el puerto está ocupado, usa `ESTUDIO_PUERTO=4322 npm run estudio:simulado` y abre el puerto 4322. El modo simulado guarda sus encargos en `datos-simulado/` y funciona sin claves ni gasto. El enlace **Estudio** abre las herramientas anteriores en `/index.html`.
 
-## Flujo en la web
+En un clon nuevo, pulsa **Nuevo encargo → Usar el local de ejemplo** y sube una foto de `plantillas/fotos/`. Para trabajar con el proveedor real, configura `.env` a partir de `.env.ejemplo` y arranca con `npm run estudio`. `npm test` ejecuta las pruebas en local.
+
+## Un encargo en El pase
+
+1. Sube una foto y elige post o carrusel. Selecciona una referencia si el encargo la requiere.
+2. Revisa el inventario, la nueva toma y el plan editorial. La aprobación corresponde a la revisión que tienes en pantalla y autoriza la fotografía dentro del presupuesto indicado.
+3. Compara la candidata con la original y decide cuál usar. El compositor prepara las páginas y sus exportaciones 3:4 y 4:5. Puedes corregir una página concreta y conservar las demás y la foto aprobada.
+
+El productor editorial usa Hydrogen para la dirección y las tareas de texto y visión. Recibe los bytes de la foto fuente, el brief y ejemplos de oficio. El compositor resuelve las capas con los recursos locales. El modelo de fotografía se configura por separado. Cada envío de texto o visión consume cupo del encargo, incluidos los reintentos. Si se corta una generación de imagen, la orden recupera una candidata que coincida con la procedencia guardada. Si queda un envío reservado sin foto recuperable, te pide importar la candidata antes de continuar.
+
+La mesa admite selección con teclado y vista 2D. La escena se adapta al ajuste de movimiento reducido del dispositivo.
+
+Para abrir un encargo editorial desde terminal, añade `--productor` al comando `npm run post -- nuevo`. En cada parada, copia la huella que muestra la orden y usa `--confirmo --revision <huella>` o `--rechazo "motivo" --revision <huella>` en una terminal interactiva.
+
+## Flujo de conceptos en Estudio
 
 1. **Nuevo local** (una vez): nombre, ciudad, tono, colores en HEX con su muestra y tipografías.
 2. **Nueva pieza**: formato (post, carrusel o historia), número de imágenes, idea, tipo y condiciones si es oferta o evento. Sube las fotos reales (al menos una del plato) y, si quieres, una referencia de estilo.
@@ -169,6 +178,8 @@ Decide el código. El resultado va al activo (`revisionAutomatica`), y tu veredi
 |---|---|---|
 | `GEMINI_API_KEY` | — | Director creativo |
 | `GEMINI_MODELO` / `GEMINI_MODELO_RESPALDO` | `gemini-3.8-flash` / `gemini-3.5-flash` | Modelo principal y modelo de respaldo |
+| `GEMINI_MODELO_PRODUCTOR` | `gemini-4-hydrogen` | Modelo de texto y visión de los encargos editoriales |
+| `GEMINI_MODELO_PRODUCTOR_RESPALDO` | — | Respaldo opcional de los encargos editoriales |
 | `GEMINI_FACTURACION` | `no` | `si` **solo** cuando la clave tenga la facturación de Google activada. Es la vía de generación del producto (09/11/2026). Con `no`, la orden única no genera por la API |
 | `GEMINI_TOPE_USD` | `1` | Tope acumulado de gasto en imágenes de Gemini, que el código comprueba **antes** de cada envío (un presupuesto de Google Cloud solo avisa) |
 | `GEMINI_MODELO_IMAGEN` | `gemini-3-pro-image` | Modelo de imagen de la vía de producción |
