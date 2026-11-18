@@ -6,7 +6,7 @@ import { it } from 'node:test';
 import { enviosDisponibles, GeneradorCartelOpenAI, reservarEnvio } from '../src/adaptadores/openai/GeneradorCartel.js';
 import { coincideTexto, dirigir } from '../src/aplicacion/taller/direccion.js';
 import { dirigirToma, instruccionDeToma } from '../src/aplicacion/taller/toma.js';
-import { ComandaDeArte } from '../src/dominio/taller.js';
+import { ComandaDeArte, SeleccionDeMuestras } from '../src/dominio/taller.js';
 import { RAIZ } from '../src/config.js';
 import { Marca } from '../src/dominio/modelos.js';
 import { EncargoPost } from '../src/dominio/post.js';
@@ -61,6 +61,17 @@ it('resuelve la cámara según producto, referencia y observación del origen, i
   assert.doesNotMatch(dirigirToma('Gambas peladas al ajillo', 'RITMO').foco, /antenas/);
 });
 
+it('acepta solo detalles distintos dentro de la foto y un recuento positivo de la fuente', () => {
+  const uno = { x: .80, y: .34, ancho: .16, alto: .24 };
+  const dos = { x: .44, y: .62, ancho: .18, alto: .29 };
+  const seleccion = { recuento: 2, unidad: 'gambas enteras', colocacion: 'Separadas sobre el mismo plano.', recortes: [uno, dos] };
+  assert.deepEqual(SeleccionDeMuestras.parse(seleccion), seleccion);
+  for (const recortes of [[uno], [uno, uno], [uno, { ...dos, x: .99 }], [uno, { x: 0, y: 0, ancho: 1, alto: 1 }]]) {
+    assert.equal(SeleccionDeMuestras.safeParse({ ...seleccion, recortes }).success, false);
+  }
+  assert.equal(SeleccionDeMuestras.safeParse({ ...seleccion, recuento: 0 }).success, false);
+});
+
 it('reserva atómicamente la dirección una vez, respeta el cupo global y no reintenta envíos inciertos', async () => {
   const carpeta = await mkdtemp(join(tmpdir(), 'taller-presupuesto-'));
   try {
@@ -82,6 +93,7 @@ it('reserva atómicamente la dirección una vez, respeta el cupo global y no rei
 
 it('Images API recibe una única edición con foto JPEG y la dirección completa', async () => {
   const fuente = Buffer.from('foto de prueba');
+  const adjuntos: string[] = [];
   const proveedor = new GeneradorCartelOpenAI('clave-de-prueba', async (url, init) => {
     assert.equal(String(url), 'https://api.openai.com/v1/images/edits');
     const cuerpo = init?.body;
@@ -92,9 +104,13 @@ it('Images API recibe una única edición con foto JPEG y la dirección completa
     assert.equal(cuerpo.get('n'), '1');
     assert.equal(cuerpo.get('model'), 'gpt-image-2');
     const foto = cuerpo.get('image');
-    assert.ok(foto instanceof Blob);
+    assert.ok(foto instanceof File);
+    assert.equal(cuerpo.getAll('image').length, 1);
+    adjuntos.push(foto.name);
     assert.deepEqual(Buffer.from(await foto.arrayBuffer()), fuente);
     return Response.json({ data: [{ b64_json: Buffer.from('resultado').toString('base64') }] });
   });
   assert.equal((await proveedor.generar('Comanda exacta', fuente)).toString(), 'resultado');
+  assert.equal((await proveedor.generar('Comanda exacta', fuente, 'muestras.jpg')).toString(), 'resultado');
+  assert.deepEqual(adjuntos, ['producto.jpg', 'muestras.jpg']);
 });

@@ -36,7 +36,18 @@ export type TomaDelCartel = z.infer<typeof TomaDelCartel>;
 
 const bloque = z.object({ texto: z.string().min(1), fuente: z.enum(['PLATO', 'MARCA']), papel: z.enum(['TITULAR', 'FIRMA', 'ENLACE', 'ACENTO']) });
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
+const RecorteDeMuestra = z.strictObject({
+  x: z.number().min(0).lt(1), y: z.number().min(0).lt(1), ancho: z.number().min(0.05).max(1), alto: z.number().min(0.05).max(1),
+}).refine(r => r.x + r.ancho <= 1.000001 && r.y + r.alto <= 1.000001 && r.ancho * r.alto < 0.65, 'Cada muestra debe ser un detalle situado dentro de la foto.');
+const camposMuestras = {
+  recuento: z.int().min(1).max(200), unidad: z.string().trim().min(2).max(80), colocacion: z.string().trim().min(10).max(320),
+  recortes: z.array(RecorteDeMuestra).min(2).max(4).refine(lista => new Set(lista.map(r => JSON.stringify(r))).size === lista.length, 'Elige zonas distintas de la foto.'),
+};
+export const SeleccionDeMuestras = z.strictObject(camposMuestras);
+export type SeleccionDeMuestras = z.infer<typeof SeleccionDeMuestras>;
+
 export const ComandaDeArte = z.object({
+  muestras: z.object({ ...camposMuestras, sha256: hash }).optional(),
   nombrePlato: z.string().optional(), toma: TomaDelCartel.optional(), direccion: DireccionDeArte, textos: z.array(bloque).min(1).max(5),
   referencia: z.object({ id: z.string(), familia: z.string(), mecanismos: z.array(z.string()), voces: z.array(z.string()), reticula: z.string(), encuadre: z.string(),
     recursos: z.array(z.string()), lectura: z.array(z.string()) }).optional(),
@@ -44,7 +55,7 @@ export const ComandaDeArte = z.object({
   fotoSha256: hash, uso: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']), prompt: z.string(), huella: hash,
 });
 export type ComandaDeArte = z.infer<typeof ComandaDeArte>;
-const revision = z.object({ vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
+const revision = z.object({ recuentoObservado: z.int().positive().optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
 export const TallerDeArte = z.object({
   comanda: ComandaDeArte.optional(),
   confirmada: z.object({ huella: hash, fecha: z.string() }).optional(),
@@ -63,15 +74,16 @@ export const AccionTaller = z.discriminatedUnion('accion', [
   z.strictObject({ accion: z.literal('FICHAR_REFERENCIA'), revision: z.string().min(1), familia: Familia, mecanismo: Mecanismo,
     reticula: z.string().trim().min(10).max(220), foto: z.string().trim().min(5).max(200), voz: z.string().trim().min(3).max(120),
     lectura: z.tuple([z.string().min(2).max(80), z.string().min(2).max(80), z.string().min(2).max(80)]) }),
+  z.strictObject({ accion: z.literal('AJUSTAR_MUESTRAS'), revision: z.string().min(1), muestras: SeleccionDeMuestras.nullable() }),
   z.strictObject({ accion: z.literal('AJUSTAR_TOMA'), revision: z.string().min(1), ...SeleccionDeToma.shape }),
   z.strictObject({ accion: z.literal('PROPONER_GESTO'), revision: z.string().min(1), gesto: Gesto }),
   z.strictObject({ accion: z.literal('REABRIR_DIRECCION'), revision: z.string().min(1) }),
   z.strictObject({ accion: z.literal('EDITAR'), revision: z.string().min(1), direccion: DireccionDeArte, nombrePlato: z.string().trim().min(2).max(300).optional() }),
-  z.strictObject({ accion: z.literal('CONFIRMAR_DIRECCION'), revision: z.string().min(1) }),
+  z.strictObject({ accion: z.literal('CONFIRMAR_DIRECCION'), revision: z.string().min(1), confirmoMuestras: z.literal(true).optional() }),
   z.strictObject({ accion: z.literal('GENERAR'), revision: z.string().min(1), autorizarUnEnvio: z.literal(true) }),
   z.strictObject({ accion: z.literal('IMPORTAR'), revision: z.string().min(1), subidaId: z.string().min(1), usoCandidata: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).optional() }),
   z.strictObject({ accion: z.literal('DEVOLVER'), revision: z.string().min(1), version: z.int().positive(), motivo: z.string().trim().min(3).max(480), ajusteToma: SeleccionDeToma.optional() }),
-  z.strictObject({ accion: z.literal('APROBAR'), revision: z.string().min(1), version: z.int().positive(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(),
+  z.strictObject({ accion: z.literal('APROBAR'), revision: z.string().min(1), version: z.int().positive(), recuentoObservado: z.int().min(0).max(10000).optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(),
     transcripcion: z.array(z.string().trim().min(1).max(300)).min(1).max(12), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true) }),
 ]);
 export type AccionTaller = z.infer<typeof AccionTaller>;

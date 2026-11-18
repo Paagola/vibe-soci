@@ -8,7 +8,7 @@ import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
 import { AccionTaller } from '../../dominio/taller.js';
-import { bytesDeCandidata, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
+import { bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
 import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -143,6 +143,11 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
     const bytes = await descargarPaquete(deps, await leerEncargo(deps, proyecto));
     res.set('Cache-Control', 'no-store').attachment(proyecto + '-direccion.zip').send(bytes);
+  });
+  rutas.get('/:proyecto/taller/muestras/:sha256', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const bytes = await bytesDeMuestras(deps, await leerEncargo(deps, proyecto), String(req.params.sha256));
+    res.set('Cache-Control', 'no-store').type('jpeg').send(bytes);
   });
   rutas.get('/:proyecto/taller/candidatas/:version', async (req, res) => {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);

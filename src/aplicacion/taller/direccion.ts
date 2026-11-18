@@ -59,7 +59,20 @@ function bloques(plato: string, marca: string): ComandaDeArte['textos'] {
   return textos;
 }
 
-export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma): ComandaDeArte {
+type Muestras = NonNullable<ComandaDeArte['muestras']>;
+
+function pautaDeMuestras(m: Muestras): string {
+  const crustaceosEnteros = /\b(gambas?|langostinos?|carabineros?|cigalas?)\b/iu.test(m.unidad) && /\benter[oa]s?\b/iu.test(m.unidad);
+  return [
+    'La persona confirma ' + m.recuento + ' ' + JSON.stringify(m.unidad) + '. La única imagen adjunta documenta los rasgos del producto mediante detalles de la misma foto. Varios recortes pueden pertenecer a una sola pieza. Fotografía exactamente el número confirmado.',
+    'Monta físicamente la nueva colocación que la persona ha elegido: ' + JSON.stringify(m.colocacion) + '.',
+    crustaceosEnteros ? 'Antes de encuadrar, sigue cada animal desde un extremo hasta el otro. Cada gamba o crustáceo entero tiene su única cabeza conectada directamente a su propio abdomen y a su propia cola. Se puede seguir cada contorno por separado. Comprueba el número de cabezas, cuerpos y colas, y conserva la anatomía, el punto de cocción y la sal realmente visibles.'
+      : 'Sigue el contorno de cada pieza contada y comprueba la continuidad entre sus partes visibles. Respeta sus uniones, preparación y acabado.',
+    'Haz una fotografía a plomo de esta nueva colocación. El observador mira perpendicularmente al suelo y ve el dorso de los volúmenes. Las ventanas y sus márgenes solo sirven para documentar el producto. El recuento y la colocación son instrucciones de producción. Compón el cartel con el único copy aprobado.',
+  ].join('\n');
+}
+
+export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma, muestras?: Muestras): ComandaDeArte {
   // La nota puede incluir indicaciones privadas tras el nombre del plato.
   const nombrePlato = extracto ?? e.taller?.comanda?.nombrePlato ?? (e.plato.split(/\n|[.!?](?:\s|$)/u)[0]!.trim() || e.plato);
   if (!e.plato.includes(nombrePlato)) throw new ErrorDeUsuario('El nombre impreso debe ser un fragmento literal de la nota del plato.');
@@ -73,7 +86,8 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   const direccion = edicion ?? { gesto, sujeto, ...propuesta,
     materia: propuesta.materia + (gesto === 'EMERGER' ? ' ' + paleta : ' Conserva como referencia cromática de la toma ' + (fotografia.acento ?? fotografia.dominantes[0]) + '.'),
   };
-  const toma = dirigirToma(nombrePlato, gesto, seleccion ?? e.taller?.comanda?.toma?.seleccion, ficha?.foto);
+  const camara = dirigirToma(nombrePlato, gesto, seleccion ?? e.taller?.comanda?.toma?.seleccion, ficha?.foto);
+  const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'El recuento y la colocación proceden de la observación de la persona. Usa los detalles para reconocer el producto, sus colores y su acabado.' } : camara;
   const textos = bloques(nombrePlato, marca.nombre);
   const referencia = ficha && e.referencia ? { id: e.referencia, familia: ficha.familia, mecanismos: ficha.mecanismos,
     voces: ficha.tipografia.map(v => v.rol + ' · ' + v.clasificacion + (v.escala ? ' · altura aproximada ' + v.escala + '%' : '')),
@@ -81,6 +95,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   const devolucion = e.taller?.candidatas.at(-1)?.devolucion;
   const prompt = [
     'Produce un cartel gastronómico original acabado, vertical 4:5. Crea fotografía y composición tipográfica en la misma imagen.',
+    ...(muestras ? [pautaDeMuestras(muestras)] : []),
     'Dirección de la pieza · ' + direccion.gesto, direccion.sujeto, direccion.escena, direccion.materia, direccion.tipografia,
     instruccionDeToma(toma),
     'Copy exacto. Compón una sola vez cada uno de estos bloques, incluidas las tildes:', JSON.stringify(textos.map(({ papel, texto }) => ({ papel, texto }))),
@@ -89,7 +104,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     ...(devolucion ? ['Observación de la última candidata; corrige el defecto conservando el copy autorizado:', JSON.stringify(devolucion)] : []),
     oficio.trim(),
   ].join('\n\n');
-  const base = { nombrePlato, direccion, toma, textos, ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+  const base = { nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
   return { ...base, huella: huella(JSON.stringify(base)) };
 }
 

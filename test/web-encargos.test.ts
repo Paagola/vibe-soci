@@ -3,6 +3,7 @@
  * con sus dos paradas, contra un servidor en un puerto aleatorio y carpetas temporales. Sin red ni gasto.
  */
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -324,7 +325,9 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.notEqual(ajuste.datos.encargo.taller.comanda.huella, comanda.huella);
     assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
     assert.equal((await pedir('POST', ruta + '/taller', { accion: 'REABRIR_DIRECCION', revision: d.revision })).status, 409);
-    assert.equal((await archivo(ruta + '/taller/paquete')).bytes.readUInt32LE(0), 0x04034b50);
+    const paqueteFoto = (await archivo(ruta + '/taller/paquete')).bytes;
+    assert.equal(paqueteFoto.readUInt32LE(0), 0x04034b50);
+    assert.equal(paqueteFoto.includes(Buffer.from('muestras.jpg')), false);
     assert.notEqual((await decidir('GENERAR', { autorizarUnEnvio: true })).status, 202);
     const subirCartel = async (alto: number, color: string) => (await subir('cartel.png', await imagenDeLectura(comanda.textos, color, alto))).id;
     const importar = async (alto: number, color: string) => decidir('IMPORTAR', { subidaId: await subirCartel(alto, color), usoCandidata: 'PUBLICABLE' });
@@ -355,6 +358,62 @@ describe('API web · encargos de la orden única (simulado)', () => {
     const meta = await sharp(final.bytes).metadata();
     assert.deepEqual([meta.width, meta.height, meta.format], [1080, 1350, 'png']);
     assert.deepEqual(final.bytes, (await archivo(ruta + '/taller/candidatas/2')).bytes);
+  });
+
+  it('produce desde las ventanas confirmadas y exige contar sobre la candidata y la fuente completa', async () => {
+    const proyecto = 'cartel-con-muestras', ruta = '/api/encargos/' + proyecto;
+    const foto = await subir('gamba.png', await readFile(FOTO));
+    const alta = await pedir('POST', '/api/encargos', { proyecto, local: 'asador-etxebarri', plato: 'Gamba roja', referencia: 'ref-post-30', arte: 'INTEGRADO', subidaId: foto.id });
+    await esperar(alta.datos.trabajo);
+    const decidir = async (accion: string, datos = {}) => pedir('POST', ruta + '/taller', { revision: (await detalle(proyecto)).revision, accion, ...datos });
+    const recortes = [{ x: .8, y: .34, ancho: .16, alto: .24 }, { x: .44, y: .62, ancho: .18, alto: .29 }, { x: .53, y: .30, ancho: .145, alto: .17 }];
+    const muestras = { recuento: 2, unidad: 'gambas enteras', colocacion: 'Una a cada lado de la superficie.', recortes };
+    await decidir('AJUSTAR_TOMA', { opcion: 'CENITAL' });
+    assert.notEqual((await decidir('AJUSTAR_MUESTRAS', { muestras })).status, 200, 'Los detalles no permiten determinar la cámara original.');
+    const origen = { anguloGrados: 45, distancia: 'PRIMER_PLANO' };
+    const toma = await decidir('AJUSTAR_TOMA', { opcion: 'CENITAL', origen });
+    const inicial = toma.datos.encargo.taller.comanda;
+    const conDetalles = await decidir('AJUSTAR_MUESTRAS', { muestras });
+    assert.equal(conDetalles.status, 200, JSON.stringify(conDetalles.datos));
+    const comanda = conDetalles.datos.encargo.taller.comanda;
+    assert.deepEqual(comanda.direccion, inicial.direccion);
+    assert.deepEqual(comanda.textos, inicial.textos);
+    assert.equal(comanda.toma.accion, muestras.colocacion);
+    assert.match(comanda.prompt, /una sola pieza/i);
+    assert.doesNotMatch(comanda.prompt, /altura original queda por observar/i);
+    assert.notEqual(comanda.huella, inicial.huella);
+    const urlMuestras = ruta + '/taller/muestras/' + comanda.muestras.sha256;
+    const lamina = await archivo(urlMuestras);
+    assert.equal(lamina.status, 200);
+    assert.equal(createHash('sha256').update(lamina.bytes).digest('hex'), comanda.muestras.sha256);
+    const meta = await sharp(lamina.bytes).metadata();
+    assert.deepEqual([meta.width, meta.height, meta.format], [1152, 383, 'jpeg']);
+    const volver = await decidir('AJUSTAR_MUESTRAS', { muestras: null });
+    assert.equal(volver.datos.encargo.taller.comanda.huella, inicial.huella);
+    assert.notEqual((await archivo(urlMuestras)).status, 200);
+    await decidir('AJUSTAR_MUESTRAS', { muestras });
+    assert.notEqual((await decidir('CONFIRMAR_DIRECCION')).status, 200);
+    const disco = join(carpeta, 'datos-simulado', 'proyectos', proyecto, 'taller', 'muestras', comanda.muestras.sha256 + '.jpg');
+    await writeFile(disco, 'archivo distinto');
+    assert.notEqual((await decidir('CONFIRMAR_DIRECCION', { confirmoMuestras: true })).status, 200);
+    await writeFile(disco, lamina.bytes);
+    assert.equal((await decidir('CONFIRMAR_DIRECCION', { confirmoMuestras: true })).status, 200);
+    const paquete = await archivo(ruta + '/taller/paquete');
+    assert.equal(paquete.status, 200);
+    assert.ok(paquete.bytes.includes(lamina.bytes));
+    assert.ok(paquete.bytes.includes(Buffer.from('Adjunta solo muestras.jpg')));
+    assert.ok(paquete.bytes.includes(Buffer.from('producto.jpg')));
+    assert.deepEqual((await detalle(proyecto)).encargo.taller.envios, []);
+    const cartel = await subir('cartel.png', await imagenDeLectura(comanda.textos, '#484332'));
+    await decidir('IMPORTAR', { subidaId: cartel.id });
+    const cotejo = { version: 1, producto: true, gesto: true, legibilidad: true, cambioDeToma: true, transcripcion: comanda.textos.map((b: { texto: string }) => b.texto) };
+    assert.notEqual((await decidir('APROBAR', cotejo)).status, 200);
+    assert.notEqual((await decidir('APROBAR', { ...cotejo, recuentoObservado: 3 })).status, 200);
+    const aprobada = await decidir('APROBAR', { ...cotejo, recuentoObservado: 2 });
+    assert.equal(aprobada.status, 200, JSON.stringify(aprobada.datos));
+    const primera = aprobada.datos.encargo.taller.candidatas[0];
+    assert.equal(primera.revision.recuentoObservado, 2);
+    assert.equal(primera.comanda, comanda.huella);
   });
 
   it('el permiso de prueba de la fuente prevalece tras importar, aprobar y volver a abrir el encargo', async () => {

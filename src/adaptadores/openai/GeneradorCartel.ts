@@ -5,7 +5,7 @@ import { ErrorDeUsuario } from '../../dominio/errores.js';
 
 export const MODELO_CARTEL = 'gpt-image-2';
 export interface GeneradorCartel {
-  generar(prompt: string, foto: Buffer): Promise<Buffer>;
+  generar(prompt: string, foto: Buffer, nombre?: 'producto.jpg' | 'muestras.jpg'): Promise<Buffer>;
 }
 
 export async function enviosDisponibles(carpeta: string, limite: number): Promise<number> {
@@ -45,7 +45,7 @@ export async function reservarEnvio(carpeta: string, limite: number, huella: str
 
 export class GeneradorCartelOpenAI implements GeneradorCartel {
   constructor(private readonly clave: string, private readonly transporte: typeof fetch = fetch) {}
-  async generar(prompt: string, foto: Buffer): Promise<Buffer> {
+  async generar(prompt: string, foto: Buffer, nombre: 'producto.jpg' | 'muestras.jpg' = 'producto.jpg'): Promise<Buffer> {
     const cuerpo = new FormData();
     cuerpo.set('model', MODELO_CARTEL);
     cuerpo.set('size', '1088x1360');
@@ -53,7 +53,7 @@ export class GeneradorCartelOpenAI implements GeneradorCartel {
     cuerpo.set('n', '1');
     cuerpo.set('output_format', 'png');
     cuerpo.set('prompt', prompt);
-    cuerpo.set('image', new Blob([Uint8Array.from(foto)], { type: 'image/jpeg' }), 'producto.jpg');
+    cuerpo.set('image', new Blob([Uint8Array.from(foto)], { type: 'image/jpeg' }), nombre);
     const respuesta = await this.transporte('https://api.openai.com/v1/images/edits', {
       method: 'POST', headers: { Authorization: 'Bearer ' + this.clave }, body: cuerpo, signal: AbortSignal.timeout(300_000),
     });
