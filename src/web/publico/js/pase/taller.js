@@ -11,6 +11,44 @@ const enlace = (titulo, href) => h('a', { class: 'boton', href, download: true }
 const gestos = [['EMERGER', 'Emerger de una superficie'], ['LUZ_Y_SOMBRA', 'Luz y sombra'], ['RITMO', 'Ritmo entre letra y producto'], ['MACRO', 'Encuadre de detalle']];
 const campos = [['sujeto', 'Producto y encuadre', 3, 480], ['escena', 'Acción en la imagen', 5, 600], ['materia', 'Superficie y luz', 5, 480], ['tipografia', 'Dirección tipográfica', 5, 480]];
 
+const vistas = [['AUTO', 'Según el plato y la referencia'], ['RASANTE', 'Rasante · de perfil'], ['OBLICUA', 'Oblicua · tres cuartos'], ['CENITAL', 'Cenital · desde arriba']];
+const distancias = [['GENERAL', 'General'], ['MEDIO', 'Medio'], ['PRIMER_PLANO', 'Primer plano'], ['MACRO', 'Macro']];
+const etiquetaDe = (lista, valor) => lista.find(([clave]) => clave === valor)?.[1] ?? valor;
+
+function camaraDe(ctx, toma) {
+  const seleccion = toma?.seleccion;
+  const vista = opciones('opcionToma', vistas, seleccion?.opcion ?? 'AUTO');
+  const plano = opciones('planoToma', [['', 'Propuesto por la dirección'], ...distancias], seleccion?.plano ?? '');
+  const luz = h('textarea', { name: 'luzToma', rows: 2, minlength: 5, maxlength: 320, value: seleccion?.luz ?? '', placeholder: toma?.luz });
+  const accionFoto = h('textarea', { name: 'accionFoto', rows: 2, minlength: 5, maxlength: 320, value: seleccion?.accionProducto ?? '', placeholder: toma?.accion });
+  const angulo = h('input', { name: 'anguloOrigen', type: 'number', min: -45, max: 90, step: 'any', value: seleccion?.origen?.anguloGrados ?? '', placeholder: 'Sin medir' });
+  const distancia = opciones('distanciaOrigen', [['', 'Sin determinar'], ...distancias], seleccion?.origen?.distancia ?? '');
+  const rasgo = h('input', { name: 'rasgoFuente', maxlength: 220, value: seleccion?.rasgoFuente ?? '' });
+  const ajustar = () => {
+    if ((angulo.value === '') !== (distancia.value === '')) throw new Error('Para describir la fuente, indica tanto la altura como el tamaño del plano.');
+    return { accion: 'AJUSTAR_TOMA', opcion: vista.value, ...(plano.value ? { plano: plano.value } : {}),
+      ...(luz.value.trim() ? { luz: luz.value.trim() } : {}), ...(accionFoto.value.trim() ? { accionProducto: accionFoto.value.trim() } : {}),
+      ...(angulo.value === '' ? {} : { origen: { anguloGrados: angulo.valueAsNumber, distancia: distancia.value } }),
+      ...(rasgo.value.trim() ? { rasgoFuente: rasgo.value.trim() } : {}) };
+  };
+  const posicion = toma?.camara;
+  return [h('h3', {}, 'Toma fotográfica'),
+    posicion ? [h('p', {}, h('strong', {}, etiquetaDe(vistas, posicion.vista)), ' · ' + posicion.anguloGrados + '° · ' + etiquetaDe(distancias, posicion.distancia) + ' · ' + posicion.objetivoMm + ' mm · f/' + posicion.apertura),
+      h('p', {}, posicion.evidencia), h('p', {}, toma.luz), h('p', {}, toma.accion),
+      toma.alternativa ? h('p', { class: 'muted' }, 'Si la fuente ya tiene esa perspectiva, la dirección pide una sola toma ' + etiquetaDe(vistas, toma.alternativa.vista).toLowerCase() + '.') : h('p', { class: 'muted' }, 'Cambio respecto al origen indicado · ' + toma.cambios.join(', '))] : null,
+    detalle('Ajustar cámara y encuadre', formulario(ctx, ajustar,
+      h('img', { src: ctx.urls.subida(480), alt: 'Foto de origen', style: { maxWidth: '100%', maxHeight: '210px' } }),
+      campo('Cámara del cartel', vista), campo('Tamaño de plano del cartel', plano), detalle('Afinar luz y acción', campo('Luz sobre el alimento', luz), campo('Acción del producto', accionFoto)), campo('Altura aproximada de la foto de origen en grados (0 a ras, 90 cenital)', angulo), campo('Tamaño del plano de origen', distancia),
+      campo('Rasgo de la foto que debe conservarse', rasgo), accion('Preparar esta toma')))];
+}
+
+function comparacion(ctx, url, version) {
+  const foto = (nombre, miniatura, completa) => h('figure', { class: 'foto-ficha' },
+    h('a', { href: completa, target: '_blank', rel: 'noopener' }, h('img', { src: miniatura, alt: nombre })), h('figcaption', {}, nombre));
+  return h('div', { class: 'comparacion-ficha', role: 'group', 'aria-label': 'Comparación de la fuente y la nueva toma' },
+    foto('Fotografía de origen', ctx.urls.subida(480), ctx.urls.subida()), foto('Nueva toma · versión ' + version, url, url));
+}
+
 function formulario(ctx, datos, ...hijos) {
   const error = h('div', { role: 'status' });
   const form = h('form', {}, hijos, error);
@@ -67,7 +105,7 @@ export function fichaTaller(ctx) {
     const gesto = opciones('gesto', gestos, c.direccion.gesto);
     const nombre = texto('nombrePlato', 2, 300, c.nombrePlato ?? e.plato);
     const controles = campos.map(([k, titulo, min, max]) => [k, titulo, texto(k, min, max, c.direccion[k])]);
-    return [titulo('Dirección del cartel'), h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), h('p', {}, c.direccion.materia), h('p', {}, c.direccion.tipografia),
+    return [titulo('Dirección del cartel'), h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), h('p', {}, c.direccion.materia), h('p', {}, c.direccion.tipografia), camaraDe(ctx, c.toma),
       ultima?.devolucion ? h('p', { class: 'aviso-linea' }, 'Corrección pendiente · ' + ultima.devolucion) : null, h('h3', {}, 'Palabras que aparecerán'), copy,
       detalle('Explorar otra acción en la imagen', formulario(ctx, () => ({ accion: 'PROPONER_GESTO', gesto: gesto.value }),
         campo('Relación entre letra y foto', gesto), accion('Proponer otra dirección'))),
@@ -94,13 +132,22 @@ export function fichaTaller(ctx) {
   const imagen = h('a', { href: url, target: '_blank', rel: 'noopener' }, h('img', { src: url, width: 360, alt: 'Cartel, versión ' + ultima.version, style: { display: 'block', width: 'min(100%, 360px)', height: 'auto' } }));
   if (e.paso === 'HECHO') return [titulo('Cartel aprobado'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · PNG · 1080 × 1350 px'), ultima.uso === 'PUBLICABLE' ? enlace('Descargar cartel 4:5', base + 'exportacion') : h('p', {}, 'Vista de composición. La foto o el cartel tienen permiso de prueba.')];
   const transcripcion = texto('transcripcion', 1, 1000);
-  const casillas = [['producto', 'He cotejado el producto y su preparación con la foto.'], ['gesto', 'En el cartel se ve la acción descrita en la dirección.'], ['legibilidad', 'He leído todas las palabras en la vista a 360 px.']].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
+  const toma = c.toma;
+  const observables = [toma?.camara, toma?.alternativa].filter(Boolean);
+  const vistaLeida = opciones('vistaObservada', [['', 'Selecciona la vista que se aprecia'], ...observables.map(p => [p.vista, etiquetaDe(vistas, p.vista)])]);
+  vistaLeida.required = observables.length > 1;
+  const correccionToma = opciones('siguienteToma', [['', 'Conservar la dirección de cámara'], ...vistas]);
+  const casillas = [['producto', 'He cotejado el producto y su preparación con la foto.'], ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', 'En el cartel se ve la acción descrita en la dirección.'], ['legibilidad', 'He leído todas las palabras en la vista a 360 px.']].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
   const motivo = texto('motivo', 3, 480);
-  return [titulo('Revisar el cartel'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), detalle('Foto fuente y dirección', h('img', { src: ctx.urls.subida(360), alt: e.plato, style: { maxWidth: '100%' } }), h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
+  return [titulo('Revisar el cartel'), comparacion(ctx, url, ultima.version),
+    toma ? [h('h3', {}, 'Punto de vista del producto'), ...observables.map(p => h('p', {}, h('strong', {}, etiquetaDe(vistas, p.vista) + '. '), p.evidencia))] : null,
+    h('h3', {}, 'Lectura a tamaño móvil'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), detalle('Dirección y palabras confirmadas', h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
     ultima.lectura.superficieUniforme ? h('p', { class: 'aviso-linea' }, 'La imagen aparece uniforme en la vista móvil. Devuelve esta versión e importa la imagen con el producto y sus palabras.') : null,
     ultima.lectura.coincide === false ? h('p', { class: 'aviso-linea' }, 'El lector automático encontró diferencias. Amplía la imagen y coteja también las palabras pequeñas.') : null,
     detalle('Lectura automática de la imagen', h('p', {}, ultima.lectura.lineas.join(' · ') || 'Requiere lectura manual.'), h('p', {}, ultima.lectura.coincide === true ? 'El lector local reconoce los bloques confirmados.' : 'Comprueba las letras en la imagen, especialmente las cursivas.')),
-    formulario(ctx, () => ({ accion: 'APROBAR', version: ultima.version, transcripcion: transcripcion.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean), ...Object.fromEntries(casillas.map(([k, , box]) => [k, box.checked])) }),
-      campo('Transcribe todo el texto que ves, un bloque por línea', transcripcion), casillas.map(([, label, control]) => h('label', {}, control, ' ' + label)), accion('Aprobar esta versión', ultima.lectura.superficieUniforme)),
-    detalle('Pedir una corrección', formulario(ctx, () => ({ accion: 'DEVOLVER', version: ultima.version, motivo: motivo.value }), campo('Qué debe cambiar en la imagen', motivo), accion('Devolver a dirección')))];
+    formulario(ctx, () => ({ accion: 'APROBAR', version: ultima.version, ...(toma ? { vistaObservada: observables.length === 1 ? toma.camara.vista : vistaLeida.value } : {}), transcripcion: transcripcion.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean), ...Object.fromEntries(casillas.map(([k, , box]) => [k, box.checked])) }),
+      observables.length > 1 ? campo('Qué punto de vista se ve en el cartel', vistaLeida) : null, campo('Transcribe todo el texto que ves, un bloque por línea', transcripcion), casillas.map(([, label, control]) => h('label', {}, control, ' ' + label)), accion('Aprobar esta versión', ultima.lectura.superficieUniforme)),
+    detalle('Pedir una corrección', formulario(ctx, () => ({ accion: 'DEVOLVER', version: ultima.version, motivo: motivo.value,
+      ...(correccionToma.value ? { ajusteToma: { ...toma?.seleccion, opcion: correccionToma.value } } : {}) }), campo('Qué debe cambiar en la imagen', motivo),
+      toma ? campo('Cámara para la siguiente prueba', correccionToma) : null, accion('Devolver a dirección')))];
 }

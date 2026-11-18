@@ -6,7 +6,7 @@ import { leerCartel } from '../../adaptadores/imagen/lecturaCartel.js';
 import { reservarEnvio } from '../../adaptadores/openai/GeneradorCartel.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost, PasoPost } from '../../dominio/post.js';
-import type { AccionTaller, ComandaDeArte, DireccionDeArte, Gesto, TallerDeArte } from '../../dominio/taller.js';
+import type { AccionTaller, ComandaDeArte, DireccionDeArte, Gesto, SeleccionDeToma, TallerDeArte } from '../../dominio/taller.js';
 import { construirMapa } from '../../dominio/diseno/mapaDeFoto.js';
 import { guardarFicha } from '../referencias/guardarFicha.js';
 import { comprobarReferencia } from '../referencias/comprobarReferencia.js';
@@ -25,18 +25,18 @@ async function imagenFuente(deps: DepsPost, e: EncargoPost, comanda: ComandaDeAr
   return sharp(foto).rotate().resize(1536, 1536, { fit: 'inside', withoutEnlargement: true }).jpeg({ quality: 92 }).toBuffer();
 }
 
-async function redactar(deps: DepsPost, e: EncargoPost, edicion?: DireccionDeArte, nombrePlato?: string, gestoPropuesto?: Gesto) {
+async function redactar(deps: DepsPost, e: EncargoPost, edicion?: DireccionDeArte, nombrePlato?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma) {
   const [marca, foto, oficio, referencia] = await Promise.all([
     deps.referencias.locales.obtener(e.local), original(deps, e),
     readFile(join(deps.raiz, 'conocimiento/oficios/arte-integrado.md'), 'utf8'),
     e.referencia ? deps.referencias.referencias.obtener(e.local, e.referencia) : undefined,
   ]);
-  const rgb = await sharp(foto).rotate().resize(120, 150, { fit: 'cover' }).toColourspace('srgb').removeAlpha().raw().toBuffer();
-  const mapa = construirMapa({ ancho: 120, alto: 150, rgb });
+  const { data: rgb, info } = await sharp(foto).rotate().resize(180, 180, { fit: 'inside' }).toColourspace('srgb').removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const mapa = construirMapa({ ancho: info.width, alto: info.height, rgb });
   const libre = mapa.libres[0];
   const fotografia = { temperatura: mapa.temperatura, dominantes: mapa.paleta.map(c => c.hex), acento: mapa.vivo,
     luz: mapa.luzMedia, aire: libre ? `Zona de poco detalle de la foto: columnas ${libre.col.join('–')}/12 y filas ${libre.fila.join('–')}/16.` : 'Toma de textura continua.' };
-  return dirigir(e, marca, huella(foto), fotografia, oficio, referencia?.ficha, edicion, nombrePlato, gestoPropuesto);
+  return dirigir(e, marca, huella(foto), fotografia, oficio, referencia?.ficha, edicion, nombrePlato, gestoPropuesto, seleccion);
 }
 
 async function registrar(deps: DepsPost, e: EncargoPost, paso: PasoPost, nota: string) {
@@ -150,6 +150,12 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   if (!taller?.comanda) throw new ErrorDeUsuario('Falta la dirección de este encargo de arte integrado.');
   const comanda = taller.comanda;
   const ultimo = taller.candidatas.at(-1);
+  if (accion.accion === 'AJUSTAR_TOMA') {
+    if (e.paso !== 'CONFIRMAR_ELEMENTOS') throw new ErrorDeUsuario('Reabre la dirección para ajustar la cámara.');
+    const { accion: _accion, revision: _revision, ...seleccion } = accion;
+    taller.comanda = await redactar(deps, e, comanda.direccion, comanda.nombrePlato, undefined, seleccion);
+    return registrar(deps, e, e.paso, 'Cámara, encuadre y evidencia de la nueva toma preparados.');
+  }
   if (accion.accion === 'EDITAR' || accion.accion === 'PROPONER_GESTO' || accion.accion === 'CONFIRMAR_DIRECCION') {
     if (e.paso !== 'CONFIRMAR_ELEMENTOS') throw new ErrorDeUsuario('Esta dirección ya no se encuentra en revisión.');
     if (accion.accion === 'PROPONER_GESTO') {
@@ -197,12 +203,18 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   if (accion.accion === 'DEVOLVER') {
     ultimo.devolucion = accion.motivo;
     delete taller.confirmada;
-    taller.comanda = await redactar(deps, e, comanda.direccion);
+    const seleccion = accion.ajusteToma ? { ...comanda.toma?.seleccion, ...accion.ajusteToma } : comanda.toma?.seleccion;
+    taller.comanda = await redactar(deps, e, comanda.direccion, comanda.nombrePlato, undefined, seleccion);
     return registrar(deps, e, 'CONFIRMAR_ELEMENTOS', 'Candidata devuelta. Revisa la corrección antes de otra producción.');
   }
   if (ultimo.lectura.superficieUniforme ?? await superficieUniforme(bytes)) throw new ErrorDeUsuario('La imagen aparece uniforme a 360 px. Devuelve esta versión e importa una imagen donde se lean el producto y el texto.');
+  if (comanda.toma && !accion.cambioDeToma) throw new ErrorDeUsuario('Compara el punto de vista del producto con la fuente y confirma el cambio visible de perspectiva.');
+  const vistaObservada = accion.vistaObservada ?? (comanda.toma?.alternativa ? undefined : comanda.toma?.camara.vista);
+  if (comanda.toma && (!vistaObservada || ![comanda.toma.camara.vista, comanda.toma.alternativa?.vista].includes(vistaObservada))) {
+    throw new ErrorDeUsuario('Indica cuál de las posiciones dirigidas se aprecia en la imagen o devuelve la toma.');
+  }
   if (!coincideTexto(comanda.textos.map(b => b.texto), accion.transcripcion)) throw new ErrorDeUsuario('La transcripción de los bloques visibles no coincide con el copy confirmado.');
   await imagenFuente(deps, e, comanda);
-  ultimo.revision = { fecha: deps.ahora(), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
+  ultimo.revision = { fecha: deps.ahora(), ...(comanda.toma ? { cambioDeToma: true, vistaObservada } : {}), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
   return registrar(deps, e, 'HECHO', 'Aprobada la versión ' + ultimo.version + ' tras cotejar el producto, el texto, el gesto y la miniatura.');
 }

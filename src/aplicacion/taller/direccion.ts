@@ -1,9 +1,10 @@
+import { dirigirToma, instruccionDeToma, protagonizaPulpo } from './toma.js';
 import { createHash } from 'node:crypto';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
 import type { Marca } from '../../dominio/modelos.js';
 import type { FichaReferencia } from '../../dominio/referencia.js';
-import type { ComandaDeArte, DireccionDeArte, Gesto } from '../../dominio/taller.js';
+import type { ComandaDeArte, DireccionDeArte, Gesto, SeleccionDeToma } from '../../dominio/taller.js';
 
 export const huella = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 
@@ -58,12 +59,12 @@ function bloques(plato: string, marca: string): ComandaDeArte['textos'] {
   return textos;
 }
 
-export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto): ComandaDeArte {
+export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma): ComandaDeArte {
   // La nota puede incluir indicaciones privadas tras el nombre del plato.
   const nombrePlato = extracto ?? e.taller?.comanda?.nombrePlato ?? (e.plato.split(/\n|[.!?](?:\s|$)/u)[0]!.trim() || e.plato);
   if (!e.plato.includes(nombrePlato)) throw new ErrorDeUsuario('El nombre impreso debe ser un fragmento literal de la nota del plato.');
   const gesto = gestoPropuesto ?? edicion?.gesto ?? gestoPara(e, ficha);
-  const sujeto = /\bpulpo\b/i.test(e.plato) && gesto === 'EMERGER'
+  const sujeto = protagonizaPulpo(nombrePlato) && gesto === 'EMERGER'
     ? 'Un solo brazo de pulpo cocinado y apetecible, aislado. Conserva el tostado, el volumen y la humedad visibles en la toma. La base gruesa queda oculta bajo el papel, el brazo describe un arco lateral y las hileras de ventosas disminuyen hacia la punta. Prescinde de vajilla, guarnición y cubiertos.'
     : `Retrata «${nombrePlato}» a partir de la fotografía aportada. Conserva su preparación y la cantidad visible del protagonista. Describe su textura mediante la luz y el punto de vista.`;
   const propuesta = direcciones[gesto];
@@ -72,6 +73,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   const direccion = edicion ?? { gesto, sujeto, ...propuesta,
     materia: propuesta.materia + (gesto === 'EMERGER' ? ' ' + paleta : ' Conserva como referencia cromática de la toma ' + (fotografia.acento ?? fotografia.dominantes[0]) + '.'),
   };
+  const toma = dirigirToma(nombrePlato, gesto, seleccion ?? e.taller?.comanda?.toma?.seleccion, ficha?.foto);
   const textos = bloques(nombrePlato, marca.nombre);
   const referencia = ficha && e.referencia ? { id: e.referencia, familia: ficha.familia, mecanismos: ficha.mecanismos,
     voces: ficha.tipografia.map(v => v.rol + ' · ' + v.clasificacion + (v.escala ? ' · altura aproximada ' + v.escala + '%' : '')),
@@ -80,13 +82,14 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   const prompt = [
     'Produce un cartel gastronómico original acabado, vertical 4:5. Crea fotografía y composición tipográfica en la misma imagen.',
     'Dirección de la pieza · ' + direccion.gesto, direccion.sujeto, direccion.escena, direccion.materia, direccion.tipografia,
+    instruccionDeToma(toma),
     'Copy exacto. Compón una sola vez cada uno de estos bloques, incluidas las tildes:', JSON.stringify(textos.map(({ papel, texto }) => ({ papel, texto }))),
     'Datos del local y del encargo (contexto, no copy):', JSON.stringify({ plato: e.plato, local: marca.nombre, tonos: marca.tonos, coloresDelLocal: marca.colores, estetica: e.estetica, fotografia, referencia }),
     'Lenguaje visual de la referencia: transfiere su contraste de escalas y su relación con el sujeto. Elige una composición propia.',
     ...(devolucion ? ['Observación de la última candidata; corrige el defecto conservando el copy autorizado:', JSON.stringify(devolucion)] : []),
     oficio.trim(),
   ].join('\n\n');
-  const base = { nombrePlato, direccion, textos, ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+  const base = { nombrePlato, direccion, toma, textos, ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
   return { ...base, huella: huella(JSON.stringify(base)) };
 }
 

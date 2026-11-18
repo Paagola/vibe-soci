@@ -182,7 +182,7 @@ export function montarPromptFotoNueva(h: HuecosFotoNueva, o: OpcionesDePrompt = 
  * de su plato; subir 30° la convierte en otro plato peor, y girar y acercarse da una toma nueva.
  * Es la regla de la PROPUESTA; el resultado se comprueba aparte, preguntando lado a lado si es el mismo punto de vista.
  */
-export function esOtraToma(original: DescripcionFoto, nueva: HuecosFotoNueva['camara']): { otra: boolean; cambios: string[] } {
+export function esOtraToma(original: Pick<DescripcionFoto, 'anguloGrados' | 'distancia'>, nueva: HuecosFotoNueva['camara']): { otra: boolean; cambios: string[] } {
   const altura = Math.abs(nueva.anguloGrados - original.anguloGrados);
   if (altura > DIFERENCIA_MINIMA_GRADOS) return { otra: true, cambios: [`altura ${altura}°`] };
   const cambios: string[] = [];

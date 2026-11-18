@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import { it } from 'node:test';
 import { enviosDisponibles, GeneradorCartelOpenAI, reservarEnvio } from '../src/adaptadores/openai/GeneradorCartel.js';
 import { coincideTexto, dirigir } from '../src/aplicacion/taller/direccion.js';
+import { dirigirToma, instruccionDeToma } from '../src/aplicacion/taller/toma.js';
+import { ComandaDeArte } from '../src/dominio/taller.js';
 import { RAIZ } from '../src/config.js';
 import { Marca } from '../src/dominio/modelos.js';
 import { EncargoPost } from '../src/dominio/post.js';
@@ -22,6 +24,12 @@ it('dirige desde el plato y la ficha, conserva los hechos y extrae un nombre de 
   assert.match(pulpo.direccion.sujeto, /ventosas/);
   assert.match(pulpo.prompt, /contacto/);
   assert.doesNotMatch(pulpo.prompt, /FREE|SPAGHETTI/);
+  const { toma, ...comandaAnterior } = pulpo;
+  assert.equal(ComandaDeArte.parse(comandaAnterior).toma, undefined);
+  assert.match(toma!.camara.evidencia, /ventosas/);
+  assert.equal(toma!.seleccion.origen, undefined);
+  assert.ok(toma!.alternativa);
+  assert.match(pulpo.prompt, /posición|perspectiva/);
   assert.throws(() => dirigir(base, marca, 'a'.repeat(64), medidas, 'oficio', undefined, pulpo.direccion, 'Happy hour'), /literal/);
   const cafe = dirigir({ ...base, plato: 'Café solo', referencia: 'ref-11' }, marca, 'b'.repeat(64), medidas, 'Oficio.', await ficha('post-11'));
   assert.equal(cafe.direccion.gesto, 'LUZ_Y_SOMBRA');
@@ -31,6 +39,26 @@ it('dirige desde el plato y la ficha, conserva los hechos y extrae un nombre de 
   assert.ok(!coincideTexto(['CAFÉ'], ['cafe']));
   assert.ok(!coincideTexto(['CAFÉ'], ['café']));
   assert.ok(!coincideTexto(['CAFÉ'], ['CAFÉ', 'GRATIS']));
+});
+
+it('resuelve la cámara según producto, referencia y observación del origen, incluso en vista cenital', () => {
+  const cenital = { anguloGrados: 88, distancia: 'MEDIO' } as const;
+  assert.throws(() => dirigirToma('Gamba roja', 'RITMO', { opcion: 'CENITAL', origen: cenital }), /repite/);
+  const gamba = dirigirToma('Gamba roja', 'LUZ_Y_SOMBRA', { opcion: 'AUTO', origen: cenital });
+  assert.equal(gamba.camara.vista, 'RASANTE');
+  assert.equal(gamba.alternativa, undefined);
+  assert.match(gamba.camara.evidencia, /cabeza.*oculta/);
+  assert.match(gamba.conservar, /Cuenta las piezas/);
+  const sopa = dirigirToma('Caldo de pescado', 'MACRO', { opcion: 'AUTO', plano: 'MACRO', luz: 'Ventana difusa desde el fondo.', accionProducto: 'La curva del cuenco conduce la mirada.' }, 'Cenital de un cuenco');
+  assert.equal(sopa.camara.vista, 'CENITAL');
+  assert.equal(sopa.camara.distancia, 'MACRO');
+  assert.match(sopa.camara.evidencia, /boca.*planta/);
+  assert.match(instruccionDeToma(sopa), /Ventana difusa/);
+  assert.equal(sopa.alternativa?.vista, 'RASANTE');
+  assert.doesNotMatch(dirigirToma('Arroz con pulpo', 'EMERGER').conservar, /ventosas/);
+  assert.match(dirigirToma('Café solo', 'LUZ_Y_SOMBRA').conservar, /Recipiente/);
+  assert.doesNotMatch(dirigirToma('Helado de café', 'MACRO').conservar, /líquido|espuma/);
+  assert.doesNotMatch(dirigirToma('Gambas peladas al ajillo', 'RITMO').foco, /antenas/);
 });
 
 it('reserva atómicamente la dirección una vez, respeta el cupo global y no reintenta envíos inciertos', async () => {
