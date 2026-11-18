@@ -110,11 +110,14 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const proyecto = proyectoDe(req);
     const deps = await estudio.post(proyecto);
     await exigirEncargo(deps, proyecto);
-    const trabajo = ultimoTrabajo(estudio, proyecto);
+    const ultimo = ultimoTrabajo(estudio, proyecto);
+    // Captura el estado antes de las lecturas del detalle. Si termina entre ambas, el Pase
+    // seguirá el trabajo una vez y volverá a leer el paso persistido.
+    const trabajo = ultimo ? estudio.registro.vista(ultimo) : null;
     const detalle = await detalleDeEncargo(deps, proyecto);
     const api = detalle.encargo.taller && deps.tallerApi;
     const tallerApi = api ? { modelo: MODELO_CARTEL, limite: api.limite, disponibles: await enviosDisponibles(api.reservas, api.limite) } : null;
-    res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo: trabajo ? estudio.registro.vista(trabajo) : null });
+    res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo });
   });
 
   rutas.post('/:proyecto/taller', conEscritura(async (req, res) => {

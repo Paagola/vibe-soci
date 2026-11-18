@@ -298,6 +298,68 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.deepEqual(lecturas[2], [['post', 1], ['detalle-1', 2], ['cierre', 2]]);
   });
 
+  it('el post editorial explora, confirma, encuadra el original y revisa rótulos sin gastar', async () => {
+    const proyecto = 'sala-editorial', ruta = '/api/encargos/' + proyecto;
+    const fuente = await imagenDeLectura([{ texto: 'BAR' }], '#364335', 600);
+    const subida = await subir('sala.png', fuente);
+    const alta = await pedir('POST', '/api/encargos', { proyecto, local: 'asador-etxebarri', plato: 'Sala de noche', arte: 'EDITORIAL', subidaId: subida.id });
+    assert.equal(alta.status, 201);
+    const trabajo = await esperar(alta.datos.trabajo);
+    assert.equal(trabajo.estado, 'TERMINADO');
+    const inicial = await detalle(proyecto);
+    const decidir = async (accion: string, datos = {}) => pedir('POST', ruta + '/taller', { revision: (await detalle(proyecto)).revision, accion, ...datos });
+    assert.equal(inicial.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+    assert.equal(inicial.encargo.taller.comanda.editorial.ruta, 'FOTO_ESPACIO');
+    assert.deepEqual(inicial.encargo.taller.comanda.textos, []);
+    for (const ruta of ['TIPO_SOBRIA', 'CARTEL_EXPRESIVO', 'FOTO_PLATO', 'FOTO_ESPACIO']) {
+      const r = await decidir('EXPLORAR_RUTA', { ruta });
+      assert.equal(r.status, 200, JSON.stringify(r.datos));
+      assert.equal(r.datos.encargo.taller.comanda.editorial.ruta, ruta);
+      assert.equal(r.datos.encargo.taller.comanda.textos.length === 0, ruta.startsWith('FOTO_'));
+    }
+    assert.notEqual((await decidir('USAR_ORIGINAL')).status, 200);
+    assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
+    const zip = await archivo(ruta + '/taller/paquete');
+    assert.equal(zip.status, 200);
+    assert.ok(zip.bytes.includes(Buffer.from('sin texto añadido')));
+    assert.ok(zip.bytes.includes(Buffer.from(inicial.encargo.taller.comanda.editorial.evidencias[0].id)));
+    assert.equal((await decidir('USAR_ORIGINAL', { posicion: 0 })).status, 200);
+    const candidata = (await detalle(proyecto)).encargo.taller.candidatas[0];
+    assert.equal(candidata.origen, 'ORIGINAL');
+    assert.equal(candidata.encuadreOriginal, 0);
+    assert.equal(candidata.lectura.coincide, null);
+    const comprobaciones = { version: 1, transcripcion: [], producto: true, gesto: true, legibilidad: true };
+    assert.notEqual((await decidir('APROBAR', comprobaciones)).status, 200);
+    assert.notEqual((await decidir('APROBAR', { ...comprobaciones, sinTextoAnadido: true, transcripcion: ['EXTRA'] })).status, 200);
+    assert.equal((await decidir('APROBAR', { ...comprobaciones, sinTextoAnadido: true })).status, 200);
+    const final = await detalle(proyecto);
+    assert.deepEqual(final.encargo.taller.envios, []);
+    assert.equal(final.encargo.taller.candidatas[0].revision.cambioDeToma, undefined);
+    assert.equal((await archivo(ruta + '/taller/exportacion')).status, 200);
+  });
+
+  it('quien pide una referencia al abrir el post editorial puede elegir la biblioteca o seguir con su foto', async () => {
+    for (const conReferencia of [true, false]) {
+      const proyecto = 'editorial-referencia-' + (conReferencia ? 'elegida' : 'omitida');
+      const ruta = '/api/encargos/' + proyecto;
+      const subida = await subir('producto.png', await readFile(FOTO));
+      const alta = await pedir('POST', '/api/encargos', { proyecto, local: 'asador-etxebarri', plato: 'Gamba roja', arte: 'EDITORIAL', elegirReferenciaAlAbrir: true, subidaId: subida.id });
+      await esperar(alta.datos.trabajo);
+      const inicial = await detalle(proyecto);
+      assert.equal(inicial.encargo.paso, 'REFERENCIA');
+      if (conReferencia) {
+        assert.equal((await pedir('PUT', ruta + '/referencia', { biblioteca: 'post-30' })).status, 200);
+        await avanzar(proyecto);
+      } else {
+        assert.equal((await pedir('POST', ruta + '/taller', { accion: 'SIN_REFERENCIA', revision: inicial.revision })).status, 200);
+      }
+      const d = await detalle(proyecto);
+      assert.equal(d.encargo.paso, 'CONFIRMAR_ELEMENTOS');
+      assert.equal(Boolean(d.encargo.taller.comanda.referencia), conReferencia);
+      assert.ok(d.encargo.taller.comanda.editorial.evidencias.length >= 2);
+    }
+  });
+
   it('un cartel manual conserva el permiso, exige cotejo de la versión y exporta el PNG revisado', async () => {
     const proyecto = 'cartel-del-taller';
     const ruta = '/api/encargos/' + proyecto;

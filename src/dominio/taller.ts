@@ -46,22 +46,35 @@ const camposMuestras = {
 export const SeleccionDeMuestras = z.strictObject(camposMuestras);
 export type SeleccionDeMuestras = z.infer<typeof SeleccionDeMuestras>;
 
+export const RutaEditorial = z.enum(['FOTO_PLATO', 'FOTO_ESPACIO', 'TIPO_SOBRIA', 'CARTEL_EXPRESIVO']);
+export type RutaEditorial = z.infer<typeof RutaEditorial>;
+export const esFotoEditorial = (ruta?: RutaEditorial) => ruta === 'FOTO_PLATO' || ruta === 'FOTO_ESPACIO';
+const SeleccionEditorial = z.object({
+  ruta: RutaEditorial, motivo: z.string(), enfoque: z.string(), comprobar: z.string(),
+  evidencias: z.array(z.object({ id: z.string(), fuente: z.string(), pagina: z.url(), imagen: z.url(), lectura: z.string() })).min(2),
+});
+export type SeleccionEditorial = z.infer<typeof SeleccionEditorial>;
+
 export const ComandaDeArte = z.object({
+  editorial: SeleccionEditorial.optional(),
   muestras: z.object({ ...camposMuestras, sha256: hash }).optional(),
-  nombrePlato: z.string().optional(), toma: TomaDelCartel.optional(), direccion: DireccionDeArte, textos: z.array(bloque).min(1).max(5),
+  nombrePlato: z.string().optional(), toma: TomaDelCartel.optional(), direccion: DireccionDeArte, textos: z.array(bloque).max(5),
   referencia: z.object({ id: z.string(), familia: z.string(), mecanismos: z.array(z.string()), voces: z.array(z.string()), reticula: z.string(), encuadre: z.string(),
     recursos: z.array(z.string()), lectura: z.array(z.string()) }).optional(),
   fotografia: z.object({ temperatura: z.string(), dominantes: z.array(z.string()), acento: z.string().optional(), luz: z.number(), aire: z.string() }),
   fotoSha256: hash, uso: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']), prompt: z.string(), huella: hash,
-});
+}).refine(c => esFotoEditorial(c.editorial?.ruta) ? c.textos.length === 0 : c.textos.length > 0, 'Comprueba los bloques de texto de esta dirección.');
 export type ComandaDeArte = z.infer<typeof ComandaDeArte>;
-const revision = z.object({ recuentoObservado: z.int().positive().optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
+const revision = z.object({ sinTextoAnadido: z.literal(true).optional(), recuentoObservado: z.int().positive().optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
 export const TallerDeArte = z.object({
+  seleccionEditorial: z.literal(true).optional(),
+  elegirReferenciaAlAbrir: z.literal(true).optional(),
   comanda: ComandaDeArte.optional(),
   confirmada: z.object({ huella: hash, fecha: z.string() }).optional(),
   candidatas: z.array(z.object({
     version: z.int().positive(), sha256: hash, comanda: hash, fecha: z.string(),
-    origen: z.enum(['IMPORTACION', 'IMAGES_API']), uso: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']),
+    encuadreOriginal: z.number().min(0).max(1).optional(),
+    origen: z.enum(['IMPORTACION', 'IMAGES_API', 'ORIGINAL']), uso: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']),
     lectura: z.object({ motor: z.string(), lineas: z.array(z.string()), coincide: z.boolean().nullable(), superficieUniforme: z.boolean().optional() }),
     devolucion: z.string().optional(), revision: revision.optional(),
   })).default([]),
@@ -75,6 +88,8 @@ export const AccionTaller = z.discriminatedUnion('accion', [
     reticula: z.string().trim().min(10).max(220), foto: z.string().trim().min(5).max(200), voz: z.string().trim().min(3).max(120),
     lectura: z.tuple([z.string().min(2).max(80), z.string().min(2).max(80), z.string().min(2).max(80)]) }),
   z.strictObject({ accion: z.literal('AJUSTAR_MUESTRAS'), revision: z.string().min(1), muestras: SeleccionDeMuestras.nullable() }),
+  z.strictObject({ accion: z.literal('EXPLORAR_RUTA'), revision: z.string().min(1), ruta: RutaEditorial }),
+  z.strictObject({ accion: z.literal('USAR_ORIGINAL'), revision: z.string().min(1), posicion: z.number().min(0).max(1).default(.5) }),
   z.strictObject({ accion: z.literal('AJUSTAR_TOMA'), revision: z.string().min(1), ...SeleccionDeToma.shape }),
   z.strictObject({ accion: z.literal('PROPONER_GESTO'), revision: z.string().min(1), gesto: Gesto }),
   z.strictObject({ accion: z.literal('REABRIR_DIRECCION'), revision: z.string().min(1) }),
@@ -84,6 +99,6 @@ export const AccionTaller = z.discriminatedUnion('accion', [
   z.strictObject({ accion: z.literal('IMPORTAR'), revision: z.string().min(1), subidaId: z.string().min(1), usoCandidata: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).optional() }),
   z.strictObject({ accion: z.literal('DEVOLVER'), revision: z.string().min(1), version: z.int().positive(), motivo: z.string().trim().min(3).max(480), ajusteToma: SeleccionDeToma.optional() }),
   z.strictObject({ accion: z.literal('APROBAR'), revision: z.string().min(1), version: z.int().positive(), recuentoObservado: z.int().min(0).max(10000).optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(),
-    transcripcion: z.array(z.string().trim().min(1).max(300)).min(1).max(12), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true) }),
+    sinTextoAnadido: z.literal(true).optional(), transcripcion: z.array(z.string().trim().min(1).max(300)).max(12), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true) }),
 ]);
 export type AccionTaller = z.infer<typeof AccionTaller>;

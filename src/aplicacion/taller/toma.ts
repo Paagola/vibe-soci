@@ -92,24 +92,41 @@ function motivoDelPlato(plato: string, gesto: Gesto): Motivo {
   };
 }
 
-export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeToma = { opcion: 'AUTO' }, fotoReferencia = ''): TomaDelCartel {
+export interface EncuadreEditorial {
+  vista: VistaDeProducto;
+  espacio: boolean;
+  escena: string;
+  comprobar: string;
+}
+export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeToma = { opcion: 'AUTO' }, fotoReferencia = '', editorial?: EncuadreEditorial): TomaDelCartel {
   const { vista, prueba, ...motivo } = motivoDelPlato(plato, gesto);
-  const recomendada = /cenital|desde arriba|a plomo/i.test(fotoReferencia) ? 'CENITAL'
+  const espacio = editorial?.espacio;
+  const recomendada = editorial?.vista ?? (/cenital|desde arriba|a plomo/i.test(fotoReferencia) ? 'CENITAL'
     : /rasante|ras de|nivel de la mesa/i.test(fotoReferencia) ? 'RASANTE'
-    : /tres cuartos|¾|3\/4/.test(fotoReferencia) ? 'OBLICUA' : vista;
+    : /tres cuartos|¾|3\/4/.test(fotoReferencia) ? 'OBLICUA' : vista);
   const primera = seleccion.opcion === 'AUTO' ? recomendada : seleccion.opcion;
   const posicion = (vista: VistaDeProducto): Posicion => {
-    const distancia = seleccion.plano ?? (gesto === 'MACRO' ? 'MACRO' : vista === 'CENITAL' ? 'MEDIO' : 'PRIMER_PLANO');
+    const distancia = seleccion.plano ?? (espacio ? (vista === 'CENITAL' ? 'MEDIO' : 'GENERAL') : gesto === 'MACRO' ? 'MACRO' : vista === 'CENITAL' ? 'MEDIO' : 'PRIMER_PLANO');
     const optica = distancia === 'MACRO' ? { objetivoMm: 100, apertura: 11 } : distancia === 'GENERAL' ? { objetivoMm: 50, apertura: 8 } : {};
+    if (espacio) {
+      const situacion = {
+        RASANTE: { anguloGrados: 0, giroGrados: 55, descripcion: 'Mira al frente a altura de visitante, desde otro punto del espacio.', evidencia: 'Un borde próximo se desplaza frente a un marco o mueble lejano.' },
+        OBLICUA: { anguloGrados: 18, giroGrados: 65, descripcion: 'Desplázate a un costado y mira ligeramente hacia abajo a través del espacio visible.', evidencia: 'Compara qué lado de un mueble queda visible y dónde se cruza con el fondo.' },
+        CENITAL: { anguloGrados: 90, giroGrados: 0, descripcion: 'Aísla desde arriba una superficie documentada de la sala.', evidencia: 'Se reconoce el contorno en planta de una superficie presente en la fuente.' },
+      }[vista];
+      return { vista, distancia, objetivoMm: distancia === 'GENERAL' ? 35 : 50, apertura: 8, ...situacion };
+    }
     return { vista, ...posiciones[vista], evidencia: prueba?.[vista] ?? posiciones[vista].evidencia, distancia, ...optica };
   };
-  const posibilidades = [primera, ...(['RASANTE', 'OBLICUA', 'CENITAL'] as const).filter(v => v !== primera)].map(posicion);
+  const vistas: VistaDeProducto[] = espacio && primera !== 'CENITAL' ? ['RASANTE', 'OBLICUA'] : ['RASANTE', 'OBLICUA', 'CENITAL'];
+  const posibilidades = [primera, ...vistas.filter(v => v !== primera)].map(posicion);
   const origen = seleccion.origen;
   let camara = posibilidades[0]!;
   let cambios: string[] = [];
   let alternativa: Posicion | undefined;
   if (origen) {
-    const valida = posibilidades.find(v => esOtraToma(origen, v).otra)!;
+    const valida = posibilidades.find(v => esOtraToma(origen, v).otra);
+    if (!valida) throw new ErrorDeUsuario('Esa posición repite la cámara de origen. Cambia el plano o el punto de vista.');
     if (seleccion.opcion !== 'AUTO' && valida.vista !== primera) {
       throw new ErrorDeUsuario('Esa posición repite la cámara de origen. Prueba la vista ' + valida.vista.toLocaleLowerCase('es') + ' o la propuesta automática.');
     }
@@ -119,22 +136,29 @@ export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeT
     // La altura de la fotografía no se deduce de sus colores. El generador observa la fuente y ejecuta una toma.
     alternativa = posibilidades.slice(1).sort((a, b) => Math.abs(b.anguloGrados - camara.anguloGrados) - Math.abs(a.anguloGrados - camara.anguloGrados))[0];
   }
+  if (editorial) {
+    const accion = seleccion.accionProducto ?? '';
+    const luz = seleccion.luz ?? (espacio ? 'Expón para la luz presente en la sala. Conserva el contraste entre el primer término y el fondo.' : motivo.luz);
+    return { seleccion, camara, ...(alternativa ? { alternativa } : {}), cambios, encuadre: editorial.escena, accion, luz,
+      foco: editorial.comprobar, conservar: espacio ? 'Respeta mobiliario, geometría, rótulos reales, materiales y personas visibles. Encuadra dentro del espacio documentado.' : motivo.conservar };
+  }
   return { seleccion, camara, ...(alternativa ? { alternativa } : {}), cambios, encuadre: puesta[gesto], ...motivo, luz: seleccion.luz ?? motivo.luz, accion: seleccion.accionProducto ?? motivo.accion };
 }
 
-export function describirCamara(p: Posicion): string {
-  return p.vista + ' · ' + p.anguloGrados + '° sobre el apoyo, giro alrededor del producto ' + p.giroGrados + '°, ' +
+export function describirCamara(p: Posicion, editorial = false): string {
+  return p.vista + ' · ' + p.anguloGrados + (editorial ? '° de inclinación, desplazamiento angular ' : '° sobre el apoyo, giro alrededor del producto ') + p.giroGrados + '°, ' +
     p.distancia.toLowerCase().replaceAll('_', ' ') + ', ' + p.objetivoMm + ' mm, f/' + p.apertura + '. ' + p.descripcion + ' ' + p.evidencia;
 }
 
-export function instruccionDeToma(t: TomaDelCartel): string {
+export function instruccionDeToma(t: TomaDelCartel, editorial = false, escenaEscrita = ''): string {
   const origen = t.seleccion.origen;
   return [
+    editorial ? 'Observa primero la fotografía fuente. Construye una sola toma vertical desde un punto de vista físicamente distinto, dentro de lo documentado.' :
     'Sesión fotográfica. Observa primero la imagen adjunta como fuente de identidad y reconstruye el producto desde una cámara físicamente distinta. El ángulo indicado dirige al alimento dentro del cartel. La referencia editorial guía el ritmo y las voces tipográficas. Presenta el cartel terminado de frente.',
     origen ? 'La persona describe el origen a ' + origen.anguloGrados + '°, plano ' + origen.distancia + '. Cambios dirigidos: ' + t.cambios.join(', ') + '.' : 'La altura original queda por observar en la foto adjunta.',
-    'Toma principal. ' + describirCamara(t.camara),
-    t.alternativa ? 'Solo si al mirar la foto fuente ya reconoces la perspectiva principal, ejecuta en su lugar esta segunda posición: ' + describirCamara(t.alternativa) + ' Entrega una sola foto dentro del cartel.' : '',
-    t.encuadre, t.accion, t.luz, t.foco, t.conservar,
+    'Toma principal. ' + describirCamara(t.camara, editorial),
+    t.alternativa ? 'Solo si al mirar la foto fuente ya reconoces la perspectiva principal, ejecuta en su lugar esta segunda posición: ' + describirCamara(t.alternativa, editorial) + ' Entrega una sola imagen.' : '',
+    escenaEscrita.includes(t.encuadre) ? '' : t.encuadre, t.accion, t.luz, t.foco, t.conservar,
     t.seleccion.rasgoFuente ? 'Observación del usuario para conservar en el producto: ' + JSON.stringify(t.seleccion.rasgoFuente) : '',
     'Comprueba que cambió la proyección de una parte reconocible. Un giro del lienzo, un recorte o una luz distinta mantienen la misma perspectiva y requieren repetir la toma antes de dar por acabada la imagen. Conserva las caras ocultas que no se puedan reconstruir con fidelidad.',
   ].filter(Boolean).join('\n');

@@ -17,6 +17,8 @@ Cada documento dice en su cabecera en qué **fase** del trabajo sirve. El direct
 | revision | Mirar el render, criticarlo y corregir | `oficios/revision-visual`, `rubrica`, `antipatrones` |
 | aprendizaje | Qué se guarda de cada valoración y con qué peso | `oficios/revision-visual`, `observaciones/` |
 
+El Pase utiliza un selector local para los posts editoriales de una imagen. Sus observaciones y casos de contraste se pueden revisar en el estudio de 256 composiciones. [Estudio editorial](referencias/estudio-editorial.md)
+
 ## Qué hay en cada carpeta
 
 - `oficios/`: cinco oficios. Cada uno explica el proceso, las decisiones que toma y ejemplos de buenas y malas decisiones, casi todos sacados de nuestro propio trabajo (F1 de DAK, F1.5 de Etxebarri).

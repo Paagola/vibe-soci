@@ -38,13 +38,16 @@ function subirA(archivo) {
 export function fichaDeSubida(ctx) {
   if (!ctx.locales.length) return [titulo('Añade un local'), nota('Cada encargo usa el perfil de su local.'), accion(ctx.simulado ? boton('Usar el local de ejemplo', (e) => ctx.crearLocalDeEjemplo(e.currentTarget), true) : null, enlace('Dar de alta un local', '/index.html#/local'))];
   const local = h('select', { name: 'local', required: true }, ctx.locales.map((l) => opcion(l.slug, l.nombre)));
-  const formato = h('select', { name: 'formato' }, opcion('integrado', 'Cartel integrado · 4:5'), opcion('post', 'Post por capas'), opcion('carrusel', 'Carrusel'));
+  const formato = h('select', { name: 'formato' }, opcion('editorial', 'Post editorial · 4:5'), opcion('integrado', 'Cartel integrado con referencia · 4:5'), opcion('post', 'Post por capas'), opcion('carrusel', 'Carrusel'));
   const uso = h('select', { name: 'uso' }, opcion('PUBLICABLE', 'Foto del local'), opcion('SOLO_PRUEBA_COMPOSICION', 'Solo para una prueba'));
   const estetica = h('select', { name: 'estetica' }, opcion('', 'A partir de la referencia'), [
     ['EDITORIAL_SERENO', 'Editorial sereno'], ['EDITORIAL_OSCURO', 'Editorial oscuro'], ['COLOR_POP', 'Color pop'],
     ['MAXIMALISMO', 'Maximalismo'], ['MEDITERRANEO_LUMINOSO', 'Mediterráneo luminoso'], ['RUSTICO_FUEGO', 'Rústico de fuego'],
   ].map(([valor, nombre]) => opcion(valor, nombre)));
-  const nombre = h('input', { name: 'plato', required: true, minlength: '3', maxlength: '300', placeholder: 'Ej. Gamba roja a la brasa' });
+  const pedirReferencia = h('input', { type: 'checkbox', name: 'elegirReferenciaAlAbrir' });
+  const referencia = h('label', {}, pedirReferencia, ' Elegir una referencia propia o de biblioteca');
+  formato.addEventListener('change', () => { referencia.hidden = formato.value !== 'editorial'; });
+  const nombre = h('input', { name: 'plato', required: true, minlength: '3', maxlength: '300', placeholder: 'Ej. Gamba roja a la brasa o nuestra terraza al atardecer' });
   const archivo = h('input', { type: 'file', accept: FOTOS, 'aria-label': 'Foto original' });
   const preview = h('div');
   const errores = h('div', { role: 'status' });
@@ -68,16 +71,16 @@ export function fichaDeSubida(ctx) {
   zona.addEventListener('dragover', (e) => { e.preventDefault(); zona.dataset.arrastre = ''; });
   zona.addEventListener('dragleave', () => delete zona.dataset.arrastre);
   zona.addEventListener('drop', (e) => { e.preventDefault(); delete zona.dataset.arrastre; elegir(e.dataTransfer.files[0]); });
-  const form = h('form', {}, zona, etiqueta('Local', local), etiqueta('Plato', nombre), etiqueta('Formato', formato), detalles('Uso y estética', etiqueta('Uso de la imagen', uso), etiqueta('Estética', estetica)), errores,
+  const form = h('form', {}, zona, etiqueta('Local', local), etiqueta('Qué quieres mostrar', nombre), etiqueta('Formato', formato), detalles('Opciones del encargo', etiqueta('Uso de la imagen', uso), referencia, etiqueta('Estética', estetica)), errores,
     h('button', { type: 'submit', class: 'primario' }, 'Crear encargo'));
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     reemplazar(errores);
     ctx.enviarSubida(e.submitter, async () => {
       const plato = nombre.value.trim();
-      if (plato.length < 3) throw new Error('Escribe el nombre del plato.');
+      if (plato.length < 3) throw new Error('Describe el plato, el espacio o lo que sucede en la foto.');
       const subida = await subirA(fichero);
-      return { subidaId: subida.id, local: local.value, plato, formato: formato.value === 'integrado' ? 'post' : formato.value, usoFotoReal: uso.value, ...(estetica.value ? { estetica: estetica.value } : {}), ...(formato.value === 'integrado' ? { arte: 'INTEGRADO' } : { productorEditorial: true }) };
+      return { subidaId: subida.id, local: local.value, plato, formato: ['editorial', 'integrado'].includes(formato.value) ? 'post' : formato.value, usoFotoReal: uso.value, ...(estetica.value ? { estetica: estetica.value } : {}), ...(formato.value === 'editorial' ? { arte: 'EDITORIAL', ...(pedirReferencia.checked ? { elegirReferenciaAlAbrir: true } : {}) } : formato.value === 'integrado' ? { arte: 'INTEGRADO' } : { productorEditorial: true }) };
     }, errores);
   });
   return [titulo('Empieza con una foto'), form];
@@ -115,7 +118,7 @@ function fichaReferencia(ctx) {
   return [titulo(cambiar ? 'Elige la referencia' : 'Referencia'),
     foto(referencia.conImagen ? ctx.urls.referencia(480) : null, ctx.urls.referencia(), ficha?.titulo ?? 'Referencia elegida', ficha?.titulo),
     ficha ? par([['Familia', ficha.familia], ['Retícula', ficha.reticula], ['Lectura', ficha.lectura?.join(' → ')]]) : null,
-    cambiar ? nota(espera.motivo) : !encargo.referencia ? nota('Aquí se colocará la referencia visual del encargo.') : !ficha ? nota(encargo.referencia) : null,
+    cambiar ? nota(encargo.taller?.seleccionEditorial ? 'Elige una referencia del local o continúa con el estudio del encargo.' : espera.motivo) : !encargo.referencia ? nota('Aquí se colocará la referencia visual del encargo.') : !ficha ? nota(encargo.referencia) : null,
     aviso(referencia.error),
     cambiar && referencia.registradas.length ? [h('h3', {}, 'Del local'), h('ul', { class: 'referencias' }, referencia.registradas.map((r) => tarjeta(r.id, r.titulo ?? r.id, r.conImagen ? ctx.urls.referenciaDelLocal(r.id, 200) : null, { referencia: r.id }, !r.usable)))] : null,
     cambiar && familias.length ? [grupoFamilia(familias[0]), familias.length > 1 ? detalles('Más referencias de la biblioteca', familias.slice(1).map(grupoFamilia)) : null] : null,

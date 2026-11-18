@@ -4,7 +4,7 @@ import { estadoDePaso, urlsDe } from '../orden.js';
 import { cargarPresupuesto, controlesDeFase, fichaDeSubida, fichas, hojaDe, notificarCorreccion, pideRevision, portadaDe } from './fichas.js';
 import { dibujarFotos, ESTACIONES, soporteDe } from './plano.js';
 import { ENCUADRES } from './renders.js';
-import { fichaManual, fichaTaller } from './taller.js';
+import { fichaManual, fichaTaller, referenciasEditoriales } from './taller.js';
 import { actividadDe, intervencionesDe } from './actividad.js';
 
 const $ = (id) => document.getElementById(id);
@@ -19,9 +19,9 @@ const panelActividad = $('actividad');
 const ETAPAS = { REFERENCIA: 'referencia', ELEMENTOS: 'elementos', FOTO: 'candidata', DISENO: 'composicion', RESULTADO: 'entrega' };
 const pasoDe = (d) => d?.encargo.taller && d.encargo.paso === 'CONFIRMAR_FOTO' ? 'composicion' : ETAPAS[d?.fase] ?? 'original';
 const etapasDeTaller = {
-  elementos: { nombre: 'Dirección', accion: 'Dirección de arte', texto: 'Decide cómo se relacionan el producto, las palabras y la referencia.' },
-  candidata: { nombre: 'Producción', accion: 'Producción del cartel', texto: 'Lleva la dirección aprobada al generador o importa la imagen.' },
-  composicion: { nombre: 'Revisión', accion: 'Revisión del cartel', texto: 'Lee la imagen a escala móvil y contrasta el producto con la foto fuente.' },
+  elementos: { nombre: 'Dirección', accion: 'Dirección de arte', texto: 'Revisa el encuadre, la luz y la lectura elegida para el encargo.' },
+  candidata: { nombre: 'Producción', accion: 'Producción de la imagen', texto: 'Lleva la dirección aprobada al generador o importa la imagen.' },
+  composicion: { nombre: 'Revisión', accion: 'Revisión de la imagen', texto: 'Lee la imagen a escala móvil y contrasta el producto con la foto fuente.' },
 };
 const etapaDe = fase => d?.encargo.taller ? { ...fase, ...etapasDeTaller[fase.id] } : fase;
 const indiceDe = (id) => ESTACIONES.findIndex((s) => s.id === id);
@@ -249,7 +249,7 @@ function pintarFicha() {
   else if (!d && seleccion === 'original') reemplazar(cuerpo, fichaDeSubida(ctx));
   else if (!d) reemplazar(cuerpo, h('h2', { id: 'ficha-titulo' }, nombreDe(seleccion)), h('p', { class: 'muted' }, 'Sube la foto original para iniciar el encargo.'), h('button', { type: 'button', class: 'primario', onclick: () => seleccionar('original', null, true) }, 'Añadir foto original'));
   else if (d.encargo.taller && seleccion !== 'original') {
-    reemplazar(cuerpo, trabajoNodo, seleccion === 'referencia' ? [fichas.referencia(ctx), fichaManual(ctx), d.encargo.paso !== 'REFERENCIA' ? h('button', { type: 'button', onclick: ctx.irActual }, 'Volver al cartel') : null] : ctx.actual !== seleccion ? [h('h2', { id: 'ficha-titulo' }, etapaDe(ESTACIONES[indiceDe(seleccion)]).nombre), h('button', { type: 'button', onclick: ctx.irActual }, 'Ir a la fase actual')] : fichaTaller(ctx));
+    reemplazar(cuerpo, trabajoNodo, seleccion === 'referencia' ? [d.encargo.taller.comanda?.editorial && !d.encargo.referencia ? [h('h2', { id: 'ficha-titulo' }, 'Referencias de la dirección'), referenciasEditoriales(d.encargo.taller.comanda.editorial)] : fichas.referencia(ctx), fichaManual(ctx), d.encargo.paso !== 'REFERENCIA' ? h('button', { type: 'button', onclick: ctx.irActual }, 'Volver al encargo') : null] : ctx.actual !== seleccion ? [h('h2', { id: 'ficha-titulo' }, etapaDe(ESTACIONES[indiceDe(seleccion)]).nombre), h('button', { type: 'button', onclick: ctx.irActual }, 'Ir a la fase actual')] : fichaTaller(ctx));
     pintarTrabajo(d.trabajo);
   } else {
     const espera = d.espera;

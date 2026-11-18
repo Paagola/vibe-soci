@@ -1,3 +1,5 @@
+import { esFotoEditorial, type RutaEditorial } from '../../dominio/taller.js';
+import { seleccionarEditorial } from './seleccionEditorial.js';
 import { dirigirToma, instruccionDeToma, protagonizaPulpo } from './toma.js';
 import { createHash } from 'node:crypto';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
@@ -61,21 +63,59 @@ function bloques(plato: string, marca: string): ComandaDeArte['textos'] {
 
 type Muestras = NonNullable<ComandaDeArte['muestras']>;
 
-function pautaDeMuestras(m: Muestras): string {
+function pautaDeMuestras(m: Muestras, fotoLimpia = false): string {
   const crustaceosEnteros = /\b(gambas?|langostinos?|carabineros?|cigalas?)\b/iu.test(m.unidad) && /\benter[oa]s?\b/iu.test(m.unidad);
   return [
     'La persona confirma ' + m.recuento + ' ' + JSON.stringify(m.unidad) + '. La única imagen adjunta documenta los rasgos del producto mediante detalles de la misma foto. Varios recortes pueden pertenecer a una sola pieza. Fotografía exactamente el número confirmado.',
     'Monta físicamente la nueva colocación que la persona ha elegido: ' + JSON.stringify(m.colocacion) + '.',
     crustaceosEnteros ? 'Antes de encuadrar, sigue cada animal desde un extremo hasta el otro. Cada gamba o crustáceo entero tiene su única cabeza conectada directamente a su propio abdomen y a su propia cola. Se puede seguir cada contorno por separado. Comprueba el número de cabezas, cuerpos y colas, y conserva la anatomía, el punto de cocción y la sal realmente visibles.'
       : 'Sigue el contorno de cada pieza contada y comprueba la continuidad entre sus partes visibles. Respeta sus uniones, preparación y acabado.',
-    'Haz una fotografía a plomo de esta nueva colocación. El observador mira perpendicularmente al suelo y ve el dorso de los volúmenes. Las ventanas y sus márgenes solo sirven para documentar el producto. El recuento y la colocación son instrucciones de producción. Compón el cartel con el único copy aprobado.',
+    'Haz una fotografía a plomo de esta nueva colocación. El observador mira perpendicularmente al suelo y ve el dorso de los volúmenes. Las ventanas y sus márgenes solo sirven para documentar el producto. El recuento y la colocación son instrucciones de producción.' + (fotoLimpia ? '' : ' Compón la pieza con el único copy aprobado.'),
   ].join('\n');
 }
 
-export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma, muestras?: Muestras): ComandaDeArte {
+export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma, muestras?: Muestras, ruta?: RutaEditorial): ComandaDeArte {
   // La nota puede incluir indicaciones privadas tras el nombre del plato.
-  const nombrePlato = extracto ?? e.taller?.comanda?.nombrePlato ?? (e.plato.split(/\n|[.!?](?:\s|$)/u)[0]!.trim() || e.plato);
+  const sujetoDelEncargo = e.plato.split(/\n|[.!?](?:\s|$)/u)[0]!.trim() || e.plato;
+  const citado = e.taller?.seleccionEditorial ? /(?:titular|nombre|texto|imprimir|anunciar)\s*[:=]?\s*[«“"]([^»”"\n]{2,160})[»”"]/iu.exec(e.plato)?.[1] : undefined;
+  const nombrePlato = extracto ?? e.taller?.comanda?.nombrePlato ?? citado ?? sujetoDelEncargo;
   if (!e.plato.includes(nombrePlato)) throw new ErrorDeUsuario('El nombre impreso debe ser un fragmento literal de la nota del plato.');
+  const referencia = ficha && e.referencia ? { id: e.referencia, familia: ficha.familia, mecanismos: ficha.mecanismos,
+    voces: ficha.tipografia.map(v => v.rol + ' · ' + v.clasificacion + (v.escala ? ' · altura aproximada ' + v.escala + '%' : '')),
+    reticula: ficha.reticula, encuadre: ficha.foto, recursos: ficha.recursos.map(r => r.recurso + ' · ' + r.funcion), lectura: recorrido(ficha) } : undefined;
+  const devolucion = e.taller?.candidatas.at(-1)?.devolucion;
+  if (e.taller?.seleccionEditorial) {
+    const { editorial, pauta, espacio } = seleccionarEditorial(e, fotografia, ruta ?? e.taller.comanda?.editorial?.ruta, ficha);
+    const limpia = esFotoEditorial(editorial.ruta);
+    const cartel = editorial.ruta === 'CARTEL_EXPRESIVO';
+    const gestoDeNota: Gesto | undefined = /papel rasgado|desgarro/iu.test(e.plato) ? 'EMERGER' : /letras repetidas|patrón repetido/iu.test(e.plato) ? 'RITMO' : undefined;
+    const gesto = gestoPropuesto ?? edicion?.gesto ?? (cartel ? gestoDeNota ?? (ficha ? gestoPara(e, ficha) : pauta.gesto) : pauta.gesto);
+    const recurso = direcciones[gesto];
+    const sujeto = espacio ? 'Retrata el lugar descrito en el encargo dentro de los límites de la fotografía del local. Conserva su arquitectura y sus objetos reconocibles.'
+      : 'Retrata el sujeto documentado en la fotografía del local. Conserva preparación, cantidad, proporciones y vajilla.';
+    const tipografia = limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
+      : cartel ? recurso.tipografia : 'Una sola voz tipográfica de peso medio, margen generoso y alineación en bandera. El nombre debe leerse a 360 px. Si la foto carece de aire, abre un margen liso por fuera del encuadre.';
+    const materia = cartel ? recurso.materia : 'Mantén la textura y los materiales de la fuente. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
+    const direccion = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
+    const camara = dirigirToma(sujetoDelEncargo, gesto, seleccion ?? e.taller.comanda?.toma?.seleccion, '', { ...pauta, espacio });
+    const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'Respeta el número, la anatomía y el acabado de las piezas que documentan los detalles.' } : camara;
+    const textos: ComandaDeArte['textos'] = limpia ? [] : cartel ? bloques(nombrePlato, marca.nombre) : [{ papel: 'TITULAR', texto: nombrePlato, fuente: 'PLATO' }];
+    const prompt = [
+      limpia ? 'Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.'
+        : cartel ? 'Produce un cartel editorial gastronómico vertical 4:5. Integra una única acción gráfica dominante.' : 'Produce una página editorial gastronómica vertical 4:5 con una fotografía y un único nombre impreso.',
+      'Sujeto descrito por el local, como contexto visual: ' + JSON.stringify(sujetoDelEncargo),
+      direccion.sujeto, direccion.escena, direccion.materia, direccion.tipografia,
+      instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia),
+      limpia && 'Entrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.',
+      !limpia && ('Imprime exclusivamente los siguientes bloques literales una sola vez: ' + JSON.stringify(textos.map(b => b.texto))),
+      !limpia && marca.colores.length > 0 && ('Toma la tinta gráfica de la paleta del local si mantiene el contraste: ' + marca.colores.map(c => c.hex).join(', ') + '.'),
+      !limpia && ('Mide el aire de nuevo si cambias la cámara. En la fuente: ' + fotografia.aire),
+      'La fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.',
+      devolucion && ('Corrección de la persona que revisó la versión anterior: ' + JSON.stringify(devolucion)),
+    ].filter(Boolean).join('\n\n');
+    const base = { editorial, nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+    return { ...base, huella: huella(JSON.stringify(base)) };
+  }
   const gesto = gestoPropuesto ?? edicion?.gesto ?? gestoPara(e, ficha);
   const sujeto = protagonizaPulpo(nombrePlato) && gesto === 'EMERGER'
     ? 'Un solo brazo de pulpo cocinado y apetecible, aislado. Conserva el tostado, el volumen y la humedad visibles en la toma. La base gruesa queda oculta bajo el papel, el brazo describe un arco lateral y las hileras de ventosas disminuyen hacia la punta. Prescinde de vajilla, guarnición y cubiertos.'
@@ -89,10 +129,6 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   const camara = dirigirToma(nombrePlato, gesto, seleccion ?? e.taller?.comanda?.toma?.seleccion, ficha?.foto);
   const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'El recuento y la colocación proceden de la observación de la persona. Usa los detalles para reconocer el producto, sus colores y su acabado.' } : camara;
   const textos = bloques(nombrePlato, marca.nombre);
-  const referencia = ficha && e.referencia ? { id: e.referencia, familia: ficha.familia, mecanismos: ficha.mecanismos,
-    voces: ficha.tipografia.map(v => v.rol + ' · ' + v.clasificacion + (v.escala ? ' · altura aproximada ' + v.escala + '%' : '')),
-    reticula: ficha.reticula, encuadre: ficha.foto, recursos: ficha.recursos.map(r => r.recurso + ' · ' + r.funcion), lectura: recorrido(ficha) } : undefined;
-  const devolucion = e.taller?.candidatas.at(-1)?.devolucion;
   const prompt = [
     'Produce un cartel gastronómico original acabado, vertical 4:5. Crea fotografía y composición tipográfica en la misma imagen.',
     ...(muestras ? [pautaDeMuestras(muestras)] : []),

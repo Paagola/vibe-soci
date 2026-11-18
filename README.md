@@ -22,6 +22,16 @@ En un clon nuevo, pulsa **Nuevo encargo → Usar el local de ejemplo** y sube un
 
 ## Un encargo en El pase
 
+### Post editorial
+
+Sube una foto del plato, del servicio o del local. En **Qué quieres mostrar** escribe, por ejemplo, «Gamba roja a la brasa», «Nuestra terraza al anochecer» o «Café solo. Titular “Café del día”». El Pase propone una fotografía limpia de plato o espacio, un diseño con un título o un cartel expresivo. Si quieres trabajar a partir de otra imagen, marca **Elegir una referencia propia o de biblioteca** en las opciones del alta.
+
+La ficha explica la elección, enlaza las piezas estudiadas y propone qué comprobar a tamaño móvil. **Explorar otra dirección** permite comparar las cuatro lecturas antes de confirmar. **Editar dirección** permite cambiar escena, materia y encuadre. En las dos direcciones de fotografía el copy queda vacío.
+
+Tras confirmar, **Encuadrar la foto original** prepara un recorte 4:5 a partir del archivo aportado. El deslizador ajusta su posición. Puedes revisarlo en el Pase sin un envío al proveedor. Para preparar otra perspectiva, elige la cámara en dirección y utiliza el paquete manual o el envío opcional autorizado. La revisión distingue un recorte del original de una toma nueva. En foto limpia se cotejan los rótulos impresos que ya pertenecían al espacio o al producto. Las piezas de prueba conservan su restricción de uso al exportar.
+
+El estudio recoge 256 composiciones de campañas, portafolios, plantillas, identidades y fotografía. Cada ficha describe una decisión visible y enlaza la pieza concreta. [Método y conclusiones](conocimiento/referencias/estudio-editorial.md) · [Corpus consultable](conocimiento/referencias/corpus-editorial.json)
+
 ### Cartel integrado
 
 En **Nuevo encargo**, elige **Cartel integrado · 4:5**, sube la foto del local y escribe el nombre del plato. Una referencia de biblioteca ya tiene ficha. Para una imagen propia, puedes describir su encuadre, tipografía y orden de lectura dentro de El pase.

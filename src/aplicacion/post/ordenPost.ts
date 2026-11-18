@@ -137,7 +137,8 @@ export async function crearEncargo(
   deps: DepsPost,
   datos: {
     proyecto: string;
-    arte?: 'INTEGRADO' | 'CAPAS';
+    arte?: 'EDITORIAL' | 'INTEGRADO' | 'CAPAS';
+    elegirReferenciaAlAbrir?: true;
     productorEditorial?: boolean;
     local: string;
     plato: string;
@@ -161,7 +162,7 @@ export async function crearEncargo(
   const ahora = deps.ahora();
   const encargo = EncargoPost.parse({
     esquema: 'post/encargo@1',
-    ...(datos.arte === 'INTEGRADO' ? { taller: {} } : datos.productorEditorial ? { productorEditorial: true } : {}),
+    ...(datos.arte === 'EDITORIAL' ? { taller: { seleccionEditorial: true, ...(datos.elegirReferenciaAlAbrir ? { elegirReferenciaAlAbrir: true } : {}) } } : datos.arte === 'INTEGRADO' ? { taller: {} } : datos.productorEditorial ? { productorEditorial: true } : {}),
     proyecto: datos.proyecto,
     local: datos.local,
     plato: datos.plato,

@@ -251,3 +251,5 @@ summary{margin-bottom:6px;font-weight:560;font-size:.85rem}
 .zona-muestra b{position:absolute;left:0;top:0;background:#191917;color:white;padding:3px 5px;font:600 11px var(--mono)}
 .coordenadas-muestra{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
 .lamina-muestras{display:block;width:min(100%,700px);height:auto}
+
+.encuadre-original { display: block; width: min(100%, 320px); aspect-ratio: 4 / 5; object-fit: cover; }

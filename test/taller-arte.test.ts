@@ -114,3 +114,35 @@ it('Images API recibe una única edición con foto JPEG y la dirección completa
   assert.equal((await proveedor.generar('Comanda exacta', fuente, 'muestras.jpg')).toString(), 'resultado');
   assert.deepEqual(adjuntos, ['producto.jpg', 'muestras.jpg']);
 });
+
+it('elige la dirección editorial según el asunto y la tarea, con la procedencia de cada referencia', async () => {
+  const marca = Marca.parse(JSON.parse(await readFile(join(RAIZ, 'plantillas/marca.ejemplo.json'), 'utf8')));
+  const foto = { temperatura: 'CALIDA', dominantes: ['#443322'], luz: 0.4, aire: 'arriba' };
+  const resolver = (plato: string) => dirigir(EncargoPost.parse({ esquema: 'post/encargo@1', proyecto: 'editorial', local: marca.slug, plato,
+    fotoSubida: 'fuente', creadoEn: '2026-11-18', taller: { seleccionEditorial: true } }), marca, 'a'.repeat(64), foto, 'Oficio del cartel.');
+  for (const nota of ['Barra de pan de masa madre', 'Café solo', 'Croquetas sin letras']) {
+    const c = resolver(nota);
+    assert.equal(c.editorial?.ruta, 'FOTO_PLATO');
+    assert.deepEqual(c.textos, []);
+    assert.equal(ComandaDeArte.safeParse(c).success, true);
+    assert.ok(c.editorial.evidencias.length >= 2);
+    assert.ok(c.editorial.evidencias.every(e => e.pagina.startsWith('https://') && !c.prompt.includes(e.imagen)));
+    assert.equal(c.prompt.indexOf(c.direccion.escena), c.prompt.lastIndexOf(c.direccion.escena));
+  }
+  assert.notDeepEqual(resolver('Café solo').toma?.camara, resolver('Croquetas').toma?.camara);
+  const sala = resolver('Post de la terraza al anochecer');
+  assert.equal(sala.editorial?.ruta, 'FOTO_ESPACIO');
+  assert.equal(sala.toma?.camara.distancia, 'GENERAL');
+  assert.doesNotMatch(sala.prompt, /anatomía|alimento fotografiado|nombre impreso/);
+  const sobria = resolver('Tosta de aguacate. Añade el nombre en un titular pequeño sin efectos.');
+  assert.deepEqual(sobria.textos.map(b => b.texto), ['Tosta de aguacate']);
+  assert.equal(sobria.editorial?.ruta, 'TIPO_SOBRIA');
+  const cartel = resolver('Pulpo a la gallega. Cartel expresivo con papel rasgado');
+  assert.equal(cartel.editorial?.ruta, 'CARTEL_EXPRESIVO');
+  assert.equal(cartel.direccion.gesto, 'EMERGER');
+  assert.match(cartel.prompt, /sombra de contacto/);
+  const corpus = JSON.parse(await readFile(join(RAIZ, 'conocimiento/referencias/corpus-editorial.json'), 'utf8')) as Array<{id: string; sha256: string; lectura: string}>;
+  assert.ok(corpus.length >= 200);
+  for (const clave of ['id', 'sha256', 'lectura'] as const) assert.equal(new Set(corpus.map(f => f[clave])).size, corpus.length);
+  assert.ok([cartel, sobria, sala].every(c => c.editorial?.evidencias.every(ref => corpus.some(f => f.id === ref.id && f.lectura === ref.lectura))));
+});
