@@ -1,0 +1,151 @@
+[
+  {
+    "caso": "cafe",
+    "fotoFuente": "plantillas/fotos/cafe-albor-cafe.webp",
+    "fuenteSha256": "89c049169f6dc75c3a145ba66a4a538f7966ef49f8e022585351a946eb533318",
+    "paqueteSha256": "ea18482028d18cc0b7ca598f0ef1a313c48bd858ae65287f58897fa2e0a196a2",
+    "comandaHuella": "426fc2e63c77e8ec70d3c9d262c4d4a6f0eaef3328caaaed6af0c51fefc0a489",
+    "prompt": "cafe-direccion.txt",
+    "promptSha256": "117e43d93d7e041bb0406aefd37188b97ad5aa332419ac8e0929b3e8061ac8b5",
+    "adjunto": "producto.jpg",
+    "adjuntoSha256": "3c68b8b0ecff888c9d2db33c3b6e3ada6d928d3a3af2d6f1de5f340f9dab9ab0",
+    "generadaSha256": "4374610bb8a5f4f8215e18d9c99cefca3d79625fda2cb29f292e4d229ad0ed7e",
+    "generadaPx": [
+      1122,
+      1402
+    ],
+    "camaraSolicitada": {
+      "anguloGrados": 18,
+      "descripcion": "Coloca el objetivo apenas por encima del plano de apoyo, desde un flanco.",
+      "objetivoMm": 70,
+      "apertura": 8,
+      "giroGrados": 80,
+      "distancia": "PRIMER_PLANO",
+      "vista": "RASANTE",
+      "evidencia": "El borde próximo del recipiente se interpone delante de parte de la superficie del líquido."
+    },
+    "evidencias": [
+      "oak-07",
+      "lumiere-01",
+      "cin-06",
+      "editsoc-10",
+      "ig-14",
+      "editsoc-08"
+    ],
+    "uso": "SOLO_PRUEBA_COMPOSICION",
+    "candidatas": [
+      {
+        "png1080Sha256": "601431ba535c38439876b3556e187d9f0b16fee83a6b759450d637a99bb6b7b0",
+        "previa": "cafe-derecha.webp",
+        "version": 2,
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "Caté del día"
+          ],
+          "coincide": false,
+          "superficieUniforme": false
+        },
+        "tipografia": {
+          "baseSha256": "0cdd6c7ace8537dee8d24ee900e86fdad1f17121570b72bf4e5e9fcecdb8cea5",
+          "estilo": "CONTRASTE",
+          "posicionSolicitada": "SUPERIOR_DERECHA",
+          "posicion": "SUPERIOR_DERECHA",
+          "tinta": "#241912",
+          "contraste": 6.16,
+          "familia": "instrument-serif",
+          "lineas": [
+            "Café del día"
+          ],
+          "caja": {
+            "x": 509,
+            "y": 130,
+            "ancho": 507,
+            "alto": 145
+          },
+          "versionBase": 1
+        }
+      },
+      {
+        "png1080Sha256": "fbda04a660e0a69f397d80e2ac3a09968db9ffdc89878a24c81779ff4f8f037c",
+        "previa": "cafe-archivo.webp",
+        "version": 3,
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "Café",
+            "del día"
+          ],
+          "coincide": true,
+          "superficieUniforme": false
+        },
+        "tipografia": {
+          "baseSha256": "0cdd6c7ace8537dee8d24ee900e86fdad1f17121570b72bf4e5e9fcecdb8cea5",
+          "estilo": "CONDENSADA",
+          "posicionSolicitada": "SUPERIOR_IZQUIERDA",
+          "posicion": "SUPERIOR_IZQUIERDA",
+          "tinta": "#241912",
+          "contraste": 11.25,
+          "familia": "archivo",
+          "lineas": [
+            "Café",
+            "del día"
+          ],
+          "caja": {
+            "x": 64,
+            "y": 122,
+            "ancho": 393,
+            "alto": 272
+          },
+          "versionBase": 2
+        }
+      }
+    ]
+  },
+  {
+    "caso": "gamba",
+    "fotoFuente": "plantillas/fotos/gamba-roja-de-palamos.png",
+    "fuenteSha256": "a5402c8adb9f0f8f920b3ca4f8add5e7e44eea3f5ec405c8883772280c907d43",
+    "paqueteSha256": "6b8031c75917c57084f51a6ad03cbdb312773c7a044517101116ac3c3b62ac68",
+    "comandaHuella": "d936f41ce48d71372d6c27373499334efd7fab157e40ca803e6238c771b37300",
+    "prompt": "gamba-direccion.txt",
+    "promptSha256": "908836609d84834f4d631ec6c984cad80f3a097882ebd65b7647d858a0053a59",
+    "adjunto": "producto.jpg",
+    "adjuntoSha256": "51806e940c278d257e9b139b4df68decb735a7cc345cc97de55c0fb986077fde",
+    "generadaSha256": "73f2fd4ab2eb2706495184ecc0e7c7616319bad9e6760a6d58a6928be97b841a",
+    "generadaPx": [
+      1122,
+      1402
+    ],
+    "camaraSolicitada": {
+      "anguloGrados": 10,
+      "descripcion": "Coloca el objetivo apenas por encima del plano de apoyo, desde un flanco.",
+      "objetivoMm": 70,
+      "apertura": 8,
+      "giroGrados": 130,
+      "distancia": "PRIMER_PLANO",
+      "vista": "RASANTE",
+      "evidencia": "La cabeza más próxima oculta parte de lo que hay detrás. Bajo el caparazón se ven el perfil articulado, las patas que tocan el apoyo y la sombra entre ambos."
+    },
+    "evidencias": [
+      "blog-46",
+      "oak-04",
+      "blog-23",
+      "oak-08"
+    ],
+    "uso": "SOLO_PRUEBA_COMPOSICION",
+    "candidatas": [
+      {
+        "png1080Sha256": "b860b2bf184eb91ad180abf1cf6fa7cc15758744c3bfc8b5bfb643ba1732b63e",
+        "previa": "gamba-candidata.webp",
+        "version": 1,
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        }
+      }
+    ]
+  }
+]

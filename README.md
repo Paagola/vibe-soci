@@ -30,6 +30,8 @@ La ficha explica la elección, enlaza las piezas estudiadas y propone qué compr
 
 Tras confirmar, **Encuadrar la foto original** prepara un recorte 4:5 a partir del archivo aportado. El deslizador ajusta su posición. Puedes revisarlo en el Pase sin un envío al proveedor. Para preparar otra perspectiva, elige la cámara en dirección y utiliza el paquete manual o el envío opcional autorizado. La revisión distingue un recorte del original de una toma nueva. En foto limpia se cotejan los rótulos impresos que ya pertenecían al espacio o al producto. Las piezas de prueba conservan su restricción de uso al exportar.
 
+En **Dirigir una toma nueva** puedes indicar la altura y el giro de cámara, el plano y si conservas la vajilla o trabajas en estudio. La toma de estudio mantiene la preparación y las cantidades documentadas. En **Fotografía con un título**, importa la foto limpia o utiliza el original. El taller dibuja el texto confirmado con fuentes locales. En revisión, **Recomponer el título sobre esta misma foto** permite comparar familia y ubicación sin generar de nuevo. [Café y gamba comparados a tamaño móvil](conocimiento/referencias/ensayo-estudio/README.md)
+
 El estudio recoge 256 composiciones de campañas, portafolios, plantillas, identidades y fotografía. Cada ficha describe una decisión visible y enlaza la pieza concreta. [Método y conclusiones](conocimiento/referencias/estudio-editorial.md) · [Corpus consultable](conocimiento/referencias/corpus-editorial.json)
 
 ### Cartel integrado

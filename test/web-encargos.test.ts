@@ -338,6 +338,51 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal((await archivo(ruta + '/taller/exportacion')).status, 200);
   });
 
+  it('compone sobre la misma foto de café, conserva permisos y exige revisar cada versión', async () => {
+    const proyecto = 'cafe-maquetado', ruta = '/api/encargos/' + proyecto;
+    // Una pared limpia encima del sujeto da lugar a dos anclajes viables sobre la misma foto.
+    const foto = await sharp(Buffer.from('<svg width="360" height="450"><rect width="360" height="450" fill="#dbc6a5"/><ellipse cx="190" cy="340" rx="100" ry="55" fill="#644b34"/></svg>')).png().toBuffer();
+    const subida = await subir('cafe.png', foto);
+    const alta = await pedir('POST', '/api/encargos', { proyecto, local: 'asador-etxebarri', plato: 'Café del día. Titular «Café del día».', arte: 'EDITORIAL', subidaId: subida.id, usoFotoReal: 'SOLO_PRUEBA_COMPOSICION' });
+    assert.equal(alta.status, 201);
+    await esperar(alta.datos.trabajo);
+    const decidir = async (accion: string, datos = {}) => pedir('POST', ruta + '/taller', { revision: (await detalle(proyecto)).revision, accion, ...datos });
+    const comanda = (await detalle(proyecto)).encargo.taller.comanda;
+    assert.equal(comanda.tipografiaLocal.posicion, 'SUPERIOR_DERECHA');
+    assert.equal(comanda.textos[0].texto, 'Café del día');
+    assert.equal(comanda.puesta.vajilla, 'ORIGINAL');
+    assert.match(comanda.prompt, /superior derecha/);
+    assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
+    const zip = await archivo(ruta + '/taller/paquete');
+    assert.ok(zip.bytes.includes(Buffer.from('fotografía base sin texto añadido')));
+    assert.equal((await decidir('USAR_ORIGINAL', { posicion: .2 })).status, 200);
+    const v1 = (await detalle(proyecto)).encargo.taller.candidatas[0];
+    assert.equal(v1.composicion.estilo, 'CONTRASTE');
+    assert.equal(v1.composicion.posicion, 'SUPERIOR_DERECHA');
+    assert.equal(v1.composicion.lineas.join(' '), 'Café del día');
+    assert.ok(v1.composicion.contraste >= 4.5);
+    const cambio = { version: 1, estiloTitulo: 'CONDENSADA', posicionTitulo: 'SUPERIOR_IZQUIERDA' };
+    const nueva = await decidir('RECOMPONER_TITULO', cambio);
+    assert.equal(nueva.status, 200, JSON.stringify(nueva.datos));
+    const v2 = nueva.datos.encargo.taller.candidatas[1];
+    assert.equal(v2.composicion.baseSha256, v1.composicion.baseSha256);
+    assert.notEqual(v2.sha256, v1.sha256);
+    assert.equal(v2.composicion.versionBase, 1);
+    assert.equal(v2.composicion.familia, 'archivo');
+    assert.equal(v2.composicion.posicion, 'SUPERIOR_IZQUIERDA');
+    assert.equal(v2.encuadreOriginal, .2);
+    assert.notEqual((await decidir('RECOMPONER_TITULO', cambio)).status, 200);
+    // Volver a la primera composición crea una revisión vigente del mismo raster.
+    const vuelta = await decidir('RECOMPONER_TITULO', { version: 2, estiloTitulo: 'CONTRASTE', posicionTitulo: 'SUPERIOR_DERECHA' });
+    const v3 = vuelta.datos.encargo.taller.candidatas[2];
+    assert.equal(v3.sha256, v1.sha256);
+    assert.deepEqual(vuelta.datos.encargo.taller.envios, []);
+    const revision = { version: 3, transcripcion: ['Café del día'], producto: true, gesto: true, legibilidad: true };
+    assert.notEqual((await decidir('APROBAR', revision)).status, 200);
+    assert.equal((await decidir('APROBAR', { ...revision, composicionTipografica: true })).status, 200);
+    assert.notEqual((await archivo(ruta + '/taller/exportacion')).status, 200);
+  });
+
   it('quien pide una referencia al abrir el post editorial puede elegir la biblioteca o seguir con su foto', async () => {
     for (const conReferencia of [true, false]) {
       const proyecto = 'editorial-referencia-' + (conReferencia ? 'elegida' : 'omitida');

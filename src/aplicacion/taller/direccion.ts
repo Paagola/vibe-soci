@@ -1,4 +1,5 @@
 import { esFotoEditorial, type RutaEditorial } from '../../dominio/taller.js';
+import { maquetaDeTitulo, puestaDeEstudio, reservaFotografica } from './puesta.js';
 import { seleccionarEditorial } from './seleccionEditorial.js';
 import { dirigirToma, instruccionDeToma, protagonizaPulpo } from './toma.js';
 import { createHash } from 'node:crypto';
@@ -91,29 +92,36 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const gestoDeNota: Gesto | undefined = /papel rasgado|desgarro/iu.test(e.plato) ? 'EMERGER' : /letras repetidas|patrón repetido/iu.test(e.plato) ? 'RITMO' : undefined;
     const gesto = gestoPropuesto ?? edicion?.gesto ?? (cartel ? gestoDeNota ?? (ficha ? gestoPara(e, ficha) : pauta.gesto) : pauta.gesto);
     const recurso = direcciones[gesto];
-    const sujeto = espacio ? 'Retrata el lugar descrito en el encargo dentro de los límites de la fotografía del local. Conserva su arquitectura y sus objetos reconocibles.'
-      : 'Retrata el sujeto documentado en la fotografía del local. Conserva preparación, cantidad, proporciones y vajilla.';
+    const elegida = seleccion ?? e.taller.comanda?.toma?.seleccion;
+    const puesta = puestaDeEstudio(e.plato, espacio, elegida);
+    const tipografiaLocal = editorial.ruta === 'TIPO_SOBRIA' ? maquetaDeTitulo(e.plato, nombrePlato, elegida) : undefined;
+    const sujeto = puesta.ambito === 'SERVICIO' ? 'Retrata la persona y el gesto presentes en la fotografía del local. Conserva su identidad, ropa, herramientas y lugar.'
+      : espacio ? 'Retrata el lugar descrito en el encargo dentro de los límites de la fotografía del local. Conserva su arquitectura y sus objetos reconocibles.'
+      : 'Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.';
     const tipografia = limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
-      : cartel ? recurso.tipografia : 'Una sola voz tipográfica de peso medio, margen generoso y alineación en bandera. El nombre debe leerse a 360 px. Si la foto carece de aire, abre un margen liso por fuera del encuadre.';
-    const materia = cartel ? recurso.materia : 'Mantén la textura y los materiales de la fuente. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
+      : cartel ? recurso.tipografia : 'El taller compondrá el título sobre la fotografía recibida con la familia, el contraste y la posición elegidos en la maqueta. Revisa su relación con el sujeto a 360 px.';
+    const materia = cartel ? recurso.materia : 'Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
     const direccion = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
-    const camara = dirigirToma(sujetoDelEncargo, gesto, seleccion ?? e.taller.comanda?.toma?.seleccion, '', { ...pauta, espacio });
+    const camara = dirigirToma(sujetoDelEncargo, gesto, elegida, '', { ...pauta, espacio });
+    if (puesta.ambito === 'SERVICIO') camara.conservar = 'Conserva identidad y rasgos verificables, personas presentes y contexto documentado. Si una cara queda oculta, conserva esa oclusión.';
+    if (puesta.vajilla === 'ESTUDIO') camara.conservar = 'Mantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar.';
     const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'Respeta el número, la anatomía y el acabado de las piezas que documentan los detalles.' } : camara;
     const textos: ComandaDeArte['textos'] = limpia ? [] : cartel ? bloques(nombrePlato, marca.nombre) : [{ papel: 'TITULAR', texto: nombrePlato, fuente: 'PLATO' }];
     const prompt = [
       limpia ? 'Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.'
-        : cartel ? 'Produce un cartel editorial gastronómico vertical 4:5. Integra una única acción gráfica dominante.' : 'Produce una página editorial gastronómica vertical 4:5 con una fotografía y un único nombre impreso.',
+        : cartel ? 'Produce un cartel editorial gastronómico vertical 4:5. Integra una única acción gráfica dominante.' : 'Produce la fotografía base de una página gastronómica de revista, vertical 4:5 a sangre. La imagen que entregas es exclusivamente fotográfica y carece de texto añadido.',
       'Sujeto descrito por el local, como contexto visual: ' + JSON.stringify(sujetoDelEncargo),
-      direccion.sujeto, direccion.escena, direccion.materia, direccion.tipografia,
-      instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia),
+      direccion.sujeto, direccion.escena, direccion.materia, !tipografiaLocal && direccion.tipografia, puesta.soporte, puesta.apetito,
+      tipografiaLocal && reservaFotografica(tipografiaLocal),
+      instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia || !!tipografiaLocal),
       limpia && 'Entrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.',
-      !limpia && ('Imprime exclusivamente los siguientes bloques literales una sola vez: ' + JSON.stringify(textos.map(b => b.texto))),
-      !limpia && marca.colores.length > 0 && ('Toma la tinta gráfica de la paleta del local si mantiene el contraste: ' + marca.colores.map(c => c.hex).join(', ') + '.'),
-      !limpia && ('Mide el aire de nuevo si cambias la cámara. En la fuente: ' + fotografia.aire),
+      cartel && ('Imprime exclusivamente los siguientes bloques literales una sola vez: ' + JSON.stringify(textos.map(b => b.texto))),
+      cartel && marca.colores.length > 0 && ('Toma la tinta gráfica de la paleta del local si mantiene el contraste: ' + marca.colores.map(c => c.hex).join(', ') + '.'),
+      cartel && ('Mide el aire de nuevo si cambias la cámara. En la fuente: ' + fotografia.aire),
       'La fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.',
       devolucion && ('Corrección de la persona que revisó la versión anterior: ' + JSON.stringify(devolucion)),
     ].filter(Boolean).join('\n\n');
-    const base = { editorial, nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+    const base = { editorial, puesta, ...(tipografiaLocal ? { tipografiaLocal } : {}), nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
     return { ...base, huella: huella(JSON.stringify(base)) };
   }
   const gesto = gestoPropuesto ?? edicion?.gesto ?? gestoPara(e, ficha);

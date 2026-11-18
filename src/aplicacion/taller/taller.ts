@@ -15,6 +15,8 @@ import { guardarEncargo, type DepsPost, type ResultadoAvance } from '../post/ord
 import { coincideTexto, dirigir, huella } from './direccion.js';
 import type { AlProgresar } from '../progreso.js';
 import { guardarMuestras, leerMuestras } from './muestras.js';
+import { componerTitulo } from './componerTitulo.js';
+import { maquetaDeTitulo } from './puesta.js';
 import { paqueteZip } from './paquete.js';
 
 type Candidata = TallerDeArte['candidatas'][number];
@@ -110,7 +112,7 @@ export async function descargarPaquete(deps: DepsPost, e: EncargoPost): Promise<
   const foto = await imagenFuente(deps, e, c);
   const muestras = c.muestras ? await bytesDeMuestras(deps, e, c.muestras.sha256) : undefined;
   const entrada = muestras ? 'Adjunta solo muestras.jpg al generador. Conserva producto.jpg para cotejar el plato completo.' : 'Adjunta producto.jpg al generador.';
-  const palabras = esFotoEditorial(c.editorial?.ruta) ? 'Entrega una fotografía sin texto añadido. Conserva los rótulos documentados en la fuente.' : 'Conserva las palabras de comanda.json.';
+  const palabras = c.tipografiaLocal ? 'La imagen del generador es una fotografía base sin texto añadido. Importa esa foto en el taller: la maqueta local imprime exactamente el título confirmado.' : esFotoEditorial(c.editorial?.ruta) ? 'Entrega una fotografía sin texto añadido. Conserva los rótulos documentados en la fuente.' : 'Conserva las palabras de comanda.json.';
   return paqueteZip([
     { nombre: 'direccion.txt', bytes: Buffer.from(c.prompt) },
     { nombre: 'producto.jpg', bytes: foto },
@@ -142,7 +144,7 @@ async function superficieUniforme(bytes: Buffer): Promise<boolean> {
   return medidas.channels.every(c => c.stdev < 1);
 }
 
-async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte, bytes: Buffer, origen: Candidata['origen'], uso: Candidata['uso'], encuadreOriginal?: number) {
+async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte, bytes: Buffer, origen: Candidata['origen'], uso: Candidata['uso'], encuadreOriginal?: number, recomponer?: { receta: NonNullable<ComandaDeArte['tipografiaLocal']>; version: number }) {
   const taller = e.taller!;
   if (!bytes.length || bytes.length > 32 * 1024 * 1024) throw new ErrorDeUsuario('La candidata no contiene una imagen del tamaño admitido.');
   const imagen = sharp(bytes, { failOn: 'warning', limitInputPixels: 36_000_000 });
@@ -152,17 +154,27 @@ async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte
   if (!['png', 'jpeg', 'webp'].includes(meta.format) || (meta.pages ?? 1) !== 1 || Math.abs(width - 0.8 * height) > 2) {
     throw new ErrorDeUsuario('Importa una imagen fija vertical en proporción 4:5. El taller conserva el encuadre completo.');
   }
-  const png = await imagen.rotate().flatten({ background: '#fff' }).resize(1080, 1350, { fit: 'fill' }).png().toBuffer();
+  const base = recomponer ? bytes : await imagen.rotate().flatten({ background: '#fff' }).resize(1080, 1350, { fit: 'fill' }).png().toBuffer();
+  const receta = recomponer?.receta ?? comanda.tipografiaLocal;
+  const titulo = comanda.textos.find(b => b.papel === 'TITULAR')?.texto;
+  const impresa = receta && titulo ? await componerTitulo(base, huella(base), titulo, receta) : undefined;
+  const png = impresa?.png ?? base;
   const sha256 = huella(png);
-  if (taller.candidatas.some(c => c.sha256 === sha256)) throw new ErrorDeUsuario('Esta misma imagen ya se revisó. Importa la versión corregida.');
+  if (recomponer ? taller.candidatas.at(-1)?.sha256 === sha256 : taller.candidatas.some(c => c.sha256 === sha256)) throw new ErrorDeUsuario('Esta misma imagen ya se revisó. Importa la versión corregida.');
   await mkdir(carpeta(deps, e), { recursive: true });
   const ruta = join(carpeta(deps, e), sha256 + '.png');
+  if (impresa && !recomponer) {
+    const bases = join(carpeta(deps, e), 'bases');
+    await mkdir(bases, { recursive: true });
+    await writeFile(join(bases, impresa.composicion.baseSha256 + '.png'), base);
+  }
   await writeFile(ruta, png);
-  const [ocr, uniforme] = await Promise.all([leerCartel(ruta, comanda.textos.map(b => b.texto)), superficieUniforme(png)]);
+  const [ocr, uniforme] = await Promise.all([leerCartel(ruta, comanda.textos.map(b => b.texto)), superficieUniforme(base)]);
   // El OCR reconoce también la carta, la vajilla impresa o el rótulo del local. Sólo la persona puede cotejar su procedencia.
-  const lectura = { ...ocr, coincide: esFotoEditorial(comanda.editorial?.ruta) ? null : ocr.coincide, superficieUniforme: uniforme };
+  const coincide = impresa && ocr.lineas.length ? coincideTexto(comanda.textos.map(b => b.texto), [ocr.lineas.join(' ')]) : ocr.coincide;
+  const lectura = { ...ocr, coincide: esFotoEditorial(comanda.editorial?.ruta) ? null : coincide, superficieUniforme: uniforme };
   taller.candidatas.push({ version: taller.candidatas.length + 1, sha256, comanda: comanda.huella,
-    origen, ...(encuadreOriginal !== undefined ? { encuadreOriginal } : {}), uso: e.usoFotoReal === 'PUBLICABLE' ? uso : 'SOLO_PRUEBA_COMPOSICION', fecha: deps.ahora(), lectura });
+    origen, ...(impresa ? { composicion: { ...impresa.composicion, ...(recomponer ? { versionBase: recomponer.version } : {}) } } : {}), ...(encuadreOriginal !== undefined ? { encuadreOriginal } : {}), uso: e.usoFotoReal === 'PUBLICABLE' ? uso : 'SOLO_PRUEBA_COMPOSICION', fecha: deps.ahora(), lectura });
   return registrar(deps, e, 'CONFIRMAR_FOTO', 'Cartel raster 4:5 listo para cotejo con el producto y lectura en móvil.');
 }
 
@@ -237,7 +249,7 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     return registrar(deps, e, 'CONFIRMAR_ELEMENTOS', 'Dirección reabierta para edición.');
   }
   if (accion.accion === 'USAR_ORIGINAL') {
-    if (e.paso !== 'GENERAR' || !esFotoEditorial(comanda.editorial?.ruta) || comanda.muestras) throw new ErrorDeUsuario('La foto original sólo se puede encuadrar en una dirección de fotografía pura con fuente completa.');
+    if (e.paso !== 'GENERAR' || !(esFotoEditorial(comanda.editorial?.ruta) || comanda.tipografiaLocal) || comanda.muestras) throw new ErrorDeUsuario('La foto original sólo se puede encuadrar en una dirección fotográfica con fuente completa.');
     const bytes = await fuenteVerificada(deps, e, comanda);
     const { width, height } = (await sharp(bytes).metadata()).autoOrient;
     const unidad = Math.floor(Math.min(width / 4, height / 5));
@@ -270,6 +282,13 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     throw new ErrorDeUsuario('La decisión debe corresponder a la candidata vigente.');
   }
   const { bytes } = await bytesDeCandidata(deps, e, ultimo.version);
+  if (accion.accion === 'RECOMPONER_TITULO') {
+    if (!comanda.tipografiaLocal || !ultimo.composicion) throw new ErrorDeUsuario('Esta versión carece de una fotografía base para recomponer el título.');
+    const base = await readFile(join(carpeta(deps, e), 'bases', ultimo.composicion.baseSha256 + '.png'));
+    if (huella(base) !== ultimo.composicion.baseSha256) throw new ErrorDeUsuario('La fotografía ha cambiado desde que se ajustó la primera maqueta.');
+    const receta = maquetaDeTitulo(e.plato, comanda.nombrePlato ?? e.plato, { opcion: 'AUTO', estiloTitulo: accion.estiloTitulo, posicionTitulo: accion.posicionTitulo });
+    return incorporar(deps, e, comanda, base, ultimo.origen, ultimo.uso, ultimo.encuadreOriginal, { receta, version: ultimo.version });
+  }
   if (accion.accion === 'DEVOLVER') {
     ultimo.devolucion = accion.motivo;
     delete taller.confirmada;
@@ -279,6 +298,8 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   }
   if (ultimo.lectura.superficieUniforme ?? await superficieUniforme(bytes)) throw new ErrorDeUsuario('La imagen aparece uniforme a 360 px. Devuelve esta versión e importa una imagen donde se lean el producto y el texto.');
   const tomaNueva = ultimo.origen !== 'ORIGINAL' && comanda.toma;
+  if (comanda.puesta && ultimo.origen !== 'ORIGINAL' && !accion.apetito) throw new ErrorDeUsuario('Comprueba a tamaño móvil el detalle sensorial descrito en la dirección.');
+  if (ultimo.composicion && !accion.composicionTipografica) throw new ErrorDeUsuario('Comprueba en la imagen la escala y posición del título respecto al sujeto.');
   if (esFotoEditorial(comanda.editorial?.ruta) && !accion.sinTextoAnadido) throw new ErrorDeUsuario('Coteja la foto y confirma que sólo conserva las letras presentes en la fuente.');
   if (tomaNueva && !accion.cambioDeToma) throw new ErrorDeUsuario('Compara el punto de vista del producto con la fuente y confirma el cambio visible de perspectiva.');
   const vistaObservada = accion.vistaObservada ?? (comanda.toma?.alternativa ? undefined : comanda.toma?.camara.vista);
@@ -290,6 +311,6 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   }
   if (!coincideTexto(comanda.textos.map(b => b.texto), accion.transcripcion)) throw new ErrorDeUsuario('La transcripción de los bloques visibles no coincide con el copy confirmado.');
   await imagenFuente(deps, e, comanda);
-  ultimo.revision = { fecha: deps.ahora(), ...(comanda.muestras ? { recuentoObservado: accion.recuentoObservado } : {}), ...(tomaNueva ? { cambioDeToma: true, vistaObservada } : {}), ...(accion.sinTextoAnadido ? { sinTextoAnadido: true } : {}), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
+  ultimo.revision = { fecha: deps.ahora(), ...(accion.apetito ? { apetito: true } : {}), ...(accion.composicionTipografica ? { composicionTipografica: true } : {}), ...(comanda.muestras ? { recuentoObservado: accion.recuentoObservado } : {}), ...(tomaNueva ? { cambioDeToma: true, vistaObservada } : {}), ...(accion.sinTextoAnadido ? { sinTextoAnadido: true } : {}), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
   return registrar(deps, e, 'HECHO', 'Aprobada la versión ' + ultimo.version + ' tras cotejar el producto, el texto, el gesto y la miniatura.');
 }

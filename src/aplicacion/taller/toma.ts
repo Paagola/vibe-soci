@@ -104,7 +104,8 @@ export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeT
   const recomendada = editorial?.vista ?? (/cenital|desde arriba|a plomo/i.test(fotoReferencia) ? 'CENITAL'
     : /rasante|ras de|nivel de la mesa/i.test(fotoReferencia) ? 'RASANTE'
     : /tres cuartos|¾|3\/4/.test(fotoReferencia) ? 'OBLICUA' : vista);
-  const primera = seleccion.opcion === 'AUTO' ? recomendada : seleccion.opcion;
+  const libre = seleccion.posicionLibre;
+  const primera = libre ? (libre.anguloGrados >= 75 ? 'CENITAL' : libre.anguloGrados <= 22 ? 'RASANTE' : 'OBLICUA') : seleccion.opcion === 'AUTO' ? recomendada : seleccion.opcion;
   const posicion = (vista: VistaDeProducto): Posicion => {
     const distancia = seleccion.plano ?? (espacio ? (vista === 'CENITAL' ? 'MEDIO' : 'GENERAL') : gesto === 'MACRO' ? 'MACRO' : vista === 'CENITAL' ? 'MEDIO' : 'PRIMER_PLANO');
     const optica = distancia === 'MACRO' ? { objetivoMm: 100, apertura: 11 } : distancia === 'GENERAL' ? { objetivoMm: 50, apertura: 8 } : {};
@@ -120,6 +121,7 @@ export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeT
   };
   const vistas: VistaDeProducto[] = espacio && primera !== 'CENITAL' ? ['RASANTE', 'OBLICUA'] : ['RASANTE', 'OBLICUA', 'CENITAL'];
   const posibilidades = [primera, ...vistas.filter(v => v !== primera)].map(posicion);
+  if (libre) Object.assign(posibilidades[0]!, libre);
   const origen = seleccion.origen;
   let camara = posibilidades[0]!;
   let cambios: string[] = [];
@@ -127,7 +129,7 @@ export function dirigirToma(plato: string, gesto: Gesto, seleccion: SeleccionDeT
   if (origen) {
     const valida = posibilidades.find(v => esOtraToma(origen, v).otra);
     if (!valida) throw new ErrorDeUsuario('Esa posición repite la cámara de origen. Cambia el plano o el punto de vista.');
-    if (seleccion.opcion !== 'AUTO' && valida.vista !== primera) {
+    if ((libre || seleccion.opcion !== 'AUTO') && valida.vista !== primera) {
       throw new ErrorDeUsuario('Esa posición repite la cámara de origen. Prueba la vista ' + valida.vista.toLocaleLowerCase('es') + ' o la propuesta automática.');
     }
     camara = valida;

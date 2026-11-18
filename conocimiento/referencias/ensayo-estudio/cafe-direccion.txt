@@ -1,0 +1,26 @@
+Produce la fotografía base de una página gastronómica de revista, vertical 4:5 a sangre. La imagen que entregas es exclusivamente fotográfica y carece de texto añadido.
+
+Sujeto descrito por el local, como contexto visual: "Café del día"
+
+Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.
+
+Encuadra el encuentro del líquido y el recipiente. Busca una franja de reflejo en el borde y una zona de fondo más tranquila detrás; respeta espuma, transparencia y nivel observables.
+
+Mantén la textura y los materiales de la fuente. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.
+
+Conserva el recipiente documentado y el número de unidades. Puedes desplazar la cámara y reorganizar el encuadre.
+
+Se distinguen superficie, borde y volumen de cada bebida; espuma o transparencia conservan su textura real y no hay brillos quemados.
+
+Reserva la esquina superior izquierda como parte natural de la fotografía: una superficie de luz continua, con poco detalle, de aproximadamente 55% del ancho por 26% de la altura. Haz que el sujeto nazca del flanco opuesto y conserve su silueta. El taller colocará el título sobre esa área. Devuelve exclusivamente la fotografía limpia, sin letras.
+
+Observa primero la fotografía fuente. Construye una sola toma vertical desde un punto de vista físicamente distinto, dentro de lo documentado.
+La persona describe el origen a 46°, plano MEDIO. Cambios dirigidos: lado (giro de 80°), distancia (MEDIO → PRIMER_PLANO), altura 28°.
+Toma principal. RASANTE · 18° de inclinación, desplazamiento angular 80°, primer plano, 70 mm, f/8. Coloca el objetivo apenas por encima del plano de apoyo, desde un flanco. El borde próximo del recipiente se interpone delante de parte de la superficie del líquido.
+Luz lateral amplia reflejada en un solo costado del recipiente. Una bandera oscura fuera de plano separa el borde próximo del fondo.
+A tamaño móvil se reconocen el nivel, el contorno y el apoyo. Las luces conservan detalle.
+Recipiente, nivel y aspecto reales. Respeta la presencia o ausencia de espuma, vapor, decoración e ingredientes.
+Observación del usuario para conservar en el producto: "Conserva las tres tazas reconocibles de cerámica bicolor y sus tamaños relativos. Mantén el dibujo de cada espuma y la madera del servicio. Fotografía las tres desde otro lado, en un grupo bajo hacia la derecha."
+Comprueba que cambió la proyección de una parte reconocible. Un giro del lienzo, un recorte o una luz distinta mantienen la misma perspectiva y requieren repetir la toma antes de dar por acabada la imagen. Conserva las caras ocultas que no se puedan reconstruir con fidelidad.
+
+La fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.

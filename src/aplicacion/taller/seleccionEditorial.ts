@@ -59,6 +59,12 @@ const pautas = {
     comprobar: 'Se cuentan las unidades y se sigue el contorno de cada una, también donde hay solapes.',
     ejemplos: ['blog-60', 'oak-08'],
   },
+  caparazon: {
+    enfoque: 'El caparazón en relieve', vista: 'RASANTE', gesto: 'LUZ_Y_SOMBRA',
+    escena: 'Gira físicamente la puesta. Fotografía los cuerpos por el flanco, con su eje largo cruzando el cuadro. Separa las cabezas para poder seguir cada abdomen y su abanico final. Una luz amplia, lateral y ligeramente posterior dibuja una banda de brillo cortado en las articulaciones. Deja respirar los extremos.',
+    comprobar: 'El color y los reflejos describen la cocción a tamaño móvil. Cada cabeza conecta con su propio abdomen. La perspectiva cambia qué superficie queda visible.',
+    ejemplos: ['blog-46', 'oak-04', 'blog-23'],
+  },
   textura: {
     enfoque: 'Una huella de preparación', vista: 'OBLICUA', gesto: 'MACRO',
     escena: 'Acércate al rasgo que distingue la preparación: un pliegue, una corteza o un surco de cuchara que ya esté presente. Incluye un borde reconocible del conjunto para relacionar detalle y escala.',
@@ -67,8 +73,8 @@ const pautas = {
   },
   mesa: {
     enfoque: 'El plato en su mesa', vista: 'OBLICUA', gesto: 'LUZ_Y_SOMBRA',
-    escena: 'Usa el borde real del plato como primer término. Sitúa el punto de interés fuera del centro y deja a un lado parte de la mesa tal como aparece. El fondo da distancia y lugar a la comida.',
-    comprobar: 'El alimento se reconoce al primer vistazo. La mesa sitúa su escala y conserva los objetos visibles.',
+    escena: 'Deja que un borde de apoyo entre en primer término para dar escala a la porción. Sitúa el detalle de preparación fuera del centro. Conserva visible suficiente mesa para que la sombra sitúe el producto.',
+    comprobar: 'El alimento se reconoce al primer vistazo. La mesa sitúa su escala y el apoyo conserva una sombra coherente.',
     ejemplos: ['oak-10', 'blog-21', 'lumiere-07'],
   },
 } satisfies Record<string, Pauta>;
@@ -85,9 +91,10 @@ function pautaPara(s: string, espacio: boolean): Pauta {
     if (/\bnoche|anochec|atardecer|penumbra|velas|nocturn/.test(s)) return pautas.noche;
     return /\bbarra\b/.test(s) ? pautas.barra : pautas.umbral;
   }
-  if (/\b(mano|manos|sirviendo|sirve|servir|vierte|vertido|emplatando|emplata|pinzas|camarero|cocinera|cocinero)\b/.test(s)) return pautas.servicio;
+  if (/\b(mano|manos|sirviendo|sirve|servir|vierte|vertido|emplatando|emplata|pinzas|equipo|brigada|chef|camareros?|camareras?|cocineras?|cocineros?)\b/.test(s)) return pautas.servicio;
   if (/\b(hamburguesa|sandwich|bocadillo|milhojas|lasana|tarta|tortilla|tosta|capas|miga|corte)\b/.test(s)) return pautas.capas;
   if (/\b(cafe|coctel|copa|caldo|vino|cerveza|sopa|infusion|vermut|bebida|latte|gazpacho)\b/.test(s)) return pautas.bebida;
+  if (/^(?:las? |los? |unas? |unos? )?(?:gambas?|langostinos?|cigalas?|carabineros?)\b/.test(s) && !/pelad|tartar|ajillo/.test(s)) return pautas.caparazon;
   if (/\b(gambas?|cigalas?|langostinos?|croquetas?|piezas|sushi|maki|ostras?|raviolis?|vieiras?)\b/.test(s)) return pautas.piezas;
   return /\b(detalle|textura|hummus|corteza|pulpo|focaccia|surco|brasa)\b/.test(s) ? pautas.textura : pautas.mesa;
 }
@@ -120,7 +127,7 @@ export function seleccionarEditorial(e: EncargoPost, foto: ComandaDeArte['fotogr
   const fotografica = espacio ? 'FOTO_ESPACIO' : 'FOTO_PLATO';
   const sugerida: RutaEditorial = limpia ? fotografica : expresiva ? 'CARTEL_EXPRESIVO' : informativa || ficha?.familia === 'F4' ? 'TIPO_SOBRIA' : fotografica;
   const ruta = solicitada ?? sugerida;
-  const esEspacial = ruta === 'FOTO_ESPACIO' || (ruta !== 'FOTO_PLATO' && espacio);
+  const esEspacial = ruta === 'FOTO_ESPACIO' || espacio;
   const pauta = pautaPara(s, esEspacial);
   const recursos: Record<RutaEditorial, { motivo: string; ejemplos: string[] }> = {
     FOTO_PLATO: { motivo: 'El encargo se puede contar con el alimento y su contexto de servicio.', ejemplos: [] },

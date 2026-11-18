@@ -13,6 +13,8 @@ const gestos = [['EMERGER', 'Emerger de una superficie'], ['LUZ_Y_SOMBRA', 'Luz 
 const campos = [['sujeto', 'Producto y encuadre', 3, 480], ['escena', 'Acción en la imagen', 5, 600], ['materia', 'Superficie y luz', 5, 480], ['tipografia', 'Dirección tipográfica', 5, 480]];
 
 const vistas = [['AUTO', 'Según el plato y la referencia'], ['RASANTE', 'Rasante · de perfil'], ['OBLICUA', 'Oblicua · tres cuartos'], ['CENITAL', 'Cenital · desde arriba']];
+const estilosTitulo = [['CONTRASTE', 'Instrument Serif · romana y cursiva'], ['CONDENSADA', 'Archivo · condensada de peso alto']];
+const posicionesTitulo = [['SUPERIOR_DERECHA', 'Arriba, al borde derecho'], ['SUPERIOR_IZQUIERDA', 'Arriba a la izquierda'], ['INFERIOR_IZQUIERDA', 'Abajo a la izquierda'], ['PAPEL', 'Al pie en papel']];
 const distancias = [['GENERAL', 'General'], ['MEDIO', 'Medio'], ['PRIMER_PLANO', 'Primer plano'], ['MACRO', 'Macro']];
 const etiquetaDe = (lista, valor) => lista.find(([clave]) => clave === valor)?.[1] ?? valor;
 
@@ -33,7 +35,7 @@ function encuadrarOriginal(ctx) {
   return detalle('Encuadrar la foto original', formulario(ctx, () => ({ accion: 'USAR_ORIGINAL', posicion: posicion.valueAsNumber / 100 }),
     previa, campo('Posición del recorte', posicion), accion('Revisar este encuadre sin generar')));
 }
-function camaraDe(ctx, toma, preferencias = vistas) {
+function camaraDe(ctx, toma, preferencias = vistas, comanda) {
   const seleccion = toma?.seleccion;
   const vista = opciones('opcionToma', preferencias, seleccion?.opcion ?? 'AUTO');
   const plano = opciones('planoToma', [['', 'Propuesto por la dirección'], ...distancias], seleccion?.plano ?? '');
@@ -42,9 +44,21 @@ function camaraDe(ctx, toma, preferencias = vistas) {
   const angulo = h('input', { name: 'anguloOrigen', type: 'number', min: -45, max: 90, step: 'any', value: seleccion?.origen?.anguloGrados ?? '', placeholder: 'Sin medir' });
   const distancia = opciones('distanciaOrigen', [['', 'Sin determinar'], ...distancias], seleccion?.origen?.distancia ?? '');
   const rasgo = h('input', { name: 'rasgoFuente', maxlength: 220, value: seleccion?.rasgoFuente ?? '' });
+  const vajilla = opciones('vajilla', [['ESTUDIO', 'Reemplazar el soporte en estudio'], ['ORIGINAL', 'Conservar la vajilla fotografiada']], comanda?.puesta?.vajilla);
+  const grado = (name, min, max, value) => h('input', { name, type: 'number', min, max, step: 'any', value: value ?? '', placeholder: 'Según la posición elegida' });
+  const altura = grado('alturaNueva', -45, 90, seleccion?.posicionLibre?.anguloGrados);
+  const giro = grado('giroNuevo', 0, 180, seleccion?.posicionLibre?.giroGrados);
+  const estilo = opciones('estiloTitulo', estilosTitulo, comanda?.tipografiaLocal?.estilo);
+  const posicionTitulo = opciones('posicionTitulo', posicionesTitulo, comanda?.tipografiaLocal?.posicion);
+  const puedeCambiarVajilla = comanda?.puesta && (comanda.puesta.ambito === 'PRODUCTO' || !comanda.puesta.ambito && comanda.editorial?.ruta !== 'FOTO_ESPACIO');
   const ajustar = () => {
+    if ((altura.value === '') !== (giro.value === '')) throw new Error('Para fijar una cámara libre, indica tanto la inclinación como el giro.');
+
     if ((angulo.value === '') !== (distancia.value === '')) throw new Error('Para describir la fuente, indica tanto la altura como el tamaño del plano.');
-    return { accion: 'AJUSTAR_TOMA', opcion: vista.value, ...(plano.value ? { plano: plano.value } : {}),
+    return { accion: 'AJUSTAR_TOMA', opcion: vista.value,
+      ...(comanda?.puesta && altura.value !== '' ? { posicionLibre: { anguloGrados: altura.valueAsNumber, giroGrados: giro.valueAsNumber } } : {}),
+      ...(puedeCambiarVajilla ? { vajilla: vajilla.value } : {}),
+      ...(comanda?.tipografiaLocal ? { estiloTitulo: estilo.value, posicionTitulo: posicionTitulo.value } : {}), ...(plano.value ? { plano: plano.value } : {}),
       ...(luz.value.trim() ? { luz: luz.value.trim() } : {}), ...(accionFoto.value.trim() ? { accionProducto: accionFoto.value.trim() } : {}),
       ...(angulo.value === '' ? {} : { origen: { anguloGrados: angulo.valueAsNumber, distancia: distancia.value } }),
       ...(rasgo.value.trim() ? { rasgoFuente: rasgo.value.trim() } : {}) };
@@ -56,7 +70,11 @@ function camaraDe(ctx, toma, preferencias = vistas) {
       toma.alternativa ? h('p', { class: 'muted' }, 'Si la fuente ya tiene esa perspectiva, la dirección pide una sola toma ' + etiquetaDe(preferencias, toma.alternativa.vista).toLowerCase() + '.') : h('p', { class: 'muted' }, 'Cambio respecto al origen indicado · ' + toma.cambios.join(', '))] : null,
     detalle('Ajustar cámara y encuadre', formulario(ctx, ajustar,
       h('img', { src: ctx.urls.subida(480), alt: 'Foto de origen', style: { maxWidth: '100%', maxHeight: '210px' } }),
-      campo('Posición de cámara', vista), campo('Tamaño del plano', plano), detalle('Afinar luz y acción', campo('Luz de la escena', luz), campo('Acción en cuadro', accionFoto)), campo('Altura aproximada de la foto de origen en grados (0 a ras, 90 cenital)', angulo), campo('Tamaño del plano de origen', distancia),
+      campo('Posición de cámara', vista), campo('Tamaño del plano', plano),
+      comanda?.puesta ? detalle('Fijar los ángulos de la toma', campo('Inclinación en grados (0 a ras, 90 cenital)', altura), campo('Giro alrededor del sujeto en grados (0–180)', giro)) : null,
+      puedeCambiarVajilla ? campo('Vajilla y superficie', vajilla) : null,
+      comanda?.tipografiaLocal ? [campo('Familia y peso del título', estilo), campo('Reserva para el título', posicionTitulo)] : null,
+      detalle('Afinar luz y acción', campo('Luz de la escena', luz), campo('Acción en cuadro', accionFoto)), campo('Altura aproximada de la foto de origen en grados (0 a ras, 90 cenital)', angulo), campo('Tamaño del plano de origen', distancia),
       campo('Rasgo de la foto que debe conservarse', rasgo), accion('Preparar esta toma')))];
 }
 
@@ -127,10 +145,12 @@ export function fichaTaller(ctx) {
     const gesto = opciones('gesto', gestos, c.direccion.gesto);
     const confirmoMuestras = h('input', { name: 'confirmoMuestras', type: 'checkbox', required: true });
     const nombre = texto('nombrePlato', 2, 300, c.nombrePlato ?? e.plato);
-    const controles = campos.filter(([k]) => !(limpia && k === 'tipografia')).map(([k, titulo, min, max]) => [k, titulo, texto(k, min, max, c.direccion[k])]);
+    const controles = campos.filter(([k]) => !((limpia || c.tipografiaLocal) && k === 'tipografia')).map(([k, titulo, min, max]) => [k, titulo, texto(k, min, max, c.direccion[k])]);
     return [titulo(ed ? etiquetaDe(rutas, ed.ruta) : 'Dirección del cartel'),
       ed ? [h('h3', {}, ed.enfoque), h('p', {}, ed.motivo)] : null,
-      h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), h('p', {}, c.direccion.materia), h('p', {}, c.direccion.tipografia), ed ? [h('p', {}, ed.comprobar), referenciasEditoriales(ed), explorar(ctx, ed), detalle('Dirigir una toma nueva', camaraDe(ctx, c.toma, posiciones))] : camaraDe(ctx, c.toma),
+      h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), h('p', {}, c.direccion.materia), h('p', {}, c.direccion.tipografia),
+      c.puesta ? [h('p', {}, c.puesta.soporte), h('p', {}, c.puesta.apetito)] : null,
+      c.tipografiaLocal ? h('p', {}, etiquetaDe(estilosTitulo, c.tipografiaLocal.estilo) + ' · ' + etiquetaDe(posicionesTitulo, c.tipografiaLocal.posicion)) : null, ed ? [h('p', {}, ed.comprobar), referenciasEditoriales(ed), explorar(ctx, ed), detalle('Dirigir una toma nueva', camaraDe(ctx, c.toma, posiciones, c))] : camaraDe(ctx, c.toma),
       sala ? null : panelMuestras(ctx, c, formulario),
       ultima?.devolucion ? h('p', { class: 'aviso-linea' }, 'Corrección pendiente · ' + ultima.devolucion) : null, limpia ? null : [h('h3', {}, 'Palabras que aparecerán'), copy],
       ed && ed.ruta !== 'CARTEL_EXPRESIVO' ? null : detalle('Explorar otra acción en la imagen', formulario(ctx, () => ({ accion: 'PROPONER_GESTO', gesto: gesto.value }),
@@ -145,9 +165,9 @@ export function fichaTaller(ctx) {
     const archivo = h('input', { name: 'cartel', type: 'file', required: true, accept: 'image/png,image/jpeg,image/webp' });
     const uso = opciones('usoCandidata', [['SOLO_PRUEBA_COMPOSICION', 'Solo para probar'], ['PUBLICABLE', 'Tengo permiso para publicar la imagen']]);
     const limitado = c.uso !== 'PUBLICABLE';
-    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), limpia && !c.muestras ? encuadrarOriginal(ctx) : null, h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
+    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), (limpia || c.tipografiaLocal) && !c.muestras ? encuadrarOriginal(ctx) : null, h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
       enlace('Descargar paquete de producción', base + 'paquete'), formulario(ctx, async () => ({ accion: 'IMPORTAR', subidaId: (await subirArchivo(archivo.files[0])).id, usoCandidata: limitado ? 'SOLO_PRUEBA_COMPOSICION' : uso.value }),
-        campo('Imagen 4:5', archivo), limitado ? h('p', {}, 'La foto de origen permite pruebas de composición.') : campo('Permiso de la imagen importada', uso), accion('Importar imagen')),
+        campo(c.tipografiaLocal ? 'Fotografía base 4:5 sin título. El taller compondrá el texto.' : 'Imagen 4:5', archivo), limitado ? h('p', {}, 'La foto de origen permite pruebas de composición.') : campo('Permiso de la imagen importada', uso), accion('Importar imagen')),
       tallerApi?.disponibles === 0 ? h('p', {}, 'El estudio ha consumido su cupo de envíos. Puedes importar la imagen del paquete.') : null,
       tallerApi?.disponibles > 0 && !taller.envios.some(v => v.huella === c.huella) ? detalle('Generar con ' + tallerApi.modelo,
         h('p', {}, (c.muestras ? 'Se enviarán la lámina de detalles y la instrucción a OpenAI.' : 'Se enviarán la foto y la instrucción a OpenAI.') + ' Quedan ' + tallerApi.disponibles + ' de ' + tallerApi.limite + ' envíos del estudio. Esta imagen se factura en la cuenta del proveedor.'),
@@ -167,11 +187,20 @@ export function fichaTaller(ctx) {
   vistaLeida.required = observables.length > 1;
   const correccionToma = opciones('siguienteToma', [['', 'Conservar la dirección de cámara'], ...posiciones]);
   const cotejoProducto = sala ? 'He cotejado el espacio, el mobiliario y los rótulos reales con la fuente.' : c.muestras ? 'He seguido el contorno de cada pieza y cotejado su preparación con la foto completa. Cada parte visible pertenece a su pieza, sin duplicaciones ni uniones truncadas.' : 'He cotejado el producto y su preparación con la foto.';
-  const casillas = [['producto', cotejoProducto], ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', original ? 'El encuadre conserva el motivo y sus bordes importantes.' : 'Se ve la acción descrita en la dirección.'], ['legibilidad', limpia ? 'El sujeto y su contexto se reconocen a 360 px.' : 'He leído todas las palabras en la vista a 360 px.'], ...(limpia ? [['sinTextoAnadido', 'He comprobado que sólo aparecen las letras que ya había en la fuente.']] : [])].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
+  const casillas = [['producto', cotejoProducto], ...(c.puesta && !original ? [['apetito', c.puesta.apetito]] : []),
+    ...(ultima.composicion ? [['composicionTipografica', 'La ubicación y el peso del título funcionan a 360 px y dejan leer el sujeto.']] : []), ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', original ? 'El encuadre conserva el motivo y sus bordes importantes.' : 'Se ve la acción descrita en la dirección.'], ['legibilidad', limpia ? 'El sujeto y su contexto se reconocen a 360 px.' : 'He leído todas las palabras en la vista a 360 px.'], ...(limpia ? [['sinTextoAnadido', 'He comprobado que sólo aparecen las letras que ya había en la fuente.']] : [])].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
   const motivo = texto('motivo', 3, 480);
+  const impresa = ultima.composicion;
+  const familia = opciones('familiaRevision', estilosTitulo, impresa?.estilo);
+  const sitio = opciones('posicionRevision', posicionesTitulo, impresa?.posicionSolicitada);
+  const maquetar = impresa ? detalle('Recomponer el título sobre esta misma foto',
+    h('p', {}, etiquetaDe(estilosTitulo, impresa.estilo) + ' · ' + etiquetaDe(posicionesTitulo, impresa.posicion) + ' · contraste ' + impresa.contraste + ' a 1'),
+    impresa.posicion !== impresa.posicionSolicitada ? h('p', {}, 'La zona solicitada tenía demasiado detalle o poco contraste. Se utilizó otra posición para conservar la lectura.') : null,
+    formulario(ctx, () => ({ accion: 'RECOMPONER_TITULO', version: ultima.version, estiloTitulo: familia.value, posicionTitulo: sitio.value }),
+      campo('Familia y peso', familia), campo('Posición', sitio), accion('Ver la nueva composición sin generar'))) : null;
   return [titulo(ed ? 'Revisar el post' : 'Revisar el cartel'), comparacion(ctx, url, ultima.version, original),
     toma ? [h('h3', {}, 'Punto de vista observado'), ...observables.map(p => h('p', {}, h('strong', {}, etiquetaDe(posiciones, p.vista) + '. '), p.evidencia))] : null,
-    h('h3', {}, 'Lectura a tamaño móvil'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), detalle('Dirección y palabras confirmadas', h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
+    h('h3', {}, 'Lectura a tamaño móvil'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), maquetar, detalle('Dirección y palabras confirmadas', h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
     ultima.lectura.superficieUniforme ? h('p', { class: 'aviso-linea' }, 'La imagen aparece uniforme en la vista móvil. Devuelve esta versión e importa la imagen con el producto y sus palabras.') : null,
     ultima.lectura.coincide === false ? h('p', { class: 'aviso-linea' }, 'El lector automático encontró diferencias. Amplía la imagen y coteja también las palabras pequeñas.') : null,
     detalle('Lectura automática de la imagen', h('p', {}, ultima.lectura.lineas.join(' · ') || 'Requiere lectura manual.'), h('p', {}, limpia ? 'Compara cualquier rótulo detectado con la foto del local.' : ultima.lectura.coincide === true ? 'El lector local reconoce los bloques confirmados.' : 'Comprueba las letras en la imagen, especialmente las cursivas.')),

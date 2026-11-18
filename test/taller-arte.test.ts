@@ -3,6 +3,9 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { it } from 'node:test';
+import sharp from 'sharp';
+import { componerTitulo } from '../src/aplicacion/taller/componerTitulo.js';
+import { maquetaDeTitulo } from '../src/aplicacion/taller/puesta.js';
 import { enviosDisponibles, GeneradorCartelOpenAI, reservarEnvio } from '../src/adaptadores/openai/GeneradorCartel.js';
 import { coincideTexto, dirigir } from '../src/aplicacion/taller/direccion.js';
 import { dirigirToma, instruccionDeToma } from '../src/aplicacion/taller/toma.js';
@@ -130,6 +133,18 @@ it('elige la dirección editorial según el asunto y la tarea, con la procedenci
     assert.equal(c.prompt.indexOf(c.direccion.escena), c.prompt.lastIndexOf(c.direccion.escena));
   }
   assert.notDeepEqual(resolver('Café solo').toma?.camara, resolver('Croquetas').toma?.camara);
+  const gamba = resolver('Gamba roja a la brasa con su sal');
+  assert.equal(gamba.puesta?.vajilla, 'ESTUDIO');
+  assert.equal(gamba.toma?.camara.vista, 'RASANTE');
+  assert.match(gamba.puesta!.soporte, /gres mate/);
+  assert.match(gamba.puesta!.apetito, /cabeza.*abdomen.*cola/);
+  assert.equal(resolver('Gamba a la brasa. Conserva la vajilla').puesta?.vajilla, 'ORIGINAL');
+  assert.equal(resolver('Equipo de cocina en el pase').puesta?.ambito, 'SERVICIO');
+  assert.equal(resolver('Terraza del local con el equipo').puesta?.vajilla, 'ORIGINAL');
+  const libre = dirigirToma('Gamba', 'RITMO', { opcion: 'AUTO', posicionLibre: { anguloGrados: 10, giroGrados: 130 }, origen: { anguloGrados: 46, distancia: 'MEDIO' } });
+  assert.equal(libre.camara.anguloGrados, 10);
+  assert.equal(libre.camara.giroGrados, 130);
+  assert.equal(libre.alternativa, undefined);
   const sala = resolver('Post de la terraza al anochecer');
   assert.equal(sala.editorial?.ruta, 'FOTO_ESPACIO');
   assert.equal(sala.toma?.camara.distancia, 'GENERAL');
@@ -145,4 +160,18 @@ it('elige la dirección editorial según el asunto y la tarea, con la procedenci
   assert.ok(corpus.length >= 200);
   for (const clave of ['id', 'sha256', 'lectura'] as const) assert.equal(new Set(corpus.map(f => f[clave])).size, corpus.length);
   assert.ok([cartel, sobria, sala].every(c => c.editorial?.evidencias.every(ref => corpus.some(f => f.id === ref.id && f.lectura === ref.lectura))));
+});
+
+it('imprime con tinta clara en una zona oscura y reserva el papel para una caja con detalle incompatible', async () => {
+  const receta = maquetaDeTitulo('Café del día', 'Café del día');
+  const negra = await sharp({ create: { width: 1080, height: 1350, channels: 3, background: '#222' } }).png().toBuffer();
+  const sobreNegro = await componerTitulo(negra, 'a'.repeat(64), 'Café del día', receta);
+  assert.equal(sobreNegro.composicion.posicion, 'SUPERIOR_DERECHA');
+  assert.equal(sobreNegro.composicion.tinta, '#fff6e7');
+  const rayas = await sharp(Buffer.from('<svg width="1080" height="1350"><defs><pattern id="r" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="white"/><rect width="20" height="40" fill="black"/></pattern></defs><rect width="1080" height="1350" fill="url(#r)"/></svg>')).png().toBuffer();
+  const sobreRayas = await componerTitulo(rayas, 'b'.repeat(64), 'Café del día', receta);
+  assert.equal(sobreRayas.composicion.posicion, 'PAPEL');
+  assert.equal(sobreRayas.composicion.posicionSolicitada, 'SUPERIOR_DERECHA');
+  assert.equal(sobreRayas.composicion.lineas.join(' '), 'Café del día');
+  assert.ok(sobreRayas.composicion.caja.y > 1050);
 });
