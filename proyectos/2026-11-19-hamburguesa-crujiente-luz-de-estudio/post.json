@@ -1,0 +1,370 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-19-hamburguesa-crujiente-luz-de-estudio",
+  "local": "dak-burger",
+  "plato": "Hamburguesa crujiente. Luz de estudio.",
+  "fotoSubida": "proyectos/2026-11-19-hamburguesa-crujiente-luz-de-estudio/foto/subida.png",
+  "usoFotoReal": "SOLO_PRUEBA_COMPOSICION",
+  "estiloDeReferencia": false,
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "taller": {
+    "serie": {
+      "esquema": "taller/serie@1",
+      "huella": "30ba153302ffd2703e29fbb286fb70b4d2769b6d9627c3444d104a197d3c2ae2",
+      "versionBase": 1,
+      "origen": "IMPORTACION",
+      "fotoSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+      "baseSha256": "f8346baac01eba8ad6673823a3092bcf4f5aa28bdbcd606183a2e2431a9df6c9",
+      "comanda": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7",
+      "uso": "SOLO_PRUEBA_COMPOSICION",
+      "mascaraSha256": "7614372e6486b4cc0697b0c63ecda403f2789262718e4c2a1140813a64c71836",
+      "paginas": [
+        {
+          "edicion": {
+            "funcion": "PORTADA",
+            "titulo": "Hamburguesa\ncrujiente",
+            "apoyo": "",
+            "enfoque": {
+              "x": 0.5,
+              "y": 0.5
+            },
+            "zoom": 1
+          },
+          "tratamiento": "PORTADA_DETRAS",
+          "referente": "https://id.pinterest.com/pin/9922061674879618/",
+          "motivo": "El primer plano pasa por delante de un borde del titular. El apoyo mantiene su lectura y el plato queda visible. La silueta cubre el 2% del titular.",
+          "sha256": "114217e938e30c1f33353d65dba2ac9389ac9fdbe2d789c6df24af42470b2109",
+          "intencionSha256": "6964da1f8d91ab0c786e688ff16335cd3100c9316272a696fb475692cb0ec540",
+          "svgSha256": "0c76471575aa4610fd5f8bfac4c1321d47d2dc32d72129b4326045a0f484151e",
+          "medidas": [
+            {
+              "capa": "titulo",
+              "cuerpoMovil": 48.2,
+              "contraste": 15.48,
+              "lineas": [
+                "Hamburguesa",
+                "crujiente"
+              ]
+            }
+          ]
+        },
+        {
+          "edicion": {
+            "funcion": "DETALLE",
+            "titulo": "",
+            "apoyo": "",
+            "enfoque": {
+              "x": 0.5,
+              "y": 0.5
+            },
+            "zoom": 1
+          },
+          "fotoSha256": "3826dcee8f2098e4da3e199a1983ede58d8f86c5716d0ae2d1cd67a759991b65",
+          "tratamiento": "FOTO",
+          "motivo": "La persona dejó la lámina sin texto.",
+          "sha256": "ceb8bcefcc3c5851328db77e1759627e4be6d2f006e83c15426bc01f10d7270c",
+          "intencionSha256": "7ef04f8f40ae9f8f475912a476ddeeb541f5b0ae5a5af1d0f41efbbe57cdc89a",
+          "medidas": []
+        },
+        {
+          "edicion": {
+            "funcion": "CIERRE",
+            "titulo": "",
+            "apoyo": "",
+            "enfoque": {
+              "x": 0.5,
+              "y": 0.5
+            },
+            "zoom": 1
+          },
+          "fotoSha256": "3303cccc51c9ada37d9bc2c3d8ca7af5bd403ee0f2ebaeebb50c8eaf21f9c990",
+          "tratamiento": "FOTO",
+          "motivo": "La persona dejó la lámina sin texto.",
+          "sha256": "00d905157c5d95d72b63cc8885becb441b44e4f2baae7851e8e6eee896cd2336",
+          "intencionSha256": "c10cf184223351fae6c9cde24a61963fd5cc3483d214a74186a80bc853d23836",
+          "medidas": []
+        }
+      ]
+    },
+    "secuencia": {
+      "huella": "28a5e67946777d9ddc221d708cd4896660824cc6b67ce37fa50b0f4e54020c69",
+      "comanda": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7",
+      "version": 1,
+      "baseSha256": "f8346baac01eba8ad6673823a3092bcf4f5aa28bdbcd606183a2e2431a9df6c9",
+      "modelo": "gemini-4-hydrogen",
+      "luz": "ESTUDIO",
+      "direccion": {
+        "continuidad": "Losa rectangular de pizarra negra mate sobre fondo negro profundo, sin papeles ni texto. Conservar pan liso brillante, elementos dorados, tiras crujientes, salsa clara, pieza rebozada gruesa, lechuga verde rizada y pan inferior. Foco único 5000 K lateral trasero, fondo 1,5-2 pasos más oscuro, brillos controlados y color neutro.",
+        "detalle": {
+          "vista": "OBLICUA",
+          "plano": "MACRO",
+          "gesto": "Reposo sobre la pizarra con encuadre cerrado para revelar la textura del rebozado y la caída de la salsa.",
+          "encuadre": "Toma vertical 4:5 en plano macro desde ángulo oblicuo descendente de unos 35 grados sobre el flanco izquierdo. Enfoque selectivo en el borde del pan superior, los trozos dorados, la caída espesa de salsa clara, el relieve crujiente del rebozado y la lechuga rizada, con la pizarra oscura y el fondo desenfocados y subexpuestos."
+        },
+        "cierre": {
+          "vista": "CENITAL",
+          "plano": "MEDIO",
+          "gesto": "Mano anónima entrando desde el margen inferior para sujetar la hamburguesa por los costados sobre la losa.",
+          "encuadre": "Toma vertical 4:5 en plano medio cenital perpendicular sobre la losa de pizarra negra. Muestra la cúpula lisa del pan superior con los bordes sobresalientes del rebozado crujiente y la lechuga verde a los lados, mientras una mano anónima entra desde abajo para sujetarla por los costados bajo la luz lateral trasera de 5000 K."
+        },
+        "portada": {
+          "primerPlano": {
+            "x": 0.16,
+            "y": 0.27,
+            "w": 0.62,
+            "h": 0.16
+          },
+          "zonaTexto": {
+            "x": 0.08,
+            "y": 0.05,
+            "w": 0.84,
+            "h": 0.24
+          }
+        }
+      },
+      "tomas": {
+        "detalle": {
+          "envioReservado": true,
+          "candidata": {
+            "sha256": "3826dcee8f2098e4da3e199a1983ede58d8f86c5716d0ae2d1cd67a759991b65",
+            "modelo": "gemini-3-pro-image",
+            "uso": "SOLO_PRUEBA_COMPOSICION",
+            "aprobada": true
+          }
+        },
+        "cierre": {
+          "envioReservado": true,
+          "candidata": {
+            "sha256": "3303cccc51c9ada37d9bc2c3d8ca7af5bd403ee0f2ebaeebb50c8eaf21f9c990",
+            "modelo": "gemini-3-pro-image",
+            "uso": "SOLO_PRUEBA_COMPOSICION",
+            "aprobada": true
+          }
+        }
+      }
+    },
+    "seleccionEditorial": true,
+    "comanda": {
+      "editorial": {
+        "ruta": "FOTO_PLATO",
+        "motivo": "El encargo se puede contar con el alimento y su contexto de servicio. La fuente tiene luminosidad media intermedia; separa el foco por contraste local.",
+        "enfoque": "El canto cuenta el interior",
+        "comprobar": "El borde, la base y el espesor relativo siguen siendo reconocibles. Se conserva el corte real.",
+        "evidencias": [
+          {
+            "id": "blog-11",
+            "fuente": "Food Photo Studio · diario de producciones",
+            "pagina": "https://www.foodphotostudio.com/blog",
+            "imagen": "https://images.squarespace-cdn.com/content/v1/58989c1b5016e1eeef68cfbe/59f71b47-fbcf-46fb-b5b8-de71b61819dc/20oz+Calzone_Italian+Style+Meat.jpg?format=500w",
+            "lectura": "Dos cortes de masa rellena muestran el interior en un extremo. La pieza entera retrocede hacia arriba y cuenta la forma original."
+          },
+          {
+            "id": "smacai-19",
+            "fuente": "SMACai · proyectos de restauración",
+            "pagina": "https://smacai.net/work.html",
+            "imagen": "https://smacai.net/assets/img/work/luqma-5.jpg?v=d87456ab",
+            "lectura": "La pila se lee de tres cuartos con bordes irregulares. El tenedor entra por arriba y guía la mirada hacia el relleno."
+          },
+          {
+            "id": "smacai-20",
+            "fuente": "SMACai · proyectos de restauración",
+            "pagina": "https://smacai.net/work.html",
+            "imagen": "https://smacai.net/assets/img/work/luqma-6.jpg?v=1d9a1823",
+            "lectura": "La boca incompleta y la mano convergen en la hamburguesa. El acercamiento cuenta la inminencia del bocado sin una llamada a la acción."
+          }
+        ]
+      },
+      "propuestaPortada": {
+        "vista": "OBLICUA",
+        "plano": "PRIMER_PLANO",
+        "gesto": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga.",
+        "encuadre": "Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una base mate neutra, con el fondo oscuro sin relleno cayendo en penumbra para aislar el contorno del pan y la textura del empanado.",
+        "idea": "Retrato de estudio enfocado en el relieve del rebozado crujiente del pollo y la superposición de capas de la hamburguesa: pan dorado superior, bacon con dados de fruta dorada, salsa cremosa escurriendo y lechuga verde en la base, perfilados por un foco lateral trasero.",
+        "luz": "ESTUDIO"
+      },
+      "modoDeLuz": "ESTUDIO",
+      "puesta": {
+        "sugerencia": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga. Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una b",
+        "ambito": "PRODUCTO",
+        "vajilla": "ESTUDIO",
+        "soporte": "Puesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+        "apetito": "Debe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales."
+      },
+      "nombrePlato": "Hamburguesa crujiente",
+      "toma": {
+        "seleccion": {
+          "escenaFuente": {
+            "modo": "EDITORIAL",
+            "puesta": "Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.",
+            "evidencia": "Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas."
+          },
+          "modoDeLuz": "ESTUDIO",
+          "vajilla": "ESTUDIO",
+          "opcion": "AUTO",
+          "plano": "PRIMER_PLANO"
+        },
+        "camara": {
+          "anguloGrados": 42,
+          "descripcion": "Rodea el producto hasta otro flanco y acércate en tres cuartos. El primer término entra en diagonal.",
+          "objetivoMm": 65,
+          "apertura": 8,
+          "giroGrados": 85,
+          "distancia": "PRIMER_PLANO",
+          "vista": "OBLICUA",
+          "evidencia": "Se ven a la vez una cara lateral y la parte superior. Cambia qué borde queda delante y qué rasgos oculta."
+        },
+        "cambios": [],
+        "encuadre": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga. Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una base mate neutra, con el fondo oscuro sin relleno cayendo en penumbra para aislar el contorno del pan y la textura del empanado.",
+        "accion": "Puesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+        "luz": "Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia.",
+        "foco": "El borde, la base y el espesor relativo siguen siendo reconocibles. Se conserva el corte real.",
+        "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas."
+      },
+      "direccion": {
+        "criterioVisual": {
+          "foco": "El canto cuenta el interior",
+          "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.",
+          "comprobar": "Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados."
+        },
+        "gesto": "MACRO",
+        "sujeto": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.",
+        "escena": "Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.",
+        "tipografia": "Fotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.",
+        "materia": "Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto."
+      },
+      "textos": [],
+      "fotografia": {
+        "temperatura": "NEUTRA",
+        "dominantes": [
+          "#2E1F34",
+          "#E5DDC9",
+          "#DEA440",
+          "#A18487",
+          "#824053"
+        ],
+        "acento": "#DEA440",
+        "luz": 0.499,
+        "aire": "Zona de poco detalle de la foto: columnas 1–12/12 y filas 1–3/16."
+      },
+      "fotoSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+      "uso": "SOLO_PRUEBA_COMPOSICION",
+      "prompt": "Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.\n\nSujeto descrito por el local, como contexto visual: \"Hamburguesa crujiente\"\n\nFoco de la pieza: El canto cuenta el interior\n\nRasgo que conservar: Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.\n\nRevisión a 360 px: Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados.\n\nUsa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.\n\nUna hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.\n\nMantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.\n\nFotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.\n\nPuesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.\n\nDebe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales.\n\nIluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Fotografía desde la vista OBLICUA y a distancia PRIMER_PLANO. Conserva visibles los rasgos cotejados.\n\nEntrega únicamente la fotografía, sin letras ni marcas escenificadas.\n\nLa fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.",
+      "huella": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7"
+    },
+    "confirmada": {
+      "huella": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7",
+      "fecha": "2026-11-19T19:38:04.888Z"
+    },
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "f8346baac01eba8ad6673823a3092bcf4f5aa28bdbcd606183a2e2431a9df6c9",
+        "comanda": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7",
+        "fecha": "2026-11-19T19:38:35.854Z",
+        "origen": "IMPORTACION",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        },
+        "revision": {
+          "escenaCotejada": true,
+          "apetito": true,
+          "sinTextoAnadido": true,
+          "transcripcion": [],
+          "producto": true,
+          "legibilidad": true,
+          "gesto": true,
+          "fecha": "2026-11-19T19:38:36.392Z"
+        }
+      }
+    ],
+    "envios": []
+  },
+  "paso": "HECHO",
+  "intentos": [],
+  "tomas": [],
+  "fotosExtra": [],
+  "historial": [
+    {
+      "fecha": "2026-11-19T19:37:08.748Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-19T19:37:19.695Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Dirección, fotografía fuente y copy preparados para revisión."
+    },
+    {
+      "fecha": "2026-11-19T19:37:46.942Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Cámara, encuadre y evidencia de la nueva toma preparados."
+    },
+    {
+      "fecha": "2026-11-19T19:37:47.014Z",
+      "paso": "GENERAR",
+      "nota": "Dirección, sujeto y texto confirmados. Paquete de producción disponible."
+    },
+    {
+      "fecha": "2026-11-19T19:38:04.516Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Dirección reabierta para edición."
+    },
+    {
+      "fecha": "2026-11-19T19:38:04.810Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Cámara, encuadre y evidencia de la nueva toma preparados."
+    },
+    {
+      "fecha": "2026-11-19T19:38:04.888Z",
+      "paso": "GENERAR",
+      "nota": "Dirección, sujeto y texto confirmados. Paquete de producción disponible."
+    },
+    {
+      "fecha": "2026-11-19T19:38:35.854Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Cartel raster 4:5 listo para cotejo con el producto y lectura en móvil."
+    },
+    {
+      "fecha": "2026-11-19T19:38:36.392Z",
+      "paso": "HECHO",
+      "nota": "Aprobada la versión 1 tras cotejar el producto, el texto, el gesto y la miniatura."
+    },
+    {
+      "fecha": "2026-11-19T19:39:25.951Z",
+      "paso": "HECHO",
+      "nota": "Dirección de la secuencia preparada con gemini-4-hydrogen."
+    },
+    {
+      "fecha": "2026-11-19T19:39:50.776Z",
+      "paso": "HECHO",
+      "nota": "Toma de detalle disponible para revisión."
+    },
+    {
+      "fecha": "2026-11-19T19:40:08.729Z",
+      "paso": "HECHO",
+      "nota": "Toma de serie aprobada."
+    },
+    {
+      "fecha": "2026-11-19T19:40:25.500Z",
+      "paso": "HECHO",
+      "nota": "Toma de cierre disponible para revisión."
+    },
+    {
+      "fecha": "2026-11-19T19:40:46.580Z",
+      "paso": "HECHO",
+      "nota": "Toma de serie aprobada."
+    },
+    {
+      "fecha": "2026-11-19T19:40:49.893Z",
+      "paso": "HECHO",
+      "nota": "Serie maquetada sobre la candidata revisada. Texto literal confirmado. Versión 30ba153302ffd2703e29fbb286fb70b4d2769b6d9627c3444d104a197d3c2ae2"
+    }
+  ],
+  "creadoEn": "2026-11-19T19:37:08.748Z"
+}

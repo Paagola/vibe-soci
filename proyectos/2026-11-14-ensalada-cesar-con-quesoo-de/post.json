@@ -1,0 +1,111 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-14-ensalada-cesar-con-quesoo-de",
+  "local": "torre-de-vega",
+  "plato": "Ensalada cesar con quesoo de cabra piñones y bacon",
+  "fotoSubida": "proyectos/2026-11-14-ensalada-cesar-con-quesoo-de/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-20",
+  "titularCreativo": false,
+  "simulado": false,
+  "paso": "HECHO",
+  "activoReal": "2026-11-14-ensalada-cesar-con-quesoo-de-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of goat cheese salad with crispy bacon, pine nuts and raisins from a Spanish tavern. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a thick round disc of goat cheese with a caramelized bruleed top and dark glaze, mixed salad greens, sautéed bacon strips, toasted pine nuts, pumpkin seeds, raisins, and a wide-rimmed white ceramic bowl. Exactly one thick goat cheese round centered on top of the greens. Nothing else added. New composition by a professional food photographer: close three-quarter angle at 25 degrees, camera positioned lower to showcase the height and caramelized crust of the goat cheese, 85 mm lens at f/3.2, the white bowl sits in the lower 60% of the frame angled slightly, leaving deep clean negative space across the upper third for typography. Directional hard side-light carving sharp highlights on the glaze and bacon, casting the surrounding background into near black, deep black environment with crisp white plate, golden caramelization, and vivid green accents. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-14T15:46:57.938Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-14-ensalada-cesar-con-quesoo-de-foto-1",
+      "final": "PASA",
+      "motivos": [],
+      "costeUsd": 0
+    }
+  ],
+  "fotoElegida": "2026-11-14-ensalada-cesar-con-quesoo-de-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-14T15:43:50.682Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-14T15:44:11.427Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-20."
+    },
+    {
+      "fecha": "2026-11-14T15:44:11.457Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-20» (F4). (0 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-14T15:44:11.463Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-14-ensalada-cesar-con-quesoo-de-real (1280 × 1707 px)."
+    },
+    {
+      "fecha": "2026-11-14T15:44:53.852Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-14T15:46:57.937Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos."
+    },
+    {
+      "fecha": "2026-11-14T15:48:22.609Z",
+      "paso": "GENERAR",
+      "nota": "Foto del intento 1 importada de /Users/padre/Documents/victor/pantallas/estudio-contenido/datos/subidas/d31573bc-5c63-4ea3-95c3-dfa1cbb4a01a.jpg."
+    },
+    {
+      "fecha": "2026-11-14T15:48:51.965Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: PASA."
+    },
+    {
+      "fecha": "2026-11-14T15:48:58.756Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada."
+    },
+    {
+      "fecha": "2026-11-14T15:48:59.228Z",
+      "paso": "MASCARA",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 820 × 722 px."
+    },
+    {
+      "fecha": "2026-11-14T15:51:21.995Z",
+      "paso": "INTENCION",
+      "nota": "Intención escrita por Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash) (2 propuesta(s)), con avisos: SEPARACION: «txt-titular» y «anot-queso» se montan 9 px: deja al menos 14 px para que respiren. | FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..."
+    },
+    {
+      "fecha": "2026-11-14T15:51:23.572Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/2026-11-14-ensalada-cesar-con-quesoo-de/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-14T15:51:23.572Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/2026-11-14-ensalada-cesar-con-quesoo-de/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    },
+    {
+      "fecha": "2026-11-15T01:45:11.862Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v2 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T01:45:13.052Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v2 (3:4 y 4:5)."
+    }
+  ],
+  "creadoEn": "2026-11-14T15:43:50.682Z"
+}

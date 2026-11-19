@@ -48,7 +48,7 @@ const existe = (ruta: string) => stat(ruta).then(() => true, () => false);
 export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: OpcionesAbrirEncargo): Promise<EncargoPost> {
   const datos = validar(DatosNuevoEncargo, entrada, 'No se puede abrir el encargo.');
 
-  if ((datos.arte === 'INTEGRADO' || datos.arte === 'EDITORIAL') && datos.formato !== 'post') throw new ErrorDeUsuario('El arte integrado se realiza como post individual.');
+  if (datos.arte === 'INTEGRADO' && datos.formato !== 'post') throw new ErrorDeUsuario('El cartel integrado se realiza como post individual.');
 
   // Todo se comprueba antes de escribir nada.
   await deps.referencias.locales.obtener(datos.local);

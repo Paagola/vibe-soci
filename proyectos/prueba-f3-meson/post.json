@@ -1,0 +1,111 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "prueba-f3-meson",
+  "local": "meson-de-cervantes",
+  "plato": "salmón glaseado sobre arroz negro",
+  "fotoSubida": "datos/locales/meson-de-cervantes/activos/meson-real-salmon/original.png",
+  "usoFotoReal": "SOLO_PRUEBA_COMPOSICION",
+  "referencia": "ref-post-22",
+  "titularCreativo": true,
+  "simulado": false,
+  "paso": "HECHO",
+  "activoReal": "prueba-f3-meson-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of glazed salmon fillet over black rice at a modern Mediterranean bistro. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the thick golden-glazed salmon fillet, glossy black rice with spinach, one orange purée quenelle topped with black flakes, fresh microgreens, bright green herb oil drizzle, in the exact off-white shallow ceramic bowl. Exactly one salmon fillet, one quenelle of orange purée, and one ceramic bowl. Nothing else added. New composition by a professional food photographer: a low-angle 20-degree close-up shot, bowl anchored in the lower two-thirds of the vertical frame, 85 mm lens at f/2.8, creating ample dark clear space in the upper third for magazine-style typography, with the salmon glaze and texture sharply focused. Hard direct side flash creating a crisp shadow cast behind the dish against a dark green velvet backdrop, with vivid specular highlights on the glaze and oil, deep moody emerald green and black background with high-contrast orange salmon glaze accents. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-14T01:44:35.705Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "prueba-f3-meson-foto-1",
+      "final": "PASA",
+      "motivos": [],
+      "costeUsd": 0
+    }
+  ],
+  "fotoElegida": "prueba-f3-meson-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-14T01:42:09.562Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-14T01:42:09.577Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-22» (F4). (3 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-14T01:42:09.580Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo prueba-f3-meson-real (1920 × 1279 px)."
+    },
+    {
+      "fecha": "2026-11-14T01:44:27.011Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-14T01:44:35.704Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos."
+    },
+    {
+      "fecha": "2026-11-14T01:44:40.263Z",
+      "paso": "GENERAR",
+      "nota": "Foto del intento 1 importada de datos/locales/meson-de-cervantes/activos/meson-post-f4-foto-mcp-3/original.png."
+    },
+    {
+      "fecha": "2026-11-14T01:46:35.041Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: PASA."
+    },
+    {
+      "fecha": "2026-11-14T01:46:41.115Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada."
+    },
+    {
+      "fecha": "2026-11-14T01:46:41.984Z",
+      "paso": "MASCARA",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1434 × 1465 px."
+    },
+    {
+      "fecha": "2026-11-14T01:49:00.821Z",
+      "paso": "INTENCION",
+      "nota": "Falta la intención de diseño: el director de diseño no ha podido responder (Gemini: no contesta a tiempo). Hay un borrador."
+    },
+    {
+      "fecha": "2026-11-14T02:14:14.325Z",
+      "paso": "INTENCION",
+      "nota": "Falta la intención de diseño: la propuesta del director no pasa las comprobaciones: SOLAPE: «txt-subtitulo» tapa el sujeto: el 3 % de sus letras queda encima (máximo 3 %).. Hay un borrador."
+    },
+    {
+      "fecha": "2026-11-14T13:15:44.322Z",
+      "paso": "INTENCION",
+      "nota": "Falta la intención de diseño: ya hay una propuesta del director que no pasó (proyectos/prueba-f3-meson/intenciones/post.propuesta.json); bórrala para pedir otra. Hay un borrador."
+    },
+    {
+      "fecha": "2026-11-14T13:18:24.647Z",
+      "paso": "INTENCION",
+      "nota": "Intención escrita por Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash) (2 propuesta(s)), con avisos: JERARQUIA: No hay salto de escala: el texto más grande es solo 2.9 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12. | FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..."
+    },
+    {
+      "fecha": "2026-11-14T13:18:27.445Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/prueba-f3-meson/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-14T13:18:27.445Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/prueba-f3-meson/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    }
+  ],
+  "creadoEn": "2026-11-14T01:42:09.562Z"
+}

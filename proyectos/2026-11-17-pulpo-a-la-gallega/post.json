@@ -1,0 +1,206 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-17-pulpo-a-la-gallega",
+  "local": "torre-de-vega",
+  "plato": "Pulpo a la gallega",
+  "fotoSubida": "proyectos/2026-11-17-pulpo-a-la-gallega/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-16",
+  "estiloDeReferencia": false,
+  "estetica": "COLOR_POP",
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "HECHO",
+  "activoReal": "2026-11-17-pulpo-a-la-gallega-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of Pulpo a la gallega with prawns on sliced potatoes at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: curled grilled octopus tentacle scored into slices; peeled cooked prawns with tails; sliced boiled potatoes; green herb oil drizzle; red paprika dusting; round grooved wooden board; slate-blue underplate. Exactly 1 × curled grilled octopus tentacle scored into slices; 3 × peeled cooked prawns with tails. Nothing else added. New composition by a professional food photographer: Slightly high three-quarter view rotated 60 degrees, framing the entire wooden board and underplate uncut in the lower-right, 50 mm lens at f/5.6, Whole round plate complete and uncut in the lower-right, leaving clean empty space at top-left for the vertical headline and cut-out layout, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright, even studio light from the upper left with a crisp short contact shadow and sharp highlights on the glossy oil and octopus skin, Clean neutral background with saturated warm terracotta-red paprika and golden-orange prawns as the strong punchy accents. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Photographic realism, no text. Editorial direction: Leave quiet negative space at the bottom for separate typesetting. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-17T22:39:50.107Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.160792
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-17-pulpo-a-la-gallega-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de tentáculo de pulpo: 2 en vez de 1",
+        "recuento de gambas peladas con cola: 6 en vez de 3",
+        "recuento de tabla de madera redonda: 2 en vez de 1",
+        "recuento de plato base gris azulado: 2 en vez de 1",
+        "anatomía: Pulpo y gamba central cortados horizontalmente por un artefacto de duplicación en la parte superior",
+        "añadido: Repetición parcial de todo el plato (vajilla y comida cortadas) en el tercio superior de la imagen",
+        "anatomía por teselas de tentáculo de pulpo: 3 cuerpos (se esperan 1)",
+        "no deja el aire pedido (arriba-izquierda): libre el 33 % de esa zona, hace falta el 60 %",
+        "no es otra toma: mismo punto de vista que la foto subida (La imagen 2 conserva exactamente la misma perspectiva, orientación y colocación de cada elemento del plato que la imagen 1, solo que con un encuadre más abierto sobre fondo blanco y un duplicado en la parte superior.)"
+      ],
+      "costeUsd": 0.1413
+    },
+    {
+      "n": 2,
+      "activo": "2026-11-17-pulpo-a-la-gallega-foto-2",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de gambas peladas con cola: 4 en vez de 3",
+        "no es otra toma: mismo punto de vista que la foto subida (La segunda imagen mantiene prácticamente el mismo ángulo picado, orientación y exacta colocación de los ingredientes que la primera, diferenciándose principalmente en un encuadre más abierto, la iluminación y el fondo.)"
+      ],
+      "costeUsd": 0.141744
+    },
+    {
+      "n": 3,
+      "activo": "2026-11-17-pulpo-a-la-gallega-foto-3",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de gambas peladas con cola: 4 en vez de 3",
+        "no es otra toma: mismo punto de vista que la foto subida (Ambas fotos están tomadas desde el mismo lado y una altura muy similar con exactamente la misma disposición del plato, diferenciándose principalmente en que la imagen 2 tiene un encuadre mucho más abierto y una iluminación y fondo distintos.)"
+      ],
+      "costeUsd": 0.14292
+    }
+  ],
+  "tomas": [],
+  "tratamiento": [
+    "PAPEL",
+    "TRAMA"
+  ],
+  "fotosExtra": [],
+  "fotoElegida": "2026-11-17-pulpo-a-la-gallega-foto-3",
+  "historial": [
+    {
+      "fecha": "2026-11-17T22:34:15.173Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-17T22:35:29.321Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-16."
+    },
+    {
+      "fecha": "2026-11-17T22:35:29.338Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-16» (F3). (1 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-17T22:35:29.338Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia (F3): Color pop con recorte."
+    },
+    {
+      "fecha": "2026-11-17T22:35:43.766Z",
+      "paso": "REFERENCIA",
+      "nota": "Tratamiento de ref-post-16 (lo mira Gemini (gemini-4-hydrogen); la ficha a mano no se toca): PAPEL, TRAMA."
+    },
+    {
+      "fecha": "2026-11-17T22:35:43.772Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-17-pulpo-a-la-gallega-real (1280 × 2293 px)."
+    },
+    {
+      "fecha": "2026-11-17T22:36:43.381Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-17T22:36:43.395Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 7 elemento(s))."
+    },
+    {
+      "fecha": "2026-11-17T22:37:25.472Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-17T22:37:25.476Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v3."
+    },
+    {
+      "fecha": "2026-11-17T22:37:49.322Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-17-pulpo-a-la-gallega-foto-1 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1413 USD."
+    },
+    {
+      "fecha": "2026-11-17T22:37:50.592Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1623 × 2216 px."
+    },
+    {
+      "fecha": "2026-11-17T22:38:31.695Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (recuento de tentáculo de pulpo: 2 en vez de 1; recuento de gambas peladas con cola: 6 en vez de 3; recuento de tabla de madera redonda: 2 en vez de 1; recuento de plato base gris azulado: 2 en vez de 1; anatomía: Pulpo y gamba central cortados horizontalmente por un artefacto de duplicación en la parte superior; añadido: Repetición parcial de todo el plato (vajilla y comida cortadas) en el tercio superior de la imagen; anatomía por teselas de tentáculo de pulpo: 3 cuerpos (se esperan 1); no deja el aire pedido (arriba-izquierda): libre el 33 % de esa zona, hace falta el 60 %; no es otra toma: mismo punto de vista que la foto subida (La imagen 2 conserva exactamente la misma perspectiva, orientación y colocación de cada elemento del plato que la imagen 1, solo que con un encuadre más abierto sobre fondo blanco y un duplicado en la parte superior.))."
+    },
+    {
+      "fecha": "2026-11-17T22:38:55.714Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-17-pulpo-a-la-gallega-foto-2 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1417 USD."
+    },
+    {
+      "fecha": "2026-11-17T22:38:56.143Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1637 × 1723 px."
+    },
+    {
+      "fecha": "2026-11-17T22:39:30.938Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 2: DESCARTA (recuento de gambas peladas con cola: 4 en vez de 3; no es otra toma: mismo punto de vista que la foto subida (La segunda imagen mantiene prácticamente el mismo ángulo picado, orientación y exacta colocación de los ingredientes que la primera, diferenciándose principalmente en un encuadre más abierto, la iluminación y el fondo.))."
+    },
+    {
+      "fecha": "2026-11-17T22:39:50.107Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-17T22:39:50.135Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v5."
+    },
+    {
+      "fecha": "2026-11-17T22:40:14.399Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-17-pulpo-a-la-gallega-foto-3 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1429 USD."
+    },
+    {
+      "fecha": "2026-11-17T22:40:14.833Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1657 × 1688 px."
+    },
+    {
+      "fecha": "2026-11-17T22:40:53.166Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 3: DESCARTA (recuento de gambas peladas con cola: 4 en vez de 3; no es otra toma: mismo punto de vista que la foto subida (Ambas fotos están tomadas desde el mismo lado y una altura muy similar con exactamente la misma disposición del plato, diferenciándose principalmente en que la imagen 2 tiene un encuadre mucho más abierto y una iluminación y fondo distintos.))."
+    },
+    {
+      "fecha": "2026-11-17T22:59:10.399Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 3 confirmada por el usuario (comprobación automática: DESCARTA)."
+    },
+    {
+      "fecha": "2026-11-17T22:59:10.408Z",
+      "paso": "INTENCION",
+      "nota": "Composición lista: 1 página(s), brief v6."
+    },
+    {
+      "fecha": "2026-11-17T22:59:17.757Z",
+      "paso": "COMPONER",
+      "nota": "Crítica del render (gemini-4-hydrogen): APROBADA."
+    },
+    {
+      "fecha": "2026-11-17T22:59:17.757Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/2026-11-17-pulpo-a-la-gallega/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-17T22:59:17.757Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/2026-11-17-pulpo-a-la-gallega/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    }
+  ],
+  "creadoEn": "2026-11-17T22:34:15.173Z"
+}

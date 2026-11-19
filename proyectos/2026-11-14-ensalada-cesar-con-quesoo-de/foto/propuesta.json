@@ -1,0 +1,76 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T15:44:53.852Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 55,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Picado alto del plato sostenido con una mano, mostrando suelo exterior y mesas de fondo.",
+      "luz": "Luz diurna difusa y plana, sin sombras definidas ni brillos destacados.",
+      "elementos": [
+        {
+          "nombre": "rulo de queso de cabra",
+          "estado": "tostado y caramelizado en superficie con reducción oscura",
+          "recuento": 1
+        },
+        {
+          "nombre": "hojas de lechuga variadas (escarola, hoja de roble, achicoria)",
+          "estado": "frescas aliñadas",
+          "recuento": null
+        },
+        {
+          "nombre": "tiras de bacon",
+          "estado": "salteadas y doradas",
+          "recuento": null
+        },
+        {
+          "nombre": "frutos secos y semillas (piñones, pipas de calabaza, pasas)",
+          "estado": "tostados y repartidos sobre la base",
+          "recuento": null
+        },
+        {
+          "nombre": "plato hondo de ala ancha",
+          "estado": "porcelana blanca limpia",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Plato sostenido en el aire con mano visible al borde",
+        "Fondo sucio con suelo adoquinado y mesa de servicio",
+        "Iluminación plana y ángulo poco favorecedor"
+      ],
+      "utilizable": true,
+      "motivo": "Los ingredientes, proporciones y vajilla se identifican con total claridad."
+    },
+    "huecos": {
+      "plato": "goat cheese salad with crispy bacon, pine nuts and raisins",
+      "origen": "from a Spanish tavern",
+      "elementos": "a thick round disc of goat cheese with a caramelized bruleed top and dark glaze, mixed salad greens, sautéed bacon strips, toasted pine nuts, pumpkin seeds, raisins, and a wide-rimmed white ceramic bowl",
+      "recuento": "Exactly one thick goat cheese round centered on top of the greens.",
+      "camara": {
+        "anguloGrados": 25,
+        "descripcion": "close three-quarter angle at 25 degrees, camera positioned lower to showcase the height and caramelized crust of the goat cheese",
+        "objetivoMm": 85,
+        "apertura": 3.2,
+        "giroGrados": 45,
+        "distancia": "PRIMER_PLANO"
+      },
+      "ideaGrafica": "the white bowl sits in the lower 60% of the frame angled slightly, leaving deep clean negative space across the upper third for typography",
+      "luz": "directional hard side-light carving sharp highlights on the glaze and bacon, casting the surrounding background into near black",
+      "colorDominante": "deep black environment with crisp white plate, golden caramelization, and vivid green accents"
+    },
+    "decisiones": [
+      "Descenso de cámara de 55° a 25° para dar volumen al rulo de queso y evitar la toma cenital casera (Principios §1 y §2b).",
+      "Esquema low-key con luz dura lateral para recrear la atmósfera nocturna y editorial de ref-post-20.",
+      "Ubicación del plato en el tercio inferior para reservar el 40% superior en negro para la futura tipografía didona (Principios §3 y ref-post-20).",
+      "Exclusión de manos y jarritas para cumplir la regla estricta de no inventar elementos ausentes en la imagen original."
+    ]
+  },
+  "prompt": "@image1 is a real photo of goat cheese salad with crispy bacon, pine nuts and raisins from a Spanish tavern. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a thick round disc of goat cheese with a caramelized bruleed top and dark glaze, mixed salad greens, sautéed bacon strips, toasted pine nuts, pumpkin seeds, raisins, and a wide-rimmed white ceramic bowl. Exactly one thick goat cheese round centered on top of the greens. Nothing else added. New composition by a professional food photographer: close three-quarter angle at 25 degrees, camera positioned lower to showcase the height and caramelized crust of the goat cheese, 85 mm lens at f/3.2, the white bowl sits in the lower 60% of the frame angled slightly, leaving deep clean negative space across the upper third for typography. Directional hard side-light carving sharp highlights on the glaze and bacon, casting the surrounding background into near black, deep black environment with crisp white plate, golden caramelization, and vivid green accents. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ]
+}

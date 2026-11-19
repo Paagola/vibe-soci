@@ -1,0 +1,139 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-18-pulpo-2",
+  "local": "asador-etxebarri",
+  "plato": "pulpo",
+  "fotoSubida": "proyectos/2026-11-18-pulpo-2/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-14",
+  "estiloDeReferencia": false,
+  "estetica": "EDITORIAL_OSCURO",
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "HECHO",
+  "activoReal": "2026-11-18-pulpo-2-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of grilled octopus tentacle with prawns and potatoes at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: one curled grilled octopus tentacle with scored slices and charred edges; peeled cooked prawns with tails dusted in paprika; sliced boiled potatoes coated in oil and paprika; chopped green parsley and oil dressing; red paprika dusting; grooved round wooden serving board; matte grey charger plate underneath. Exactly 1 × one curled grilled octopus tentacle with scored slices and charred edges; 3 × peeled cooked prawns with tails dusted in paprika; 1 × grooved round wooden serving board; 1 × matte grey charger plate underneath. Nothing else added. New composition by a professional food photographer: low three-quarter view at 25 degrees, rotated 60 degrees around the dish, full grooved wooden board placed in the lower third, 85 mm lens at f/2.8, The wooden board sits compact in the lower 45% of the frame, leaving a deep, uncluttered near-black upper half for a centered typographic lockup; focus on the front charred octopus suckers and glistening prawns while the back rim falls softly out of focus. One hard side light from the left raking across the octopus suckers, grooved wood and oil sheen, casting deep crisp shadows into a near-black background, Deep near-black shadows with warm wood browns and the reddish-orange paprika and prawns as the only strong colour. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-19T00:27:01.371Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.160916,
+    "intentosPrevios": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-18-pulpo-2-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "recuento de langostinos pelados: 4 en vez de 3",
+        "no es otra toma: los elementos están colocados igual que en la foto subida (La imagen 2 baja mucho el ángulo de cámara hasta una perspectiva en ¾ y se aleja para mostrar el plato completo, aunque mantiene el mismo lado y exactamente la misma colocación de los ingredientes.)"
+      ],
+      "costeUsd": 0.141184
+    }
+  ],
+  "tomas": [],
+  "tratamiento": [
+    "FOTOGRAFICO_LIMPIO"
+  ],
+  "fotosExtra": [],
+  "fotoElegida": "2026-11-18-pulpo-2-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-17T23:00:40.352Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-19T00:25:43.308Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-14."
+    },
+    {
+      "fecha": "2026-11-19T00:25:43.340Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-14» (F4). (2 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-19T00:25:43.341Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia (F4): Editorial oscuro."
+    },
+    {
+      "fecha": "2026-11-19T00:25:53.978Z",
+      "paso": "REFERENCIA",
+      "nota": "Tratamiento de ref-post-14 (lo mira Gemini (gemini-4-hydrogen); la ficha a mano no se toca): FOTOGRAFICO_LIMPIO."
+    },
+    {
+      "fecha": "2026-11-19T00:25:53.998Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-18-pulpo-2-real (1280 × 2293 px)."
+    },
+    {
+      "fecha": "2026-11-19T00:26:41.588Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-19T00:26:41.596Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 7 elemento(s))."
+    },
+    {
+      "fecha": "2026-11-19T00:27:01.371Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-19T00:27:01.376Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v3."
+    },
+    {
+      "fecha": "2026-11-19T00:27:27.433Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-18-pulpo-2-foto-1 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1412 USD."
+    },
+    {
+      "fecha": "2026-11-19T00:27:28.010Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 1579 px."
+    },
+    {
+      "fecha": "2026-11-19T00:28:05.307Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (recuento de langostinos pelados: 4 en vez de 3; no es otra toma: los elementos están colocados igual que en la foto subida (La imagen 2 baja mucho el ángulo de cámara hasta una perspectiva en ¾ y se aleja para mostrar el plato completo, aunque mantiene el mismo lado y exactamente la misma colocación de los ingredientes.))."
+    },
+    {
+      "fecha": "2026-11-19T00:28:40.513Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada por el usuario (comprobación automática: DESCARTA)."
+    },
+    {
+      "fecha": "2026-11-19T00:28:40.652Z",
+      "paso": "INTENCION",
+      "nota": "Composición lista: 1 página(s), brief v3."
+    },
+    {
+      "fecha": "2026-11-19T00:29:09.144Z",
+      "paso": "COMPONER",
+      "nota": "Crítica del render (gemini-4-hydrogen): APROBADA."
+    },
+    {
+      "fecha": "2026-11-19T00:29:09.145Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/2026-11-18-pulpo-2/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-19T00:29:09.145Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/2026-11-18-pulpo-2/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    }
+  ],
+  "creadoEn": "2026-11-17T23:00:40.352Z"
+}

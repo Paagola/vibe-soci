@@ -8,6 +8,8 @@ import type { EncargoPost } from '../../dominio/post.js';
 import type { Marca } from '../../dominio/modelos.js';
 import type { FichaReferencia } from '../../dominio/referencia.js';
 import type { ComandaDeArte, DireccionDeArte, Gesto, SeleccionDeToma } from '../../dominio/taller.js';
+import type { DireccionPortada } from '../../dominio/secuenciaTaller.js';
+import { luzSolicitada, pautaDeLuz } from '../../dominio/luzFotografica.js';
 
 export const huella = (bytes: string | Buffer) => createHash('sha256').update(bytes).digest('hex');
 
@@ -75,7 +77,7 @@ function pautaDeMuestras(m: Muestras, fotoLimpia = false): string {
   ].join('\n');
 }
 
-export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma, muestras?: Muestras, ruta?: RutaEditorial): ComandaDeArte {
+export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotografia: ComandaDeArte['fotografia'], oficio: string, ficha?: FichaReferencia, edicion?: DireccionDeArte, extracto?: string, gestoPropuesto?: Gesto, seleccion?: SeleccionDeToma, muestras?: Muestras, ruta?: RutaEditorial, propuestaPortada?: DireccionPortada): ComandaDeArte {
   // La nota puede incluir indicaciones privadas tras el nombre del plato.
   const sujetoDelEncargo = e.plato.split(/\n|[.!?](?:\s|$)/u)[0]!.trim() || e.plato;
   const citado = e.taller?.seleccionEditorial ? /(?:titular|nombre|texto|imprimir|anunciar)\s*[:=]?\s*[«“"]([^»”"\n]{2,160})[»”"]/iu.exec(e.plato)?.[1] : undefined;
@@ -95,11 +97,15 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const elegida = seleccion ?? e.taller.comanda?.toma?.seleccion;
     const puesta = puestaDeEstudio(e.plato, espacio, elegida);
     const tipografiaLocal = editorial.ruta === 'TIPO_SOBRIA' ? maquetaDeTitulo(e.plato, nombrePlato, elegida) : undefined;
-    if (puesta.ambito === 'PRODUCTO') puesta.sugerencia = sugerencia;
+    if (puesta.ambito === 'PRODUCTO') puesta.sugerencia = propuestaPortada ? (propuestaPortada.gesto + ' ' + propuestaPortada.encuadre).slice(0, 320) : sugerencia;
     const escenaFuente = elegida?.escenaFuente;
     if (escenaFuente?.modo === 'EDITORIAL' && puesta.ambito !== 'PRODUCTO') throw new ErrorDeUsuario('Elige la fotografía del alimento para escenificar una mesa o un gesto. El retrato y el espacio conservan su contexto.');
     if (escenaFuente && muestras) throw new ErrorDeUsuario('La dirección desde una foto completa y la colocación de piezas contadas requieren entradas distintas.');
     const documental = escenaFuente?.modo === 'DOCUMENTAL';
+    const propuesta = documental || muestras ? undefined : propuestaPortada;
+    const modoDeLuz = documental || puesta.ambito !== 'PRODUCTO' ? undefined :
+      elegida?.modoDeLuz ?? luzSolicitada(e.plato) ?? (e.estetica === 'EDITORIAL_OSCURO' ? 'ESTUDIO' : propuestaPortada?.luz ?? 'NATURAL');
+    if (propuesta && !escenaFuente) editorial.enfoque = propuesta.idea.slice(0, 320);
     const identidad = escenaFuente?.modo === 'EDITORIAL' ? 'Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: ' + escenaFuente.evidencia
       : 'Conserva el alimento, lugar, personas, rótulos y objetos de la foto, incluidas sus posiciones y oclusiones. Trabaja con el encuadre y la luz disponibles.';
     const escenaDirigida = escenaFuente?.modo === 'EDITORIAL'
@@ -115,7 +121,8 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const tipografia = limpia && escenaFuente?.modo === 'EDITORIAL' ? 'Fotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.' : limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
       : cartel ? recurso.tipografia : 'El taller compondrá el título sobre la fotografía recibida con la familia, el contraste y la posición elegidos en la maqueta. Revisa su relación con el sujeto a 360 px.';
     const materia = cartel ? recurso.materia : 'Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
-    const direccionBase = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
+    const escenaSugerida = propuesta ? (propuesta.gesto + ' ' + propuesta.encuadre).slice(0, 600) : pauta.escena;
+    const direccionBase = edicion ?? { gesto, sujeto, escena: (escenaSugerida + (cartel ? ' ' + recurso.escena : '')).slice(0, 600), materia, tipografia };
     const criterioVisual = direccionBase.criterioVisual ?? {
       foco: editorial.enfoque, conservar: elegida?.rasgoFuente ?? sujeto,
       comprobar: editorial.comprobar,
@@ -123,7 +130,12 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const direccion = escenaFuente ? { ...direccionBase, sujeto: identidad, escena: escenaFuente.modo === 'EDITORIAL' ? escenaFuente.puesta : identidad, tipografia, criterioVisual: {
       foco: editorial.enfoque, conservar: identidad, comprobar: documental ? 'Coteja lugar, personas, rótulos, disposición y alimento con la fuente a 360 px.' : 'Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados.',
     } } : { ...direccionBase, criterioVisual };
-    const camara = dirigirToma(sujetoDelEncargo, gesto, documental && elegida ? { ...elegida, opcion: 'AUTO', posicionLibre: undefined, origen: undefined } : elegida, '', { ...pauta, espacio });
+    const seleccionCamara = documental && elegida ? { ...elegida, opcion: 'AUTO' as const, posicionLibre: undefined, origen: undefined }
+      : propuesta ? { opcion: 'AUTO' as const, ...elegida, plano: elegida?.plano ?? propuesta.plano } : elegida;
+    const camara = dirigirToma(sujetoDelEncargo, gesto, seleccionCamara, '', {
+      ...pauta, espacio, vista: propuesta?.vista ?? pauta.vista, escena: escenaSugerida,
+    });
+    if (modoDeLuz) camara.luz = [elegida?.luz, pautaDeLuz(modoDeLuz)].filter(Boolean).join(' ');
     if (puesta.ambito === 'SERVICIO') camara.conservar = 'Conserva identidad y rasgos verificables, personas presentes y contexto documentado. Si una cara queda oculta, conserva esa oclusión.';
     if (puesta.vajilla === 'ESTUDIO') camara.conservar = 'Mantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar.';
     if (escenaFuente) {
@@ -152,7 +164,9 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
       'La fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.',
       devolucion && ('Corrección de la persona que revisó la versión anterior: ' + JSON.stringify(devolucion)),
     ].filter(Boolean).join('\n\n');
-    const base = { editorial, puesta, ...(tipografiaLocal ? { tipografiaLocal } : {}), nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+    const base = { editorial, puesta, ...(tipografiaLocal ? { tipografiaLocal } : {}),
+      ...(propuestaPortada ? { propuestaPortada } : {}), ...(modoDeLuz ? { modoDeLuz } : {}),
+      nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
     return { ...base, huella: huella(JSON.stringify(base)) };
   }
   const gesto = gestoPropuesto ?? edicion?.gesto ?? gestoPara(e, ficha);
@@ -166,6 +180,8 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     materia: propuesta.materia + (gesto === 'EMERGER' ? ' ' + paleta : ' Conserva como referencia cromática de la toma ' + (fotografia.acento ?? fotografia.dominantes[0]) + '.'),
   };
   const camara = dirigirToma(nombrePlato, gesto, seleccion ?? e.taller?.comanda?.toma?.seleccion, ficha?.foto);
+  const modoDeLuz = camara.seleccion.modoDeLuz ?? luzSolicitada(e.plato) ?? (e.estetica === 'EDITORIAL_OSCURO' ? 'ESTUDIO' : 'NATURAL');
+  camara.luz = [camara.seleccion.luz, pautaDeLuz(modoDeLuz)].filter(Boolean).join(' ');
   const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'El recuento y la colocación proceden de la observación de la persona. Usa los detalles para reconocer el producto, sus colores y su acabado.' } : camara;
   const textos = bloques(nombrePlato, marca.nombre);
   const prompt = [
@@ -179,7 +195,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     ...(devolucion ? ['Observación de la última candidata; corrige el defecto conservando el copy autorizado:', JSON.stringify(devolucion)] : []),
     oficio.trim(),
   ].join('\n\n');
-  const base = { nombrePlato, direccion, toma, textos, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
+  const base = { nombrePlato, direccion, toma, textos, modoDeLuz, ...(muestras ? { muestras } : {}), ...(referencia ? { referencia } : {}), fotografia, fotoSha256, uso: e.usoFotoReal, prompt };
   return { ...base, huella: huella(JSON.stringify(base)) };
 }
 

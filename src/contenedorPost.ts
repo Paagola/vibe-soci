@@ -32,6 +32,9 @@ import { AnalistaReferenciasGemini } from './adaptadores/gemini/AnalistaReferenc
 import { DirectorDisenoGemini } from './adaptadores/gemini/DirectorDisenoGemini.js';
 import { AnalistaReferenciasSimulado } from './adaptadores/simulado/AnalistaSimulado.js';
 import { DirectorFotoGemini } from './adaptadores/gemini/DirectorFotoGemini.js';
+import { directorCarruselGemini, directorPortadaGemini, directorSecuenciaGemini } from './adaptadores/gemini/DirectorSecuenciaGemini.js';
+import { postsRecientes } from './aplicacion/post/historialFotografico.js';
+import { direccionSecuenciaSimulada, directorCarruselSimulado } from './dominio/secuenciaTaller.js';
 import { GeneradorFotoGemini, gastoAcumuladoGemini } from './adaptadores/gemini/GeneradorFotoGemini.js';
 import { registradorDeUso } from './adaptadores/gemini/registroUso.js';
 import { RevisorVisualGemini } from './adaptadores/gemini/RevisorVisualGemini.js';
@@ -140,10 +143,14 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   };
   const medidor = new MedidorDeFotoSharp();
   const describirFuente = await descriptorDeFuentes(join(RAIZ, 'recursos', 'tipografias', 'catalogo.json'));
+  const historialFotografico: NonNullable<DepsDisenoPost['postsRecientes']> = e => postsRecientes(comunes, e);
   if (simular) {
     const deps: DepsDisenoPost = {
       ...comunes,
+      postsRecientes: historialFotografico,
       ...(editorial ? { criticoEditorial: new CriticoEditorialSimulado() } : {}),
+      directorSecuencia: async () => ({ direccion: direccionSecuenciaSimulada, modelo: 'Simulador de secuencia' }),
+      directorCarrusel: directorCarruselSimulado,
       director: new DirectorFotoSimulado(),
       generador: new GeneradorFotoSimulado(),
       revisor: new RevisorVisualSimulado(),
@@ -163,7 +170,7 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   const modelos = [editorial ? (config.geminiModeloProductor ?? 'gemini-4-hydrogen') : config.geminiModelo, ...(respaldo ? [respaldo] : [])];
   let orquestador: Orquestador | undefined;
   const cliente = (clave: string, motivo: string, quien: QuienLlama) => new ClienteGemini(clave, modelos, {
-    avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion),
+    avisar, alUsar: registradorDeUso(config.carpetaDatos, motivo, config.geminiFacturacion, opciones.proyecto),
     ...(editorial || opciones.alIntervenir ? { antesDeEnviar: async (modelo: string) => {
       if (editorial) {
         if (!orquestador) throw new Error('Falta el control de presupuesto.');
@@ -174,7 +181,18 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
   });
   const deps: DepsDisenoPost = {
     ...comunes,
+    postsRecientes: historialFotografico,
     ...(editorial && geminiApiKey ? { criticoEditorial: new CriticoEditorialGemini(cliente(geminiApiKey, 'critica-editorial', 'critico')) } : {}),
+    ...(geminiApiKey ? { directorCarrusel: directorCarruselGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
+      avisar, alUsar: registradorDeUso(config.carpetaDatos, 'director-carrusel', config.geminiFacturacion, opciones.proyecto),
+      antesDeEnviar: async modelo => opciones.alIntervenir?.('director-diseno', modelo),
+    })), directorSecuencia: directorSecuenciaGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
+      avisar, alUsar: registradorDeUso(config.carpetaDatos, 'director-secuencia', config.geminiFacturacion, opciones.proyecto),
+      antesDeEnviar: async modelo => opciones.alIntervenir?.('director-foto', modelo),
+    })), directorPortada: directorPortadaGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
+      avisar, alUsar: registradorDeUso(config.carpetaDatos, 'director-portada', config.geminiFacturacion, opciones.proyecto),
+      antesDeEnviar: async modelo => opciones.alIntervenir?.('director-foto', modelo),
+    })) } : {}),
     director: geminiApiKey ? new DirectorFotoGemini(cliente(geminiApiKey, 'director-foto', 'director-foto'), await new BibliotecaFicheros(config.carpetaBiblioteca).leerGuia(), modelos) : directorSinClave,
     generador: new GeneradorFotoGemini({
       apiKey: geminiApiKey,

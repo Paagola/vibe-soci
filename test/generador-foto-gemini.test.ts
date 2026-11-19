@@ -58,6 +58,10 @@ describe('Generador de foto con Gemini de pago', () => {
     const lineas = (await readFile(join(carpeta, 'gasto', 'gemini.jsonl'), 'utf8')).trim().split('\n').map((l) => JSON.parse(l));
     assert.deepEqual(lineas.map((l) => l.estado), ['ENVIADO', 'COMPLETADO']);
     assert.equal(lineas[1].tier, 'PAGO');
+    assert.deepEqual(lineas[1].uso, {
+      promptTokenCount: 2060, candidatesTokenCount: 1120, thoughtsTokenCount: 300,
+      candidatesTokensDetails: [{ modality: 'IMAGE', tokenCount: 1120 }],
+    });
   });
 
   it('se niega ANTES de enviar si el gasto apuntado más el estimado pasa del tope', async () => {

@@ -1,0 +1,136 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "critico": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-17T22:13:38.071Z",
+  "propuesta": {
+    "idea": "El ritual del corte de jamón a cuchillo preside la escena con tipografía monumental integrada por detrás de la pieza.",
+    "foco": "PLATO",
+    "seToma": [
+      "Contraste entre bloque display ultra bold y script gestual de acento",
+      "Composición con texto sangrado que cruza con el elemento gastronómico",
+      "Tratamiento de tinta impresa con textura sobre fondo oscuro"
+    ],
+    "noSeCopia": [
+      "Textos en inglés de la hamburguesería",
+      "Franja de papel negro rasgado",
+      "Paleta de color y plato de hamburguesa"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "JAMÓN",
+        "fuente": "PLATO",
+        "cita": "Jamón con pata cortado a cuchillo en el jamonero, servido en platos blancos en espiral"
+      },
+      {
+        "clave": "acento",
+        "texto": "A cuchillo",
+        "fuente": "PLATO",
+        "cita": "Jamón con pata cortado a cuchillo en el jamonero, servido en platos blancos en espiral"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "DESDE 1980",
+        "fuente": "MARCA",
+        "cita": "Restaurante desde 1980, gran variedad de carnes a la brasa, comida en familia y platos de toda la vida."
+      },
+      {
+        "clave": "firma",
+        "texto": "TORRE DE VEGA",
+        "fuente": "MARCA",
+        "cita": "Torre de Vega"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "TITULAR_CON_ACENTO",
+      "titular": "titular",
+      "acento": "acento",
+      "apoyo": "apoyo",
+      "firma": "firma",
+      "lado": "arriba",
+      "sangra": true,
+      "tinta": "impresa"
+    }
+  },
+  "problemas": [
+    "No hay aire encima del plato (1 fila(s); encima 1 y debajo 1): el titular quedaría tapado. Usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano), ANOTACIONES, o el otro lado si tiene aire.",
+    "Para el acento hacen falta cuatro filas de aire encima del plato y hay 1: usa TITULAR_DETRAS (o el otro lado, si tiene más aire)."
+  ],
+  "avisos": [],
+  "critica": null,
+  "enRevision": false,
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [
+        "El mecanismo ANOTACIONES no es de la estética «Rústico de fuego»: usa TITULAR_DETRAS, TITULAR_CON_ACENTO.",
+        "No hay sitio libre cerca del plato para la anotación «Platos en espiral»: quítala o acórtala.",
+        "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Usa un mecanismo que cruce (TITULAR_DETRAS, TITULAR_CON_ACENTO) o anotaciones que señalen el plato. (obligatorio cuando la foto tiene plato recortable y aire; si es a propósito, explícalo en «excepcion»)"
+      ],
+      "avisos": [],
+      "arreglos": [
+        "Velo abajo: ninguna tinta de la marca contrasta lo bastante con la foto donde va «firma»."
+      ]
+    },
+    {
+      "origen": "director",
+      "problemas": [
+        "No hay aire encima del plato (1 fila(s); encima 1 y debajo 1): el titular quedaría tapado. Usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano), ANOTACIONES, o el otro lado si tiene aire.",
+        "Para el acento hacen falta cuatro filas de aire encima del plato y hay 1: usa TITULAR_DETRAS (o el otro lado, si tiene más aire)."
+      ],
+      "avisos": [],
+      "arreglos": [
+        "Velo abajo: ninguna tinta de la marca contrasta lo bastante con la foto donde va «firma»."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        1,
+        12
+      ],
+      "fila": [
+        3,
+        14
+      ],
+      "area": 0.281
+    },
+    "libres": [
+      {
+        "col": [
+          6,
+          12
+        ],
+        "fila": [
+          1,
+          5
+        ],
+        "luz": 0.052
+      },
+      {
+        "col": [
+          7,
+          12
+        ],
+        "fila": [
+          15,
+          16
+        ],
+        "luz": 0.206
+      },
+      {
+        "col": [
+          1,
+          5
+        ],
+        "fila": [
+          1,
+          2
+        ],
+        "luz": 0.045
+      }
+    ],
+    "vivo": "#D18568"
+  }
+}

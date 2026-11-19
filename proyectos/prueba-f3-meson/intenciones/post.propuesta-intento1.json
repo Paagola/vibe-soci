@@ -1,0 +1,191 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T02:14:14.324Z",
+  "propuesta": {
+    "idea": "Estructura editorial de portada nocturna aprovechando el aire oscuro superior para un gran titular didona y una anotación manuscrita que señala el salmón.",
+    "foco": "TITULAR",
+    "seToma": [
+      "Jerarquía tipográfica editorial con titular didona condensado y alto contraste",
+      "Composición en bloque tipográfico limpio sobre la zona superior oscura"
+    ],
+    "noSeCopia": [
+      "Textos y marca de la referencia",
+      "Fotografía de coctelería y copa coupé",
+      "Disposición de columnas en las esquinas inferiores"
+    ],
+    "textos": [
+      {
+        "clave": "titular-principal",
+        "texto": "SALMÓN GLASEADO",
+        "fuente": "PLATO",
+        "cita": "salmón glaseado sobre arroz negro"
+      },
+      {
+        "clave": "subtitulo-arroz",
+        "texto": "SOBRE ARROZ NEGRO",
+        "fuente": "PLATO",
+        "cita": "salmón glaseado sobre arroz negro"
+      },
+      {
+        "clave": "nombre-marca",
+        "texto": "EL MESÓN DE CERVANTES",
+        "fuente": "MARCA",
+        "cita": "El Mesón de Cervantes"
+      },
+      {
+        "clave": "nota-salmon",
+        "texto": "Lomo de salmón glaseado",
+        "fuente": "ELEMENTO",
+        "cita": "Lomo de salmón glaseado dorado y brillante"
+      }
+    ],
+    "capas": [
+      {
+        "tipo": "foto",
+        "encuadre": "sangre"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-marca",
+        "texto": "nombre-marca",
+        "voz": "versalita",
+        "caja": {
+          "col": [
+            2,
+            11
+          ],
+          "fila": [
+            2,
+            2
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 36,
+        "alinear": "centro",
+        "vertical": "centro",
+        "color": "@crema",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-titular",
+        "texto": "titular-principal",
+        "voz": "titular",
+        "caja": {
+          "col": [
+            1,
+            12
+          ],
+          "fila": [
+            3,
+            4
+          ]
+        },
+        "ajuste": "ancho",
+        "alinear": "centro",
+        "vertical": "centro",
+        "color": "@magenta",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-subtitulo",
+        "texto": "subtitulo-arroz",
+        "voz": "versalita",
+        "caja": {
+          "col": [
+            2,
+            11
+          ],
+          "fila": [
+            5,
+            5
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 38,
+        "alinear": "centro",
+        "vertical": "centro",
+        "color": "@crema",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "anotacion",
+        "id": "ano-salmon",
+        "texto": "nota-salmon",
+        "voz": "anotacion",
+        "caja": {
+          "col": [
+            1,
+            3
+          ],
+          "fila": [
+            6,
+            7
+          ]
+        },
+        "tamano": 44,
+        "apunta": {
+          "x": 0.51,
+          "y": 0.52
+        },
+        "color": "@magenta"
+      }
+    ]
+  },
+  "problemas": [
+    "SOLAPE: «txt-subtitulo» tapa el sujeto: el 3 % de sus letras queda encima (máximo 3 %)."
+  ],
+  "avisos": [
+    "JERARQUIA: No hay salto de escala: el texto más grande es solo 2.9 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+    "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+  ],
+  "intentos": [
+    {
+      "problemas": [
+        "SOLAPE: «info-ubicacion» tapa el sujeto: el 30 % de sus letras queda encima (máximo 3 %).",
+        "CONTRASTE: «info-ubicacion» tiene un contraste de 1.05:1 con su fondo en su peor zona; se pide al menos 3:1."
+      ],
+      "avisos": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 3.1 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Prueba «detras», «delante» o «contorno» en el titular, o una anotación que señale algo del plato; si es a propósito, dilo en la idea."
+      ]
+    },
+    {
+      "problemas": [
+        "SOLAPE: «txt-subtitulo» tapa el sujeto: el 3 % de sus letras queda encima (máximo 3 %)."
+      ],
+      "avisos": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 2.9 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        2,
+        11
+      ],
+      "fila": [
+        6,
+        15
+      ],
+      "area": 0.382
+    },
+    "libres": [
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          1,
+          5
+        ],
+        "luz": 0.023
+      }
+    ]
+  }
+}

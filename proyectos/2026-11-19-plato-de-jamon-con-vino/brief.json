@@ -1,0 +1,220 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-19-plato-de-jamon-con-vino",
+  "local": "asador-etxebarri",
+  "version": 3,
+  "creadoEn": "2026-11-19T20:43:47.204Z",
+  "actualizadoEn": "2026-11-19T20:44:34.365Z",
+  "modo": "PRODUCTOR",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "Plato de jamón con vino y solomillo",
+    "inventario": {
+      "estado": "CONFIRMADO",
+      "elementos": [
+        {
+          "nombre": "Copa de vino tinto",
+          "estado": "cristal transparente medio lleno de vino tinto oscuro con reflejos",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Mano",
+          "estado": "sujetando el tallo de la copa",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Carne asada laminada con hueso",
+          "estado": "sellada con costra oscura, centro rojo rosado y grasa dorada",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Cuenco con sal en escamas",
+          "estado": "cuenco negro mate pequeño lleno de escamas blancas de sal",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Pizarra negra",
+          "estado": "rectangular, superficie oscura texturizada",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Lonchas de jamón curado",
+          "estado": "finas, rojo intenso con veta de grasa brillante",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Plato blanco redondo",
+          "estado": "porcelana blanca lisa",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "NOTA"
+        }
+      ],
+      "huella": "ad0d1f0acfd8d0cd868f8e6fdee8a65caf183db9bc70748e114ad1e778372097",
+      "confirmadoEn": "2026-11-19T20:44:34.365Z",
+      "confirmadoPor": {
+        "via": "web"
+      }
+    },
+    "datosPorConfirmar": [
+      "«Mano»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Carne asada laminada con hueso»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Cuenco con sal en escamas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Pizarra negra»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Carne asada laminada con hueso»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "carrusel",
+  "estetica": "EDITORIAL_OSCURO",
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "cartel tipográfico con el nombre confirmado y la fotografía elegida"
+    },
+    {
+      "n": 2,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Copa de vino tinto",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 3,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Mano",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 4,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Carne asada laminada con hueso",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 5,
+      "papel": "cierre",
+      "foto": "FOTO_ELEGIDA",
+      "para": "cierre con los datos seleccionados del brief"
+    }
+  ],
+  "editorial": {
+    "modelo": "gemini-4-hydrogen",
+    "briefVersion": 1,
+    "fotoSha256": "cc4490495e869465247ee7a78162774dd0d4261e953b715da8d140c349577070",
+    "inventarioSha256": "ad0d1f0acfd8d0cd868f8e6fdee8a65caf183db9bc70748e114ad1e778372097",
+    "oficioSha256": "42dffc23b125473a149b1ba6816f0a31b6ce517f099ef0aa590ab69688845132",
+    "plan": {
+      "esquema": "post/editorial@1",
+      "hiloVisual": "LUZ",
+      "diapositivas": [
+        {
+          "n": 1,
+          "papel": "portada",
+          "tratamiento": "CARTEL",
+          "estructura": "CABECERA",
+          "superficie": "FOTOGRAFIA",
+          "texto": {
+            "fuente": "MARCA"
+          },
+          "firma": false
+        },
+        {
+          "n": 2,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.54,
+            "y": 0.45
+          },
+          "zoom": 2,
+          "elemento": 0
+        },
+        {
+          "n": 3,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.66,
+            "y": 0.58
+          },
+          "zoom": 2.2,
+          "elemento": 1
+        },
+        {
+          "n": 4,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.27,
+            "y": 0.43
+          },
+          "zoom": 2.3,
+          "elemento": 2
+        },
+        {
+          "n": 5,
+          "papel": "cierre",
+          "tratamiento": "CIERRE_TEXTO",
+          "textos": [
+            {
+              "fuente": "MARCA"
+            },
+            {
+              "fuente": "CIUDAD"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

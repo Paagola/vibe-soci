@@ -1,0 +1,129 @@
+{
+  "director": "Gemini (gemini-4-hydrogen)",
+  "fecha": "2026-11-19T00:26:41.587Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 82,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Toma cenital casi vertical con el plato de madera ocupando todo el ancho y recortado en los laterales.",
+      "luz": "Luz ambiente plana de día, sin contraste ni sombras marcadas.",
+      "elementos": [
+        {
+          "nombre": "tentáculo de pulpo a la brasa",
+          "estado": "enroscado, con cortes transversales, bordes tostados y ventosas visibles",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Pieza central entera formando una espiral.",
+          "ingles": "one curled grilled octopus tentacle with scored slices and charred edges",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "langostinos pelados",
+          "estado": "cocinados con cola intacta, espolvoreados con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "dudoso": true,
+          "nota": "Tres enteros visibles alrededor y dentro del pulpo; un cuarto extremo asoma cortado en el borde derecho.",
+          "ingles": "peeled cooked prawns with tails dusted in paprika",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "patatas cocidas",
+          "estado": "en rodajas irregulares bajo el pulpo, impregnadas de aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Cama de patata cubierta parcialmente por el marisco.",
+          "ingles": "sliced boiled potatoes coated in oil and paprika",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "salsa verde de perejil y aceite",
+          "estado": "repartida por encima del pulpo y en gotas sobre la madera",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Perejil picado brillante en aceite.",
+          "ingles": "chopped green parsley and oil dressing",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "pimentón rojo",
+          "estado": "espolvoreado sobre el pulpo, langostinos, patatas y madera",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Polvo rojizo distribuido por todo el plato.",
+          "ingles": "red paprika dusting",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "plato redondo de madera estriada",
+          "estado": "con surcos paralelos manchados de aceite y pimentón",
+          "recuento": 1,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Recortado en los bordes laterales de la foto.",
+          "ingles": "grooved round wooden serving board",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "bajoplato gris mate",
+          "estado": "liso, asomando por debajo de la madera",
+          "recuento": 1,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Visible en las esquinas inferiores y superiores.",
+          "ingles": "matte grey charger plate underneath",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Ángulo cenital plano sin profundidad",
+        "Iluminación difusa sin volumen",
+        "Borde de vaso intruso arriba a la izquierda",
+        "Plato recortado sin aire para texto"
+      ],
+      "utilizable": true,
+      "motivo": "Se distinguen con nitidez todos los ingredientes reales y la vajilla para reconstruir una toma profesional."
+    },
+    "huecos": {
+      "plato": "grilled octopus tentacle with prawns and potatoes",
+      "origen": "at a restaurant",
+      "elementos": "one curled grilled octopus tentacle with scored slices and charred edges, peeled cooked prawns with tails dusted in paprika, sliced boiled potatoes coated in oil and paprika, chopped green parsley and oil dressing, red paprika dusting, grooved round wooden serving board, matte grey charger plate underneath",
+      "recuento": "Exactly one whole grilled octopus tentacle and three peeled prawns visible.",
+      "camara": {
+        "anguloGrados": 25,
+        "descripcion": "low three-quarter view at 25 degrees, rotated 60 degrees around the dish, full grooved wooden board placed in the lower third",
+        "objetivoMm": 85,
+        "apertura": 2.8,
+        "giroGrados": 60,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "The wooden board sits compact in the lower 45% of the frame, leaving a deep, uncluttered near-black upper half for a centered typographic lockup; focus on the front charred octopus suckers and glistening prawns while the back rim falls softly out of focus.",
+      "aire": "arriba",
+      "luz": "One hard side light from the left raking across the octopus suckers, grooved wood and oil sheen, casting deep crisp shadows into a near-black background.",
+      "colorDominante": "Deep near-black shadows with warm wood browns and the reddish-orange paprika and prawns as the only strong colour."
+    },
+    "decisiones": [
+      "Cámara a 25° y plano MEDIO frente al cenital original de 82°, siguiendo ref-post-14 y la estética Editorial oscuro para situar el plato en el tercio inferior.",
+      "Giro de 60° alrededor del plato para presentar la curva del tentáculo y los langostinos de cara al objetivo.",
+      "Objetivo de 85 mm a f/2.8 (inspirado en el ejemplo de Etxebarri) para comprimir la escena y centrar el foco en la textura del pulpo.",
+      "Mitad superior completamente limpia y en penumbra (aire arriba) para alojar el logotipo tipográfico centrado de ref-post-14.",
+      "Luz lateral dura única desde la izquierda para marcar relieve en las ventosas, brillo en el aceite y sombras profundas."
+    ]
+  },
+  "prompt": "@image1 is a real photo of grilled octopus tentacle with prawns and potatoes at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: one curled grilled octopus tentacle with scored slices and charred edges; peeled cooked prawns with tails dusted in paprika; sliced boiled potatoes coated in oil and paprika; chopped green parsley and oil dressing; red paprika dusting; grooved round wooden serving board; matte grey charger plate underneath. Exactly 1 × one curled grilled octopus tentacle with scored slices and charred edges; 3 × peeled cooked prawns with tails dusted in paprika; 1 × grooved round wooden serving board; 1 × matte grey charger plate underneath. Nothing else added. New composition by a professional food photographer: low three-quarter view at 25 degrees, rotated 60 degrees around the dish, full grooved wooden board placed in the lower third, 85 mm lens at f/2.8, The wooden board sits compact in the lower 45% of the frame, leaving a deep, uncluttered near-black upper half for a centered typographic lockup; focus on the front charred octopus suckers and glistening prawns while the back rim falls softly out of focus. One hard side light from the left raking across the octopus suckers, grooved wood and oil sheen, casting deep crisp shadows into a near-black background, Deep near-black shadows with warm wood browns and the reddish-orange paprika and prawns as the only strong colour. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "familia": "F4",
+    "estetica": "EDITORIAL_OSCURO",
+    "desdeElInventario": true
+  }
+}

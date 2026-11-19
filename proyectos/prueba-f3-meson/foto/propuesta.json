@@ -1,0 +1,79 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T01:44:27.011Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 40,
+      "distancia": "MEDIO",
+      "encuadre": "Plato completo centrado en picado medio sobre mesa de madera oscura.",
+      "luz": "Luz frontal directa con brillos marcadamente expuestos sobre el pescado.",
+      "elementos": [
+        {
+          "nombre": "Lomo de salmón glaseado",
+          "estado": "dorado y brillante",
+          "recuento": 1
+        },
+        {
+          "nombre": "Arroz negro con espinacas",
+          "estado": "húmedo y compacto",
+          "recuento": null
+        },
+        {
+          "nombre": "Quenelle de puré naranja",
+          "estado": "texturizado con escamas negras",
+          "recuento": 1
+        },
+        {
+          "nombre": "Brotes de microgreens",
+          "estado": "frescos",
+          "recuento": null
+        },
+        {
+          "nombre": "Aceite verde de hierbas",
+          "estado": "drenado en el fondo",
+          "recuento": null
+        },
+        {
+          "nombre": "Plato hondo cerámico blanco roto",
+          "estado": "limpio",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Iluminación plana y cenital de aficionado",
+        "Fondo de mesa cortado sin intención visual"
+      ],
+      "utilizable": true,
+      "motivo": "Contiene un inventario claro y bien definido de todos los ingredientes del plato."
+    },
+    "huecos": {
+      "plato": "glazed salmon fillet over black rice",
+      "origen": "at a modern Mediterranean bistro",
+      "elementos": "the thick golden-glazed salmon fillet, glossy black rice with spinach, one orange purée quenelle topped with black flakes, fresh microgreens, bright green herb oil drizzle, in the exact off-white shallow ceramic bowl",
+      "recuento": "Exactly one salmon fillet, one quenelle of orange purée, and one ceramic bowl.",
+      "camara": {
+        "anguloGrados": 20,
+        "descripcion": "a low-angle 20-degree close-up shot, bowl anchored in the lower two-thirds of the vertical frame",
+        "objetivoMm": 85,
+        "apertura": 2.8,
+        "giroGrados": 35,
+        "distancia": "PRIMER_PLANO"
+      },
+      "ideaGrafica": "creating ample dark clear space in the upper third for magazine-style typography, with the salmon glaze and texture sharply focused",
+      "luz": "hard direct side flash creating a crisp shadow cast behind the dish against a dark green velvet backdrop, with vivid specular highlights on the glaze and oil",
+      "colorDominante": "deep moody emerald green and black background with high-contrast orange salmon glaze accents"
+    },
+    "decisiones": [
+      "Cámara bajada a 20° para dar presencia editorial al plato y dejar despejado el tercio superior para la titulación tipo revista (referencia ref-post-22).",
+      "Iluminación de flash directo lateral con sombra dura y fondo verde oscuro sombrío, emulando la atmósfera elegante de la referencia elegida.",
+      "Enfoque macro moderado a f/2.8 para resaltar la costra glaseada y el brillo del aceite verde sin alterar los ingredientes reales."
+    ]
+  },
+  "prompt": "@image1 is a real photo of glazed salmon fillet over black rice at a modern Mediterranean bistro. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the thick golden-glazed salmon fillet, glossy black rice with spinach, one orange purée quenelle topped with black flakes, fresh microgreens, bright green herb oil drizzle, in the exact off-white shallow ceramic bowl. Exactly one salmon fillet, one quenelle of orange purée, and one ceramic bowl. Nothing else added. New composition by a professional food photographer: a low-angle 20-degree close-up shot, bowl anchored in the lower two-thirds of the vertical frame, 85 mm lens at f/2.8, creating ample dark clear space in the upper third for magazine-style typography, with the salmon glaze and texture sharply focused. Hard direct side flash creating a crisp shadow cast behind the dish against a dark green velvet backdrop, with vivid specular highlights on the glaze and oil, deep moody emerald green and black background with high-contrast orange salmon glaze accents. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ]
+}

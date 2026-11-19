@@ -1,4 +1,6 @@
 import { SecuenciaDeSerie, SerieDelTaller } from './serieTaller.js';
+import { DireccionPortada, SecuenciaTaller, TomaDeSerie } from './secuenciaTaller.js';
+import { ModoDeLuz } from './luzFotografica.js';
 import { z } from 'zod';
 import { Distancia, HuecosFotoNueva } from './fotoNueva.js';
 import { Familia, Mecanismo } from './referencia.js';
@@ -34,6 +36,7 @@ export const EscenaDeFuente = z.discriminatedUnion('modo', [
 export type EscenaDeFuente = z.infer<typeof EscenaDeFuente>;
 export const SeleccionDeToma = z.object({
   escenaFuente: EscenaDeFuente.optional(),
+  modoDeLuz: ModoDeLuz.optional(),
   vajilla: Vajilla.optional(), estiloTitulo: EstiloTitulo.optional(), posicionTitulo: PosicionTitulo.optional(),
   posicionLibre: z.object({ anguloGrados: z.number().min(-45).max(90), giroGrados: z.number().min(0).max(180) }).optional(),
   opcion: z.enum(['AUTO', ...VistaDeProducto.options]),
@@ -76,6 +79,8 @@ export type SeleccionEditorial = z.infer<typeof SeleccionEditorial>;
 
 export const ComandaDeArte = z.object({
   editorial: SeleccionEditorial.optional(),
+  propuestaPortada: DireccionPortada.optional(),
+  modoDeLuz: ModoDeLuz.optional(),
   puesta: z.object({ sugerencia: z.string().max(320).optional(), ambito: z.enum(['ESPACIO', 'SERVICIO', 'PRODUCTO']).optional(), vajilla: Vajilla, soporte: z.string(), apetito: z.string() }).optional(),
   tipografiaLocal: MaquetaDeTitulo.optional(),
   muestras: z.object({ ...camposMuestras, sha256: hash }).optional(),
@@ -97,6 +102,7 @@ export type Profundidad = z.infer<typeof profundidad>;
 const revision = z.object({ escenaCotejada: z.literal(true).optional(), apetito: z.literal(true).optional(), composicionTipografica: z.literal(true).optional(), sinTextoAnadido: z.literal(true).optional(), recuentoObservado: z.int().positive().optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
 export const TallerDeArte = z.object({
   serie: SerieDelTaller.optional(),
+  secuencia: SecuenciaTaller.optional(),
   seleccionEditorial: z.literal(true).optional(),
   elegirReferenciaAlAbrir: z.literal(true).optional(),
   comanda: ComandaDeArte.optional(),
@@ -114,7 +120,13 @@ export const TallerDeArte = z.object({
 export type TallerDeArte = z.infer<typeof TallerDeArte>;
 
 export const AccionTaller = z.discriminatedUnion('accion', [
-  z.strictObject({ accion: z.literal('MAQUETAR_SERIE'), revision: z.string().min(1), version: z.int().positive(), confirmoTextos: z.literal(true), paginas: SecuenciaDeSerie }),
+  z.strictObject({ accion: z.literal('MAQUETAR_SERIE'), revision: z.string().min(1), version: z.int().positive(), confirmoTextos: z.literal(true), paginas: SecuenciaDeSerie, usarTomas: z.literal(true).optional() }),
+  z.strictObject({ accion: z.literal('DIRIGIR_SECUENCIA'), revision: z.string().min(1), version: z.int().positive() }),
+  z.strictObject({ accion: z.literal('DIRIGIR_CARRUSEL'), revision: z.string().min(1), version: z.int().positive(),
+    referenciaVisualId: z.string().min(1).optional(), preferencia: z.string().trim().max(480).optional() }),
+  z.strictObject({ accion: z.literal('IMPORTAR_TOMA_SERIE'), revision: z.string().min(1), toma: TomaDeSerie, subidaId: z.string().min(1), usoCandidata: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).optional() }),
+  z.strictObject({ accion: z.literal('GENERAR_TOMA_SERIE'), revision: z.string().min(1), toma: TomaDeSerie, estimadoMaximoUsd: z.number().positive(), autorizarUnEnvio: z.literal(true) }),
+  z.strictObject({ accion: z.literal('REVISAR_TOMA_SERIE'), revision: z.string().min(1), toma: TomaDeSerie, decision: z.enum(['APROBAR', 'DEVOLVER']), sha256: hash }),
   z.strictObject({ accion: z.literal('SIN_REFERENCIA'), revision: z.string().min(1) }),
   z.strictObject({ accion: z.literal('FICHAR_REFERENCIA'), revision: z.string().min(1), familia: Familia, mecanismo: Mecanismo,
     reticula: z.string().trim().min(10).max(220), foto: z.string().trim().min(5).max(200), voz: z.string().trim().min(3).max(120),
@@ -128,6 +140,7 @@ export const AccionTaller = z.discriminatedUnion('accion', [
   z.strictObject({ accion: z.literal('EDITAR'), revision: z.string().min(1), direccion: DireccionDeArte, nombrePlato: z.string().trim().min(2).max(300).optional() }),
   z.strictObject({ accion: z.literal('CONFIRMAR_DIRECCION'), revision: z.string().min(1), confirmoMuestras: z.literal(true).optional() }),
   z.strictObject({ accion: z.literal('GENERAR'), revision: z.string().min(1), autorizarUnEnvio: z.literal(true) }),
+  z.strictObject({ accion: z.literal('GENERAR_PORTADA_FOTO'), revision: z.string().min(1), estimadoMaximoUsd: z.number().positive(), autorizarUnEnvio: z.literal(true) }),
   z.strictObject({ accion: z.literal('IMPORTAR'), revision: z.string().min(1), subidaId: z.string().min(1), usoCandidata: z.enum(['PUBLICABLE', 'SOLO_PRUEBA_COMPOSICION']).optional() }),
   z.strictObject({ accion: z.literal('RECOMPONER_TITULO'), revision: z.string().min(1), version: z.int().positive(), estiloTitulo: EstiloTitulo, posicionTitulo: PosicionTitulo, plano: PlanoTitulo.optional(), mascaraId: z.string().min(1).optional(), tituloLiteral: z.string().trim().min(2).max(300).optional() }),
   z.strictObject({ accion: z.literal('ANOTAR_REVISION'), revision: z.string().min(1), version: z.int().positive(), observacion: z.string().trim().min(3).max(480) }),

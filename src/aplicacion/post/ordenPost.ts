@@ -59,7 +59,14 @@ import { prepararRecuperacion } from './recuperarGeneracion.js';
 import { prepararTaller } from '../taller/taller.js';
 import type { GeneradorCartel } from '../../adaptadores/openai/GeneradorCartel.js';
 
+import type { DirectorCarrusel, DirectorPortada, DirectorSecuencia, PostReciente } from '../../dominio/secuenciaTaller.js';
+import { luzSolicitada } from '../../dominio/luzFotografica.js';
+
 export interface DepsPost {
+  directorSecuencia?: DirectorSecuencia;
+  directorCarrusel?: DirectorCarrusel;
+  directorPortada?: DirectorPortada;
+  postsRecientes?: (encargo: EncargoPost) => Promise<PostReciente[]>;
   tallerApi?: { generador: GeneradorCartel; limite: number; reservas: string };
   /** Raíz del repositorio (para marcas/ y rutas relativas). */
   raiz: string;
@@ -192,6 +199,7 @@ export async function avanzar(deps: DepsPost, proyecto: string, accion: Accion =
   let e = await leerEncargo(deps, proyecto);
   if (e.taller) {
     if (Object.keys(accion).some(k => k !== 'via' && k !== 'revision')) throw new ErrorDeUsuario('Esta decisión corresponde al taller de arte integrado.');
+    if (e.taller.seleccionEditorial && deps.directorPortada && e.paso === 'REFERENCIA') opciones.alEmpezarPaso?.('PROPUESTA', e);
     return prepararTaller(deps, e);
   }
   const mensajes: string[] = [];
@@ -327,7 +335,12 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     }
     const alGenerador = { ...(estilo ? { estiloDeReferencia: true } : {}), ...(familia ? { familia } : {}), ...(e.estetica ? { estetica: e.estetica } : {}), ...(deps.productor ? { desdeElInventario: true } : {}) };
     const hechos = deps.productor ? { marca: textoDeMarca(await deps.referencias.locales.obtener(e.local)) } : {};
-    const resultado = await proponerFotoNueva(deps.director, { foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador, formato: e.formato }, hechos);
+    const recientes = await deps.postsRecientes?.(e);
+    const modoDeLuz = luzSolicitada(e.plato) ?? (e.estetica === 'EDITORIAL_OSCURO' ? 'ESTUDIO' : 'NATURAL');
+    const resultado = await proponerFotoNueva(deps.director, {
+      foto: real.ruta, plato: e.plato, ...(referencia ? { referencia } : {}), alGenerador: { ...alGenerador, modoDeLuz },
+      formato: e.formato, recientes,
+    }, hechos);
     const archivo = 'foto/propuesta.json';
     await mkdir(join(deps.proyectos, e.proyecto, 'foto'), { recursive: true });
     await writeFile(join(deps.proyectos, e.proyecto, archivo), `${JSON.stringify({ director: deps.director.nombre, fecha: deps.ahora(), ...resultado }, null, 2)}\n`);

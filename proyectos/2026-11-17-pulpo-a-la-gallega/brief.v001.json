@@ -1,0 +1,127 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-17-pulpo-a-la-gallega",
+  "local": "torre-de-vega",
+  "version": 1,
+  "creadoEn": "2026-11-17T22:36:43.383Z",
+  "actualizadoEn": "2026-11-17T22:36:43.383Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Torre de Vega",
+    "ciudad": "La Alquería",
+    "descripcion": "Restaurante desde 1980, gran variedad de carnes a la brasa, comida en familia y platos de toda la vida.",
+    "tonos": [
+      "Amigable",
+      "Familiar",
+      "Atrevido",
+      "Profesional"
+    ],
+    "instagram": "restaurantetorredevega",
+    "web": "https://www.restaurantetorredevega.com/"
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "Pulpo a la gallega",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "tentáculo de pulpo",
+          "estado": "asado y troceado en espiral, con pimentón y aceite verde",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "gambas peladas con cola",
+          "estado": "cocinadas y espolvoreadas con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "patatas en rodajas",
+          "estado": "cocidas, cubiertas de aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "salsa de hierbas y aceite",
+          "estado": "brillante, repartida sobre el plato y la tabla",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "pimentón",
+          "estado": "espolvoreado sobre todo el conjunto",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "tabla de madera redonda",
+          "estado": "estriada, manchada de aceite y pimentón",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "plato base gris azulado",
+          "estado": "liso, debajo de la tabla",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "5916e8442b292c1a8796be535b1b5a2955be512dfdeb5a941f60fd0d1c67b8f5"
+    },
+    "datosPorConfirmar": [
+      "«gambas peladas con cola»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«patatas en rodajas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«salsa de hierbas y aceite»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«pimentón»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«tabla de madera redonda»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«plato base gris azulado»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«gambas peladas con cola»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-16"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "editorial": {
+    "ruta": "FOTO_PLATO",
+    "motivo": "El encargo se puede contar con el alimento y su contexto de servicio. La fuente tiene luminosidad media intermedia; separa el foco por contraste local.",
+    "enfoque": "El canto cuenta el interior",
+    "comprobar": "El borde, la base y el espesor relativo siguen siendo reconocibles. Se conserva el corte real.",
+    "evidencias": [
+      {
+        "id": "blog-11",
+        "fuente": "Food Photo Studio · diario de producciones",
+        "pagina": "https://www.foodphotostudio.com/blog",
+        "imagen": "https://images.squarespace-cdn.com/content/v1/58989c1b5016e1eeef68cfbe/59f71b47-fbcf-46fb-b5b8-de71b61819dc/20oz+Calzone_Italian+Style+Meat.jpg?format=500w",
+        "lectura": "Dos cortes de masa rellena muestran el interior en un extremo. La pieza entera retrocede hacia arriba y cuenta la forma original."
+      },
+      {
+        "id": "smacai-19",
+        "fuente": "SMACai · proyectos de restauración",
+        "pagina": "https://smacai.net/work.html",
+        "imagen": "https://smacai.net/assets/img/work/luqma-5.jpg?v=d87456ab",
+        "lectura": "La pila se lee de tres cuartos con bordes irregulares. El tenedor entra por arriba y guía la mirada hacia el relleno."
+      },
+      {
+        "id": "smacai-20",
+        "fuente": "SMACai · proyectos de restauración",
+        "pagina": "https://smacai.net/work.html",
+        "imagen": "https://smacai.net/assets/img/work/luqma-6.jpg?v=1d9a1823",
+        "lectura": "La boca incompleta y la mano convergen en la hamburguesa. El acercamiento cuenta la inminencia del bocado sin una llamada a la acción."
+      }
+    ]
+  },
+  "propuestaPortada": {
+    "vista": "OBLICUA",
+    "plano": "PRIMER_PLANO",
+    "gesto": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga.",
+    "encuadre": "Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una base mate neutra, con el fondo oscuro sin relleno cayendo en penumbra para aislar el contorno del pan y la textura del empanado.",
+    "idea": "Retrato de estudio enfocado en el relieve del rebozado crujiente del pollo y la superposición de capas de la hamburguesa: pan dorado superior, bacon con dados de fruta dorada, salsa cremosa escurriendo y lechuga verde en la base, perfilados por un foco lateral trasero.",
+    "luz": "ESTUDIO"
+  },
+  "modoDeLuz": "ESTUDIO",
+  "puesta": {
+    "sugerencia": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga. Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una b",
+    "ambito": "PRODUCTO",
+    "vajilla": "ESTUDIO",
+    "soporte": "Puesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+    "apetito": "Debe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales."
+  },
+  "nombrePlato": "Hamburguesa crujiente",
+  "toma": {
+    "seleccion": {
+      "escenaFuente": {
+        "modo": "EDITORIAL",
+        "puesta": "Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.",
+        "evidencia": "Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas."
+      },
+      "modoDeLuz": "ESTUDIO",
+      "vajilla": "ESTUDIO",
+      "opcion": "AUTO",
+      "plano": "PRIMER_PLANO"
+    },
+    "camara": {
+      "anguloGrados": 42,
+      "descripcion": "Rodea el producto hasta otro flanco y acércate en tres cuartos. El primer término entra en diagonal.",
+      "objetivoMm": 65,
+      "apertura": 8,
+      "giroGrados": 85,
+      "distancia": "PRIMER_PLANO",
+      "vista": "OBLICUA",
+      "evidencia": "Se ven a la vez una cara lateral y la parte superior. Cambia qué borde queda delante y qué rasgos oculta."
+    },
+    "cambios": [],
+    "encuadre": "Reposo compacto de la hamburguesa entera en perspectiva de tres cuartos, con el filete empanado sobresaliendo de los bordes del pan y la salsa descendiendo suavemente sobre la lechuga. Composición vertical centrada y cerrada desde un ángulo bajo de tres cuartos que muestra el frente y un lateral de la pieza sobre una base mate neutra, con el fondo oscuro sin relleno cayendo en penumbra para aislar el contorno del pan y la textura del empanado.",
+    "accion": "Puesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+    "luz": "Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia.",
+    "foco": "El borde, la base y el espesor relativo siguen siendo reconocibles. Se conserva el corte real.",
+    "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas."
+  },
+  "direccion": {
+    "criterioVisual": {
+      "foco": "El canto cuenta el interior",
+      "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.",
+      "comprobar": "Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados."
+    },
+    "gesto": "MACRO",
+    "sujeto": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.",
+    "escena": "Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.",
+    "tipografia": "Fotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.",
+    "materia": "Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto."
+  },
+  "textos": [],
+  "fotografia": {
+    "temperatura": "NEUTRA",
+    "dominantes": [
+      "#2E1F34",
+      "#E5DDC9",
+      "#DEA440",
+      "#A18487",
+      "#824053"
+    ],
+    "acento": "#DEA440",
+    "luz": 0.499,
+    "aire": "Zona de poco detalle de la foto: columnas 1–12/12 y filas 1–3/16."
+  },
+  "fotoSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+  "uso": "SOLO_PRUEBA_COMPOSICION",
+  "prompt": "Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.\n\nSujeto descrito por el local, como contexto visual: \"Hamburguesa crujiente\"\n\nFoco de la pieza: El canto cuenta el interior\n\nRasgo que conservar: Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.\n\nRevisión a 360 px: Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados.\n\nUsa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Pan liso brillante, lechuga verde, una pieza rebozada, elementos dorados y salsa clara visibles. Conserva el orden y el espesor de las capas.\n\nUna hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.\n\nMantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.\n\nFotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.\n\nPuesta editorial autorizada: Una hamburguesa entera en reposo sobre pizarra mate, vista baja de tres cuartos desde el extremo derecho. Conserva todas las capas observadas. El contorno del pan y el rebozado emergen sobre el fondo de estudio oscuro. Deja aire discreto arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.\n\nDebe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales.\n\nIluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Fotografía desde la vista OBLICUA y a distancia PRIMER_PLANO. Conserva visibles los rasgos cotejados.\n\nEntrega únicamente la fotografía, sin letras ni marcas escenificadas.\n\nLa fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.",
+  "huella": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7"
+}

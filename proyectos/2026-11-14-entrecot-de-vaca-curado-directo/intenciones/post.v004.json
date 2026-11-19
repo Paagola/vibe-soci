@@ -1,0 +1,235 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 4,
+  "titulo": "Torre de Vega · Entrecot de vaca curado, directo de Galicia",
+  "notas": "Idea: La contundencia del entrecot de vaca gallega curado presentado con elegancia oscura y contraste tipográfico. Foco: el plato. De la referencia se toma: Contraste entre tipografía condensada rotunda y voz script caligráfica con florituras; Composición sobre fondo oscuro cálido integrando el texto con la pieza gastronómica; Línea sutil de apoyo editorial y firma sobria. No se copia: La temática de coctelería y el nombre del café; Los datos de contacto ficticios y el logotipo ajeno. Voz «acento» (ballet): propuesta del estudio, pendiente de confirmar con el local.",
+  "marca": "torre-de-vega",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {
+      "plato": "#DDB377"
+    },
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@principal",
+        "rasgos": []
+      },
+      "acento": {
+        "fuente": "ballet",
+        "ejes": {
+          "opsz": 72
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 0.95,
+        "color": "@principal",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "2026-11-14-entrecot-de-vaca-curado-directo-foto-1"
+  },
+  "textos": {
+    "titular": "ENTRECOT",
+    "acento": "directo de Galicia",
+    "apoyo": "Carnes a la brasa",
+    "firma": "Torre de Vega"
+  },
+  "capas": [
+    {
+      "id": "fondo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "relleno",
+      "color": "@negro"
+    },
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "plato",
+      "opacidad": 0,
+      "fusion": "normal",
+      "oculta": false,
+      "nota": "Silueta del plato de la foto a sangre: no se pinta.",
+      "tipo": "recorte",
+      "activo": "foto",
+      "sangradoAbajo": 0,
+      "alineadoCon": "foto",
+      "bordeSuave": 0.8,
+      "contraerBorde": 0,
+      "giro": 0
+    },
+    {
+      "id": "acento",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@acento",
+      "estilo": "acento",
+      "caja": {
+        "x": 0.2861,
+        "y": 0.1068,
+        "w": 0.5741,
+        "h": 0.1052
+      },
+      "ajuste": "fijo",
+      "tamano": 119,
+      "alinear": "derecha",
+      "vertical": "abajo",
+      "rotacion": 0,
+      "giro": -4,
+      "sangrado": false,
+      "color": "@principal"
+    },
+    {
+      "id": "titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": -0.04,
+        "y": 0.2203,
+        "w": 1.08,
+        "h": 0.162
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "abajo",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": true,
+      "color": "@blanco",
+      "recortarCon": {
+        "sujeto": "plato",
+        "modo": "fuera"
+      }
+    },
+    {
+      "id": "apoyo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@apoyo",
+      "estilo": "texto",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.8448,
+        "w": 0.3546,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@blanco"
+    },
+    {
+      "id": "firma",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@firma",
+      "estilo": "rotulo",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.788,
+        "w": 0.4278,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 34,
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@principal"
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "acento",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "detras",
+      "texto": "titular",
+      "sujeto": "plato",
+      "cobertura": [
+        0.2,
+        0.45
+      ],
+      "medida": "franja",
+      "zona": {
+        "desde": 0.2203,
+        "hasta": 0.5526
+      }
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "apoyo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "firma",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "acento",
+        "apoyo",
+        "firma"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ],
+  "padre": 3
+}

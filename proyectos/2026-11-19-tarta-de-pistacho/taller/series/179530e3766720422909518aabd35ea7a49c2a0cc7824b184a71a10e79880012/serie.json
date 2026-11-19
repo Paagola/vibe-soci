@@ -1,0 +1,84 @@
+{
+  "esquema": "taller/serie@1",
+  "comanda": "b45d6dd4dde0a63435f1bf65195dcc9f598a2f3075c24fea581591e6e62ab180",
+  "fotoSha256": "754b997439fb5a0b50dc5a15015a6daa47ff03f132e1e7bbcbbd007cf47f26ec",
+  "baseSha256": "993d82874182aa685b552adbe2f25d6e66d243380664ede3def2564edd04a714",
+  "versionBase": 1,
+  "uso": "SOLO_PRUEBA_COMPOSICION",
+  "origen": "IMPORTACION",
+  "paginas": [
+    {
+      "edicion": {
+        "funcion": "PORTADA",
+        "titulo": "Pistacho",
+        "apoyo": "Tarta de corte dorado",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "tratamiento": "ACENTO_INCLINADO",
+      "referente": "https://www.behance.net/gallery/238125357/Instagram-Carousel-Design",
+      "motivo": "Una voz breve en cursiva se inclina junto al título macizo. El apoyo tiene espacio propio, conserva la grafía y mantiene la lectura del nombre. El solape sugerido se descartó para mantener la lectura.",
+      "sha256": "4681ec63fcec726857762542a59d973f71431c2e62dc4baa9db63ade364538aa",
+      "intencionSha256": "083775aeb109584fedfc300f67d47e48fa44d263b077bb4b85e3ec3b5439ba91",
+      "svgSha256": "fe703ad82ef82437f2b21c1eea27f4766677440c5037de3eee105ec02574d8fb",
+      "medidas": [
+        {
+          "capa": "titulo",
+          "cuerpoMovil": 85.2,
+          "contraste": 14.71,
+          "lineas": [
+            "Pistacho"
+          ]
+        },
+        {
+          "capa": "apoyo",
+          "cuerpoMovil": 32.3,
+          "contraste": 14.71,
+          "lineas": [
+            "Tarta de corte dorado"
+          ]
+        }
+      ]
+    },
+    {
+      "edicion": {
+        "funcion": "DETALLE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "0e529d20880f20a95727d14f3cd278c8d183670c3d67d8f7bd7d3ecd74d0edb1",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "d4c6788212e221884081eb917bd330b24897f5282cbfddfed2fc565c3d6a3780",
+      "intencionSha256": "5b07fd70eb52897905989bda6019e7e8339f1560ae27167e737ab9ac91e87d8e",
+      "medidas": []
+    },
+    {
+      "edicion": {
+        "funcion": "CIERRE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "3e7e03a9e43cfdfe5f49125841b1a66073236c8362da860d5491f363aa427997",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "baf2aa1c00b150b73b5f5477e13823a3abd3f4cac3c205c6d66f76c1dd21448a",
+      "intencionSha256": "c094dc96347a216eb0b126b7622ab6d1c793f6f68b428f97b8488efa119521d7",
+      "medidas": []
+    }
+  ],
+  "huella": "179530e3766720422909518aabd35ea7a49c2a0cc7824b184a71a10e79880012"
+}

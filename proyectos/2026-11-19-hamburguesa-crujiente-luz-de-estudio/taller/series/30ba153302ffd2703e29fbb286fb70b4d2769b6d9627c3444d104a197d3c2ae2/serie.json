@@ -1,0 +1,78 @@
+{
+  "esquema": "taller/serie@1",
+  "comanda": "2dc30601c4c5e2c052d25ca8f60cd8ee9d7af9de5d02ef9b3e32393ca14b50a7",
+  "fotoSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+  "baseSha256": "f8346baac01eba8ad6673823a3092bcf4f5aa28bdbcd606183a2e2431a9df6c9",
+  "versionBase": 1,
+  "uso": "SOLO_PRUEBA_COMPOSICION",
+  "origen": "IMPORTACION",
+  "mascaraSha256": "7614372e6486b4cc0697b0c63ecda403f2789262718e4c2a1140813a64c71836",
+  "paginas": [
+    {
+      "edicion": {
+        "funcion": "PORTADA",
+        "titulo": "Hamburguesa\ncrujiente",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "tratamiento": "PORTADA_DETRAS",
+      "referente": "https://id.pinterest.com/pin/9922061674879618/",
+      "motivo": "El primer plano pasa por delante de un borde del titular. El apoyo mantiene su lectura y el plato queda visible. La silueta cubre el 2% del titular.",
+      "sha256": "114217e938e30c1f33353d65dba2ac9389ac9fdbe2d789c6df24af42470b2109",
+      "intencionSha256": "6964da1f8d91ab0c786e688ff16335cd3100c9316272a696fb475692cb0ec540",
+      "svgSha256": "0c76471575aa4610fd5f8bfac4c1321d47d2dc32d72129b4326045a0f484151e",
+      "medidas": [
+        {
+          "capa": "titulo",
+          "cuerpoMovil": 48.2,
+          "contraste": 15.48,
+          "lineas": [
+            "Hamburguesa",
+            "crujiente"
+          ]
+        }
+      ]
+    },
+    {
+      "edicion": {
+        "funcion": "DETALLE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "3826dcee8f2098e4da3e199a1983ede58d8f86c5716d0ae2d1cd67a759991b65",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "ceb8bcefcc3c5851328db77e1759627e4be6d2f006e83c15426bc01f10d7270c",
+      "intencionSha256": "7ef04f8f40ae9f8f475912a476ddeeb541f5b0ae5a5af1d0f41efbbe57cdc89a",
+      "medidas": []
+    },
+    {
+      "edicion": {
+        "funcion": "CIERRE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "3303cccc51c9ada37d9bc2c3d8ca7af5bd403ee0f2ebaeebb50c8eaf21f9c990",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "00d905157c5d95d72b63cc8885becb441b44e4f2baae7851e8e6eee896cd2336",
+      "intencionSha256": "c10cf184223351fae6c9cde24a61963fd5cc3483d214a74186a80bc853d23836",
+      "medidas": []
+    }
+  ],
+  "huella": "30ba153302ffd2703e29fbb286fb70b4d2769b6d9627c3444d104a197d3c2ae2"
+}

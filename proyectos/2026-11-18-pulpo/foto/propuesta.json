@@ -1,0 +1,111 @@
+{
+  "director": "Gemini (gemini-4-hydrogen)",
+  "fecha": "2026-11-17T23:02:22.244Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 80,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Plano vertical muy cerrado casi cenital que corta los bordes de la tabla y deja ver un trozo de bajoplato y vaso arriba.",
+      "luz": "Luz ambiente cenital suave y algo plana, con brillos moderados en el aceite.",
+      "elementos": [
+        {
+          "nombre": "Tentáculo de pulpo a la brasa",
+          "estado": "enroscado, dorado en las ventosas, con aceite y pimentón",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Pieza principal curvada en el centro.",
+          "ingles": "curled grilled octopus tentacle with charred suckers, paprika and herb oil",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Langostinos o gambas peladas",
+          "estado": "cocidos, sin cabeza y con cola, espolvoreados con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "dudoso": true,
+          "nota": "Tres enteros visibles (arriba izquierda, centro y abajo izquierda) y un extremo cortado en el borde derecho.",
+          "ingles": "peeled cooked prawns with tails dusted with paprika",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Patatas cocidas en rodajas",
+          "estado": "trozos irregulares amarillos bajo el pulpo con aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Base del plato bajo el pulpo y los langostinos.",
+          "ingles": "sliced boiled yellow potatoes glistening with oil and paprika",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Aceite de perejil y pimentón",
+          "estado": "gotas brillantes verde intenso y polvo rojo repartidos",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Aliño visible sobre el pulpo y la madera.",
+          "ingles": "drizzled green chopped parsley oil and sprinkled red paprika",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Tabla redonda de madera con surcos",
+          "estado": "madera clara rayada, humedecida por el aceite",
+          "recuento": 1,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Cortada en los bordes izquierdo y derecho en la foto subida.",
+          "ingles": "round grooved light wooden serving board",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Encuadre demasiado cerrado que corta la tabla por ambos lados.",
+        "Elementos ajenos en el borde: bajoplato gris azulado, mantel y borde de un vaso arriba a la izquierda.",
+        "Luz poco contrastada que aplana la textura del pulpo."
+      ],
+      "utilizable": true,
+      "motivo": "Se distinguen con claridad el pulpo, los langostinos, las patatas, el aliño y la tabla como inventario real."
+    },
+    "huecos": {
+      "plato": "grilled octopus with prawns and boiled potatoes",
+      "origen": "at a restaurant",
+      "elementos": "one curled grilled octopus tentacle with charred suckers, peeled cooked prawns with tails dusted with paprika, sliced boiled yellow potatoes glistening with oil and paprika, drizzled green chopped parsley oil, all served on the round grooved light wooden serving board",
+      "recuento": "Exactly one octopus tentacle, three whole prawns and one round wooden board.",
+      "camara": {
+        "anguloGrados": 45,
+        "descripcion": "slightly high three-quarter angle rotated 45 degrees so the entire wooden board sits fully inside the frame with generous margin on the left and top",
+        "objetivoMm": 50,
+        "apertura": 5.6,
+        "giroGrados": 45,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "Dish placed in the lower-right half with the whole wooden board uncut, angled so the curled tentacle leads the eye toward a wide clean empty zone on the left for vertical typography",
+      "aire": "izquierda",
+      "luz": "Bright, even studio light from the upper right casting a crisp, short contact shadow under the board and popping specular highlights on the oil, paprika and octopus suckers",
+      "colorDominante": "Clean neutral seamless studio backdrop for cutout; warm golden wood, bright yellow potatoes, green herb oil and rich paprika-red octopus as the punchy colours"
+    },
+    "decisiones": [
+      "Se eliminan de la lista el bajoplato, el mantel y el vaso porque son ruido del fondo y la estética Color pop con recorte exige solo el plato en su tabla sobre fondo uniforme.",
+      "Se cambia a plano MEDIO en tres cuartos a 45° y giro de 45° para cumplir el cambio de toma (>30°) y mostrar la tabla entera sin cortes.",
+      "Se sitúa el plato abajo a la derecha dejando el hueco limpio a la izquierda, replicando la retícula vertical de ref-post-16."
+    ]
+  },
+  "prompt": "@image1 is a real photo of grilled octopus with prawns and boiled potatoes at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: curled grilled octopus tentacle with charred suckers, paprika and herb oil; peeled cooked prawns with tails dusted with paprika; sliced boiled yellow potatoes glistening with oil and paprika; drizzled green chopped parsley oil and sprinkled red paprika; round grooved light wooden serving board. Exactly 1 × curled grilled octopus tentacle with charred suckers, paprika and herb oil; 3 × peeled cooked prawns with tails dusted with paprika; 1 × round grooved light wooden serving board. Nothing else added. New composition by a professional food photographer: slightly high three-quarter angle rotated 45 degrees so the entire wooden board sits fully inside the frame with generous margin on the left and top, 50 mm lens at f/5.6, Dish placed in the lower-right half with the whole wooden board uncut, angled so the curled tentacle leads the eye toward a wide clean empty zone on the left for vertical typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright, even studio light from the upper right casting a crisp, short contact shadow under the board and popping specular highlights on the oil, paprika and octopus suckers, Clean neutral seamless studio backdrop for cutout; warm golden wood, bright yellow potatoes, green herb oil and rich paprika-red octopus as the punchy colours. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Photographic realism, no text. Editorial direction: Leave quiet negative space at the bottom for separate typesetting. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": [
+        "La toma nueva deja fuera «Bajoplato o mantel gris azulado y borde de vaso»: con esa cámara no cabe en la foto. Cambia la toma (más abierta o desde más arriba) para que quepa, o quita «Bajoplato o mantel gris azulado y borde de vaso» de la lista si no tiene que salir."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "familia": "F3",
+    "estetica": "COLOR_POP",
+    "desdeElInventario": true
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "lamina-1",
+  "version": 1,
+  "titulo": "PORTADA",
+  "notas": "Un nombre breve ocupa el aire de la apertura y deja reconocible el sujeto.",
+  "marca": "cafe-albor",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "voz": {
+        "fuente": "archivo",
+        "ejes": {
+          "wght": 840,
+          "wdth": 78
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 0.98,
+        "color": "#F7F2E8",
+        "rasgos": []
+      },
+      "apoyo": {
+        "fuente": "archivo",
+        "ejes": {
+          "wght": 460
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.1,
+        "color": "#F7F2E8",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "base"
+  },
+  "textos": {
+    "titulo": "Tarta de\npistacho"
+  },
+  "capas": [
+    {
+      "id": "papel",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "relleno",
+      "color": "#F7F2E8"
+    },
+    {
+      "id": "fotografia",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0.03125,
+        "w": 1,
+        "h": 0.9375
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "titulo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titulo",
+      "estilo": "voz",
+      "caja": {
+        "x": 0.07,
+        "y": 0.09312500000000001,
+        "w": 0.77,
+        "h": 0.15
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false
+    }
+  ],
+  "relaciones": []
+}

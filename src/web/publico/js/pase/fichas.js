@@ -38,7 +38,8 @@ function subirA(archivo) {
 export function fichaDeSubida(ctx) {
   if (!ctx.locales.length) return [titulo('Añade un local'), nota('Cada encargo usa el perfil de su local.'), accion(ctx.simulado ? boton('Usar el local de ejemplo', (e) => ctx.crearLocalDeEjemplo(e.currentTarget), true) : null, enlace('Dar de alta un local', '/index.html#/local'))];
   const local = h('select', { name: 'local', required: true }, ctx.locales.map((l) => opcion(l.slug, l.nombre)));
-  const formato = h('select', { name: 'formato' }, opcion('editorial', 'Post editorial · 4:5'), opcion('integrado', 'Cartel integrado con referencia · 4:5'), opcion('post', 'Post por capas'), opcion('carrusel', 'Carrusel'));
+  const formato = h('select', { name: 'formato' }, opcion('editorial', 'Post editorial · 4:5'), opcion('carrusel-editorial', 'Carrusel editorial · 4:5'),
+    opcion('integrado', 'Cartel integrado con referencia · 4:5'), opcion('post', 'Post por capas'), opcion('carrusel', 'Carrusel por capas'));
   const uso = h('select', { name: 'uso' }, opcion('PUBLICABLE', 'Foto del local'), opcion('SOLO_PRUEBA_COMPOSICION', 'Solo para una prueba'));
   const estetica = h('select', { name: 'estetica' }, opcion('', 'A partir de la referencia'), [
     ['EDITORIAL_SERENO', 'Editorial sereno'], ['EDITORIAL_OSCURO', 'Editorial oscuro'], ['COLOR_POP', 'Color pop'],
@@ -46,7 +47,8 @@ export function fichaDeSubida(ctx) {
   ].map(([valor, nombre]) => opcion(valor, nombre)));
   const pedirReferencia = h('input', { type: 'checkbox', name: 'elegirReferenciaAlAbrir' });
   const referencia = h('label', {}, pedirReferencia, ' Elegir una referencia propia o de biblioteca');
-  formato.addEventListener('change', () => { referencia.hidden = formato.value !== 'editorial'; });
+  const esEditorial = () => ['editorial', 'carrusel-editorial'].includes(formato.value);
+  formato.addEventListener('change', () => { referencia.hidden = !esEditorial(); });
   const nombre = h('input', { name: 'plato', required: true, minlength: '3', maxlength: '300', placeholder: 'Ej. Gamba roja a la brasa o nuestra terraza al atardecer' });
   const archivo = h('input', { type: 'file', accept: FOTOS, 'aria-label': 'Foto original' });
   const preview = h('div');
@@ -80,7 +82,11 @@ export function fichaDeSubida(ctx) {
       const plato = nombre.value.trim();
       if (plato.length < 3) throw new Error('Describe el plato, el espacio o lo que sucede en la foto.');
       const subida = await subirA(fichero);
-      return { subidaId: subida.id, local: local.value, plato, formato: ['editorial', 'integrado'].includes(formato.value) ? 'post' : formato.value, usoFotoReal: uso.value, ...(estetica.value ? { estetica: estetica.value } : {}), ...(formato.value === 'editorial' ? { arte: 'EDITORIAL', ...(pedirReferencia.checked ? { elegirReferenciaAlAbrir: true } : {}) } : formato.value === 'integrado' ? { arte: 'INTEGRADO' } : { productorEditorial: true }) };
+      const esCarrusel = ['carrusel-editorial', 'carrusel'].includes(formato.value);
+      return { subidaId: subida.id, local: local.value, plato, formato: esCarrusel ? 'carrusel' : 'post', usoFotoReal: uso.value,
+        ...(estetica.value ? { estetica: estetica.value } : {}),
+        ...(esEditorial() ? { arte: 'EDITORIAL', ...(pedirReferencia.checked ? { elegirReferenciaAlAbrir: true } : {}) } :
+          formato.value === 'integrado' ? { arte: 'INTEGRADO' } : { productorEditorial: true }) };
     }, errores);
   });
   return [titulo('Empieza con una foto'), form];

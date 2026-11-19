@@ -1,0 +1,14 @@
+{
+  "nota": "Encargo prueba-f3-meson (orden única). Referencia: ref-post-22.",
+  "local": "meson-de-cervantes",
+  "marca": "../../marcas/meson-de-cervantes/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-14",
+    "referencia": "ref-post-22"
+  }
+}

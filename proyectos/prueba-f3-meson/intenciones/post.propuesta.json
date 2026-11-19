@@ -1,0 +1,185 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T13:18:24.646Z",
+  "propuesta": {
+    "idea": "Cabecera editorial elegante inspirada en portada de revista que enmarca el lomo de salmón glaseado sobre arroz negro, destacando la quenelle de puré mediante una anotación guiada.",
+    "foco": "TITULAR",
+    "seToma": [
+      "Composición editorial tipo revista con titular dominante en la cabecera",
+      "Uso de tipografía didona de alto contraste para aportar sofisticación",
+      "Estructura limpia con datos secundarios situados en los márgenes superiores"
+    ],
+    "noSeCopia": [
+      "Los textos y la marca de la referencia (Mocktail Drink Club)",
+      "La copa de cóctel y la escena de coctelería",
+      "Los colores rosa y verde del post original"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "SALMÓN GLASEADO",
+        "fuente": "PLATO",
+        "cita": "salmón glaseado sobre arroz negro"
+      },
+      {
+        "clave": "marca",
+        "texto": "EL MESÓN DE CERVANTES",
+        "fuente": "MARCA",
+        "cita": "El Mesón de Cervantes"
+      },
+      {
+        "clave": "lugar",
+        "texto": "MÁLAGA",
+        "fuente": "MARCA",
+        "cita": "Málaga (calle Álamos, centro histórico)"
+      },
+      {
+        "clave": "anota-pure",
+        "texto": "Quenelle de puré",
+        "fuente": "ELEMENTO",
+        "cita": "Quenelle de puré naranja texturizado con escamas negras"
+      }
+    ],
+    "capas": [
+      {
+        "tipo": "foto",
+        "encuadre": "sangre"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-marca",
+        "texto": "marca",
+        "voz": "versalita",
+        "caja": {
+          "col": [
+            1,
+            5
+          ],
+          "fila": [
+            2,
+            2
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 36,
+        "alinear": "izquierda",
+        "vertical": "arriba",
+        "color": "@crema",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-lugar",
+        "texto": "lugar",
+        "voz": "versalita",
+        "caja": {
+          "col": [
+            8,
+            12
+          ],
+          "fila": [
+            2,
+            2
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 36,
+        "alinear": "derecha",
+        "vertical": "arriba",
+        "color": "@crema",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "capa-titular",
+        "texto": "titular",
+        "voz": "titular",
+        "caja": {
+          "col": [
+            1,
+            12
+          ],
+          "fila": [
+            3,
+            5
+          ]
+        },
+        "ajuste": "ancho",
+        "alinear": "centro",
+        "vertical": "centro",
+        "color": "@magenta",
+        "relacion": "detras"
+      },
+      {
+        "tipo": "anotacion",
+        "id": "capa-anota",
+        "texto": "anota-pure",
+        "voz": "anotacion",
+        "caja": {
+          "col": [
+            1,
+            2
+          ],
+          "fila": [
+            6,
+            7
+          ]
+        },
+        "tamano": 44,
+        "apunta": {
+          "x": 0.4,
+          "y": 0.6
+        },
+        "color": "@crema"
+      }
+    ]
+  },
+  "problemas": [],
+  "avisos": [
+    "JERARQUIA: No hay salto de escala: el texto más grande es solo 2.9 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+    "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+  ],
+  "intentos": [
+    {
+      "problemas": [],
+      "avisos": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 3.0 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Prueba «detras», «delante» o «contorno» en el titular, o una anotación que señale algo del plato; si es a propósito, dilo en la idea."
+      ]
+    },
+    {
+      "problemas": [],
+      "avisos": [
+        "JERARQUIA: No hay salto de escala: el texto más grande es solo 2.9 veces el más pequeño. Con menos de 3.5 todo pesa parecido; una pieza con foco anda entre 5 y 12.",
+        "FIDELIDAD: «foto» usa el activo «prueba-f3-meson-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        2,
+        11
+      ],
+      "fila": [
+        6,
+        15
+      ],
+      "area": 0.382
+    },
+    "libres": [
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          1,
+          5
+        ],
+        "luz": 0.023
+      }
+    ]
+  }
+}

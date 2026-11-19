@@ -1,0 +1,108 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-18-pulpo",
+  "local": "asador-etxebarri",
+  "version": 1,
+  "creadoEn": "2026-11-17T23:02:22.247Z",
+  "actualizadoEn": "2026-11-17T23:02:22.247Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "pulpo",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "Tentáculo de pulpo a la brasa",
+          "estado": "enroscado, dorado en las ventosas, con aceite y pimentón",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Langostinos o gambas peladas",
+          "estado": "cocidos, sin cabeza y con cola, espolvoreados con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Patatas cocidas en rodajas",
+          "estado": "trozos irregulares amarillos bajo el pulpo con aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Aceite de perejil y pimentón",
+          "estado": "gotas brillantes verde intenso y polvo rojo repartidos",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Tabla redonda de madera con surcos",
+          "estado": "madera clara rayada, humedecida por el aceite",
+          "recuento": 1,
+          "cortados": 1,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "9f07832fcbf4b874c248a7e3998c5fdb3dff115c0aed73e86c0e1917edef9f71"
+    },
+    "datosPorConfirmar": [
+      "«Langostinos o gambas peladas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Patatas cocidas en rodajas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Aceite de perejil y pimentón»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Tabla redonda de madera con surcos»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Langostinos o gambas peladas»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-16"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

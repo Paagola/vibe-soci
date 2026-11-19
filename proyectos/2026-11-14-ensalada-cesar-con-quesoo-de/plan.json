@@ -1,0 +1,14 @@
+{
+  "nota": "Encargo 2026-11-14-ensalada-cesar-con-quesoo-de (orden única). Referencia: ref-post-20.",
+  "local": "torre-de-vega",
+  "marca": "../../marcas/torre-de-vega/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-14",
+    "referencia": "ref-post-20"
+  }
+}

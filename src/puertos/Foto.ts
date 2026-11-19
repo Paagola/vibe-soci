@@ -1,4 +1,5 @@
 import type { OpcionesDePrompt, PropuestaFotoNueva } from '../dominio/fotoNueva.js';
+import type { PostReciente } from '../dominio/secuenciaTaller.js';
 
 /** Lo que recibe el director de fotografía para proponer la foto nueva. */
 export interface EncargoDeFoto {
@@ -14,6 +15,7 @@ export interface EncargoDeFoto {
   alGenerador?: OpcionesDePrompt;
   /** Productor: el brief del encargo en texto (la verdad común); el adaptador lo añade a lo que ve el modelo. */
   contexto?: string;
+  recientes?: PostReciente[];
 }
 
 /** Rellena la plantilla de foto nueva (dominio/fotoNueva.ts). */

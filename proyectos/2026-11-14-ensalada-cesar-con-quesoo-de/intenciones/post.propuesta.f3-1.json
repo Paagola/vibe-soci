@@ -1,0 +1,72 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-15T01:45:10.739Z",
+  "propuesta": {
+    "idea": "La presencia rotunda del rulo de queso de cabra caramelizado coronando la ensalada, respaldada por un titular monumental que abraza el plato.",
+    "foco": "PLATO",
+    "seToma": [
+      "Jerarquía limpia con titular display rotundo en la parte superior sobre fondo oscuro",
+      "Contraste marcado entre la vajilla blanca y el fondo negro"
+    ],
+    "noSeCopia": [
+      "Los textos y el nombre de la referencia Fauget Cafe",
+      "El postre y la acción manual de vertido de salsa"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "ENSALADA CESAR",
+        "fuente": "PLATO",
+        "cita": "Ensalada cesar con quesoo de cabra piñones y bacon"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "TITULAR_DETRAS",
+      "titular": "titular",
+      "lado": "arriba",
+      "sangra": true,
+      "tinta": "limpia"
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+    "CRITICA: Falta la finura de la referencia: el titular sangrado satura la parte superior sin el aire ni las florituras del referente.",
+    "CRITICA: No aprovecha la voz de acento para destacar el queso de cabra mediante el mecanismo TITULAR_CON_ACENTO."
+  ],
+  "critica": {
+    "llega": false,
+    "motivos": [
+      "Falta la finura de la referencia: el titular sangrado satura la parte superior sin el aire ni las florituras del referente.",
+      "No aprovecha la voz de acento para destacar el queso de cabra mediante el mecanismo TITULAR_CON_ACENTO."
+    ],
+    "adoptada": false
+  },
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [
+        "Para el acento hacen falta cuatro filas de aire encima del plato y hay 3: usa TITULAR_DETRAS (o el otro lado, si tiene más aire).",
+        "No cabe «Torre de Vega» sin pisar el plato ni el titular: quítalo o acórtalo."
+      ],
+      "avisos": [],
+      "arreglos": []
+    },
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": []
+    },
+    {
+      "origen": "critica",
+      "problemas": [
+        "Para el acento hacen falta cuatro filas de aire encima del plato y hay 3: usa TITULAR_DETRAS (o el otro lado, si tiene más aire)."
+      ],
+      "avisos": [],
+      "arreglos": []
+    }
+  ]
+}

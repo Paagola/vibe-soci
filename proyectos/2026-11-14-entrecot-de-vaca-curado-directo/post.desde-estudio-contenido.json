@@ -1,0 +1,126 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-14-entrecot-de-vaca-curado-directo",
+  "local": "torre-de-vega",
+  "plato": "Entrecot de vaca curado, directo de Galicia",
+  "fotoSubida": "proyectos/2026-11-14-entrecot-de-vaca-curado-directo/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-21",
+  "titularCreativo": false,
+  "simulado": false,
+  "paso": "HECHO",
+  "activoReal": "2026-11-14-entrecot-de-vaca-curado-directo-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of cured beef ribeye steak traditional Spanish steakhouse. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: thick rare-cooked sliced ribeye with a dark seared crust and flaky salt, golden french fries, two blistered green Padron peppers, served on a round brown terracotta plate. Exactly two Padron peppers and one sliced steak. Nothing else added. New composition by a professional food photographer: dramatic close-up low-angle view at 20 degrees, plate filling the lower-left frame, 85 mm lens at f/2.8, low-key framing pushing the dish to the lower-left, creating clean dark background on the right for typography. Dramatic low-key lighting with a single narrow hard side-light grazing the seared meat crust, deep black environment with intense rare-red meat as the dominant contrast color. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-14T14:08:36.779Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-14-entrecot-de-vaca-curado-directo-foto-1",
+      "final": "PASA",
+      "motivos": [],
+      "costeUsd": 0
+    }
+  ],
+  "fotoElegida": "2026-11-14-entrecot-de-vaca-curado-directo-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-14T13:55:32.593Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-14T13:55:48.649Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-21."
+    },
+    {
+      "fecha": "2026-11-14T13:55:48.676Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-21» (F4). (0 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-14T13:55:48.683Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-14-entrecot-de-vaca-curado-directo-real (1280 × 1707 px)."
+    },
+    {
+      "fecha": "2026-11-14T13:58:47.650Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-14T14:08:36.779Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos."
+    },
+    {
+      "fecha": "2026-11-14T14:28:35.407Z",
+      "paso": "GENERAR",
+      "nota": "Foto del intento 1 importada de /Users/padre/Documents/victor/pantallas/estudio-contenido/datos/subidas/f1aa997a-83e8-49b0-a9d1-bd84bcfe754f.jpg."
+    },
+    {
+      "fecha": "2026-11-14T14:31:24.191Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: PASA."
+    },
+    {
+      "fecha": "2026-11-14T14:32:07.910Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada."
+    },
+    {
+      "fecha": "2026-11-14T14:32:08.390Z",
+      "paso": "MASCARA",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 824 × 555 px."
+    },
+    {
+      "fecha": "2026-11-14T14:34:45.842Z",
+      "paso": "INTENCION",
+      "nota": "Falta la intención de diseño: la propuesta del director no pasa las comprobaciones: CONTRASTE: «capa-origen» tiene un contraste de 1.7:1 con su fondo en su peor zona; se pide al menos 4.5:1.. Hay un borrador."
+    },
+    {
+      "fecha": "2026-11-14T19:14:44.337Z",
+      "paso": "INTENCION",
+      "nota": "Intención de diseño guardada: post v3 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-14T19:14:45.497Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v3: datos/disenos/2026-11-14-entrecot-de-vaca-curado-directo/post/v003/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-14T19:14:45.497Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/2026-11-14-entrecot-de-vaca-curado-directo/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    },
+    {
+      "fecha": "2026-11-14T19:30:48.967Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v4 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-14T19:30:50.345Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v4 (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-15T02:05:19.390Z",
+      "paso": "HECHO",
+      "nota": "Intención de diseño guardada: post v5 (intenciones/post.json)."
+    },
+    {
+      "fecha": "2026-11-15T02:05:20.728Z",
+      "paso": "HECHO",
+      "nota": "Versión nueva compuesta: post v5 (3:4 y 4:5)."
+    }
+  ],
+  "creadoEn": "2026-11-14T13:55:32.593Z"
+}

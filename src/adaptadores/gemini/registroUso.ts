@@ -7,10 +7,10 @@ import type { UsoGemini } from './ClienteGemini.js';
  * Guarda los tokens que devuelve la API y si había facturación; el precio se calcula aparte con la tarifa vigente
  * (aquí no hay una tarifa comprobada de los modelos de texto, así que no se inventa).
  */
-export function registradorDeUso(carpetaDatos: string, motivo: string, facturacion: boolean): (uso: UsoGemini) => void {
+export function registradorDeUso(carpetaDatos: string, motivo: string, facturacion: boolean, proyecto?: string): (uso: UsoGemini) => void {
   const ruta = join(carpetaDatos, 'gasto', 'gemini-texto.jsonl');
   return (uso) => {
     mkdirSync(dirname(ruta), { recursive: true });
-    appendFileSync(ruta, `${JSON.stringify({ fecha: new Date().toISOString(), motivo, tier: facturacion ? 'PAGO' : 'GRATUITO', ...uso })}\n`);
+    appendFileSync(ruta, `${JSON.stringify({ fecha: new Date().toISOString(), motivo, ...(proyecto ? { proyecto } : {}), tier: facturacion ? 'PAGO' : 'GRATUITO', ...uso })}\n`);
   };
 }

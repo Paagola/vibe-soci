@@ -1,0 +1,10 @@
+{
+  "nota": "Encargo 2026-11-16-jamon-con-pata-cortado-a (orden única). Referencia: ref-propia-1.",
+  "local": "torre-de-vega",
+  "marca": "../../marcas/torre-de-vega/tokens.json",
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json"
+    }
+  ]
+}

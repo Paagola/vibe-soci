@@ -1,0 +1,72 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-18-pulpo",
+  "local": "asador-etxebarri",
+  "plato": "pulpo",
+  "fotoSubida": "proyectos/2026-11-18-pulpo/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-16",
+  "estiloDeReferencia": false,
+  "estetica": "COLOR_POP",
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "CONFIRMAR_ELEMENTOS",
+  "activoReal": "2026-11-18-pulpo-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of grilled octopus with prawns and boiled potatoes at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: curled grilled octopus tentacle with charred suckers, paprika and herb oil; peeled cooked prawns with tails dusted with paprika; sliced boiled yellow potatoes glistening with oil and paprika; drizzled green chopped parsley oil and sprinkled red paprika; round grooved light wooden serving board. Exactly 1 × curled grilled octopus tentacle with charred suckers, paprika and herb oil; 3 × peeled cooked prawns with tails dusted with paprika; 1 × round grooved light wooden serving board. Nothing else added. New composition by a professional food photographer: slightly high three-quarter angle rotated 45 degrees so the entire wooden board sits fully inside the frame with generous margin on the left and top, 50 mm lens at f/5.6, Dish placed in the lower-right half with the whole wooden board uncut, angled so the curled tentacle leads the eye toward a wide clean empty zone on the left for vertical typography, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright, even studio light from the upper right casting a crisp, short contact shadow under the board and popping specular highlights on the oil, paprika and octopus suckers, Clean neutral seamless studio backdrop for cutout; warm golden wood, bright yellow potatoes, green herb oil and rich paprika-red octopus as the punchy colours. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Photographic realism, no text. Editorial direction: Leave quiet negative space at the bottom for separate typesetting. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "intentos": [],
+  "tomas": [],
+  "tratamiento": [
+    "TRAMA",
+    "PAPEL"
+  ],
+  "fotosExtra": [],
+  "historial": [
+    {
+      "fecha": "2026-11-17T23:00:15.480Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-17T23:00:25.245Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-16."
+    },
+    {
+      "fecha": "2026-11-17T23:00:25.269Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-16» (F3). (2 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-17T23:00:25.270Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia (F3): Color pop con recorte."
+    },
+    {
+      "fecha": "2026-11-17T23:00:34.969Z",
+      "paso": "REFERENCIA",
+      "nota": "Tratamiento de ref-post-16 (lo mira Gemini (gemini-4-hydrogen); la ficha a mano no se toca): TRAMA, PAPEL."
+    },
+    {
+      "fecha": "2026-11-17T23:00:34.981Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-18-pulpo-real (1280 × 2293 px)."
+    },
+    {
+      "fecha": "2026-11-17T23:02:22.244Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (2 intento(s))."
+    },
+    {
+      "fecha": "2026-11-17T23:02:22.258Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 5 elemento(s))."
+    }
+  ],
+  "creadoEn": "2026-11-17T23:00:15.480Z"
+}

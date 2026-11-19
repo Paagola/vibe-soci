@@ -1,0 +1,209 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T15:51:21.993Z",
+  "propuesta": {
+    "idea": "Tratamiento sobrio sobre fondo negro donde el plato hondo y la costra caramelizada del queso de cabra asumen todo el protagonismo.",
+    "foco": "PLATO",
+    "seToma": [
+      "Composición vertical low-key con plato blanco en la zona media-baja sobre fondo oscuro",
+      "Jerarquía limpia con titular directo en el aire superior y dato secundario en la esquina inferior",
+      "Contraste tonal neto entre la porcelana iluminada y el vacío negro"
+    ],
+    "noSeCopia": [
+      "Nombre del plato ni textos en inglés de la referencia",
+      "Marca ni monograma de Fauget Cafe",
+      "Acción de la mano vertiendo salsa, manteniendo la toma estática original"
+    ],
+    "textos": [
+      {
+        "clave": "marca",
+        "texto": "TORRE DE VEGA",
+        "fuente": "MARCA",
+        "cita": "Torre de Vega"
+      },
+      {
+        "clave": "titular",
+        "texto": "ENSALADA CESAR",
+        "fuente": "PLATO",
+        "cita": "Ensalada cesar con quesoo de cabra piñones y bacon"
+      },
+      {
+        "clave": "queso",
+        "texto": "Rulo de queso de cabra",
+        "fuente": "ELEMENTO",
+        "cita": "rulo de queso de cabra tostado y caramelizado en superficie con reducción oscura"
+      },
+      {
+        "clave": "ingredientes",
+        "texto": "Piñones y bacon",
+        "fuente": "PLATO",
+        "cita": "Ensalada cesar con quesoo de cabra piñones y bacon"
+      }
+    ],
+    "capas": [
+      {
+        "tipo": "fondo",
+        "color": "@negro"
+      },
+      {
+        "tipo": "foto",
+        "encuadre": "sangre",
+        "zoom": 1,
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "tratamiento": "natural",
+        "velo": "no"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-marca",
+        "texto": "marca",
+        "voz": "rotulo",
+        "caja": {
+          "col": [
+            2,
+            6
+          ],
+          "fila": [
+            2,
+            2
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 36,
+        "alinear": "izquierda",
+        "vertical": "centro",
+        "color": "@principal",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-titular",
+        "texto": "titular",
+        "voz": "titular",
+        "caja": {
+          "col": [
+            2,
+            11
+          ],
+          "fila": [
+            3,
+            3
+          ]
+        },
+        "ajuste": "ancho",
+        "alinear": "izquierda",
+        "vertical": "centro",
+        "color": "@blanco",
+        "relacion": "aparte"
+      },
+      {
+        "tipo": "anotacion",
+        "id": "anot-queso",
+        "texto": "queso",
+        "voz": "anotacion",
+        "caja": {
+          "col": [
+            1,
+            4
+          ],
+          "fila": [
+            4,
+            5
+          ]
+        },
+        "tamano": 40,
+        "apunta": {
+          "x": 0.65,
+          "y": 0.22
+        },
+        "color": "@principal"
+      },
+      {
+        "tipo": "texto",
+        "id": "txt-ingredientes",
+        "texto": "ingredientes",
+        "voz": "rotulo",
+        "caja": {
+          "col": [
+            2,
+            6
+          ],
+          "fila": [
+            15,
+            15
+          ]
+        },
+        "ajuste": "fijo",
+        "tamano": 36,
+        "alinear": "izquierda",
+        "vertical": "centro",
+        "color": "@gris",
+        "relacion": "aparte"
+      }
+    ]
+  },
+  "problemas": [],
+  "avisos": [
+    "SEPARACION: «txt-titular» y «anot-queso» se montan 9 px: deja al menos 14 px para que respiren.",
+    "FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+  ],
+  "intentos": [
+    {
+      "problemas": [
+        "SOLAPE: «txt-apoyo» tapa el sujeto: el 19 % de sus letras queda encima (máximo 3 %).",
+        "CONTRASTE: «txt-apoyo» tiene un contraste de 1.34:1 con su fondo en su peor zona; se pide al menos 4.5:1."
+      ],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres..",
+        "CRUCE: ningún texto se relaciona con el plato (todos van «aparte»): titular y foto quedan como dos bloques apilados. Prueba «detras», «delante» o «contorno» en el titular, o una anotación que señale algo del plato; si es a propósito, dilo en la idea."
+      ]
+    },
+    {
+      "problemas": [],
+      "avisos": [
+        "SEPARACION: «txt-titular» y «anot-queso» se montan 9 px: deja al menos 14 px para que respiren.",
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-ensalada-cesar-con-quesoo-de-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ]
+    }
+  ],
+  "mapa": {
+    "sujeto": {
+      "col": [
+        1,
+        12
+      ],
+      "fila": [
+        5,
+        15
+      ],
+      "area": 0.515
+    },
+    "libres": [
+      {
+        "col": [
+          1,
+          12
+        ],
+        "fila": [
+          1,
+          4
+        ],
+        "luz": 0.007
+      },
+      {
+        "col": [
+          1,
+          7
+        ],
+        "fila": [
+          15,
+          16
+        ],
+        "luz": 0.027
+      }
+    ]
+  }
+}

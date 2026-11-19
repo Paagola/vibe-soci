@@ -1,0 +1,75 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-14T19:44:38.017Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 55,
+      "distancia": "GENERAL",
+      "encuadre": "Picado oblicuo desordenado que abarca cortador, pata en soporte y platos sobre mesa negra.",
+      "luz": "Luz diurna difusa exterior, plana y sin relieve.",
+      "elementos": [
+        {
+          "nombre": "Plato blanco con lonchas concéntricas de jamón ibérico",
+          "estado": "brillante con grasa entreverada",
+          "recuento": 2
+        },
+        {
+          "nombre": "Pata de jamón en jamonero",
+          "estado": "magro rojo y grasa brillante en la zona de corte",
+          "recuento": 1
+        },
+        {
+          "nombre": "Cuchillo jamonero",
+          "estado": "hoja fina en posición de corte",
+          "recuento": 1
+        },
+        {
+          "nombre": "Manos con guantes negros",
+          "estado": "sujetando cuchillo y loncha",
+          "recuento": 2
+        },
+        {
+          "nombre": "Pila de platos blancos",
+          "estado": "apilados en mesa",
+          "recuento": 1
+        }
+      ],
+      "defectos": [
+        "Fondo y mesa con elementos sobrantes (bolsas, suelo exterior).",
+        "Iluminación plana sin realce del brillo de la grasa.",
+        "Composición dispersa sin jerarquía clara."
+      ],
+      "utilizable": true,
+      "motivo": "Registra con claridad el producto real, el corte y la vajilla exacta."
+    },
+    "huecos": {
+      "plato": "cured Iberian ham arranged on circular plates",
+      "origen": "at a traditional Spanish tapas bar",
+      "elementos": "the round white porcelain plates arranged with thin concentric slices of deep red Iberian ham and glistening marbled fat",
+      "recuento": "Exactly two white round plates with concentric ham slices.",
+      "camara": {
+        "anguloGrados": 90,
+        "descripcion": "direct top-down overhead view looking straight down",
+        "objetivoMm": 50,
+        "apertura": 5.6,
+        "giroGrados": 45,
+        "distancia": "PRIMER_PLANO"
+      },
+      "ideaGrafica": "symmetrical layout on an ultramarine blue surface, one plate cropped at the top edge and another cropped at the bottom edge, leaving a clear middle third",
+      "luz": "crisp studio strobe with sharp edge highlights and soft contact shadows",
+      "colorDominante": "saturated ultramarine blue background with deep crimson red as the primary accent"
+    },
+    "decisiones": [
+      "Familia visual 2a (recorte sobre color plano): se aísla el producto sobre azul ultramar para máxima legibilidad y contraste con el rojo del jamón, siguiendo la referencia ref-post-17.",
+      "Cambio radical de cámara a cenital puro (90°, +35° respecto a la foto original) para adoptar la estructura de doble plato cortado arriba y abajo de la referencia.",
+      "Se reserva el tercio central despejado para la futura tipografía en diseño, eliminando distracciones y fondos caóticos."
+    ]
+  },
+  "prompt": "@image1 is a real photo of cured Iberian ham arranged on circular plates at a traditional Spanish tapas bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the round white porcelain plates arranged with thin concentric slices of deep red Iberian ham and glistening marbled fat. Exactly two white round plates with concentric ham slices. Nothing else added. New composition by a professional food photographer: direct top-down overhead view looking straight down, 50 mm lens at f/5.6, symmetrical layout on an ultramarine blue surface, one plate cropped at the top edge and another cropped at the bottom edge, leaving a clear middle third. Crisp studio strobe with sharp edge highlights and soft contact shadows, saturated ultramarine blue background with deep crimson red as the primary accent. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ]
+}

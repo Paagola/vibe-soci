@@ -1,0 +1,77 @@
+{
+  "esquema": "taller/serie@1",
+  "comanda": "b45d6dd4dde0a63435f1bf65195dcc9f598a2f3075c24fea581591e6e62ab180",
+  "fotoSha256": "754b997439fb5a0b50dc5a15015a6daa47ff03f132e1e7bbcbbd007cf47f26ec",
+  "baseSha256": "993d82874182aa685b552adbe2f25d6e66d243380664ede3def2564edd04a714",
+  "versionBase": 1,
+  "uso": "SOLO_PRUEBA_COMPOSICION",
+  "origen": "IMPORTACION",
+  "paginas": [
+    {
+      "edicion": {
+        "funcion": "PORTADA",
+        "titulo": "Tarta de\npistacho",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "tratamiento": "TITULO_EN_AIRE",
+      "referente": "https://www.behance.net/gallery/247552933/Social-Media-Design-Food-Instagram-Carousel-Campaign",
+      "motivo": "Un nombre breve ocupa el aire de la apertura y deja reconocible el sujeto. El solape sugerido se descartó para mantener la lectura.",
+      "sha256": "f20473cee13f3ce203bc860313d47694900af4a160da0239b92443a8ee9088d5",
+      "intencionSha256": "65a2ad2bb261d8c4ef281bba3fe148ad3dd968e7afa3ef734587667eb5beaf9b",
+      "svgSha256": "40a32906a15080ac5b7e48910ff7ac606b37e6c113a90614dc2237bcee1724e0",
+      "medidas": [
+        {
+          "capa": "titulo",
+          "cuerpoMovil": 43.2,
+          "contraste": 12.31,
+          "lineas": [
+            "Tarta de",
+            "pistacho"
+          ]
+        }
+      ]
+    },
+    {
+      "edicion": {
+        "funcion": "DETALLE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "0e529d20880f20a95727d14f3cd278c8d183670c3d67d8f7bd7d3ecd74d0edb1",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "d4c6788212e221884081eb917bd330b24897f5282cbfddfed2fc565c3d6a3780",
+      "intencionSha256": "5b07fd70eb52897905989bda6019e7e8339f1560ae27167e737ab9ac91e87d8e",
+      "medidas": []
+    },
+    {
+      "edicion": {
+        "funcion": "CIERRE",
+        "titulo": "",
+        "apoyo": "",
+        "enfoque": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "zoom": 1
+      },
+      "fotoSha256": "3e7e03a9e43cfdfe5f49125841b1a66073236c8362da860d5491f363aa427997",
+      "tratamiento": "FOTO",
+      "motivo": "La persona dejó la lámina sin texto.",
+      "sha256": "baf2aa1c00b150b73b5f5477e13823a3abd3f4cac3c205c6d66f76c1dd21448a",
+      "intencionSha256": "c094dc96347a216eb0b126b7622ab6d1c793f6f68b428f97b8488efa119521d7",
+      "medidas": []
+    }
+  ],
+  "huella": "e8182fcfc737883b8e1412a11a76dd52edd6bc784471dd2fe78aaffd55e0652b"
+}

@@ -1,0 +1,124 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-18-pulpo-2",
+  "local": "asador-etxebarri",
+  "version": 1,
+  "creadoEn": "2026-11-19T00:26:41.589Z",
+  "actualizadoEn": "2026-11-19T00:26:41.589Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "pulpo",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "tentáculo de pulpo a la brasa",
+          "estado": "enroscado, con cortes transversales, bordes tostados y ventosas visibles",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "langostinos pelados",
+          "estado": "cocinados con cola intacta, espolvoreados con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "patatas cocidas",
+          "estado": "en rodajas irregulares bajo el pulpo, impregnadas de aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "salsa verde de perejil y aceite",
+          "estado": "repartida por encima del pulpo y en gotas sobre la madera",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "pimentón rojo",
+          "estado": "espolvoreado sobre el pulpo, langostinos, patatas y madera",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "plato redondo de madera estriada",
+          "estado": "con surcos paralelos manchados de aceite y pimentón",
+          "recuento": 1,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "bajoplato gris mate",
+          "estado": "liso, asomando por debajo de la madera",
+          "recuento": 1,
+          "cortados": 1,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "f48b8a1cfbcf435b043a63e7d35fad8377e5f3ac73b2c2480a94dbe83e893561"
+    },
+    "datosPorConfirmar": [
+      "«langostinos pelados»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«patatas cocidas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«salsa verde de perejil y aceite»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«pimentón rojo»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«plato redondo de madera estriada»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«bajoplato gris mate»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«langostinos pelados»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "EDITORIAL_OSCURO",
+  "referencia": {
+    "id": "ref-post-14"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

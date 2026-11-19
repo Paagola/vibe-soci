@@ -18,14 +18,18 @@ import { guardarMuestras, leerMuestras } from './muestras.js';
 import type { MascaraDePlano } from './profundidad.js';
 import { componerTitulo } from './componerTitulo.js';
 import { maquetaDeTitulo } from './puesta.js';
-import { maquetarSerie, leerSerie } from './serie.js';
+import { maquetarSerie, leerSerie, type TomasParaSerie } from './serie.js';
 import { paqueteZip } from './paquete.js';
+import { guardarToma, leerToma, normalizarFotoDeSerie, paqueteDeToma, promptDeToma, rutaToma } from './secuencia.js';
+import { DireccionSecuencia, formatoDeToma, GuionEditorial, TomaDeSerie, tomaPlaneada, type FotoDePagina } from '../../dominio/secuenciaTaller.js';
+import { maquetarCarrusel } from './maquetarCarrusel.js';
+import { luzSolicitada } from '../../dominio/luzFotografica.js';
 
 type Candidata = TallerDeArte['candidatas'][number];
-const carpeta = (deps: DepsPost, e: EncargoPost) => join(deps.proyectos, e.proyecto, 'taller');
-const original = (deps: DepsPost, e: EncargoPost) => readFile(resolve(deps.raiz, e.fotoSubida));
+const carpeta = (deps: Pick<DepsPost, 'proyectos'>, e: EncargoPost) => join(deps.proyectos, e.proyecto, 'taller');
+const original = (deps: Pick<DepsPost, 'raiz'>, e: EncargoPost) => readFile(resolve(deps.raiz, e.fotoSubida));
 
-async function fuenteVerificada(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte) {
+async function fuenteVerificada(deps: Pick<DepsPost, 'raiz'>, e: EncargoPost, comanda: ComandaDeArte) {
   const foto = await original(deps, e);
   if (huella(foto) !== comanda.fotoSha256) throw new ErrorDeUsuario('La foto fuente ha cambiado desde que se preparó la dirección.');
   return foto;
@@ -56,9 +60,19 @@ async function redactar(deps: DepsPost, e: EncargoPost, edicion: EdicionDeComand
   const fotografia = { temperatura: mapa.temperatura, dominantes: mapa.paleta.map(c => c.hex), acento: mapa.vivo,
     luz: mapa.luzMedia, aire: libre ? `Zona de poco detalle de la foto: columnas ${libre.col.join('–')}/12 y filas ${libre.fila.join('–')}/16.` : 'Toma de textura continua.' };
   const fotoSha256 = huella(foto);
-  const construir = (muestras?: ComandaDeArte['muestras']) => dirigir(e, marca, fotoSha256, fotografia, oficio, referencia?.ficha, edicion.direccion, edicion.nombrePlato, edicion.gesto, edicion.toma, muestras, edicion.ruta);
-  const base = construir();
   const previa = e.taller?.comanda;
+  let propuesta = previa?.propuestaPortada;
+  const construir = (muestras?: ComandaDeArte['muestras']) => dirigir(e, marca, fotoSha256, fotografia, oficio, referencia?.ficha, edicion.direccion, edicion.nombrePlato, edicion.gesto, edicion.toma, muestras, edicion.ruta, propuesta);
+  let base = construir();
+  if (base.editorial && base.puesta?.ambito && deps.directorPortada && (!previa || edicion.ruta && edicion.ruta !== previa.editorial?.ruta)) {
+    const [recientes, referenciaVisual] = await Promise.all([
+      deps.postsRecientes?.(e) ?? [],
+      referencia?.origen.archivo ? readFile(deps.referencias.referencias.rutaArchivo(e.local, referencia.id, referencia.origen.archivo)).catch(() => undefined) : undefined,
+    ]);
+    propuesta = await deps.directorPortada({ original: foto, encargo: e.plato, tipo: base.puesta.ambito, formato: e.formato, referencia: base.referencia, referenciaVisual,
+      luzSolicitada: luzSolicitada(e.plato) ?? (e.estetica === 'EDITORIAL_OSCURO' ? 'ESTUDIO' : undefined), recientes }).catch(() => undefined);
+    if (propuesta || previa?.propuestaPortada) base = construir();
+  }
   const permiteMuestras = !base.toma?.seleccion.escenaFuente && base.editorial?.ruta !== 'FOTO_ESPACIO' && base.toma?.camara.vista === 'CENITAL' && !base.toma.alternativa;
   if (edicion.muestras && !permiteMuestras) throw new ErrorDeUsuario('Para usar detalles, elige una cenital con el punto de vista de origen indicado.');
   if (!permiteMuestras || edicion.muestras === null) return base;
@@ -124,7 +138,7 @@ export async function descargarPaquete(deps: DepsPost, e: EncargoPost): Promise<
   ]);
 }
 
-export async function bytesDeCandidata(deps: DepsPost, e: EncargoPost, version: number) {
+export async function bytesDeCandidata(deps: Pick<DepsPost, 'proyectos'>, e: EncargoPost, version: number) {
   const candidata = e.taller?.candidatas.find(c => c.version === version);
   if (!candidata) throw new ErrorDeUsuario('No existe esa versión del cartel.');
   const bytes = await readFile(join(carpeta(deps, e), candidata.sha256 + '.png'));
@@ -132,7 +146,7 @@ export async function bytesDeCandidata(deps: DepsPost, e: EncargoPost, version: 
   return { bytes, candidata };
 }
 
-export async function leerCapa(deps: DepsPost, e: EncargoPost, version: number, tipo: 'base' | 'mascara') {
+export async function leerCapa(deps: Pick<DepsPost, 'proyectos'>, e: EncargoPost, version: number, tipo: 'base' | 'mascara') {
   const composicion = e.taller?.candidatas.find(c => c.version === version)?.composicion;
   const hash = tipo === 'base' ? composicion?.baseSha256 : composicion?.profundidad?.mascaraSha256;
   if (!hash) throw new ErrorDeUsuario('Esta versión carece de la capa solicitada.');
@@ -162,14 +176,57 @@ async function mascaraDeBase(deps: DepsPost, e: EncargoPost, candidata: Candidat
   return { png, sha256, origen: subida ? 'IMPORTADA' : 'LOCAL', plano };
 }
 
-export async function descargarSerie(deps: DepsPost, e: EncargoPost, hash: string, pagina?: number) {
+function portadaAprobada(e: EncargoPost) {
+  const candidata = e.taller?.candidatas.at(-1);
+  if (e.paso !== 'HECHO' || !candidata?.revision || candidata.comanda !== exigirConfirmada(e).huella ||
+      (!candidata.composicion && !esFotoEditorial(e.taller?.comanda?.editorial?.ruta))) {
+    throw new ErrorDeUsuario('Aprueba primero una portada con fotografía limpia o con texto editable.');
+  }
+  return candidata;
+}
+
+async function leerPortada(deps: DepsPost, e: EncargoPost, candidata = portadaAprobada(e)) {
+  if (candidata.composicion) return leerCapa(deps, e, candidata.version, 'base');
+  const { bytes } = await bytesDeCandidata(deps, e, candidata.version);
+  return { bytes, ruta: join(carpeta(deps, e), candidata.sha256 + '.png') };
+}
+
+function secuenciaVigente(e: EncargoPost) {
+  const portada = portadaAprobada(e);
+  const serie = e.taller?.secuencia;
+  if (!serie || serie.version !== portada.version || serie.comanda !== portada.comanda ||
+    serie.baseSha256 !== (portada.composicion?.baseSha256 ?? portada.sha256)) {
+    throw new ErrorDeUsuario('Falta una dirección de tomas para la portada vigente.');
+  }
+  return serie;
+}
+
+export async function descargarTomaSerie(deps: DepsPost, e: EncargoPost, toma: TomaDeSerie, paquete: boolean) {
+  const secuencia = secuenciaVigente(e);
+  if (!tomaPlaneada(secuencia.direccion, toma)) throw new ErrorDeUsuario('Esta toma no figura en la dirección del carrusel.');
+  if (paquete) {
+    const [producto, portada] = await Promise.all([imagenFuente(deps, e, exigirConfirmada(e)), leerPortada(deps, e)]);
+    return paqueteDeToma(secuencia, toma, producto, portada.bytes);
+  }
+  const candidata = secuencia.tomas[toma]?.candidata;
+  if (!candidata) throw new ErrorDeUsuario('Todavía no hay una toma para revisar.');
+  return leerToma(carpeta(deps, e), candidata.sha256);
+}
+
+export async function descargarSerie(deps: Pick<DepsPost, 'raiz' | 'proyectos'>, e: EncargoPost, hash: string, pagina?: number) {
   const serie = e.taller?.serie;
   if (e.paso !== 'HECHO' || !serie || serie.huella !== hash) throw new ErrorDeUsuario('Esta serie no corresponde a la edición vigente.');
   await fuenteVerificada(deps, e, exigirConfirmada(e));
   const candidata = e.taller?.candidatas.find(c => c.version === serie.versionBase);
   if (!candidata?.revision) throw new ErrorDeUsuario('Falta la revisión de la base de esta serie.');
   const base = pagina !== undefined ? undefined : candidata.composicion ? (await leerCapa(deps, e, candidata.version, 'base')).bytes : (await bytesDeCandidata(deps, e, candidata.version)).bytes;
-  return { bytes: await leerSerie(carpeta(deps, e), serie, pagina, base), uso: serie.uso };
+  const fotos = pagina !== undefined ? [] : await Promise.all(serie.paginas.flatMap((p, i) => {
+    if (p.fotoSha256) return [leerToma(carpeta(deps, e), p.fotoSha256).then(bytes => ({ nombre: 'foto-' + (i + 1) + '.png', bytes }))];
+    return (p.fotosSha256 ?? []).flatMap((sha, j) => sha === serie.baseSha256 ? [] :
+      [leerToma(carpeta(deps, e), sha).then(bytes => ({ nombre: 'foto-' + (i + 1) + '-' + (j + 1) + '.png', bytes }))]);
+  }));
+  if (pagina === undefined && serie.mascaraSha256) fotos.push({ nombre: 'mascara-portada.png', bytes: await leerToma(carpeta(deps, e), serie.mascaraSha256) });
+  return { bytes: await leerSerie(carpeta(deps, e), serie, pagina, base, fotos), uso: serie.uso };
 }
 
 export async function exportarArte(deps: DepsPost, e: EncargoPost) {
@@ -286,16 +343,147 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     return registrar(deps, e, 'GENERAR', 'Dirección, sujeto y texto confirmados. Paquete de producción disponible.');
   }
   exigirConfirmada(e);
+  if (accion.accion === 'DIRIGIR_SECUENCIA' || accion.accion === 'DIRIGIR_CARRUSEL') {
+    const aprobada = portadaAprobada(e);
+    const libre = accion.accion === 'DIRIGIR_CARRUSEL';
+    const permitePuesta = comanda.puesta?.ambito === 'PRODUCTO' && comanda.toma?.seleccion.escenaFuente?.modo !== 'DOCUMENTAL';
+    if (!libre && !permitePuesta) {
+      throw new ErrorDeUsuario('La secuencia de estudio necesita una portada de producto que admita una puesta editorial.');
+    }
+    if (accion.version !== aprobada.version) throw new ErrorDeUsuario('La portada ha cambiado.');
+    if (taller.secuencia && (!libre || 'paginas' in taller.secuencia.direccion)) return e;
+    const director = libre ? deps.directorCarrusel : deps.directorSecuencia;
+    if (!director) throw new ErrorDeUsuario('Configura Gemini para dirigir una secuencia o usa el modo simulado.');
+    progreso?.({ mensaje: libre ? 'El director compara las referencias y decide el ritmo, las tomas y la maquetación.' :
+      'Hydrogen estudia el alimento y prepara dos tomas que continúen la portada.', hechas: 0, total: 1, pasosRestantes: { director: 1, tandas: 0 } });
+    const [fuente, portada, recientes] = await Promise.all([
+      fuenteVerificada(deps, e, comanda), leerPortada(deps, e, aprobada), deps.postsRecientes?.(e),
+    ]);
+    const luz = comanda.modoDeLuz ?? luzSolicitada(e.plato) ?? 'NATURAL';
+    let referenciaVisual: Buffer | undefined;
+    if (libre && subida) referenciaVisual = await readFile(subida);
+    else if (libre && e.referencia) {
+      const r = await deps.referencias.referencias.obtener(e.local, e.referencia);
+      if (r.origen.archivo) referenciaVisual = await readFile(deps.referencias.referencias.rutaArchivo(e.local, r.id, r.origen.archivo)).catch(() => undefined);
+    }
+    const documental = libre && !permitePuesta ? true as const : undefined;
+    const salida = await director({ original: fuente, portada: portada.bytes, encargo: e.plato, producto: comanda.direccion.sujeto,
+      referencia: comanda.referencia, luz, recientes, nombre: comanda.nombrePlato ?? e.plato,
+      preferencia: libre ? accion.preferencia : undefined, referenciaVisual, documental });
+    const direccion = libre ? GuionEditorial.parse(salida.direccion) : DireccionSecuencia.parse(salida.direccion);
+    const base = { comanda: comanda.huella, version: aprobada.version, baseSha256: huella(portada.bytes), modelo: salida.modelo, luz, direccion, documental,
+      ...(referenciaVisual ? { referenciaVisualSha256: huella(referenciaVisual) } : {}) };
+    const extra = 'paginas' in direccion && direccion.tomas.extra;
+    taller.secuencia = { ...base, huella: huella(JSON.stringify(base)), tomas: { detalle: {}, cierre: {}, ...(extra ? { extra: {} } : {}) } };
+    const modelo = salida.modelo;
+    return registrar(deps, e, 'HECHO', 'Dirección de la secuencia preparada con ' + modelo + '.');
+  }
+  if (accion.accion === 'IMPORTAR_TOMA_SERIE' || accion.accion === 'GENERAR_TOMA_SERIE' || accion.accion === 'REVISAR_TOMA_SERIE') {
+    const secuencia = secuenciaVigente(e);
+    const estado = secuencia.tomas[accion.toma];
+    const planeada = tomaPlaneada(secuencia.direccion, accion.toma);
+    if (!estado || !planeada) throw new ErrorDeUsuario('Esta toma no figura en la dirección del carrusel.');
+    const formato = formatoDeToma(planeada);
+    const portada = portadaAprobada(e);
+    await fuenteVerificada(deps, e, comanda);
+    if (estado.candidata?.aprobada) throw new ErrorDeUsuario('Esta toma ya está aprobada.');
+    if (accion.accion === 'REVISAR_TOMA_SERIE') {
+      if (!estado.candidata || estado.candidata.sha256 !== accion.sha256) throw new ErrorDeUsuario('La candidata ha cambiado.');
+      await leerToma(carpeta(deps, e), accion.sha256);
+      if (accion.decision === 'APROBAR') estado.candidata.aprobada = true;
+      else delete estado.candidata;
+      return registrar(deps, e, 'HECHO', accion.decision === 'APROBAR' ? 'Toma de serie aprobada.' : 'Toma devuelta. Puedes importar otra.');
+    }
+    if (estado.candidata) throw new ErrorDeUsuario('Revisa la candidata antes de pedir otra toma.');
+    let datos: Buffer;
+    let modelo = 'Importación';
+    let uso = portada.uso === 'PUBLICABLE' && accion.accion === 'IMPORTAR_TOMA_SERIE' ? accion.usoCandidata ?? 'SOLO_PRUEBA_COMPOSICION' : portada.uso;
+    if (accion.accion === 'IMPORTAR_TOMA_SERIE') {
+      if (!subida) throw new ErrorDeUsuario('Falta la foto que quieres importar.');
+      datos = await readFile(subida);
+    } else {
+      if (secuencia.documental) throw new ErrorDeUsuario('Esta serie documenta una escena real. Importa una foto de ese plato o espacio.');
+      if (estado.envioReservado) throw new ErrorDeUsuario('Esta dirección ya reservó un envío. Puedes importar el resultado o una alternativa.');
+      const disponible = deps.generador.disponible();
+      if (!disponible.ok) throw new ErrorDeUsuario(disponible.motivo);
+      const base = await leerPortada(deps, e, portada);
+      const reservar = async () => {
+        estado.envioReservado = true;
+        await registrar(deps, e, 'HECHO', 'Envío reservado para la toma de ' + accion.toma + '.');
+      };
+      if (!deps.generador.reservaEnEnvio) await reservar();
+      progreso?.({ mensaje: 'Generando sólo la toma de ' + accion.toma + '.', hechas: 0, total: 1, pasosRestantes: { director: 0, tandas: 1 } });
+      const nueva = await deps.generador.generar({
+        id: e.proyecto + '-serie-' + secuencia.huella + '-' + accion.toma,
+        referencias: [
+          { ruta: resolve(deps.raiz, e.fotoSubida), etiqueta: 'Imagen 1. Evidencia del alimento.' },
+          { ruta: base.ruta, etiqueta: 'Imagen 2. Portada aprobada.' },
+        ],
+        prompt: promptDeToma(secuencia, accion.toma), aspectRatio: formato, tamano: '1K',
+        estimadoMaximoUsd: accion.estimadoMaximoUsd, ...(deps.generador.reservaEnEnvio ? { antesDeEnviar: reservar } : {}),
+      });
+      datos = nueva.bytes;
+      modelo = nueva.modelo;
+      if (e.simulado) uso = 'SOLO_PRUEBA_COMPOSICION';
+    }
+    const candidata = await guardarToma(carpeta(deps, e), datos, modelo, uso, formato);
+    if (candidata.sha256 === secuencia.baseSha256 || Object.values(secuencia.tomas).some(t => t?.candidata?.sha256 === candidata.sha256)) {
+      throw new ErrorDeUsuario('Esta imagen repite otra lámina. Importa una toma con otra cámara o gesto.');
+    }
+    estado.candidata = candidata;
+    return registrar(deps, e, 'HECHO', 'Toma de ' + accion.toma + ' disponible para revisión.');
+  }
   if (accion.accion === 'MAQUETAR_SERIE') {
     if (e.paso !== 'HECHO' || !ultimo?.revision || ultimo.version !== accion.version || ultimo.comanda !== comanda.huella) throw new ErrorDeUsuario('Aprueba primero la candidata que quieres maquetar.');
     if (!ultimo.composicion && !esFotoEditorial(comanda.editorial?.ruta)) throw new ErrorDeUsuario('Una serie requiere una base fotográfica sin el texto integrado en los píxeles.');
     await fuenteVerificada(deps, e, comanda);
     await bytesDeCandidata(deps, e, ultimo.version);
-    const base = ultimo.composicion ? await leerCapa(deps, e, ultimo.version, 'base') : { ruta: join(carpeta(deps, e), ultimo.sha256 + '.png') };
-    taller.serie = await maquetarSerie(deps.raiz, carpeta(deps, e), e.local, {
-      comanda: comanda.huella, fotoSha256: comanda.fotoSha256, baseSha256: ultimo.composicion?.baseSha256 ?? ultimo.sha256, versionBase: ultimo.version, uso: ultimo.uso,
+    const base = await leerPortada(deps, e, ultimo);
+    const secuencia = accion.usarTomas ? secuenciaVigente(e) : undefined;
+    const baseSerie = {
+      comanda: comanda.huella, fotoSha256: comanda.fotoSha256, baseSha256: huella(base.bytes), versionBase: ultimo.version, uso: ultimo.uso,
       origen: ultimo.origen, ...(comanda.referencia ? { referencia: { id: comanda.referencia.id, mecanismos: comanda.referencia.mecanismos, voces: comanda.referencia.voces } } : {}),
-    }, base.ruta, accion.paginas);
+    };
+    if (secuencia && 'paginas' in secuencia.direccion) {
+      if (accion.paginas.length !== secuencia.direccion.paginas.length) throw new ErrorDeUsuario('La edición debe corresponder a las láminas dirigidas.');
+      const fotos = new Map<FotoDePagina, { sha256: string; bytes: Buffer }>([['base', { sha256: baseSerie.baseSha256, bytes: base.bytes }]]);
+      for (const id of TomaDeSerie.options) {
+        if (!secuencia.direccion.tomas[id]) continue;
+        const toma = secuencia.tomas[id]?.candidata;
+        if (!toma?.aprobada) throw new ErrorDeUsuario('Revisa y aprueba las tomas del guion antes de maquetar.');
+        if (toma.uso !== 'PUBLICABLE') baseSerie.uso = 'SOLO_PRUEBA_COMPOSICION';
+        fotos.set(id, { sha256: toma.sha256, bytes: await leerToma(carpeta(deps, e), toma.sha256) });
+      }
+      taller.serie = await maquetarCarrusel(deps.raiz, carpeta(deps, e), baseSerie, secuencia, secuencia.direccion, accion.paginas, fotos);
+      return registrar(deps, e, 'HECHO', 'Carrusel editorial compuesto con las fotografías revisadas y el texto confirmado.');
+    }
+    let tomas: TomasParaSerie | undefined;
+    let uso = ultimo.uso;
+    if (secuencia && !('paginas' in secuencia.direccion)) {
+      if (accion.paginas.length !== 3) throw new ErrorDeUsuario('Usa una portada, un detalle y un cierre.');
+      const { detalle, cierre } = secuencia.tomas;
+      if (!detalle.candidata?.aprobada || !cierre.candidata?.aprobada) throw new ErrorDeUsuario('Revisa y aprueba las dos tomas antes de maquetar.');
+      if (detalle.candidata.uso !== 'PUBLICABLE' || cierre.candidata.uso !== 'PUBLICABLE') uso = 'SOLO_PRUEBA_COMPOSICION';
+      tomas = {
+        detalle: { ruta: rutaToma(carpeta(deps, e), detalle.candidata.sha256), sha256: detalle.candidata.sha256 },
+        cierre: { ruta: rutaToma(carpeta(deps, e), cierre.candidata.sha256), sha256: cierre.candidata.sha256 },
+      };
+      if (secuencia.direccion.portada && accion.paginas[0]?.titulo) {
+        const region = secuencia.direccion.portada.primerPlano;
+        const mascara = await deps.segmentador.mascara(base.ruta).then(async bytes => {
+          const alfa = await sharp(bytes).resize(1080, 1350).extractChannel(0).raw().toBuffer();
+          const recortada = Buffer.alloc(alfa.length);
+          const izquierda = Math.floor(region.x * 1080), derecha = Math.min(1080, Math.ceil((region.x + region.w) * 1080));
+          for (let y = Math.floor(region.y * 1350); y < Math.min(1350, Math.ceil((region.y + region.h) * 1350)); y++) {
+            const desde = y * 1080 + izquierda;
+            alfa.copy(recortada, desde, desde, y * 1080 + derecha);
+          }
+          return sharp(recortada, { raw: { width: 1080, height: 1350, channels: 1 } }).png().toBuffer();
+        }).catch(() => undefined);
+        if (mascara) tomas.portada = { mascara, zona: secuencia.direccion.portada.zonaTexto };
+      }
+    }
+    taller.serie = await maquetarSerie(deps.raiz, carpeta(deps, e), e.local, { ...baseSerie, uso }, base.ruta, accion.paginas, tomas);
     return registrar(deps, e, 'HECHO', 'Serie maquetada sobre la candidata revisada. Texto literal confirmado. Versión ' + taller.serie.huella);
   }
   if (accion.accion === 'REABRIR_DIRECCION') {
@@ -325,6 +513,28 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     const recorte = { left: Math.round((width - ancho) * accion.posicion), top: Math.round((height - alto) * accion.posicion), width: ancho, height: alto };
     const png = await sharp(bytes).rotate().extract(recorte).resize(1080, 1350).png().toBuffer();
     return incorporar(deps, e, comanda, png, 'ORIGINAL', e.usoFotoReal, accion.posicion);
+  }
+  if (accion.accion === 'GENERAR_PORTADA_FOTO') {
+    if (e.paso !== 'GENERAR' || comanda.puesta?.ambito !== 'PRODUCTO' || comanda.muestras ||
+      comanda.toma?.seleccion.escenaFuente?.modo === 'DOCUMENTAL' || !(esFotoEditorial(comanda.editorial?.ruta) || comanda.tipografiaLocal)) {
+      throw new ErrorDeUsuario('Esta dirección no admite generación de una base fotográfica.');
+    }
+    if (taller.envios.some(v => v.huella === comanda.huella)) throw new ErrorDeUsuario('Ya se reservó un envío para esta dirección. Puedes importar la foto.');
+    await fuenteVerificada(deps, e, comanda);
+    const disponible = deps.generador.disponible();
+    if (!disponible.ok) throw new ErrorDeUsuario(disponible.motivo);
+    const reservar = async () => {
+      taller.envios.push({ huella: comanda.huella, fecha: deps.ahora(), numero: taller.envios.length + 1 });
+      await registrar(deps, e, 'GENERAR', 'Envío de la base fotográfica reservado.');
+    };
+    if (!deps.generador.reservaEnEnvio) await reservar();
+    progreso?.({ mensaje: 'El generador prepara la primera foto de la sesión.', hechas: 0, total: 1, pasosRestantes: { director: 0, tandas: 1 } });
+    const nueva = await deps.generador.generar({
+      id: e.proyecto + '-apertura-' + comanda.huella, referencias: [{ ruta: resolve(deps.raiz, e.fotoSubida), etiqueta: 'Imagen 1. Evidencia del producto.' }],
+      prompt: comanda.prompt, aspectRatio: '4:5', tamano: '1K', estimadoMaximoUsd: accion.estimadoMaximoUsd,
+      ...(deps.generador.reservaEnEnvio ? { antesDeEnviar: reservar } : {}),
+    });
+    return incorporar(deps, e, comanda, await normalizarFotoDeSerie(nueva.bytes), 'IMAGES_API', e.simulado ? 'SOLO_PRUEBA_COMPOSICION' : comanda.uso);
   }
   if (accion.accion === 'IMPORTAR' || accion.accion === 'GENERAR') {
     if (e.paso !== 'GENERAR') throw new ErrorDeUsuario('Revisa primero la candidata vigente.');

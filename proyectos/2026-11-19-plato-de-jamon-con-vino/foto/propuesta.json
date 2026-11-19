@@ -1,0 +1,192 @@
+{
+  "director": "Gemini (gemini-4-hydrogen)",
+  "fecha": "2026-11-19T20:43:47.199Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 38,
+      "distancia": "MEDIO",
+      "encuadre": "Plano medio vertical en picado medio. Mano con copa de vino tinto en primer plano derecho, pizarra con carne laminada y sal al fondo izquierdo y plato con jamón cortado por el borde derecho.",
+      "luz": "Luz ambiente cálida y dominante ámbar de interior sobre mesa de madera, con sombras suaves y fondo de ladrillo desenfocado.",
+      "elementos": [
+        {
+          "nombre": "Copa de vino tinto",
+          "estado": "cristal transparente medio lleno de vino tinto oscuro con reflejos",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "",
+          "ingles": "a clear stemmed glass half-filled with dark red wine",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Mano",
+          "estado": "sujetando el tallo de la copa",
+          "recuento": null,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Brazo cortado por el borde derecho",
+          "ingles": "a hand holding the wine glass stem",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Carne asada laminada con hueso",
+          "estado": "sellada con costra oscura, centro rojo rosado y grasa dorada",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": true,
+          "nota": "La nota indica solomillo pero se observan huesos largos de chuletón; piezas superpuestas difíciles de contar",
+          "ingles": "sliced seared beef with bone, dark crust and red-pink centre",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Cuenco con sal en escamas",
+          "estado": "cuenco negro mate pequeño lleno de escamas blancas de sal",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "",
+          "ingles": "a small matte black bowl filled with white flake salt",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Pizarra negra",
+          "estado": "rectangular, superficie oscura texturizada",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "",
+          "ingles": "a rectangular black slate board",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Lonchas de jamón curado",
+          "estado": "finas, rojo intenso con veta de grasa brillante",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Dispuestas en círculos superpuestos",
+          "ingles": "thinly sliced cured ham with glistening fat marbling",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Plato blanco redondo",
+          "estado": "porcelana blanca lisa",
+          "recuento": null,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Cortado por el borde derecho",
+          "ingles": "a round white porcelain plate",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Dominante amarilla/ámbar muy marcada por la iluminación y la madera",
+        "La copa y la mano tapan parte de la pizarra y del plato de jamón",
+        "Plato de jamón cortado por el encuadre"
+      ],
+      "utilizable": true,
+      "motivo": "Todos los ingredientes y la vajilla son identificables con claridad para reconstruir la escena."
+    },
+    "huecos": {
+      "plato": "sliced seared beef, cured ham and red wine",
+      "origen": "at a restaurant",
+      "elementos": "sliced seared beef with bone, dark crust and red-pink centre, a small matte black bowl filled with white flake salt on a rectangular black slate board, thinly sliced cured ham with glistening fat marbling on a round white porcelain plate, and a hand holding a clear stemmed glass half-filled with dark red wine",
+      "recuento": "Exactly one slate board, one black salt bowl, one white round plate and one wine glass.",
+      "camara": {
+        "anguloGrados": 18,
+        "descripcion": "Low three-quarter view rotated 55 degrees to the left, keeping all dishes in the lower half without overlap",
+        "objetivoMm": 85,
+        "apertura": 2.8,
+        "giroGrados": 55,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "Slate board with sliced beef angled diagonally in lower left, white plate of ham behind-center, hand with wine glass on lower right, leaving clean deep-black space across the upper 40% for typography",
+      "aire": "arriba",
+      "luz": "Single neutral 5000 K hard side-back light from the left rimming the glass, meat crust and ham fat, background falling 2 stops into near black",
+      "colorDominante": "Near-black monochrome with neutral whites on the plate and deep crimson red in the wine, ham and beef centre as the only strong colour"
+    },
+    "decisiones": [
+      "Giro de 55° y bajada de cámara a 18° (vs 38° original y pulpo reciente) para evitar solapamientos entre copa, carne y jamón, inspirado en la toma baja de Etxebarri.",
+      "Luz neutra 5000 K lateral-trasera para eliminar la dominante ámbar de la madera y mantener loza blanca pura sobre fondo casi negro (estética Editorial oscuro F4/F5).",
+      "Se coloca todo el conjunto en el tercio/mitad inferior dejando el 40% superior limpio para el logotipo script+didona y titular detrás.",
+      "Tres tomas de detalle (carne, jamón, copa) en primer plano/macro con aire superior limpio para mantener coherencia de carrusel."
+    ],
+    "tomas": [
+      {
+        "elemento": "Carne asada laminada con hueso",
+        "huecos": {
+          "plato": "sliced seared beef with bone",
+          "origen": "at a restaurant",
+          "elementos": "sliced seared beef with bone, dark crust and red-pink centre on a rectangular black slate board",
+          "recuento": "Exactly three front slices sharp in focus.",
+          "camara": {
+            "anguloGrados": 15,
+            "descripcion": "Table-level close-up facing the cut edges of the meat slices in the lower frame",
+            "objetivoMm": 100,
+            "apertura": 2.8,
+            "giroGrados": 45,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "Cut faces of the beef large in the lower half, bone curving slightly off the left edge, clean dark upper half for the detail title",
+          "aire": "arriba",
+          "luz": "Hard 5000 K side-grazing light from the right sculpting the seared crust and meat grain against deep black shadows",
+          "colorDominante": "Deep black and charcoal slate with rich crimson beef centre as the sole strong colour"
+        }
+      },
+      {
+        "elemento": "Lonchas de jamón curado",
+        "huecos": {
+          "plato": "thinly sliced cured ham",
+          "origen": "at a restaurant",
+          "elementos": "thinly sliced cured ham with glistening fat marbling on a round white porcelain plate",
+          "recuento": "Exactly one white plate partially cropped at the bottom.",
+          "camara": {
+            "anguloGrados": 22,
+            "descripcion": "Close low three-quarter shot skimming across the glistening ham slices and neutral white rim",
+            "objetivoMm": 90,
+            "apertura": 4,
+            "giroGrados": 60,
+            "distancia": "PRIMER_PLANO"
+          },
+          "ideaGrafica": "Plate of ham filling the lower half and bleeding off the bottom and right edges, leaving clean dark space at the top",
+          "aire": "arriba",
+          "luz": "Single neutral 5000 K side-back light catching the translucent fat sheen while keeping the white porcelain neutral and background near black",
+          "colorDominante": "Deep black and neutral white porcelain with cured dark-red ham as the strong accent"
+        }
+      },
+      {
+        "elemento": "Copa de vino tinto",
+        "huecos": {
+          "plato": "red wine in a stemmed glass",
+          "origen": "at a restaurant",
+          "elementos": "a clear stemmed glass half-filled with dark red wine held by a hand",
+          "recuento": "Exactly one wine glass.",
+          "camara": {
+            "anguloGrados": 10,
+            "descripcion": "Low-angle close-up focused on the bowl of the glass and wine meniscus in the lower-right",
+            "objetivoMm": 85,
+            "apertura": 2.8,
+            "giroGrados": 50,
+            "distancia": "PRIMER_PLANO"
+          },
+          "ideaGrafica": "Wine bowl and hand occupying the lower half and right edge, glass rim rising slightly into frame with clean dark space above",
+          "aire": "arriba",
+          "luz": "Single hard 5000 K side-back light creating crisp specular lines along the glass and glowing ruby translucency in the wine",
+          "colorDominante": "Deep black with luminous ruby-red wine as the single strong colour"
+        }
+      }
+    ]
+  },
+  "prompt": "@image1 is a real photo of sliced seared beef, cured ham and red wine at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a clear stemmed glass half-filled with dark red wine; a hand holding the wine glass stem; sliced seared beef with bone, dark crust and red-pink centre; a small matte black bowl filled with white flake salt; a rectangular black slate board; thinly sliced cured ham with glistening fat marbling; a round white porcelain plate. Exactly 1 × a clear stemmed glass half-filled with dark red wine; 1 × a small matte black bowl filled with white flake salt; 1 × a rectangular black slate board. Nothing else added. New composition by a professional food photographer: Low three-quarter view rotated 55 degrees to the left, keeping all dishes in the lower half without overlap, 85 mm lens at f/2.8, Slate board with sliced beef angled diagonally in lower left, white plate of ham behind-center, hand with wine glass on lower right, leaving clean deep-black space across the upper 40% for typography. Single neutral 5000 K hard side-back light from the left rimming the glass, meat crust and ham fat, background falling 2 stops into near black, Near-black monochrome with neutral whites on the plate and deep crimson red in the wine, ham and beef centre as the only strong colour. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep a coherent light direction and preserve the texture of the dish. Render no lettering or graphics.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "estetica": "EDITORIAL_OSCURO",
+    "desdeElInventario": true,
+    "modoDeLuz": "ESTUDIO"
+  }
+}

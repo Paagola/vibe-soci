@@ -104,6 +104,7 @@ export const GastoGemini = z.object({
   tier: z.enum(['GRATUITO', 'PAGO']).default('PAGO'),
   estimadoUsd: z.number(),
   realUsd: z.number().optional(),
+  uso: Uso.optional(),
   estado: z.enum(['ENVIADO', 'COMPLETADO', 'SIN_IMAGEN', 'FALLIDO']),
   detalle: z.string().optional(),
 });

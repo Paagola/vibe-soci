@@ -1,0 +1,126 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "lamina-1",
+  "version": 1,
+  "titulo": "PORTADA",
+  "notas": "El primer plano pasa por delante de un borde del titular. El apoyo mantiene su lectura y el plato queda visible.",
+  "marca": "dak-burger",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 46,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "voz": {
+        "fuente": "fraunces",
+        "ejes": {
+          "wght": 870,
+          "opsz": 70,
+          "SOFT": 35,
+          "WONK": 1
+        },
+        "caso": "tal-cual",
+        "tracking": -0.05,
+        "interlineado": 1.15,
+        "color": "#FFF3DB",
+        "rasgos": []
+      },
+      "apoyo": {
+        "fuente": "instrument-serif-italica",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.15,
+        "color": "#FFE3BC",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "base"
+  },
+  "textos": {
+    "titulo": "Hamburguesa\ncrujiente"
+  },
+  "capas": [
+    {
+      "id": "fotografia",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0.03125,
+        "w": 1,
+        "h": 0.9375
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "primer-plano",
+      "opacidad": 0,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "recorte",
+      "activo": "foto",
+      "sangradoAbajo": 0,
+      "alineadoCon": "fotografia",
+      "bordeSuave": 0.8,
+      "contraerBorde": 0,
+      "giro": 0
+    },
+    {
+      "id": "titulo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titulo",
+      "estilo": "voz",
+      "caja": {
+        "x": 0.08,
+        "y": 0.078125,
+        "w": 0.84,
+        "h": 0.225
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "recortarCon": {
+        "sujeto": "primer-plano",
+        "modo": "fuera"
+      }
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "detras",
+      "texto": "titulo",
+      "sujeto": "primer-plano",
+      "cobertura": [
+        0.02,
+        0.1
+      ],
+      "medida": "media",
+      "zona": {
+        "desde": 0.06875,
+        "hasta": 0.3265625
+      }
+    }
+  ]
+}

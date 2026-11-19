@@ -137,11 +137,12 @@ export class GeneradorFotoGemini implements GeneradorFoto {
     }
     const lectura = leerRespuesta(json);
     const realUsd = lectura.uso ? costeRealUsd(this.o.modelo, lectura.uso) : undefined;
+    const consumo = lectura.uso ? { uso: lectura.uso, realUsd } : {};
     if (!lectura.ok) {
-      await apuntarGastoGemini(this.registro, { ...base, fecha: new Date().toISOString(), ...(realUsd !== undefined ? { realUsd } : {}), estado: 'SIN_IMAGEN', detalle: lectura.motivo });
+      await apuntarGastoGemini(this.registro, { ...base, ...consumo, fecha: new Date().toISOString(), estado: 'SIN_IMAGEN', detalle: lectura.motivo });
       throw new Error(`Gemini no devolvió imagen: ${lectura.motivo}. ${lectura.texto.join(' ').slice(0, 300)}`);
     }
-    await apuntarGastoGemini(this.registro, { ...base, fecha: new Date().toISOString(), ...(realUsd !== undefined ? { realUsd } : {}), estado: 'COMPLETADO' });
+    await apuntarGastoGemini(this.registro, { ...base, ...consumo, fecha: new Date().toISOString(), estado: 'COMPLETADO' });
     const version = z.object({ modelVersion: z.string().optional() }).safeParse(json);
     return {
       bytes: lectura.bytes,

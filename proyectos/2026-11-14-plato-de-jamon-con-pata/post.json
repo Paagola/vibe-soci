@@ -1,0 +1,161 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-14-plato-de-jamon-con-pata",
+  "local": "torre-de-vega",
+  "plato": "Plato de jamón con pata de jamón cortándose.",
+  "fotoSubida": "proyectos/2026-11-14-plato-de-jamon-con-pata/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-17",
+  "estiloDeReferencia": false,
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "paso": "CONFIRMAR_ELEMENTOS",
+  "bloqueo": "2 fotos descartadas seguidas: paro, como dice la regla de gasto. Revisa la propuesta (prompt y elementos) y vuelve a confirmar con --confirmo para otros 2 intentos.",
+  "activoReal": "2026-11-14-plato-de-jamon-con-pata-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of cured Iberian ham arranged on circular plates at a traditional Spanish tapas bar. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: the round white porcelain plates arranged with thin concentric slices of deep red Iberian ham and glistening marbled fat. Exactly two white round plates with concentric ham slices. Nothing else added. New composition by a professional food photographer: direct top-down overhead view looking straight down, 50 mm lens at f/5.6, symmetrical layout on an ultramarine blue surface, one plate cropped at the top edge and another cropped at the bottom edge, leaving a clear middle third. Crisp studio strobe with sharp edge highlights and soft contact shadows, saturated ultramarine blue background with deep crimson red as the primary accent. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-17T22:14:20.914Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.160406
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-14-plato-de-jamon-con-pata-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2)",
+        "anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1)"
+      ],
+      "costeUsd": 0.139678
+    },
+    {
+      "n": 2,
+      "activo": "2026-11-14-plato-de-jamon-con-pata-foto-2",
+      "final": "DESCARTA",
+      "motivos": [
+        "anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2)",
+        "anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1)"
+      ],
+      "costeUsd": 0.140278
+    },
+    {
+      "n": 3,
+      "activo": "2026-11-14-plato-de-jamon-con-pata-foto-3",
+      "final": "DESCARTA",
+      "motivos": [
+        "anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2)",
+        "anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1)"
+      ],
+      "costeUsd": 0.140302
+    },
+    {
+      "n": 4,
+      "activo": "2026-11-14-plato-de-jamon-con-pata-foto-4",
+      "final": "DESCARTA",
+      "motivos": [
+        "anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1)",
+        "anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2)",
+        "anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1)"
+      ],
+      "costeUsd": 0.139642
+    }
+  ],
+  "tomas": [],
+  "fotosExtra": [],
+  "historial": [
+    {
+      "fecha": "2026-11-14T19:43:59.592Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-14T19:44:10.148Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-17."
+    },
+    {
+      "fecha": "2026-11-14T19:44:10.176Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-17» (F3). (2 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-14T19:44:10.182Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-14-plato-de-jamon-con-pata-real (1280 × 1707 px)."
+    },
+    {
+      "fecha": "2026-11-14T19:44:38.018Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-14T19:44:53.095Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.160 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-14T19:45:17.444Z",
+      "paso": "GENERAR",
+      "nota": "Intento 1 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1397 USD."
+    },
+    {
+      "fecha": "2026-11-14T19:47:09.095Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2); anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1))."
+    },
+    {
+      "fecha": "2026-11-14T19:47:32.947Z",
+      "paso": "GENERAR",
+      "nota": "Intento 2 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1403 USD."
+    },
+    {
+      "fecha": "2026-11-14T19:47:50.919Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 2: DESCARTA (anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2); anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1))."
+    },
+    {
+      "fecha": "2026-11-14T19:48:13.184Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.160 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-14T19:48:35.707Z",
+      "paso": "GENERAR",
+      "nota": "Intento 3 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1403 USD."
+    },
+    {
+      "fecha": "2026-11-14T19:49:01.775Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 3: DESCARTA (anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2); anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1))."
+    },
+    {
+      "fecha": "2026-11-17T22:14:20.914Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.160 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-17T22:14:42.982Z",
+      "paso": "GENERAR",
+      "nota": "Intento 4 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1396 USD."
+    },
+    {
+      "fecha": "2026-11-17T22:15:20.609Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 4: DESCARTA (anatomía por teselas de Pata de jamón en jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Cuchillo jamonero: 0 cuerpos (se esperan 1); anatomía por teselas de Manos con guantes negros: 0 cuerpos (se esperan 2); anatomía por teselas de Pila de platos blancos: 0 cuerpos (se esperan 1))."
+    }
+  ],
+  "creadoEn": "2026-11-14T19:43:59.592Z"
+}

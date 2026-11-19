@@ -1,0 +1,109 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 1,
+  "titulo": "Torre de Vega · portada",
+  "notas": "Brief v6 · FOTO_TEXTO_AL_BORDE · COLOR.",
+  "marca": "torre-de-vega",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "voz": {
+        "fuente": "bebas-neue",
+        "ejes": {},
+        "caso": "mayusculas",
+        "tracking": 0.01,
+        "interlineado": 0.88,
+        "color": "#B6AD49",
+        "rasgos": []
+      },
+      "apoyo": {
+        "fuente": "montserrat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "mayusculas",
+        "tracking": 0.16,
+        "interlineado": 1.3,
+        "color": "#B6AD49",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "2026-11-17-pulpo-a-la-gallega-foto-3"
+  },
+  "textos": {
+    "dato-1": "tentáculo de pulpo"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "campo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "rect",
+      "caja": {
+        "x": 0,
+        "y": 0.77,
+        "w": 1,
+        "h": 0.23
+      },
+      "color": "#131111",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "dato-1",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@dato-1",
+      "estilo": "voz",
+      "caja": {
+        "x": 0.072,
+        "y": 0.8298,
+        "w": 0.856,
+        "h": 0.1104
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false
+    }
+  ],
+  "relaciones": []
+}

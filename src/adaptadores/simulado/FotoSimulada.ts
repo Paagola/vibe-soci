@@ -73,10 +73,14 @@ export class GeneradorFotoSimulado implements GeneradorFoto {
     this.peticiones.push(p);
     const ruta = p.referencias[0]?.ruta;
     if (!ruta) throw new Error('El generador simulado necesita la foto real como @image1.');
+    const w = 1536, h = p.aspectRatio === '1:1' ? w : p.aspectRatio === '4:5' ? 1920 : 2048;
+    const cierre = p.aspectRatio === '4:5' && p.id.endsWith('-cierre');
     const sello = Buffer.from(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="2048"><rect x="40" y="40" width="560" height="110" fill="#000" opacity="0.6"/><text x="70" y="122" font-family="Helvetica" font-weight="bold" font-size="72" fill="#fff">SIMULADA</text></svg>',
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect x="40" y="40" width="560" height="110" fill="#000" opacity="0.6"/><text x="70" y="122" font-family="Helvetica" font-weight="bold" font-size="72" fill="#fff">SIMULADA</text></svg>`,
     );
-    const bytes = await sharp(ruta).rotate().resize(1536, 2048, { fit: 'cover' }).flop().composite([{ input: sello }]).png().toBuffer();
+    const toma = sharp(ruta).rotate().resize(w, h, { fit: 'cover' }).flop(!cierre);
+    if (p.id.includes('-apertura-')) toma.modulate({ brightness: .92 });
+    const bytes = await toma.composite([{ input: sello }]).png().toBuffer();
     return { bytes, modelo: 'simulado', costeUsd: 0, tier: 'SIMULADO', detalle: 'simulado: la foto real reencuadrada, sin generar nada' };
   }
 }

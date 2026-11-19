@@ -1,0 +1,68 @@
+{
+  "director": "recompilada sin modelo desde post.propuesta.f3-1.json",
+  "fecha": "2026-11-15T02:05:17.989Z",
+  "propuesta": {
+    "idea": "La contundencia del entrecot de vaca gallega curado presentado con elegancia oscura y contraste tipográfico.",
+    "foco": "PLATO",
+    "seToma": [
+      "Contraste entre tipografía condensada rotunda y voz script caligráfica con florituras",
+      "Composición sobre fondo oscuro cálido integrando el texto con la pieza gastronómica",
+      "Línea sutil de apoyo editorial y firma sobria"
+    ],
+    "noSeCopia": [
+      "La temática de coctelería y el nombre del café",
+      "Los datos de contacto ficticios y el logotipo ajeno"
+    ],
+    "textos": [
+      {
+        "clave": "titular",
+        "texto": "ENTRECOT",
+        "fuente": "PLATO",
+        "cita": "Entrecot de vaca curado, directo de Galicia"
+      },
+      {
+        "clave": "acento",
+        "texto": "directo de Galicia",
+        "fuente": "PLATO",
+        "cita": "directo de Galicia"
+      },
+      {
+        "clave": "apoyo",
+        "texto": "Carnes a la brasa",
+        "fuente": "MARCA",
+        "cita": "gran variedad de carnes a la brasa"
+      },
+      {
+        "clave": "firma",
+        "texto": "Torre de Vega",
+        "fuente": "MARCA",
+        "cita": "Torre de Vega"
+      }
+    ],
+    "composicion": {
+      "mecanismo": "TITULAR_CON_ACENTO",
+      "titular": "titular",
+      "acento": "acento",
+      "apoyo": "apoyo",
+      "firma": "firma",
+      "lado": "arriba",
+      "sangra": true,
+      "tinta": "limpia"
+    }
+  },
+  "problemas": [],
+  "avisos": [
+    "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+  ],
+  "critica": null,
+  "intentos": [
+    {
+      "origen": "director",
+      "problemas": [],
+      "avisos": [
+        "FIDELIDAD: «foto» usa el activo «2026-11-14-entrecot-de-vaca-curado-directo-foto-1», que es solo para probar la composición y no se puede publicar: Cámara, luz, encuadre y colocación nuevos (plantilla de foto nueva, regla «otra toma»).; Superficie y fondo libres.."
+      ],
+      "arreglos": []
+    }
+  ]
+}

@@ -247,7 +247,7 @@ export async function resumirEncargos(deps: DepsConsultasPost): Promise<ResumenE
 }
 
 /** La imagen que mejor representa el encargo ahora: el post compuesto, la foto nueva o la foto subida. */
-async function portadaDe(deps: DepsConsultasPost, e: EncargoPost): Promise<PortadaDeEncargo | null> {
+export async function portadaDe(deps: Pick<DepsConsultasPost, 'raiz' | 'proyectos' | 'activos' | 'galeria'>, e: EncargoPost): Promise<PortadaDeEncargo | null> {
   const candidata = e.taller?.candidatas.at(-1);
   if (candidata) return { tipo: 'TALLER', version: candidata.version };
   const intencion = await leerIntencion(deps, e).catch(() => null);
@@ -509,7 +509,7 @@ export type RecursoDeEncargo =
   | { tipo: 'DISENO'; archivo: string };
 
 /** Ruta absoluta de un archivo que pertenece al encargo. Nada que no sea suyo. */
-export async function rutaDeRecurso(deps: DepsConsultasPost, proyecto: string, recurso: RecursoDeEncargo): Promise<string> {
+export async function rutaDeRecurso(deps: Pick<DepsConsultasPost, 'raiz' | 'proyectos' | 'activos' | 'galeria' | 'referencias'>, proyecto: string, recurso: RecursoDeEncargo): Promise<string> {
   const e = await leerEncargo(deps, proyecto);
   const noEsta = (que: string) => new ErrorDeUsuario(`El encargo «${proyecto}» no tiene ${que}.`);
   switch (recurso.tipo) {

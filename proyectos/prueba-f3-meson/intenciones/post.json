@@ -1,0 +1,233 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 1,
+  "titulo": "El Mesón de Cervantes · salmón glaseado sobre arroz negro",
+  "notas": "Idea: Cabecera editorial elegante inspirada en portada de revista que enmarca el lomo de salmón glaseado sobre arroz negro, destacando la quenelle de puré mediante una anotación guiada. Foco: el titular. De la referencia se toma: Composición editorial tipo revista con titular dominante en la cabecera; Uso de tipografía didona de alto contraste para aportar sofisticación; Estructura limpia con datos secundarios situados en los márgenes superiores. No se copia: Los textos y la marca de la referencia (Mocktail Drink Club); La copa de cóctel y la escena de coctelería; Los colores rosa y verde del post original.",
+  "marca": "meson-de-cervantes",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@magenta",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "prueba-f3-meson-foto-1"
+  },
+  "textos": {
+    "titular": "SALMÓN GLASEADO",
+    "marca": "EL MESÓN DE CERVANTES",
+    "lugar": "MÁLAGA",
+    "anota-pure": "Quenelle de puré"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "plato",
+      "opacidad": 0,
+      "fusion": "normal",
+      "oculta": false,
+      "nota": "Silueta del plato de la foto a sangre: no se pinta.",
+      "tipo": "recorte",
+      "activo": "foto",
+      "sangradoAbajo": 0,
+      "alineadoCon": "foto",
+      "bordeSuave": 0.8,
+      "contraerBorde": 0,
+      "giro": 0
+    },
+    {
+      "id": "capa-titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1635,
+        "w": 0.8667,
+        "h": 0.162
+      },
+      "ajuste": "ancho",
+      "alinear": "centro",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@magenta",
+      "recortarCon": {
+        "sujeto": "plato",
+        "modo": "fuera"
+      }
+    },
+    {
+      "id": "capa-marca",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@marca",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1068,
+        "w": 0.3546,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 36,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@crema"
+    },
+    {
+      "id": "capa-lugar",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@lugar",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.5787,
+        "y": 0.1068,
+        "w": 0.3546,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 36,
+      "alinear": "derecha",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@crema"
+    },
+    {
+      "id": "capa-anota",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@anota-pure",
+      "estilo": "anotacion",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.3339,
+        "w": 0.1352,
+        "h": 0.1052
+      },
+      "ajuste": "fijo",
+      "tamano": 44,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@crema"
+    },
+    {
+      "id": "capa-anota-flecha",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "trazo",
+      "gesto": "flecha",
+      "desde": {
+        "x": 0.1411,
+        "y": 0.4128
+      },
+      "hacia": {
+        "sujeto": "plato",
+        "punto": {
+          "x": 0.4,
+          "y": 0.6
+        }
+      },
+      "curva": -0.3,
+      "cabeza": "abierta",
+      "color": "@crema",
+      "grosor": 4,
+      "temblor": 0.4,
+      "huecos": 0
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "capa-marca",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "capa-lugar",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "detras",
+      "texto": "capa-titular",
+      "sujeto": "plato",
+      "cobertura": [
+        0.2,
+        0.45
+      ],
+      "medida": "franja",
+      "zona": {
+        "desde": 0.0813,
+        "hasta": 0.9188
+      }
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "capa-marca",
+        "capa-lugar",
+        "capa-anota"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ]
+}

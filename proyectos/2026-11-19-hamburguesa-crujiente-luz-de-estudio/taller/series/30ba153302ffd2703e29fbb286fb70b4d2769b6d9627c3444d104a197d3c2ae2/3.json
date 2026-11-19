@@ -1,0 +1,76 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "lamina-3",
+  "version": 1,
+  "titulo": "CIERRE",
+  "notas": "El encuadre sostiene la lectura.",
+  "marca": "dak-burger",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "voz": {
+        "fuente": "instrument-serif",
+        "ejes": {},
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.15,
+        "color": "#251E1A",
+        "rasgos": []
+      },
+      "apoyo": {
+        "fuente": "archivo",
+        "ejes": {
+          "wght": 460
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.1,
+        "color": "#251E1A",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "base"
+  },
+  "textos": {},
+  "capas": [
+    {
+      "id": "papel",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "relleno",
+      "color": "#F7F2E8"
+    },
+    {
+      "id": "fotografia",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0.03125,
+        "w": 1,
+        "h": 0.9375
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    }
+  ],
+  "relaciones": []
+}

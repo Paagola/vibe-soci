@@ -1,0 +1,15 @@
+{
+  "local": "torre-de-vega",
+  "marca": "../../marcas/torre-de-vega/tokens.json",
+  "briefVersion": 6,
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json",
+      "papel": "portada"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-17",
+    "referencia": "ref-post-16"
+  }
+}

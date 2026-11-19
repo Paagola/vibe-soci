@@ -1,0 +1,96 @@
+{
+  "editorial": {
+    "ruta": "FOTO_PLATO",
+    "motivo": "El encargo se puede contar con el alimento y su contexto de servicio. La fuente tiene luminosidad media intermedia; separa el foco por contraste local.",
+    "enfoque": "El corte frente al acabado",
+    "comprobar": "La forma, el espesor del canto y el acabado coinciden con la foto. Compara el tamaño de los trocitos y la intensidad real del tostado.",
+    "evidencias": [
+      {
+        "id": "bliss-corte",
+        "fuente": "Spotted Productions · Bliss Bakery",
+        "pagina": "https://spottedproductions.com/work/bliss-bakery/",
+        "imagen": "https://spottedproductions.com/img/portfolio/thumb/DSC02230-scaled.webp",
+        "lectura": "La vista oblicua reparte el encuadre entre la cara cortada y el acabado superior. El punto de vista permite cotejar el espesor de ambos planos."
+      },
+      {
+        "id": "espinel-canto",
+        "fuente": "Kimberly Espinel · Rebel Comfort, estilismo de Katie Marshall",
+        "pagina": "https://thelittleplantation.co.uk/london-food-photographer-portfolio",
+        "imagen": "https://images.squarespace-cdn.com/content/v1/58dd75f229687f5a850ec676/71ec916f-8c13-40c1-aed8-2f39e5dc26c1/Kimberly-Espinel-portfolio-106.jpg",
+        "lectura": "La cámara casi a la altura del plato muestra la cara pálida de la porción. El borde tostado de la cobertura se recorta sobre el fondo oscuro. El ángulo y la separación tonal se pueden trasladar a otro acabado."
+      },
+      {
+        "id": "blog-68",
+        "fuente": "Food Photo Studio · diario de producciones",
+        "pagina": "https://www.foodphotostudio.com/blog",
+        "imagen": "https://images.squarespace-cdn.com/content/v1/58989c1b5016e1eeef68cfbe/1683582489737-MGGJLETAKP4D3JR9EGV8/almond_cake_202211449.jpg?format=500w",
+        "lectura": "Una lluvia fina se ilumina sobre la tarta. El fondo negro y el pedestal oscuro reservan toda la separación para el borde de las capas."
+      }
+    ]
+  },
+  "puesta": {
+    "sugerencia": "Acerca el apoyo al borde de una mesa clara. Una mano adulta sostiene el plato por debajo y la luz lateral separa el canto visible del fondo.",
+    "ambito": "PRODUCTO",
+    "vajilla": "ESTUDIO",
+    "soporte": "Puesta editorial autorizada: Pon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+    "apetito": "Debe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales."
+  },
+  "nombrePlato": "Tarta de pistacho",
+  "toma": {
+    "seleccion": {
+      "escenaFuente": {
+        "modo": "EDITORIAL",
+        "puesta": "Pon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.",
+        "evidencia": "Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto."
+      },
+      "vajilla": "ESTUDIO",
+      "opcion": "AUTO"
+    },
+    "camara": {
+      "anguloGrados": 42,
+      "descripcion": "Rodea el producto hasta otro flanco y acércate en tres cuartos. El primer término entra en diagonal.",
+      "objetivoMm": 100,
+      "apertura": 11,
+      "giroGrados": 85,
+      "distancia": "MACRO",
+      "vista": "OBLICUA",
+      "evidencia": "Se ven a la vez una cara lateral y la parte superior. Cambia qué borde queda delante y qué rasgos oculta."
+    },
+    "cambios": [],
+    "encuadre": "Acerca la cámara a la porción. Conserva la vista de la superficie y busca el flanco con el corte ya visible. Una luz lateral pasa del borde al interior sin borrar su diferencia de color.",
+    "accion": "Puesta editorial autorizada: Pon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.",
+    "luz": "Una fuente lateral amplia roza las capas; relleno tenue en el borde opuesto conserva los huecos y el punto de cocción.",
+    "foco": "La forma, el espesor del canto y el acabado coinciden con la foto. Compara el tamaño de los trocitos y la intensidad real del tostado.",
+    "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto."
+  },
+  "direccion": {
+    "criterioVisual": {
+      "foco": "El corte frente al acabado",
+      "conservar": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto.",
+      "comprobar": "Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados."
+    },
+    "gesto": "MACRO",
+    "sujeto": "Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto.",
+    "escena": "Pon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.",
+    "tipografia": "Fotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.",
+    "materia": "Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto."
+  },
+  "textos": [],
+  "fotografia": {
+    "temperatura": "NEUTRA",
+    "dominantes": [
+      "#C1C4C8",
+      "#070D1B",
+      "#AA9065",
+      "#5C5B5C",
+      "#8A311C"
+    ],
+    "acento": "#8A311C",
+    "luz": 0.454,
+    "aire": "Zona de poco detalle de la foto: columnas 10–12/12 y filas 7–16/16."
+  },
+  "fotoSha256": "754b997439fb5a0b50dc5a15015a6daa47ff03f132e1e7bbcbbd007cf47f26ec",
+  "uso": "SOLO_PRUEBA_COMPOSICION",
+  "prompt": "Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.\n\nSujeto descrito por el local, como contexto visual: \"Tarta de pistacho\"\n\nFoco de la pieza: El corte frente al acabado\n\nRasgo que conservar: Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto.\n\nRevisión a 360 px: Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados.\n\nUsa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: Una porción triangular entera, con relleno pistacho de tono verde oliva apagado, puntitos de pistacho y un borde tostado más alto.\n\nPon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.\n\nMantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.\n\nFotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.\n\nPuesta editorial autorizada: Pon una sola porción en un plato pequeño de loza clara con borde verde oscuro, sobre mantel de lino color cacao. Una mano anónima acaba de acercar el plato por la derecha. Luz lateral cálida, vista de tres cuartos y espacio arriba a la izquierda.. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.\n\nDebe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales.\n\nUna fuente lateral amplia roza las capas; relleno tenue en el borde opuesto conserva los huecos y el punto de cocción. Fotografía desde la vista OBLICUA y a distancia MACRO. Conserva visibles los rasgos cotejados.\n\nEntrega únicamente la fotografía, sin letras ni marcas escenificadas.\n\nLa fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.",
+  "huella": "b45d6dd4dde0a63435f1bf65195dcc9f598a2f3075c24fea581591e6e62ab180"
+}

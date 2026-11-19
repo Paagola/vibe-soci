@@ -1,0 +1,158 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-17-pulpo-a-la-gallega",
+  "local": "torre-de-vega",
+  "version": 6,
+  "creadoEn": "2026-11-17T22:36:43.383Z",
+  "actualizadoEn": "2026-11-17T22:40:53.167Z",
+  "modo": "PRODUCTOR",
+  "marca": {
+    "nombre": "Torre de Vega",
+    "ciudad": "La Alquería",
+    "descripcion": "Restaurante desde 1980, gran variedad de carnes a la brasa, comida en familia y platos de toda la vida.",
+    "tonos": [
+      "Amigable",
+      "Familiar",
+      "Atrevido",
+      "Profesional"
+    ],
+    "instagram": "restaurantetorredevega",
+    "web": "https://www.restaurantetorredevega.com/"
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "Pulpo a la gallega",
+    "inventario": {
+      "estado": "CONFIRMADO",
+      "elementos": [
+        {
+          "nombre": "tentáculo de pulpo",
+          "estado": "asado y troceado en espiral, con pimentón y aceite verde",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "gambas peladas con cola",
+          "estado": "cocinadas y espolvoreadas con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "patatas en rodajas",
+          "estado": "cocidas, cubiertas de aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "salsa de hierbas y aceite",
+          "estado": "brillante, repartida sobre el plato y la tabla",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "pimentón",
+          "estado": "espolvoreado sobre todo el conjunto",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "tabla de madera redonda",
+          "estado": "estriada, manchada de aceite y pimentón",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "plato base gris azulado",
+          "estado": "liso, debajo de la tabla",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "5916e8442b292c1a8796be535b1b5a2955be512dfdeb5a941f60fd0d1c67b8f5",
+      "confirmadoEn": "2026-11-17T22:39:50.111Z",
+      "confirmadoPor": {
+        "via": "web"
+      }
+    },
+    "datosPorConfirmar": [
+      "«gambas peladas con cola»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«patatas en rodajas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«salsa de hierbas y aceite»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«pimentón»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«tabla de madera redonda»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«plato base gris azulado»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«gambas peladas con cola»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-16"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "dato del brief compuesto al borde de la fotografía"
+    }
+  ],
+  "editorial": {
+    "modelo": "gemini-4-hydrogen",
+    "briefVersion": 1,
+    "fotoSha256": "f7717b58c5e1f72a95d081fddea95ca4066f404d8d8ff7a4e029d8efa64b66e9",
+    "inventarioSha256": "5916e8442b292c1a8796be535b1b5a2955be512dfdeb5a941f60fd0d1c67b8f5",
+    "referencia": "ref-post-16",
+    "fichaReferencia": "{\"esquema\":\"referencia/ficha@1\",\"titulo\":\"«FREE / SPAGHETTI»\",\"familia\":\"F3\",\"mecanismos\":[\"PALABRA_GIRADA\",\"PAPEL_RASGADO\",\"LOGOTIPO_TIPOGRAFICO\"],\"capas\":[\"frambuesa con textura\",\"franja de papel rasgado amarilla abajo\",\"tenedor con espaguetis recortado, vertical, sale por abajo\",\"«FREE» amarilla ultra heavy girada 90°\",\"«SPAGHETTI» condensada + «Bolognese» script\",\"estrellas y texto\"],\"reticula\":\"Dos verticales: palabra y tenedor; margen ≈ 9 %\",\"tipografia\":[{\"rol\":\"TITULAR\",\"clasificacion\":\"ultra heavy girada\",\"escala\":50},{\"rol\":\"SECUNDARIO\",\"clasificacion\":\"condensada\",\"escala\":6},{\"rol\":\"APOYO\",\"clasificacion\":\"script\",\"escala\":4}],\"paleta\":[{\"hex\":\"#D04D59\",\"rol\":\"fondo frambuesa\"},{\"hex\":\"#F9CF3F\",\"rol\":\"amarillo: palabra y papel\"}],\"foto\":\"Recorte vertical sobre fondo controlado\",\"recursos\":[{\"recurso\":\"papel rasgado\",\"funcion\":\"cierra abajo\"},{\"recurso\":\"palabra girada\",\"funcion\":\"ritmo vertical\"}],\"lectura\":[\"el tenedor\",\"FREE\",\"SPAGHETTI Bolognese\"],\"porQueFunciona\":\"Dos verticales dan ritmo; dos tintas.\",\"analizadaPor\":\"ESTUDIO_A_MANO\",\"analizadaEn\":\"2026-11-07\"}",
+    "fichaSha256": "1a0cca322f962437e9da485976208fc03b87e5f1d2fcc3b97e95b9d1341c42ed",
+    "oficioSha256": "0f369945a0cafc89e0bc5c7e498a39d664c5dc6717934d79f6f8901a80fa3097",
+    "plan": {
+      "esquema": "post/editorial@1",
+      "hiloVisual": "COLOR",
+      "diapositivas": [
+        {
+          "n": 1,
+          "papel": "portada",
+          "tratamiento": "FOTO_TEXTO_AL_BORDE",
+          "borde": "INFERIOR",
+          "gesto": "ANUNCIO",
+          "texto": {
+            "fuente": "ELEMENTO",
+            "indice": 0
+          }
+        }
+      ]
+    }
+  },
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 5,
+    "llamadasTexto": 25
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-16-jamon-con-pata-cortado-a",
+  "local": "torre-de-vega",
+  "version": 2,
+  "creadoEn": "2026-11-16T19:17:49.558Z",
+  "actualizadoEn": "2026-11-16T19:28:38.945Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Torre de Vega",
+    "ciudad": "La Alquería",
+    "descripcion": "Restaurante desde 1980, gran variedad de carnes a la brasa, comida en familia y platos de toda la vida.",
+    "tonos": [
+      "Amigable",
+      "Familiar",
+      "Atrevido",
+      "Profesional"
+    ],
+    "instagram": "restaurantetorredevega",
+    "web": "https://www.restaurantetorredevega.com/"
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "Jamón con pata cortado a cuchillo en el jamonero, servido en platos blancos en espiral",
+    "inventario": {
+      "estado": "CONFIRMADO",
+      "elementos": [
+        {
+          "nombre": "Pata de jamón curado en jamonero",
+          "estado": "Iniciada, corte plano brillante veteado con grasa",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Mano con guante negro de nitrilo",
+          "estado": "Sujetando el jamón y el cuchillo en plena acción de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Mano sin guante",
+          "estado": "Sujetando el jamón en plena acción de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Cuchillo jamonero largo",
+          "estado": "En plano sobre la superficie de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Platos blancos con lonchas en espiral",
+          "estado": "Emplatados concéntricos de lonchas brillantes",
+          "recuento": 2,
+          "cortados": 1,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Cuchillos sobre el paño",
+          "estado": "En la esquina inferior izquierda, sobre el paño de trabajo",
+          "recuento": 2,
+          "cortados": 0,
+          "origen": "NOTA"
+        }
+      ],
+      "huella": "b681b6de4bff013aff92cfa56c30944bc60c8298e25b1a231c48b4eaefd2d18b",
+      "confirmadoEn": "2026-11-16T19:28:38.945Z",
+      "confirmadoPor": {
+        "via": "web"
+      }
+    },
+    "datosPorConfirmar": [
+      "«Mano con guante negro de nitrilo»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Mano sin guante»: lo ve el director en la foto; la nota del dueño no lo dice."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "RUSTICO_FUEGO",
+  "referencia": {
+    "id": "ref-propia-1"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

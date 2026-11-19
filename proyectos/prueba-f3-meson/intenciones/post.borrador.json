@@ -1,0 +1,221 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "post",
+  "version": 1,
+  "titulo": "El Mesón de Cervantes · salmón glaseado sobre arroz negro",
+  "notas": "Idea: Estructura editorial de portada nocturna aprovechando el aire oscuro superior para un gran titular didona y una anotación manuscrita que señala el salmón. Foco: el titular. De la referencia se toma: Jerarquía tipográfica editorial con titular didona condensado y alto contraste; Composición en bloque tipográfico limpio sobre la zona superior oscura. No se copia: Textos y marca de la referencia; Fotografía de coctelería y copa coupé; Disposición de columnas en las esquinas inferiores.",
+  "marca": "meson-de-cervantes",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "anotacion": {
+        "fuente": "caveat",
+        "ejes": {
+          "wght": 600
+        },
+        "caso": "tal-cual",
+        "tracking": 0,
+        "interlineado": 1.05,
+        "color": "@magenta",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "prueba-f3-meson-foto-1"
+  },
+  "textos": {
+    "titular-principal": "SALMÓN GLASEADO",
+    "subtitulo-arroz": "SOBRE ARROZ NEGRO",
+    "nombre-marca": "EL MESÓN DE CERVANTES",
+    "nota-salmon": "Lomo de salmón glaseado"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "plato",
+      "opacidad": 0,
+      "fusion": "normal",
+      "oculta": false,
+      "nota": "Silueta del plato de la foto a sangre: no se pinta.",
+      "tipo": "recorte",
+      "activo": "foto",
+      "sangradoAbajo": 0,
+      "alineadoCon": "foto",
+      "bordeSuave": 0.8,
+      "contraerBorde": 0,
+      "giro": 0
+    },
+    {
+      "id": "txt-marca",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@nombre-marca",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.1398,
+        "y": 0.1068,
+        "w": 0.7204,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 36,
+      "alinear": "centro",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@crema"
+    },
+    {
+      "id": "txt-titular",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@titular-principal",
+      "estilo": "titular",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.1635,
+        "w": 0.8667,
+        "h": 0.1052
+      },
+      "ajuste": "ancho",
+      "alinear": "centro",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@magenta"
+    },
+    {
+      "id": "txt-subtitulo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@subtitulo-arroz",
+      "estilo": "versalita",
+      "caja": {
+        "x": 0.1398,
+        "y": 0.2771,
+        "w": 0.7204,
+        "h": 0.0484
+      },
+      "ajuste": "fijo",
+      "tamano": 38,
+      "alinear": "centro",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@crema"
+    },
+    {
+      "id": "ano-salmon",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@nota-salmon",
+      "estilo": "anotacion",
+      "caja": {
+        "x": 0.0667,
+        "y": 0.3339,
+        "w": 0.2083,
+        "h": 0.1052
+      },
+      "ajuste": "fijo",
+      "tamano": 44,
+      "alinear": "izquierda",
+      "vertical": "arriba",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false,
+      "color": "@magenta"
+    },
+    {
+      "id": "ano-salmon-flecha",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "trazo",
+      "gesto": "flecha",
+      "desde": {
+        "x": 0.1813,
+        "y": 0.4128
+      },
+      "hacia": {
+        "sujeto": "plato",
+        "punto": {
+          "x": 0.51,
+          "y": 0.52
+        }
+      },
+      "curva": -0.3,
+      "cabeza": "abierta",
+      "color": "@magenta",
+      "grosor": 4,
+      "temblor": 0.4,
+      "huecos": 0
+    }
+  ],
+  "relaciones": [
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "txt-marca",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "txt-titular",
+      "ratio": 3
+    },
+    {
+      "tipo": "contrasteMinimo",
+      "texto": "txt-subtitulo",
+      "ratio": 4.5
+    },
+    {
+      "tipo": "noSolapar",
+      "textos": [
+        "txt-marca",
+        "txt-titular",
+        "txt-subtitulo",
+        "ano-salmon"
+      ],
+      "sujeto": "plato",
+      "maximo": 0.03
+    }
+  ]
+}

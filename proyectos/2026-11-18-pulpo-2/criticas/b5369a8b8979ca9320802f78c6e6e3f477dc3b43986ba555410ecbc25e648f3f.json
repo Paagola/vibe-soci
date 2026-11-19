@@ -1,0 +1,13 @@
+{
+  "huella": "b5369a8b8979ca9320802f78c6e6e3f477dc3b43986ba555410ecbc25e648f3f",
+  "briefVersion": 3,
+  "modelo": "gemini-4-hydrogen",
+  "paginas": [
+    {
+      "id": "post",
+      "version": 1,
+      "sha256": "f00d5a8c6dc157c5195d2f3161676c679766848f12763b7d0e6a075fddc88fdb"
+    }
+  ],
+  "incidencias": []
+}

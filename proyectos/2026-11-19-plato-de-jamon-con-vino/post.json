@@ -1,0 +1,109 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-19-plato-de-jamon-con-vino",
+  "local": "asador-etxebarri",
+  "plato": "Plato de jamón con vino y solomillo",
+  "fotoSubida": "proyectos/2026-11-19-plato-de-jamon-con-vino/foto/subida.png",
+  "usoFotoReal": "PUBLICABLE",
+  "estiloDeReferencia": false,
+  "estetica": "EDITORIAL_OSCURO",
+  "formato": "carrusel",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "COMPONER",
+  "activoReal": "2026-11-19-plato-de-jamon-con-vino-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of sliced seared beef, cured ham and red wine at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: a clear stemmed glass half-filled with dark red wine; a hand holding the wine glass stem; sliced seared beef with bone, dark crust and red-pink centre; a small matte black bowl filled with white flake salt; a rectangular black slate board; thinly sliced cured ham with glistening fat marbling; a round white porcelain plate. Exactly 1 × a clear stemmed glass half-filled with dark red wine; 1 × a small matte black bowl filled with white flake salt; 1 × a rectangular black slate board. Nothing else added. New composition by a professional food photographer: Low three-quarter view rotated 55 degrees to the left, keeping all dishes in the lower half without overlap, 85 mm lens at f/2.8, Slate board with sliced beef angled diagonally in lower left, white plate of ham behind-center, hand with wine glass on lower right, leaving clean deep-black space across the upper 40% for typography. Single neutral 5000 K hard side-back light from the left rimming the glass, meat crust and ham fat, background falling 2 stops into near black, Near-black monochrome with neutral whites on the plate and deep crimson red in the wine, ham and beef centre as the only strong colour. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep a coherent light direction and preserve the texture of the dish. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-19T20:44:34.364Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.161226,
+    "intentosPrevios": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-19-plato-de-jamon-con-vino-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "no es otra toma: los elementos están colocados igual que en la foto subida (La imagen 2 mantiene las mismas piezas del chuletón, la sal, el jamón y la mano con la copa vistos desde el mismo lado, pero la cámara está más cerca y ligeramente más picada y desplazada, cambiando la distancia y la relación espacial entre los platos y la copa.)"
+      ],
+      "costeUsd": 0.142142
+    }
+  ],
+  "tomas": [],
+  "fotosExtra": [],
+  "fotoElegida": "2026-11-19-plato-de-jamon-con-vino-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-19T20:42:14.224Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-19T20:42:14.261Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: El local ya tiene 5 piezas: la referencia es opcional. (5 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-19T20:42:14.261Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia: Editorial oscuro."
+    },
+    {
+      "fecha": "2026-11-19T20:42:14.282Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-19-plato-de-jamon-con-vino-real (1536 × 2752 px)."
+    },
+    {
+      "fecha": "2026-11-19T20:43:47.200Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-19T20:43:47.212Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 7 elemento(s))."
+    },
+    {
+      "fecha": "2026-11-19T20:44:34.364Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-19T20:44:34.369Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v3."
+    },
+    {
+      "fecha": "2026-11-19T20:44:57.599Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-19-plato-de-jamon-con-vino-foto-1 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1421 USD."
+    },
+    {
+      "fecha": "2026-11-19T20:44:58.149Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 1344 px."
+    },
+    {
+      "fecha": "2026-11-19T20:45:31.343Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (no es otra toma: los elementos están colocados igual que en la foto subida (La imagen 2 mantiene las mismas piezas del chuletón, la sal, el jamón y la mano con la copa vistos desde el mismo lado, pero la cámara está más cerca y ligeramente más picada y desplazada, cambiando la distancia y la relación espacial entre los platos y la copa.))."
+    },
+    {
+      "fecha": "2026-11-19T20:45:44.651Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada por el usuario (comprobación automática: DESCARTA)."
+    },
+    {
+      "fecha": "2026-11-19T20:45:44.802Z",
+      "paso": "INTENCION",
+      "nota": "Composición lista: 5 página(s), brief v3."
+    }
+  ],
+  "creadoEn": "2026-11-19T20:42:14.224Z"
+}

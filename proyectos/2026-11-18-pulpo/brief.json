@@ -1,0 +1,135 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-18-pulpo",
+  "local": "asador-etxebarri",
+  "version": 2,
+  "creadoEn": "2026-11-17T23:02:22.247Z",
+  "actualizadoEn": "2026-11-17T23:02:46.712Z",
+  "modo": "PRODUCTOR",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "pulpo",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "Tentáculo de pulpo a la brasa",
+          "estado": "enroscado, dorado en las ventosas, con aceite y pimentón",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Langostinos o gambas peladas",
+          "estado": "cocidos, sin cabeza y con cola, espolvoreados con pimentón",
+          "recuento": 3,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Patatas cocidas en rodajas",
+          "estado": "trozos irregulares amarillos bajo el pulpo con aceite y pimentón",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Aceite de perejil y pimentón",
+          "estado": "gotas brillantes verde intenso y polvo rojo repartidos",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Tabla redonda de madera con surcos",
+          "estado": "madera clara rayada, humedecida por el aceite",
+          "recuento": 1,
+          "cortados": 1,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "9f07832fcbf4b874c248a7e3998c5fdb3dff115c0aed73e86c0e1917edef9f71"
+    },
+    "datosPorConfirmar": [
+      "«Langostinos o gambas peladas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Patatas cocidas en rodajas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Aceite de perejil y pimentón»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Tabla redonda de madera con surcos»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Langostinos o gambas peladas»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "post",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-16"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "dato del brief compuesto al borde de la fotografía"
+    }
+  ],
+  "editorial": {
+    "modelo": "gemini-4-hydrogen",
+    "briefVersion": 1,
+    "fotoSha256": "f7717b58c5e1f72a95d081fddea95ca4066f404d8d8ff7a4e029d8efa64b66e9",
+    "inventarioSha256": "9f07832fcbf4b874c248a7e3998c5fdb3dff115c0aed73e86c0e1917edef9f71",
+    "referencia": "ref-post-16",
+    "fichaReferencia": "{\"esquema\":\"referencia/ficha@1\",\"titulo\":\"«FREE / SPAGHETTI»\",\"familia\":\"F3\",\"mecanismos\":[\"PALABRA_GIRADA\",\"PAPEL_RASGADO\",\"LOGOTIPO_TIPOGRAFICO\"],\"capas\":[\"frambuesa con textura\",\"franja de papel rasgado amarilla abajo\",\"tenedor con espaguetis recortado, vertical, sale por abajo\",\"«FREE» amarilla ultra heavy girada 90°\",\"«SPAGHETTI» condensada + «Bolognese» script\",\"estrellas y texto\"],\"reticula\":\"Dos verticales: palabra y tenedor; margen ≈ 9 %\",\"tipografia\":[{\"rol\":\"TITULAR\",\"clasificacion\":\"ultra heavy girada\",\"escala\":50},{\"rol\":\"SECUNDARIO\",\"clasificacion\":\"condensada\",\"escala\":6},{\"rol\":\"APOYO\",\"clasificacion\":\"script\",\"escala\":4}],\"paleta\":[{\"hex\":\"#D04D59\",\"rol\":\"fondo frambuesa\"},{\"hex\":\"#F9CF3F\",\"rol\":\"amarillo: palabra y papel\"}],\"foto\":\"Recorte vertical sobre fondo controlado\",\"recursos\":[{\"recurso\":\"papel rasgado\",\"funcion\":\"cierra abajo\"},{\"recurso\":\"palabra girada\",\"funcion\":\"ritmo vertical\"}],\"lectura\":[\"el tenedor\",\"FREE\",\"SPAGHETTI Bolognese\"],\"porQueFunciona\":\"Dos verticales dan ritmo; dos tintas.\",\"analizadaPor\":\"ESTUDIO_A_MANO\",\"analizadaEn\":\"2026-11-07\"}",
+    "fichaSha256": "1a0cca322f962437e9da485976208fc03b87e5f1d2fcc3b97e95b9d1341c42ed",
+    "oficioSha256": "0f369945a0cafc89e0bc5c7e498a39d664c5dc6717934d79f6f8901a80fa3097",
+    "plan": {
+      "esquema": "post/editorial@1",
+      "hiloVisual": "COLOR",
+      "diapositivas": [
+        {
+          "n": 1,
+          "papel": "portada",
+          "tratamiento": "FOTO_TEXTO_AL_BORDE",
+          "borde": "INFERIOR",
+          "gesto": "ANUNCIO",
+          "texto": {
+            "fuente": "ELEMENTO",
+            "indice": 0
+          }
+        }
+      ]
+    }
+  },
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "huella": "05166b9a745fe10d69a0c14c50fae4ec06198b54f19d271b643decb2fe371859",
+  "modelo": "gemini-4-hydrogen",
+  "estado": "REVISION_HUMANA",
+  "incidencias": [
+    {
+      "id": "post",
+      "version": 1,
+      "motivo": "Falta de continuidad visual: la portada usa una foto con mesa y fondo negros distinta a la mesa de madera cálida y disposición de los detalles 1 a 3.",
+      "correccion": {
+        "tipo": "REVISION_HUMANA"
+      }
+    },
+    {
+      "id": "cierre",
+      "version": 1,
+      "motivo": "Falta de continuidad con los detalles (usa la foto de mesa negra) y el bloque inferior oscuro corta de forma brusca la carne, el plato y la copa de vino.",
+      "correccion": {
+        "tipo": "REVISION_HUMANA"
+      }
+    }
+  ],
+  "correcciones": []
+}

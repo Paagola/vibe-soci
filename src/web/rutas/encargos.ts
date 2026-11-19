@@ -7,8 +7,9 @@
 import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
+import { TomaDeSerie } from '../../dominio/secuenciaTaller.js';
 import { AccionTaller } from '../../dominio/taller.js';
-import { descargarSerie, leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
+import { descargarSerie, descargarTomaSerie, leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
 import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -117,7 +118,8 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const detalle = await detalleDeEncargo(deps, proyecto);
     const api = detalle.encargo.taller && deps.tallerApi;
     const tallerApi = api ? { modelo: MODELO_CARTEL, limite: api.limite, disponibles: await enviosDisponibles(api.reservas, api.limite) } : null;
-    res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo });
+    res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo,
+      serieDirector: Boolean(deps.directorSecuencia), directorCarrusel: Boolean(deps.directorCarrusel), serieGenerador: deps.generador.disponible().ok });
   });
 
   rutas.post('/:proyecto/taller', conEscritura(async (req, res) => {
@@ -137,7 +139,25 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       res.status(202).json({ trabajo });
       return;
     }
-    const id = accion.accion === 'IMPORTAR' ? accion.subidaId : accion.accion === 'RECOMPONER_TITULO' ? accion.mascaraId : undefined;
+    const dirigePortada = deps.directorPortada && e.taller?.seleccionEditorial &&
+      ['SIN_REFERENCIA', 'FICHAR_REFERENCIA', 'EXPLORAR_RUTA'].includes(accion.accion);
+    const maquetacionEditorial = accion.accion === 'MAQUETAR_SERIE' && accion.usarTomas && e.taller?.secuencia &&
+      'paginas' in e.taller.secuencia.direccion;
+    if (accion.accion === 'DIRIGIR_SECUENCIA' || accion.accion === 'DIRIGIR_CARRUSEL' || accion.accion === 'GENERAR_TOMA_SERIE' ||
+      accion.accion === 'GENERAR_PORTADA_FOTO' || dirigePortada || maquetacionEditorial) {
+      const referencia = accion.accion === 'DIRIGIR_CARRUSEL' ? accion.referenciaVisualId : undefined;
+      const subida = referencia ? estudio.subidas.ruta(referencia) : undefined;
+      const trabajo = await lanzar(estudio, proyecto, async (_deps, alProgresar) => {
+        if (dirigePortada) alProgresar(progresoDe('PROPUESTA', e));
+        if (maquetacionEditorial) alProgresar(progresoDe('COMPONER', e));
+        const encargo = await decidirTaller(deps, e, accion, subida, alProgresar);
+        if (referencia) await estudio.subidas.borrar([referencia]);
+        return { proyecto, paso: encargo.paso };
+      });
+      res.status(202).json({ trabajo });
+      return;
+    }
+    const id = accion.accion === 'IMPORTAR' || accion.accion === 'IMPORTAR_TOMA_SERIE' ? accion.subidaId : accion.accion === 'RECOMPONER_TITULO' ? accion.mascaraId : undefined;
     const subida = id ? estudio.subidas.ruta(id) : undefined;
     const encargo = await decidirTaller(deps, e, accion, subida);
     if (id) await estudio.subidas.borrar([id]);
@@ -165,6 +185,17 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       res.set('Cache-Control', 'no-store').type('png').send(bytes);
     });
   }
+  rutas.get('/:proyecto/taller/tomas-serie/:toma/:archivo', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const toma = validar(TomaDeSerie, req.params.toma, 'Esa toma no forma parte del carrusel.');
+    const paquete = req.params.archivo === 'paquete';
+    if (!paquete && req.params.archivo !== 'foto') throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe ese archivo.');
+    const bytes = await descargarTomaSerie(deps, await leerEncargo(deps, proyecto), toma, paquete);
+    res.set('Cache-Control', 'no-store');
+    if (paquete) res.attachment(proyecto + '-' + toma + '.zip');
+    else res.type('png');
+    res.send(bytes);
+  });
   rutas.get('/:proyecto/taller/serie/:huella/:archivo', async (req, res) => {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
     const archivo = String(req.params.archivo), paquete = archivo === 'paquete';
@@ -301,7 +332,7 @@ async function avanzarConProgreso(deps: DepsDisenoPost, proyecto: string, accion
 }
 
 /** Qué está haciendo la orden en cada paso y cuánto queda, en el mejor caso, hasta la siguiente parada. */
-export function progresoDe(paso: PasoPost, encargo: Pick<EncargoPost, 'intentos'>): Progreso {
+export function progresoDe(paso: PasoPost, encargo: Pick<EncargoPost, 'intentos' | 'taller'>): Progreso {
   const progreso = (mensaje: string, director = 0, tandas = 0, otrosMs = 0): Progreso => ({ paso, mensaje, hechas: 0, total: 0, pasosRestantes: { director, tandas }, otrosMs });
   switch (paso) {
     case 'REFERENCIA':
@@ -309,7 +340,9 @@ export function progresoDe(paso: PasoPost, encargo: Pick<EncargoPost, 'intentos'
     case 'FOTO_REAL':
       return progreso('Registrando la foto subida…', 1);
     case 'PROPUESTA':
-      return progreso('El director de fotografía mira la foto y propone la toma nueva…', 1);
+      return progreso(encargo.taller?.seleccionEditorial
+        ? 'El director de fotografía coteja la foto con las piezas recientes del local…'
+        : 'El director de fotografía mira la foto y propone la toma nueva…', 1);
     case 'CONFIRMAR_ELEMENTOS':
       return progreso('Comprobando la propuesta…');
     case 'GENERAR':

@@ -1,0 +1,146 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-19-plato-de-jamon-con-vino",
+  "local": "asador-etxebarri",
+  "version": 1,
+  "creadoEn": "2026-11-19T20:43:47.204Z",
+  "actualizadoEn": "2026-11-19T20:43:47.204Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "Plato de jamón con vino y solomillo",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "Copa de vino tinto",
+          "estado": "cristal transparente medio lleno de vino tinto oscuro con reflejos",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Mano",
+          "estado": "sujetando el tallo de la copa",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Carne asada laminada con hueso",
+          "estado": "sellada con costra oscura, centro rojo rosado y grasa dorada",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Cuenco con sal en escamas",
+          "estado": "cuenco negro mate pequeño lleno de escamas blancas de sal",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Pizarra negra",
+          "estado": "rectangular, superficie oscura texturizada",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Lonchas de jamón curado",
+          "estado": "finas, rojo intenso con veta de grasa brillante",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "NOTA"
+        },
+        {
+          "nombre": "Plato blanco redondo",
+          "estado": "porcelana blanca lisa",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "NOTA"
+        }
+      ],
+      "huella": "ad0d1f0acfd8d0cd868f8e6fdee8a65caf183db9bc70748e114ad1e778372097"
+    },
+    "datosPorConfirmar": [
+      "«Mano»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Carne asada laminada con hueso»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Cuenco con sal en escamas»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Pizarra negra»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Carne asada laminada con hueso»: el recuento es dudoso, míralo en la foto subida."
+    ]
+  },
+  "idea": null,
+  "formato": "carrusel",
+  "estetica": "EDITORIAL_OSCURO",
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    },
+    {
+      "n": 2,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Copa de vino tinto",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 3,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Mano",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 4,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Carne asada laminada con hueso",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 5,
+      "papel": "cierre",
+      "foto": "FOTO_ELEGIDA",
+      "para": "firma, ciudad e Instagram"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "local": "asador-etxebarri",
+  "marca": "../../marcas/asador-etxebarri/tokens.json",
+  "briefVersion": 3,
+  "diapositivas": [
+    {
+      "intencion": "intenciones/post.json",
+      "papel": "portada"
+    }
+  ],
+  "pieza": {
+    "fecha": "2026-11-19",
+    "referencia": "ref-post-14"
+  }
+}

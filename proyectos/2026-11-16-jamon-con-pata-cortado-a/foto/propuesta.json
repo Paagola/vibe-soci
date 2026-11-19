@@ -1,0 +1,189 @@
+{
+  "director": "Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)",
+  "fecha": "2026-11-16T19:17:49.556Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 65,
+      "distancia": "MEDIO",
+      "encuadre": "Plano picado diagonal mostrando jamonero, cortador y platos en mesa negra exterior.",
+      "luz": "Luz natural difusa exterior, algo plana y sin contraste direccional.",
+      "elementos": [
+        {
+          "nombre": "Pata de jamón curado en jamonero",
+          "estado": "Iniciada, corte plano brillante veteado con grasa",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Fijada a soporte negro y metálico.",
+          "ingles": "cured ham leg fixed in the original black-and-metal ham stand, with a flat marbled cut face",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Mano con guante negro de nitrilo",
+          "estado": "Sujetando el jamón y el cuchillo en plena acción de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Mano del cortador.",
+          "ingles": "black nitrile-gloved hand steadying the ham as it is sliced",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Mano sin guante",
+          "estado": "Sujetando el jamón en plena acción de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Mano desnuda, abajo a la izquierda.",
+          "ingles": "bare hand holding the long slicing knife as it cuts the ham",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Cuchillo jamonero largo",
+          "estado": "En plano sobre la superficie de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Hoja fina y flexible.",
+          "ingles": "long thin flexible slicing knife against the cut face of the ham",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Platos blancos con lonchas en espiral",
+          "estado": "Emplatados concéntricos de lonchas brillantes",
+          "recuento": 2,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Uno sobre pila de platos, otro plano a la derecha; un tercero pequeño al fondo.",
+          "ingles": "white round serving plates with thin slices of the same ham arranged in distinct concentric spirals, both fully inside the frame and in sharp focus",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Cuchillos sobre el paño",
+          "estado": "En la esquina inferior izquierda, sobre el paño de trabajo",
+          "recuento": 2,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Cuchillos de cocina que no se usan en el corte.",
+          "ingles": "utility knives resting on the original work towel at the lower left",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Ángulo picado poco apetecible",
+        "Entorno desordenado con bolsas y paños de trabajo",
+        "Luz exterior plana sin volumen"
+      ],
+      "utilizable": true,
+      "motivo": "Registra perfectamente el producto, el corte manual y el emplatado."
+    },
+    "huecos": {
+      "plato": "a cured ham leg being sliced by hand on its stand, with thin slices served in spirals on white plates",
+      "origen": "on the original black serving table",
+      "elementos": "the cured ham leg with visible marbling and glistening natural oil, one hand in a black glove and one bare hand guiding the long flexible slicing knife lifting a translucent slice, two knives resting on the work towel at lower left",
+      "recuento": "Exactly one cured ham leg, one gloved hand, one bare hand, one long slicing knife, two knives on the towel.",
+      "camara": {
+        "anguloGrados": 31,
+        "descripcion": "wide three-quarter view from the right at 31 degrees, a step back from the table, showing the whole serving arrangement",
+        "objetivoMm": 42,
+        "apertura": 8,
+        "giroGrados": 60,
+        "distancia": "GENERAL"
+      },
+      "ideaGrafica": "vertical frame with the carving action and ham stand across the left centre, and the two separate white circular plates of spiral-cut ham fully visible in the right middle and lower right, both on the same dark table with a clean dark gap between them and both rims inside the frame. The two utility knives and work towel remain visible at lower left. Keep the top fifth as clear dark background. The slicing action and plates share visual priority",
+      "aire": "arriba",
+      "luz": "single warm soft side light that brings out the ham marbling and keeps both white plates plainly lit",
+      "colorDominante": "warm red ham and deep brown shadows, with the two white plates clearly distinct"
+    },
+    "decisiones": [
+      "Paso de picado 65° a macro bajo a 20° para dar monumentalidad y textura al corte, siguiendo los principios de 'Macro a sangre' y 'Rústico de fuego'.",
+      "Composición diagonal con la masa arriba a la derecha y 'aire: abajo' para reservar el tercio inferior a la franja de papel rasgado del post de referencia F7.",
+      "Luz lateral cálida rasante inspirada en el asador/fuego para resaltar el brillo de la grasa del ibérico, eliminando el fondo plano de la foto original.",
+      "Reintento autorizado. Plano abierto de tres cuartos que muestra el corte y los dos platos completos. Se conserva el inventario confirmado y la luz lateral cálida."
+    ]
+  },
+  "prompt": "@image1 is a real photo of a cured ham leg being sliced by hand on its stand, with thin slices served in spirals on white plates on the original black serving table. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: cured ham leg fixed in the original black-and-metal ham stand, with a flat marbled cut face; black nitrile-gloved hand steadying the ham as it is sliced; bare hand holding the long slicing knife as it cuts the ham; long thin flexible slicing knife against the cut face of the ham; white round serving plates with thin slices of the same ham arranged in distinct concentric spirals, both fully inside the frame and in sharp focus; utility knives resting on the original work towel at the lower left. Exactly 1 × cured ham leg fixed in the original black-and-metal ham stand, with a flat marbled cut face; 1 × black nitrile-gloved hand steadying the ham as it is sliced; 1 × bare hand holding the long slicing knife as it cuts the ham; 1 × long thin flexible slicing knife against the cut face of the ham; 2 × white round serving plates with thin slices of the same ham arranged in distinct concentric spirals, both fully inside the frame and in sharp focus; 2 × utility knives resting on the original work towel at the lower left. Nothing else added. New composition by a professional food photographer: wide three-quarter view from the right at 31 degrees, a step back from the table, showing the whole serving arrangement, 42 mm lens at f/8, vertical frame with the carving action and ham stand across the left centre, and the two separate white circular plates of spiral-cut ham fully visible in the right middle and lower right, both on the same dark table with a clean dark gap between them and both rims inside the frame. The two utility knives and work towel remain visible at lower left. Keep the top fifth as clear dark background. The slicing action and plates share visual priority. Single warm soft side light that brings out the ham marbling and keeps both white plates plainly lit, warm red ham and deep brown shadows, with the two white plates clearly distinct. Photographic realism, no text.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "familia": "F7",
+    "desdeElInventario": true
+  },
+  "propuestaDelDirector": {
+    "descripcion": {
+      "anguloGrados": 65,
+      "distancia": "MEDIO",
+      "encuadre": "Plano picado diagonal mostrando jamonero, cortador y platos en mesa negra exterior.",
+      "luz": "Luz natural difusa exterior, algo plana y sin contraste direccional.",
+      "elementos": [
+        {
+          "nombre": "Pata de jamón curado en jamonero",
+          "estado": "Iniciada, corte plano brillante veteado con grasa",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Fijada a soporte negro y metálico."
+        },
+        {
+          "nombre": "Manos con guantes negros de nitrilo",
+          "estado": "Sujetando jamón y cuchillo en plena acción de corte",
+          "recuento": 2,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Pertenecen al cortador."
+        },
+        {
+          "nombre": "Cuchillo jamonero largo",
+          "estado": "En plano sobre la superficie de corte",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Hoja fina y flexible."
+        },
+        {
+          "nombre": "Platos blancos con lonchas en espiral",
+          "estado": "Emplatados concéntricos de lonchas brillantes",
+          "recuento": 2,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Uno sobre pila de platos, otro plano a la derecha; un tercero pequeño al fondo."
+        }
+      ],
+      "defectos": [
+        "Ángulo picado poco apetecible",
+        "Entorno desordenado con bolsas y paños de trabajo",
+        "Luz exterior plana sin volumen"
+      ],
+      "utilizable": true,
+      "motivo": "Registra perfectamente el producto, el corte manual y el emplatado."
+    },
+    "huecos": {
+      "plato": "hand-carved acorn-fed ibérico ham",
+      "origen": "at a traditional Spanish bodega",
+      "elementos": "the cured ham leg with visible marbling and glistening natural oil, hands in black gloves delicately guiding the long flexible slicing knife lifting a translucent slice",
+      "recuento": "Exactly one cured ham leg, two gloved hands, one long slicing knife.",
+      "camara": {
+        "anguloGrados": 20,
+        "descripcion": "dramatic low-angle macro view at 20 degrees, tightly framed on the slicing motion",
+        "objetivoMm": 100,
+        "apertura": 2.8,
+        "giroGrados": 75,
+        "distancia": "MACRO"
+      },
+      "ideaGrafica": "jamón and knife filling the top-right two-thirds along a diagonal, leaving the lower third in deep shadow",
+      "aire": "abajo",
+      "luz": "warm grazing firelight from the side highlighting the sheen of fat, soft amber bokeh behind",
+      "colorDominante": "deep crimson and warm amber on dark rustic tones"
+    },
+    "decisiones": [
+      "Paso de picado 65° a macro bajo a 20° para dar monumentalidad y textura al corte, siguiendo los principios de 'Macro a sangre' y 'Rústico de fuego'.",
+      "Composición diagonal con la masa arriba a la derecha y 'aire: abajo' para reservar el tercio inferior a la franja de papel rasgado del post de referencia F7.",
+      "Luz lateral cálida rasante inspirada en el asador/fuego para resaltar el brillo de la grasa del ibérico, eliminando el fondo plano de la foto original."
+    ]
+  },
+  "corregidaEn": "2026-11-17T21:17:36.942Z"
+}

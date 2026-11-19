@@ -10,6 +10,7 @@
  * Macro, 10° o clave baja NO van fijados: dependen del plato y de la referencia.
  */
 import { z } from 'zod';
+import { pautaDeLuz, type ModoDeLuz } from './luzFotografica.js';
 import { frasePrompt, type Estetica } from './diseno/estetica.js';
 
 /** La cámara nueva tiene que quedar a más de esto de la original: en el benchmark, un ¾ a 25° frente a uno a 45° volvió a la foto subida. */
@@ -151,6 +152,7 @@ export interface OpcionesDePrompt {
   deDetalle?: boolean;
   /** Productor: «elementos» y «recuento» del prompt salen del inventario (descripcion.elementos), no del texto libre de los huecos. */
   desdeElInventario?: boolean;
+  modoDeLuz?: ModoDeLuz;
 }
 
 /** El papel de @image2 en el prompt, tal como lo pidió el usuario. */
@@ -171,6 +173,7 @@ export function montarPromptFotoNueva(h: HuecosFotoNueva, o: OpcionesDePrompt = 
     `New composition by a professional food photographer: ${sinPunto(h.camara.descripcion)}, ${h.camara.objetivoMm} mm lens at f/${h.camara.apertura}, ${sinPunto(h.ideaGrafica)}${recorte}.`,
     `${mayuscula(sinPunto(h.luz))}, ${sinPunto(h.colorDominante)}.`,
     ...(o.estetica ? [frasePrompt(o.estetica, o.deDetalle)] : []),
+    ...(o.modoDeLuz ? [pautaDeLuz(o.modoDeLuz)] : []),
     'Photographic realism, no text.',
   ].join(' ');
 }

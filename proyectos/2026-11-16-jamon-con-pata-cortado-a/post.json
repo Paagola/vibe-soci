@@ -1,0 +1,186 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-16-jamon-con-pata-cortado-a",
+  "local": "torre-de-vega",
+  "plato": "Jamón con pata cortado a cuchillo en el jamonero, servido en platos blancos en espiral",
+  "fotoSubida": "proyectos/2026-11-16-jamon-con-pata-cortado-a/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-propia-1",
+  "estiloDeReferencia": false,
+  "estetica": "RUSTICO_FUEGO",
+  "formato": "post",
+  "titularCreativo": false,
+  "simulado": false,
+  "paso": "INTENCION",
+  "activoReal": "2026-11-16-jamon-con-pata-cortado-a-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of a cured ham leg being sliced by hand on its stand, with thin slices served in spirals on white plates on the original black serving table. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: cured ham leg fixed in the original black-and-metal ham stand, with a flat marbled cut face; black nitrile-gloved hand steadying the ham as it is sliced; bare hand holding the long slicing knife as it cuts the ham; long thin flexible slicing knife against the cut face of the ham; white round serving plates with thin slices of the same ham arranged in distinct concentric spirals, both fully inside the frame and in sharp focus; utility knives resting on the original work towel at the lower left. Exactly 1 × cured ham leg fixed in the original black-and-metal ham stand, with a flat marbled cut face; 1 × black nitrile-gloved hand steadying the ham as it is sliced; 1 × bare hand holding the long slicing knife as it cuts the ham; 1 × long thin flexible slicing knife against the cut face of the ham; 2 × white round serving plates with thin slices of the same ham arranged in distinct concentric spirals, both fully inside the frame and in sharp focus; 2 × utility knives resting on the original work towel at the lower left. Nothing else added. New composition by a professional food photographer: wide three-quarter view from the right at 31 degrees, a step back from the table, showing the whole serving arrangement, 42 mm lens at f/8, vertical frame with the carving action and ham stand across the left centre, and the two separate white circular plates of spiral-cut ham fully visible in the right middle and lower right, both on the same dark table with a clean dark gap between them and both rims inside the frame. The two utility knives and work towel remain visible at lower left. Keep the top fifth as clear dark background. The slicing action and plates share visual priority. Single warm soft side light that brings out the ham marbling and keeps both white plates plainly lit, warm red ham and deep brown shadows, with the two white plates clearly distinct. Photographic realism, no text.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-17T21:17:58.840Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.160988
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-16-jamon-con-pata-cortado-a-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "falta: Platos blancos con lonchas en espiral",
+        "anatomía por teselas de Platos blancos con lonchas en espiral: 0 cuerpos (se esperan 2)"
+      ],
+      "costeUsd": 0.141348
+    },
+    {
+      "n": 2,
+      "activo": "2026-11-16-jamon-con-pata-cortado-a-foto-2",
+      "final": "DESCARTA",
+      "motivos": [
+        "falta: Platos blancos con lonchas en espiral",
+        "anatomía por teselas de Platos blancos con lonchas en espiral: 0 cuerpos (se esperan 2)"
+      ],
+      "costeUsd": 0.14058
+    },
+    {
+      "n": 3,
+      "activo": "2026-11-16-jamon-con-pata-cortado-a-foto-3",
+      "final": "PASA",
+      "motivos": [],
+      "costeUsd": 0.142048
+    }
+  ],
+  "tomas": [],
+  "fotosExtra": [],
+  "fotoElegida": "2026-11-16-jamon-con-pata-cortado-a-foto-3",
+  "historial": [
+    {
+      "fecha": "2026-11-16T19:16:49.882Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-16T19:16:58.235Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-propia-1."
+    },
+    {
+      "fecha": "2026-11-16T19:17:15.688Z",
+      "paso": "REFERENCIA",
+      "nota": "Ficha automática de ref-propia-1 (Gemini (gemini-3.8-flash, respaldo gemini-3.5-flash)): F7 · «BEEF BURGER» sobre papel rasgado negro."
+    },
+    {
+      "fecha": "2026-11-16T19:17:15.701Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-propia-1» (F7). (2 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-16T19:17:15.701Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia (F7): Rústico de fuego."
+    },
+    {
+      "fecha": "2026-11-16T19:17:15.708Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-16-jamon-con-pata-cortado-a-real (1280 × 1707 px)."
+    },
+    {
+      "fecha": "2026-11-16T19:17:49.557Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-16T19:17:49.563Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (código, sin IA; inventario PROPUESTO de 4 elemento(s))."
+    },
+    {
+      "fecha": "2026-11-16T19:21:47.546Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Propuesta corregida a mano."
+    },
+    {
+      "fecha": "2026-11-16T19:28:38.945Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-16T19:28:38.951Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v2."
+    },
+    {
+      "fecha": "2026-11-16T19:29:03.216Z",
+      "paso": "GENERAR",
+      "nota": "Intento 1 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1413 USD."
+    },
+    {
+      "fecha": "2026-11-16T19:29:03.941Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 1797 px."
+    },
+    {
+      "fecha": "2026-11-16T19:29:44.028Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (falta: Platos blancos con lonchas en espiral; anatomía por teselas de Platos blancos con lonchas en espiral: 0 cuerpos (se esperan 2))."
+    },
+    {
+      "fecha": "2026-11-16T19:30:07.690Z",
+      "paso": "GENERAR",
+      "nota": "Intento 2 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1406 USD."
+    },
+    {
+      "fecha": "2026-11-16T19:30:08.178Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1792 × 2113 px."
+    },
+    {
+      "fecha": "2026-11-16T19:30:48.819Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 2: DESCARTA (falta: Platos blancos con lonchas en espiral; anatomía por teselas de Platos blancos con lonchas en espiral: 0 cuerpos (se esperan 2))."
+    },
+    {
+      "fecha": "2026-11-17T21:17:36.942Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Propuesta corregida a mano."
+    },
+    {
+      "fecha": "2026-11-17T21:17:58.839Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-17T21:17:58.851Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (terminal) y congelado en el brief v3."
+    },
+    {
+      "fecha": "2026-11-17T21:18:22.361Z",
+      "paso": "GENERAR",
+      "nota": "Intento 3 generado con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1420 USD."
+    },
+    {
+      "fecha": "2026-11-17T21:18:22.899Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1763 × 1679 px."
+    },
+    {
+      "fecha": "2026-11-17T21:18:57.478Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 3: PASA."
+    },
+    {
+      "fecha": "2026-11-17T22:12:45.592Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 3 confirmada."
+    },
+    {
+      "fecha": "2026-11-17T22:13:38.073Z",
+      "paso": "INTENCION",
+      "nota": "Falta la intención de diseño: la propuesta del director no pasa las comprobaciones: No hay aire encima del plato (1 fila(s); encima 1 y debajo 1): el titular quedaría tapado. Usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano), ANOTACIONES, o el otro lado si tiene aire. | Para el acento hacen falta cuatro filas de aire encima del plato y hay 1: usa TITULAR_DETRAS (o el otro lado, si tiene más aire).. Hay un borrador."
+    }
+  ],
+  "creadoEn": "2026-11-16T19:16:49.882Z"
+}
