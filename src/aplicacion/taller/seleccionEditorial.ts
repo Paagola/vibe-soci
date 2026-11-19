@@ -166,5 +166,9 @@ export function seleccionarEditorial(e: EncargoPost, foto: ComandaDeArte['fotogr
       const { fuente, pagina, imagen, lectura } = entrada;
       return { id, fuente, pagina, imagen, lectura };
     }) };
-  return { editorial, pauta, espacio: esEspacial };
+  const sugerencia = pauta === pautas.rebozado || pauta === pautas.piezas ? 'Una mano adulta levanta una pieza entera sobre un plato sin marca. Deja ver parte de la mesa y que la luz de ventana recorra la superficie.'
+    : pauta === pautas.bebida ? 'Una mano adulta acerca el recipiente a la luz de una ventana. Deja visible el borde y el nivel observado sobre una mesa mate.'
+    : pauta === pautas.porcion || pauta === pautas.capas ? 'Acerca el apoyo al borde de una mesa clara. Una mano adulta sostiene el plato por debajo y la luz lateral separa el canto visible del fondo.'
+    : 'Sirve el alimento entero en una superficie de cerámica sin marca sobre una mesa mate. Un haz de luz lateral recorre el rasgo que documenta la fuente.';
+  return { editorial, pauta, espacio: esEspacial, sugerencia };
 }

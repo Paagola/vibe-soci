@@ -8,7 +8,7 @@ import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
 import { AccionTaller } from '../../dominio/taller.js';
-import { leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
+import { descargarSerie, leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
 import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -165,6 +165,16 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       res.set('Cache-Control', 'no-store').type('png').send(bytes);
     });
   }
+  rutas.get('/:proyecto/taller/serie/:huella/:archivo', async (req, res) => {
+    const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+    const archivo = String(req.params.archivo), paquete = archivo === 'paquete';
+    if (!paquete && !/^[1-6]$/.test(archivo)) throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe esa lámina.');
+    const { bytes, uso } = await descargarSerie(deps, await leerEncargo(deps, proyecto), String(req.params.huella), paquete ? undefined : Number(archivo));
+    res.set({ 'Cache-Control': 'no-store', 'X-Uso-Imagen': uso });
+    if (paquete) res.attachment(proyecto + '-serie-' + uso.toLowerCase() + '.zip');
+    else res.type('png');
+    res.send(bytes);
+  });
   rutas.get('/:proyecto/taller/exportacion', async (req, res) => {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
     const bytes = await exportarArte(deps, await leerEncargo(deps, proyecto));

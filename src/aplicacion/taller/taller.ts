@@ -18,6 +18,7 @@ import { guardarMuestras, leerMuestras } from './muestras.js';
 import type { MascaraDePlano } from './profundidad.js';
 import { componerTitulo } from './componerTitulo.js';
 import { maquetaDeTitulo } from './puesta.js';
+import { maquetarSerie, leerSerie } from './serie.js';
 import { paqueteZip } from './paquete.js';
 
 type Candidata = TallerDeArte['candidatas'][number];
@@ -58,7 +59,7 @@ async function redactar(deps: DepsPost, e: EncargoPost, edicion: EdicionDeComand
   const construir = (muestras?: ComandaDeArte['muestras']) => dirigir(e, marca, fotoSha256, fotografia, oficio, referencia?.ficha, edicion.direccion, edicion.nombrePlato, edicion.gesto, edicion.toma, muestras, edicion.ruta);
   const base = construir();
   const previa = e.taller?.comanda;
-  const permiteMuestras = base.editorial?.ruta !== 'FOTO_ESPACIO' && base.toma?.camara.vista === 'CENITAL' && !base.toma.alternativa;
+  const permiteMuestras = !base.toma?.seleccion.escenaFuente && base.editorial?.ruta !== 'FOTO_ESPACIO' && base.toma?.camara.vista === 'CENITAL' && !base.toma.alternativa;
   if (edicion.muestras && !permiteMuestras) throw new ErrorDeUsuario('Para usar detalles, elige una cenital con el punto de vista de origen indicado.');
   if (!permiteMuestras || edicion.muestras === null) return base;
   if (!edicion.muestras && !previa?.muestras) return base;
@@ -113,7 +114,7 @@ export async function descargarPaquete(deps: DepsPost, e: EncargoPost): Promise<
   const foto = await imagenFuente(deps, e, c);
   const muestras = c.muestras ? await bytesDeMuestras(deps, e, c.muestras.sha256) : undefined;
   const entrada = muestras ? 'Adjunta solo muestras.jpg al generador. Conserva producto.jpg para cotejar el plato completo.' : 'Adjunta producto.jpg al generador.';
-  const palabras = c.tipografiaLocal ? 'La imagen del generador es una fotografía base sin texto añadido. Importa esa foto en el taller: la maqueta local imprime exactamente el título confirmado.' : esFotoEditorial(c.editorial?.ruta) ? 'Entrega una fotografía sin texto añadido. Conserva los rótulos documentados en la fuente.' : 'Conserva las palabras de comanda.json.';
+  const palabras = c.tipografiaLocal ? 'La imagen del generador es una fotografía base sin texto añadido. Importa esa foto en el taller: la maqueta local imprime exactamente el título confirmado.' : esFotoEditorial(c.editorial?.ruta) ? (c.toma?.seleccion.escenaFuente?.modo === 'EDITORIAL' ? 'Entrega una fotografía sin letras ni marcas escenificadas.' : 'Entrega una fotografía sin texto añadido. Conserva los rótulos documentados en la fuente.') : 'Conserva las palabras de comanda.json.';
   return paqueteZip([
     { nombre: 'direccion.txt', bytes: Buffer.from(c.prompt) },
     { nombre: 'producto.jpg', bytes: foto },
@@ -159,6 +160,16 @@ async function mascaraDeBase(deps: DepsPost, e: EncargoPost, candidata: Candidat
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, sha256 + '.png'), png);
   return { png, sha256, origen: subida ? 'IMPORTADA' : 'LOCAL', plano };
+}
+
+export async function descargarSerie(deps: DepsPost, e: EncargoPost, hash: string, pagina?: number) {
+  const serie = e.taller?.serie;
+  if (e.paso !== 'HECHO' || !serie || serie.huella !== hash) throw new ErrorDeUsuario('Esta serie no corresponde a la edición vigente.');
+  await fuenteVerificada(deps, e, exigirConfirmada(e));
+  const candidata = e.taller?.candidatas.find(c => c.version === serie.versionBase);
+  if (!candidata?.revision) throw new ErrorDeUsuario('Falta la revisión de la base de esta serie.');
+  const base = pagina !== undefined ? undefined : candidata.composicion ? (await leerCapa(deps, e, candidata.version, 'base')).bytes : (await bytesDeCandidata(deps, e, candidata.version)).bytes;
+  return { bytes: await leerSerie(carpeta(deps, e), serie, pagina, base), uso: serie.uso };
 }
 
 export async function exportarArte(deps: DepsPost, e: EncargoPost) {
@@ -249,7 +260,8 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   if (accion.accion === 'AJUSTAR_TOMA') {
     if (e.paso !== 'CONFIRMAR_ELEMENTOS') throw new ErrorDeUsuario('Reabre la dirección para ajustar la cámara.');
     const { accion: _accion, revision: _revision, ...seleccion } = accion;
-    taller.comanda = await redactar(deps, e, { direccion: comanda.direccion, toma: seleccion });
+    const cambiaEscena = JSON.stringify(seleccion.escenaFuente) !== JSON.stringify(comanda.toma?.seleccion.escenaFuente);
+    taller.comanda = await redactar(deps, e, { direccion: cambiaEscena ? undefined : comanda.direccion, toma: seleccion });
     return registrar(deps, e, e.paso, 'Cámara, encuadre y evidencia de la nueva toma preparados.');
   }
   if (accion.accion === 'EDITAR' || accion.accion === 'PROPONER_GESTO' || accion.accion === 'CONFIRMAR_DIRECCION') {
@@ -274,6 +286,18 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     return registrar(deps, e, 'GENERAR', 'Dirección, sujeto y texto confirmados. Paquete de producción disponible.');
   }
   exigirConfirmada(e);
+  if (accion.accion === 'MAQUETAR_SERIE') {
+    if (e.paso !== 'HECHO' || !ultimo?.revision || ultimo.version !== accion.version || ultimo.comanda !== comanda.huella) throw new ErrorDeUsuario('Aprueba primero la candidata que quieres maquetar.');
+    if (!ultimo.composicion && !esFotoEditorial(comanda.editorial?.ruta)) throw new ErrorDeUsuario('Una serie requiere una base fotográfica sin el texto integrado en los píxeles.');
+    await fuenteVerificada(deps, e, comanda);
+    await bytesDeCandidata(deps, e, ultimo.version);
+    const base = ultimo.composicion ? await leerCapa(deps, e, ultimo.version, 'base') : { ruta: join(carpeta(deps, e), ultimo.sha256 + '.png') };
+    taller.serie = await maquetarSerie(deps.raiz, carpeta(deps, e), e.local, {
+      comanda: comanda.huella, fotoSha256: comanda.fotoSha256, baseSha256: ultimo.composicion?.baseSha256 ?? ultimo.sha256, versionBase: ultimo.version, uso: ultimo.uso,
+      origen: ultimo.origen, ...(comanda.referencia ? { referencia: { id: comanda.referencia.id, mecanismos: comanda.referencia.mecanismos, voces: comanda.referencia.voces } } : {}),
+    }, base.ruta, accion.paginas);
+    return registrar(deps, e, 'HECHO', 'Serie maquetada sobre la candidata revisada. Texto literal confirmado. Versión ' + taller.serie.huella);
+  }
   if (accion.accion === 'REABRIR_DIRECCION') {
     if (e.paso !== 'GENERAR') throw new ErrorDeUsuario('Ya hay una candidata en revisión.');
     delete taller.confirmada;
@@ -281,6 +305,7 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   }
   if (accion.accion === 'USAR_ORIGINAL') {
     if (e.paso !== 'GENERAR' || !(esFotoEditorial(comanda.editorial?.ruta) || comanda.tipografiaLocal) || comanda.muestras) throw new ErrorDeUsuario('La foto original sólo se puede encuadrar en una dirección fotográfica con fuente completa.');
+    if (comanda.toma?.seleccion.escenaFuente?.modo === 'EDITORIAL') throw new ErrorDeUsuario('Importa la escena dirigida o elige el modo documental para usar la foto original.');
     const bytes = await fuenteVerificada(deps, e, comanda);
     const { width, height } = (await sharp(bytes).metadata()).autoOrient;
     if (accion.completa) {
@@ -352,10 +377,12 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     return registrar(deps, e, 'CONFIRMAR_ELEMENTOS', 'Candidata devuelta. Revisa la corrección antes de otra producción.');
   }
   if (ultimo.lectura.superficieUniforme ?? await superficieUniforme(bytes)) throw new ErrorDeUsuario('La imagen aparece uniforme a 360 px. Devuelve esta versión e importa una imagen donde se lean el producto y el texto.');
-  const tomaNueva = ultimo.origen !== 'ORIGINAL' && comanda.toma;
+  const escenaFuente = comanda.toma?.seleccion.escenaFuente;
+  if (escenaFuente && !accion.escenaCotejada) throw new ErrorDeUsuario('Coteja la evidencia de la foto y el tratamiento de la escena antes de aprobar.');
+  const tomaNueva = ultimo.origen !== 'ORIGINAL' && !escenaFuente && comanda.toma;
   if (comanda.puesta && ultimo.origen !== 'ORIGINAL' && !accion.apetito) throw new ErrorDeUsuario('Comprueba a tamaño móvil el detalle sensorial descrito en la dirección.');
   if (ultimo.composicion && !accion.composicionTipografica) throw new ErrorDeUsuario('Comprueba en la imagen la escala y posición del título respecto al sujeto.');
-  if (esFotoEditorial(comanda.editorial?.ruta) && !accion.sinTextoAnadido) throw new ErrorDeUsuario('Coteja la foto y confirma que sólo conserva las letras presentes en la fuente.');
+  if (esFotoEditorial(comanda.editorial?.ruta) && !accion.sinTextoAnadido) throw new ErrorDeUsuario('Coteja la foto y confirma que la candidata respeta el criterio de texto de la escena.');
   if (tomaNueva && !accion.cambioDeToma) throw new ErrorDeUsuario('Compara el punto de vista del producto con la fuente y confirma el cambio visible de perspectiva.');
   const vistaObservada = accion.vistaObservada ?? (comanda.toma?.alternativa ? undefined : comanda.toma?.camara.vista);
   if (tomaNueva && (!vistaObservada || ![tomaNueva.camara.vista, tomaNueva.alternativa?.vista].includes(vistaObservada))) {
@@ -366,6 +393,6 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   }
   if (!coincideTexto(comanda.textos.map(b => b.texto), accion.transcripcion)) throw new ErrorDeUsuario('La transcripción de los bloques visibles no coincide con el copy confirmado.');
   await imagenFuente(deps, e, comanda);
-  ultimo.revision = { fecha: deps.ahora(), ...(accion.apetito ? { apetito: true } : {}), ...(accion.composicionTipografica ? { composicionTipografica: true } : {}), ...(comanda.muestras ? { recuentoObservado: accion.recuentoObservado } : {}), ...(tomaNueva ? { cambioDeToma: true, vistaObservada } : {}), ...(accion.sinTextoAnadido ? { sinTextoAnadido: true } : {}), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
+  ultimo.revision = { ...(escenaFuente ? { escenaCotejada: true } : {}), fecha: deps.ahora(), ...(accion.apetito ? { apetito: true } : {}), ...(accion.composicionTipografica ? { composicionTipografica: true } : {}), ...(comanda.muestras ? { recuentoObservado: accion.recuentoObservado } : {}), ...(tomaNueva ? { cambioDeToma: true, vistaObservada } : {}), ...(accion.sinTextoAnadido ? { sinTextoAnadido: true } : {}), transcripcion: accion.transcripcion, producto: accion.producto, gesto: accion.gesto, legibilidad: accion.legibilidad };
   return registrar(deps, e, 'HECHO', 'Aprobada la versión ' + ultimo.version + ' tras cotejar el producto, el texto, el gesto y la miniatura.');
 }

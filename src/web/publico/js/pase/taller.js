@@ -52,11 +52,21 @@ function camaraDe(ctx, toma, preferencias = vistas, comanda) {
   const estilo = opciones('estiloTitulo', estilosTitulo, comanda?.tipografiaLocal?.estilo);
   const posicionTitulo = opciones('posicionTitulo', posicionesTitulo, comanda?.tipografiaLocal?.posicion);
   const puedeCambiarVajilla = comanda?.puesta && (comanda.puesta.ambito === 'PRODUCTO' || !comanda.puesta.ambito && comanda.editorial?.ruta !== 'FOTO_ESPACIO');
+  const modo = opciones('escenaFuente', [['', 'Según la dirección actual'], ['DOCUMENTAL', 'Documental · conservar la escena'], ...(puedeCambiarVajilla ? [['EDITORIAL', 'Editorial · escenificar el alimento']] : [])], seleccion?.escenaFuente?.modo ?? '');
+  const evidencia = h('input', { name: 'evidenciaAlimento', maxlength: 220, value: seleccion?.escenaFuente?.evidencia ?? '' });
+  const puesta = h('textarea', { name: 'puestaEditorial', maxlength: 320, rows: 2, value: seleccion?.escenaFuente?.puesta ?? comanda?.puesta?.sugerencia ?? '' });
+  const camposEscena = h('div', {}, campo('Qué forma o acabado reconoces en el alimento original', evidencia), campo('Puesta sugerida. Edita la mesa, luz o gesto que autorizas', puesta));
+  const mostrarEscena = () => { camposEscena.hidden = modo.value !== 'EDITORIAL'; };
+  modo.addEventListener('change', mostrarEscena);
+  mostrarEscena();
   const ajustar = () => {
+    if (modo.value === 'EDITORIAL' && (evidencia.value.trim().length < 5 || puesta.value.trim().length < 5)) throw new Error('Indica el rasgo observado y la puesta que quieres producir.');
+
     if ((altura.value === '') !== (giro.value === '')) throw new Error('Para fijar una cámara libre, indica tanto la inclinación como el giro.');
 
     if ((angulo.value === '') !== (distancia.value === '')) throw new Error('Para describir la fuente, indica tanto la altura como el tamaño del plano.');
     return { accion: 'AJUSTAR_TOMA', opcion: vista.value,
+      ...(modo.value ? { escenaFuente: modo.value === 'DOCUMENTAL' ? { modo: modo.value } : { modo: modo.value, evidencia: evidencia.value, puesta: puesta.value } } : {}),
       ...(comanda?.puesta && altura.value !== '' ? { posicionLibre: { anguloGrados: altura.valueAsNumber, giroGrados: giro.valueAsNumber } } : {}),
       ...(puedeCambiarVajilla ? { vajilla: vajilla.value } : {}),
       ...(comanda?.tipografiaLocal ? { estiloTitulo: estilo.value, posicionTitulo: posicionTitulo.value } : {}), ...(plano.value ? { plano: plano.value } : {}),
@@ -66,12 +76,12 @@ function camaraDe(ctx, toma, preferencias = vistas, comanda) {
   };
   const posicion = toma?.camara;
   return [h('h3', {}, 'Toma fotográfica'),
-    posicion ? [h('p', {}, h('strong', {}, etiquetaDe(preferencias, posicion.vista)), ' · ' + posicion.anguloGrados + '° · ' + etiquetaDe(distancias, posicion.distancia) + ' · ' + posicion.objetivoMm + ' mm · f/' + posicion.apertura),
+    seleccion?.escenaFuente ? [h('p', {}, comanda.direccion.sujeto), h('p', {}, comanda.direccion.escena)] : posicion ? [h('p', {}, h('strong', {}, etiquetaDe(preferencias, posicion.vista)), ' · ' + posicion.anguloGrados + '° · ' + etiquetaDe(distancias, posicion.distancia) + ' · ' + posicion.objetivoMm + ' mm · f/' + posicion.apertura),
       h('p', {}, posicion.evidencia), h('p', {}, toma.luz), h('p', {}, toma.accion),
       toma.alternativa ? h('p', { class: 'muted' }, 'Si la fuente ya tiene esa perspectiva, la dirección pide una sola toma ' + etiquetaDe(preferencias, toma.alternativa.vista).toLowerCase() + '.') : h('p', { class: 'muted' }, 'Cambio respecto al origen indicado · ' + toma.cambios.join(', '))] : null,
     detalle('Ajustar cámara y encuadre', formulario(ctx, ajustar,
       h('img', { src: ctx.urls.subida(480), alt: 'Foto de origen', style: { maxWidth: '100%', maxHeight: '210px' } }),
-      campo('Posición de cámara', vista), campo('Tamaño del plano', plano),
+      comanda?.editorial ? [campo('Qué documenta esta foto', modo), camposEscena] : null, campo('Posición de cámara', vista), campo('Tamaño del plano', plano),
       comanda?.puesta ? detalle('Fijar los ángulos de la toma', campo('Inclinación en grados (0 a ras, 90 cenital)', altura), campo('Giro alrededor del sujeto en grados (0–180)', giro)) : null,
       puedeCambiarVajilla ? campo('Vajilla y superficie', vajilla) : null,
       comanda?.tipografiaLocal ? [campo('Familia y peso del título', estilo), campo('Reserva para el título', posicionTitulo)] : null,
@@ -130,6 +140,39 @@ export function fichaManual(ctx) {
       campo('Familia visual', familia), campo('Recurso principal', mecanismo), campo('Cómo se reparten letra y foto', reticula), campo('Encuadre del sujeto', foto), campo('Carácter de la letra', voz), lectura.map((i, n) => campo(['Qué se ve primero', 'Qué se ve después', 'Qué cierra la lectura'][n], i)), accion('Preparar dirección con esta ficha'))];
 }
 
+function serieDeCandidata(ctx, ultima, serie, base, comanda) {
+  const roles = { PORTADA: 'Portada', DETALLE: 'Detalle', CIERRE: 'Cierre' };
+  const etiquetas = { FOTO: 'Fotografía limpia', TITULO_EN_AIRE: 'Título sobre el aire de la foto', ECO_EN_CONTORNO: 'Titular y eco en contorno', APERTURA_EN_PAPEL: 'Título sobre papel', ACENTO_INCLINADO: 'Título y acento en cursiva', PIE_DE_FOTO: 'Pie de foto', CIERRE_A_DOS_VOCES: 'Cierre editorial' };
+  const nombre = comanda.textos.find(b => b.papel === 'TITULAR')?.texto ?? comanda.nombrePlato ?? '';
+  const tituloSugerido = nombre.length <= 80 && nombre.split(/\s+/).length <= 8 ? nombre : '';
+  const escena = comanda.toma?.seleccion.escenaFuente;
+  const apoyoSugerido = escena?.modo === 'EDITORIAL' && /\bmesa\b/iu.test(escena.puesta) ? 'A la mesa' : '';
+  const paginas = serie?.paginas.map(p => p.edicion) ?? [
+    { funcion: 'PORTADA', titulo: tituloSugerido, apoyo: apoyoSugerido }, { funcion: 'DETALLE' }, { funcion: 'CIERRE' },
+  ];
+  const campos = paginas.map((p, i) => {
+    const literal = h('textarea', { name: 'tituloSerie' + i, rows: 2, maxlength: 80, value: p.titulo ?? '' });
+    const apoyo = h('textarea', { name: 'apoyoSerie' + i, rows: 2, maxlength: 110, value: p.apoyo ?? '' });
+    const numero = (nombre, min, max, valor) => h('input', { name: nombre + i, type: 'number', min, max, step: '.01', value: valor, required: true });
+    const x = numero('focoX', 0, 1, p.enfoque?.x ?? .5), y = numero('focoY', 0, 1, p.enfoque?.y ?? .5);
+    const zoom = numero('escalaFoto', 1, 3, p.zoom ?? (p.funcion === 'PORTADA' ? 1 : p.funcion === 'CIERRE' ? 1.12 : 1.55));
+    return { controles: h('fieldset', {}, h('legend', {}, (i + 1) + ' · ' + roles[p.funcion]), campo('Título literal', literal), campo('Apoyo literal', apoyo),
+      detalle('Ajustar el recorte de esta foto', campo('Ampliación', zoom), campo('Centro horizontal (0–1)', x), campo('Centro vertical (0–1)', y))),
+      valor: () => ({ funcion: p.funcion, titulo: literal.value, apoyo: apoyo.value, zoom: zoom.valueAsNumber, enfoque: { x: x.valueAsNumber, y: y.valueAsNumber } }) };
+  });
+  const permiso = h('input', { type: 'checkbox', name: 'confirmoTextos', required: true });
+  const url = serie && base + 'serie/' + serie.huella + '/';
+  return [detalle(serie ? 'Editar texto y encuadres de la serie' : 'Maquetar una serie desde esta foto', h('p', {}, 'Revisa la propuesta. Escribe únicamente las palabras que verán los lectores. Deja ambos campos vacíos para una página de fotografía.'),
+    formulario(ctx, () => ({ accion: 'MAQUETAR_SERIE', version: ultima.version, confirmoTextos: permiso.checked, paginas: campos.map(p => p.valor()) }),
+      campos.map(p => p.controles), h('label', {}, permiso, ' Confirmo el texto literal de estas láminas.'), accion('Ver serie a 360 px'))),
+    serie ? [h('h3', {}, 'Serie · revisión a 360 px'), h('p', {}, serie.uso === 'PUBLICABLE' ? 'Base con permiso de publicación.' : 'Base con permiso de prueba de composición.'),
+      serie.paginas.map((p, i) => h('figure', {}, h('img', { src: url + (i + 1), alt: roles[p.edicion.funcion] + ' · ' + (p.edicion.titulo || 'fotografía'), width: 360, style: { width: 'min(100%, 360px)', height: 'auto' } }),
+        h('figcaption', {}, (i + 1) + ' · ' + etiquetas[p.tratamiento], h('p', {}, p.motivo),
+          p.referente ? h('a', { href: p.referente, target: '_blank', rel: 'noopener noreferrer' }, 'Referencia de esta lámina') : null,
+          p.medidas.length ? h('p', {}, p.medidas.map(m => m.capa + ' · ' + m.cuerpoMovil + ' px · contraste ' + m.contraste + ' a 1').join(' / ')) : null))),
+      enlace('Guardar paquete de trabajo (' + (serie.uso === 'PUBLICABLE' ? 'publicable' : 'solo prueba') + ')', url + 'paquete')] : null];
+}
+
 export function fichaTaller(ctx) {
   const { encargo: e, tallerApi } = ctx.d;
   const taller = e.taller, c = taller.comanda;
@@ -167,7 +210,7 @@ export function fichaTaller(ctx) {
     const archivo = h('input', { name: 'cartel', type: 'file', required: true, accept: 'image/png,image/jpeg,image/webp' });
     const uso = opciones('usoCandidata', [['SOLO_PRUEBA_COMPOSICION', 'Solo para probar'], ['PUBLICABLE', 'Tengo permiso para publicar la imagen']]);
     const limitado = c.uso !== 'PUBLICABLE';
-    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), (limpia || c.tipografiaLocal) && !c.muestras ? encuadrarOriginal(ctx) : null, h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
+    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), (limpia || c.tipografiaLocal) && !c.muestras && c.toma?.seleccion.escenaFuente?.modo !== 'EDITORIAL' ? encuadrarOriginal(ctx) : null, h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
       enlace('Descargar paquete de producción', base + 'paquete'), formulario(ctx, async () => ({ accion: 'IMPORTAR', subidaId: (await subirArchivo(archivo.files[0])).id, usoCandidata: limitado ? 'SOLO_PRUEBA_COMPOSICION' : uso.value }),
         campo(c.tipografiaLocal ? 'Fotografía base 4:5 sin título. El taller compondrá el texto.' : 'Imagen 4:5', archivo), limitado ? h('p', {}, 'La foto de origen permite pruebas de composición.') : campo('Permiso de la imagen importada', uso), accion('Importar imagen')),
       tallerApi?.disponibles === 0 ? h('p', {}, 'El estudio ha consumido su cupo de envíos. Puedes importar la imagen del paquete.') : null,
@@ -179,18 +222,19 @@ export function fichaTaller(ctx) {
   if (!ultima) return [titulo('Imagen pendiente')];
   const url = base + 'candidatas/' + ultima.version;
   const imagen = h('a', { href: url, target: '_blank', rel: 'noopener' }, h('img', { src: url, width: 360, alt: 'Imagen, versión ' + ultima.version, style: { display: 'block', width: 'min(100%, 360px)', height: 'auto' } }));
-  if (e.paso === 'HECHO') return [titulo(ed ? 'Post aprobado' : 'Cartel aprobado'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · PNG · 1080 × 1350 px'), ultima.uso === 'PUBLICABLE' ? enlace('Descargar PNG 4:5', base + 'exportacion') : h('p', {}, 'Vista de composición. La foto o el cartel tienen permiso de prueba.')];
+  if (e.paso === 'HECHO') return [titulo(ed ? 'Post aprobado' : 'Cartel aprobado'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · PNG · 1080 × 1350 px'), ultima.uso === 'PUBLICABLE' ? enlace('Descargar PNG 4:5', base + 'exportacion') : h('p', {}, 'Vista de composición. La foto o el cartel tienen permiso de prueba.'), (limpia || ultima.composicion) ? serieDeCandidata(ctx, ultima, taller.serie, base, c) : null];
   const recuento = h('input', { type: 'number', name: 'recuentoObservado', min: 0, max: 10000, required: true });
   const transcripcion = texto('transcripcion', 1, 1000);
   const original = ultima.origen === 'ORIGINAL';
-  const toma = original ? undefined : c.toma;
+  const escenaFuente = c.toma?.seleccion.escenaFuente;
+  const toma = original || escenaFuente ? undefined : c.toma;
   const observables = [toma?.camara, toma?.alternativa].filter(Boolean);
   const vistaLeida = opciones('vistaObservada', [['', 'Selecciona la vista que se aprecia'], ...observables.map(p => [p.vista, etiquetaDe(posiciones, p.vista)])]);
   vistaLeida.required = observables.length > 1;
   const correccionToma = opciones('siguienteToma', [['', 'Conservar la dirección de cámara'], ...posiciones]);
   const cotejoProducto = sala ? 'He cotejado el espacio, el mobiliario y los rótulos reales con la fuente.' : c.muestras ? 'He seguido el contorno de cada pieza y cotejado su preparación con la foto completa. Cada parte visible pertenece a su pieza, sin duplicaciones ni uniones truncadas.' : 'He cotejado el producto y su preparación con la foto.';
-  const casillas = [['producto', cotejoProducto], ...(c.puesta && !original ? [['apetito', c.puesta.apetito]] : []),
-    ...(ultima.composicion ? [['composicionTipografica', 'La ubicación y el peso del título funcionan a 360 px y dejan leer el sujeto.']] : []), ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', original ? 'El encuadre conserva el motivo y sus bordes importantes.' : 'Se ve la acción descrita en la dirección.'], ['legibilidad', limpia ? 'El sujeto y su contexto se reconocen a 360 px.' : 'He leído todas las palabras en la vista a 360 px.'], ...(limpia ? [['sinTextoAnadido', 'He comprobado que sólo aparecen las letras que ya había en la fuente.']] : [])].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
+  const casillas = [['producto', cotejoProducto], ...(escenaFuente ? [['escenaCotejada', escenaFuente.modo === 'EDITORIAL' ? 'He cotejado el alimento con la fuente y distingo la puesta editorial de los hechos del local.' : 'La imagen conserva las personas, el sitio, los rótulos y la disposición documentados.']] : []), ...(c.puesta && !original ? [['apetito', c.puesta.apetito]] : []),
+    ...(ultima.composicion ? [['composicionTipografica', 'La ubicación y el peso del título funcionan a 360 px y dejan leer el sujeto.']] : []), ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', original ? 'El encuadre conserva el motivo y sus bordes importantes.' : 'Se ve la acción descrita en la dirección.'], ['legibilidad', limpia ? 'El sujeto y su contexto se reconocen a 360 px.' : 'He leído todas las palabras en la vista a 360 px.'], ...(limpia ? [['sinTextoAnadido', escenaFuente?.modo === 'EDITORIAL' ? 'He comprobado que no se han añadido letras, logos ni rótulos incidentales.' : 'He comprobado que sólo aparecen las letras que ya había en la fuente.']] : [])].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
   const motivo = texto('motivo', 3, 480);
   const observacion = texto('observacionVisual', 3, 480, ultima.avisoVisual ?? '');
   const impresa = ultima.composicion;

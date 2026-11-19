@@ -86,7 +86,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     reticula: ficha.reticula, encuadre: ficha.foto, recursos: ficha.recursos.map(r => r.recurso + ' · ' + r.funcion), lectura: recorrido(ficha) } : undefined;
   const devolucion = e.taller?.candidatas.at(-1)?.devolucion;
   if (e.taller?.seleccionEditorial) {
-    const { editorial, pauta, espacio } = seleccionarEditorial(e, fotografia, ruta ?? e.taller.comanda?.editorial?.ruta, ficha);
+    const { editorial, pauta, espacio, sugerencia } = seleccionarEditorial(e, fotografia, ruta ?? e.taller.comanda?.editorial?.ruta, ficha);
     const limpia = esFotoEditorial(editorial.ruta);
     const cartel = editorial.ruta === 'CARTEL_EXPRESIVO';
     const gestoDeNota: Gesto | undefined = /papel rasgado|desgarro/iu.test(e.plato) ? 'EMERGER' : /letras repetidas|patrón repetido/iu.test(e.plato) ? 'RITMO' : undefined;
@@ -95,10 +95,24 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const elegida = seleccion ?? e.taller.comanda?.toma?.seleccion;
     const puesta = puestaDeEstudio(e.plato, espacio, elegida);
     const tipografiaLocal = editorial.ruta === 'TIPO_SOBRIA' ? maquetaDeTitulo(e.plato, nombrePlato, elegida) : undefined;
-    const sujeto = puesta.ambito === 'SERVICIO' ? 'Retrata la persona y el gesto presentes en la fotografía del local. Conserva su identidad, ropa, herramientas y lugar.'
+    if (puesta.ambito === 'PRODUCTO') puesta.sugerencia = sugerencia;
+    const escenaFuente = elegida?.escenaFuente;
+    if (escenaFuente?.modo === 'EDITORIAL' && puesta.ambito !== 'PRODUCTO') throw new ErrorDeUsuario('Elige la fotografía del alimento para escenificar una mesa o un gesto. El retrato y el espacio conservan su contexto.');
+    if (escenaFuente && muestras) throw new ErrorDeUsuario('La dirección desde una foto completa y la colocación de piezas contadas requieren entradas distintas.');
+    const documental = escenaFuente?.modo === 'DOCUMENTAL';
+    const identidad = escenaFuente?.modo === 'EDITORIAL' ? 'Usa la foto exclusivamente como evidencia de identidad del alimento. Conserva su forma, proporción, preparación y acabado visibles. Rasgo observado: ' + escenaFuente.evidencia
+      : 'Conserva el alimento, lugar, personas, rótulos y objetos de la foto, incluidas sus posiciones y oclusiones. Trabaja con el encuadre y la luz disponibles.';
+    const escenaDirigida = escenaFuente?.modo === 'EDITORIAL'
+      ? 'Puesta editorial autorizada: ' + escenaFuente.puesta + '. Puedes escenificar mesa, vajilla o una mano adulta anónima. Deja las caras fuera de cuadro. La escena es una ilustración, sin atribuir al local su mesa, personal, servicio o tamaño de ración. Conserva enteras las piezas enteras. Evita inventar interiores, sabores, guarniciones, marcas o precios.'
+      : identidad;
+    if (escenaFuente) {
+      puesta.vajilla = documental ? 'ORIGINAL' : 'ESTUDIO';
+      puesta.soporte = escenaDirigida;
+    }
+    const sujeto = escenaFuente ? identidad : puesta.ambito === 'SERVICIO' ? 'Retrata la persona y el gesto presentes en la fotografía del local. Conserva su identidad, ropa, herramientas y lugar.'
       : espacio ? 'Retrata el lugar descrito en el encargo dentro de los límites de la fotografía del local. Conserva su arquitectura y sus objetos reconocibles.'
       : 'Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.';
-    const tipografia = limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
+    const tipografia = limpia && escenaFuente?.modo === 'EDITORIAL' ? 'Fotografía a sangre, sin letras ni logos. Omite rótulos incidentales del montaje de origen.' : limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
       : cartel ? recurso.tipografia : 'El taller compondrá el título sobre la fotografía recibida con la familia, el contraste y la posición elegidos en la maqueta. Revisa su relación con el sujeto a 360 px.';
     const materia = cartel ? recurso.materia : 'Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
     const direccionBase = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
@@ -106,23 +120,32 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
       foco: editorial.enfoque, conservar: elegida?.rasgoFuente ?? sujeto,
       comprobar: editorial.comprobar,
     };
-    const direccion = { ...direccionBase, criterioVisual };
-    const camara = dirigirToma(sujetoDelEncargo, gesto, elegida, '', { ...pauta, espacio });
+    const direccion = escenaFuente ? { ...direccionBase, sujeto: identidad, escena: escenaFuente.modo === 'EDITORIAL' ? escenaFuente.puesta : identidad, tipografia, criterioVisual: {
+      foco: editorial.enfoque, conservar: identidad, comprobar: documental ? 'Coteja lugar, personas, rótulos, disposición y alimento con la fuente a 360 px.' : 'Coteja el alimento con la fuente a 360 px y distingue mesa, vajilla y gesto escenificados.',
+    } } : { ...direccionBase, criterioVisual };
+    const camara = dirigirToma(sujetoDelEncargo, gesto, documental && elegida ? { ...elegida, opcion: 'AUTO', posicionLibre: undefined, origen: undefined } : elegida, '', { ...pauta, espacio });
     if (puesta.ambito === 'SERVICIO') camara.conservar = 'Conserva identidad y rasgos verificables, personas presentes y contexto documentado. Si una cara queda oculta, conserva esa oclusión.';
     if (puesta.vajilla === 'ESTUDIO') camara.conservar = 'Mantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar.';
+    if (escenaFuente) {
+      camara.seleccion = elegida!;
+      camara.conservar = identidad;
+      camara.accion = escenaDirigida;
+      delete camara.alternativa;
+    }
     const toma = muestras ? { ...camara, accion: muestras.colocacion, conservar: 'Respeta el número, la anatomía y el acabado de las piezas que documentan los detalles.' } : camara;
     const textos: ComandaDeArte['textos'] = limpia ? [] : cartel ? bloques(nombrePlato, marca.nombre) : [{ papel: 'TITULAR', texto: nombrePlato, fuente: 'PLATO' }];
     const prompt = [
       limpia ? 'Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.'
         : cartel ? 'Produce un cartel editorial gastronómico vertical 4:5. Integra una única acción gráfica dominante.' : 'Produce la fotografía base de una página gastronómica de revista, vertical 4:5 a sangre. La imagen que entregas es exclusivamente fotográfica y carece de texto añadido.',
       'Sujeto descrito por el local, como contexto visual: ' + JSON.stringify(sujetoDelEncargo),
-      'Foco de la pieza: ' + criterioVisual.foco, 'Rasgo que conservar: ' + criterioVisual.conservar,
-      'Revisión a 360 px: ' + criterioVisual.comprobar,
-      direccion.sujeto, direccion.escena, direccion.materia, !tipografiaLocal && direccion.tipografia, puesta.soporte, puesta.apetito,
+      'Foco de la pieza: ' + direccion.criterioVisual.foco, 'Rasgo que conservar: ' + direccion.criterioVisual.conservar,
+      'Revisión a 360 px: ' + direccion.criterioVisual.comprobar,
+      direccion.sujeto, direccion.escena, direccion.materia, !tipografiaLocal && direccion.tipografia, (!escenaFuente || escenaFuente.modo === 'EDITORIAL') && puesta.soporte, puesta.apetito,
       tipografiaLocal && reservaFotografica(tipografiaLocal),
       tipografiaLocal && 'Deja visible el borde superior del protagonista y un fondo sencillo justo encima. La misma fotografía permitirá comparar un titular en aire y otro que roce esa silueta.',
-      instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia || !!tipografiaLocal),
-      limpia && 'Entrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.',
+      escenaFuente ? (documental ? 'Mantén el punto de vista documentado.' : [toma.luz, 'Fotografía desde la vista ' + toma.camara.vista + ' y a distancia ' + toma.camara.distancia + '. Conserva visibles los rasgos cotejados.'].join(' ')) : instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia || !!tipografiaLocal),
+      limpia && escenaFuente?.modo === 'EDITORIAL' && 'Entrega únicamente la fotografía, sin letras ni marcas escenificadas.',
+      limpia && escenaFuente?.modo !== 'EDITORIAL' && 'Entrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.',
       cartel && ('Imprime exclusivamente los siguientes bloques literales una sola vez: ' + JSON.stringify(textos.map(b => b.texto))),
       cartel && marca.colores.length > 0 && ('Toma la tinta gráfica de la paleta del local si mantiene el contraste: ' + marca.colores.map(c => c.hex).join(', ') + '.'),
       cartel && ('Mide el aire de nuevo si cambias la cámara. En la fuente: ' + fotografia.aire),
