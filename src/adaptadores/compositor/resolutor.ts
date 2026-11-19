@@ -5,9 +5,9 @@
  */
 import type { Activo } from '../../dominio/activos.js';
 import { semillaDe } from '../../dominio/diseno/azar.js';
-import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque, Tinta } from '../../dominio/diseno/intencion.js';
+import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque, Tinta, Tratamiento } from '../../dominio/diseno/intencion.js';
 import { medirOficio, problemasDeOficio } from '../../dominio/diseno/oficio.js';
-import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, RecorteDeTexto, Resuelto, TintaResuelta } from '../../dominio/diseno/resuelto.js';
+import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, RecorteDeTexto, Resuelto, TintaResuelta, TratamientoResuelto } from '../../dominio/diseno/resuelto.js';
 import { alinearEn, dentroDe, lienzoDe, rectDeCaja, zonaSegura, type Lienzo, type Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
 import { radioInterior } from './formas.js';
@@ -36,6 +36,22 @@ export const SEPARACION_MINIMA_EN_CUERPOS = 0.35;
  * mayúscula rompe la lectura, así que se ignora y se avisa.
  */
 export const ALTURA_MINIMA_PARA_TINTA = 48;
+/**
+ * Las tipografías especiales (derretida, papel, antigua, neón) son de titular: por debajo de esta altura de mayúscula
+ * el efecto se come la letra (gotas que tapan la siguiente línea, un canto rasgado más grueso que el trazo).
+ */
+export const ALTURA_MINIMA_PARA_TRATAMIENTO = 56;
+/**
+ * Los tratamientos que desplazan o funden el canto de la letra se comen los trazos finos de una didona o de una
+ * itálica de alto contraste (muestras del 19/11: «El Mesón de Cervantes» en Bodoni Moda itálica perdía la «M»).
+ */
+const TRATAMIENTOS_QUE_ROMPEN_TRAZOS_FINOS = new Set(['derretida', 'antigua']);
+/** Una letra de la que se ve menos de esta fracción (se sale del lienzo o la tapa el sujeto) deja de leerse. */
+export const FRACCION_VISIBLE_MINIMA = 0.6;
+/** El sujeto tapa más de esta fracción de una letra: avisa. */
+export const TAPADO_AVISO = 0.5;
+/** Huecos de plantilla que no deben llegar nunca a una pieza: «[NOMBRE DEL LOCAL]», «{{plato}}», «TODO»… */
+export const MARCADOR_DE_PLANTILLA = /\[[^\]]*\]|\{\{[^}]*\}\}|\b(TODO|XXX|TBD)\b|lorem ipsum/i;
 
 type Matriz = [number, number, number, number, number, number];
 type Comun = { id: string; z: number; opacidad: number; fusion: CapaResuelta['fusion'] };
@@ -181,6 +197,26 @@ export class ResolutorDiseno {
           const contenido = capa.linea === undefined ? completo : completo.split('\n')[capa.linea];
           if (contenido === undefined || (capa.linea !== undefined && !contenido.trim())) throw new RangeError(`«${capa.id}» apunta a una línea de texto vacía o inexistente.`);
           const resuelta = this.resolverTexto(capa, comun, rect(capa.caja), estilo(capa.estilo), color, contenido);
+          if (capa.tratamiento) {
+            if (capa.contorno || capa.corte || capa.tinta) throw new RangeError(`«${capa.id}»: la tipografía especial no se combina con contorno, corte ni tinta.`);
+            const menor = Math.min(...resuelta.lineas.map((l) => this.motor.alturaMayusculas(resuelta.estilo, l.tamano)));
+            const finos = this.motor.clasificacion(resuelta.estilo.fuente).includes('alto-contraste');
+            if (finos && TRATAMIENTOS_QUE_ROMPEN_TRAZOS_FINOS.has(capa.tratamiento.tipo)) {
+              problemas.push({
+                gravedad: 'AVISO',
+                capa: capa.id,
+                tipo: 'TRATAMIENTO',
+                mensaje: `«${capa.id}»: ${this.motor.familia(resuelta.estilo.fuente)} tiene trazos muy finos (alto contraste) y la letra ${capa.tratamiento.tipo} los rompe (la «M» deja de leerse), así que se pinta limpio. Con esta fuente van papel o neón; para ${capa.tratamiento.tipo}, una de trazo grueso.`,
+              });
+            } else if (menor < ALTURA_MINIMA_PARA_TRATAMIENTO) {
+              problemas.push({
+                gravedad: 'AVISO',
+                capa: capa.id,
+                tipo: 'TRATAMIENTO',
+                mensaje: `«${capa.id}» pide letra ${capa.tratamiento.tipo} con mayúsculas de ${menor.toFixed(1)} px: por debajo de ${ALTURA_MINIMA_PARA_TRATAMIENTO} px el efecto se come la letra, así que se pinta limpio. Es para el titular.`,
+              });
+            } else resuelta.tratamiento = resolverTratamiento(capa.tratamiento, color, `${intencion.id}:${capa.id}`);
+          }
           const marcas = tinta(capa, resuelta.estilo.color);
           if (marcas) {
             const menor = Math.min(...resuelta.lineas.map((l) => this.motor.alturaMayusculas(resuelta.estilo, l.tamano)));
@@ -293,6 +329,7 @@ export class ResolutorDiseno {
       });
     }
     for (const { capa, comun } of trazos) resueltas.set(capa.id, this.resolverTrazo(capa, comun, resueltas, lienzo, color(capa.color), semilla(capa)));
+    await this.comprobarLetras(resueltas, activos, lienzo, problemas);
     this.comprobar(resueltas, zona, problemas);
 
     const capas = [...resueltas.values()].sort((a, b) => a.z - b.z);
@@ -662,6 +699,10 @@ export class ResolutorDiseno {
 
   private comprobar(resueltas: Map<string, CapaResuelta>, zona: Rect, problemas: Problema[]): void {
     for (const capa of resueltas.values()) {
+      const marcador = textosVisibles(capa).map((t) => MARCADOR_DE_PLANTILLA.exec(t)?.[0]).find(Boolean);
+      if (marcador) {
+        problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'MARCADOR', mensaje: `«${capa.id}» lleva «${marcador}», un hueco de plantilla sin rellenar: no puede publicarse. Pon el dato real o quita el texto.` });
+      }
       if (capa.tipo === 'texto') {
         // 4 px de tolerancia: las letras redondas sobresalen un poco de la línea base y eso es normal en tipografía.
         if (!capa.sangrado && !dentroDe(capa.caja, zona, 4)) {
@@ -690,6 +731,124 @@ export class ResolutorDiseno {
       }
     }
     this.comprobarSeparacion(resueltas, problemas);
+    // Una tipografía especial es el gesto de la pieza: dos compiten y ninguna se lee como intención.
+    const tratados = [...new Set([...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && Boolean(c.tratamiento) && c.opacidad > 0).map((c) => c.texto))];
+    if (tratados.length > 1) {
+      problemas.push({ gravedad: 'AVISO', tipo: 'TRATAMIENTO', mensaje: `Hay ${tratados.length} textos con tipografía especial (${tratados.map((t) => `«${t}»`).join(', ')}): compiten entre sí. Deja una, la del titular.` });
+    }
+  }
+
+  /**
+   * Cada letra de cada texto tiene que leerse: no puede salirse del lienzo (un sangrado que se come la «E» de
+   * ENTRECOT) ni quedar casi entera detrás del plato. Y dos textos girados no deben montarse sin querer.
+   */
+  private async comprobarLetras(resueltas: Map<string, CapaResuelta>, activos: Record<string, ActivoDisponible>, lienzo: Lienzo, problemas: Problema[]): Promise<void> {
+    const W = Math.round(lienzo.ancho * ESCALA_MEDIDA);
+    const H = Math.round(lienzo.alto * ESCALA_MEDIDA);
+    const textos = [...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.opacidad > 0);
+    const recortes = [...resueltas.values()].filter((c): c is CapaRecorteResuelta => c.tipo === 'recorte');
+    const alfas = new Map<string, Uint8Array>();
+    const alfaDe = async (r: { activo: string; origen: Rect; destino: Rect; giro?: number }) => {
+      const clave = `${r.activo}|${JSON.stringify(r.destino)}|${r.giro ?? 0}`;
+      let alfa = alfas.get(clave);
+      if (!alfa) {
+        const disponible = activos[r.activo]!;
+        alfa = disponible.rutaMascara ? await alfaDelSujeto(disponible.rutaMascara, r.origen, r.destino, lienzo, ESCALA_MEDIDA, disponible.activo.ancho, disponible.activo.alto, r.giro ?? 0) : new Uint8Array(W * H);
+        alfas.set(clave, alfa);
+      }
+      return alfa;
+    };
+
+    for (const capa of textos) {
+      const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
+      const esLetra = (c: string) => /[\p{L}\p{N}]/u.test(c);
+      const porLinea = capa.lineas.map((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base).filter((g) => esLetra(g.caracter)));
+      const letras = porLinea.flat();
+      if (letras.length === 0) continue;
+
+      // 1. Lo que se ve de cada letra dentro del lienzo.
+      const visibles = letras.map((g) => {
+        const r = transformarRect({ x: g.caja.x0, y: g.caja.y0, w: g.caja.x1 - g.caja.x0, h: g.caja.y1 - g.caja.y0 }, capa.matriz);
+        const dentro = Math.max(0, Math.min(r.x + r.w, lienzo.ancho) - Math.max(r.x, 0)) * Math.max(0, Math.min(r.y + r.h, lienzo.alto) - Math.max(r.y, 0));
+        return r.w * r.h > 0 ? dentro / (r.w * r.h) : 1;
+      });
+      const perdidas = letras.map((g, i) => ({ g, v: visibles[i]! })).filter((x) => x.v < FRACCION_VISIBLE_MINIMA);
+      if (perdidas.length) {
+        // Lo que se lee: el texto de cada línea sin las letras perdidas (los espacios y signos se quedan).
+        let k = 0;
+        const queda = capa.lineas
+          .map((l) => [...l.texto].map((c) => (esLetra(c) ? ((visibles[k++] ?? 1) >= FRACCION_VISIBLE_MINIMA ? c : '') : c)).join(''))
+          .join(' / ');
+        const cuales = perdidas.map((x) => `«${x.g.caracter}» (se ve el ${pct(x.v)})`).join(', ');
+        problemas.push({
+          gravedad: 'ERROR',
+          capa: capa.id,
+          tipo: 'LETRA_PERDIDA',
+          mensaje: `«${capa.id}» pierde por el borde ${cuales}: se lee «${queda}». Un sangrado puede cortar un trozo de letra, no la letra entera.`,
+        });
+      }
+
+      // 2. Lo que tapa el sujeto: los recortes que van encima del texto y la silueta con la que se recorta («fuera»).
+      const tapan = recortes.filter((r) => r.z > capa.z && r.opacidad > 0);
+      const encima: Uint8Array[] = await Promise.all(tapan.map((r) => alfaDe(r)));
+      if (capa.recorte?.modo === 'fuera') encima.push(await alfaDe(capa.recorte));
+      if (encima.length === 0) continue;
+      const sujeto = new Uint8Array(W * H);
+      for (const a of encima) for (let i = 0; i < a.length; i++) if (a[i]! > sujeto[i]!) sujeto[i] = a[i]!;
+      const tapadas: Array<{ caracter: string; tapado: number }> = [];
+      for (const g of letras) {
+        const alfa = await alfaDeSvg(documentoSvg(lienzo, `<path d="${g.d}" transform="matrix(${capa.matriz.join(' ')})"/>`, ESCALA_MEDIDA), W, H);
+        const tapado = cobertura(alfa, sujeto, W, H, 0);
+        if (tapado > TAPADO_AVISO) tapadas.push({ caracter: g.caracter, tapado });
+      }
+      // Aviso y no error: la palabra detrás del plato es un recurso aprobado y a veces se reconoce aunque falte una
+      // letra. El director lo tiene como obligatorio (OFICIO_OBLIGATORIO): o lo arregla o lo explica en «excepcion».
+      const graves = tapadas.filter((t) => t.tapado > 1 - FRACCION_VISIBLE_MINIMA);
+      if (tapadas.length) {
+        problemas.push({
+          gravedad: 'AVISO',
+          capa: capa.id,
+          tipo: 'LETRA_TAPADA',
+          mensaje: `En «${capa.id}» el sujeto tapa ${tapadas.map((t) => `la «${t.caracter}» un ${pct(t.tapado)}`).join(', ')}. ${graves.length ? 'Así el nombre deja de leerse: sube el texto o baja el plato (si se reconoce igual y es a propósito, explícalo).' : 'Comprueba que el nombre se sigue leyendo entero.'}`,
+        });
+      }
+    }
+
+    // 3. Textos girados que se montan: el resto de pares ya los mide la separación (comprobarSeparacion).
+    const girados = textos.filter((c) => c.rotacion !== 0 || c.giro);
+    if (girados.length === 0) return;
+    const tinta = new Map<string, Uint8Array>();
+    const alfaTexto = async (c: CapaTextoResuelta) => {
+      let a = tinta.get(c.id);
+      if (!a) {
+        a = await alfaDeSvg(documentoSvg(lienzo, `<path d="${trazoDeTexto(this.motor, c)}" transform="matrix(${c.matriz.join(' ')})"/>`, ESCALA_MEDIDA), W, H);
+        tinta.set(c.id, a);
+      }
+      return a;
+    };
+    for (const a of girados) {
+      for (const b of textos) {
+        if (a.id === b.id || a.texto === b.texto || (girados.includes(b) && b.id < a.id)) continue;
+        const [ta, tb] = [await alfaTexto(a), await alfaTexto(b)];
+        let comun = 0;
+        let sa = 0;
+        let sb = 0;
+        for (let i = 0; i < ta.length; i++) {
+          comun += Math.min(ta[i]!, tb[i]!);
+          sa += ta[i]!;
+          sb += tb[i]!;
+        }
+        const solape = Math.min(sa, sb) > 0 ? comun / Math.min(sa, sb) : 0;
+        if (solape > 0.01) {
+          problemas.push({
+            gravedad: 'AVISO',
+            capa: a.id,
+            tipo: 'SEPARACION',
+            mensaje: `«${a.id}» y «${b.id}» se montan (el ${pct(solape)} de las letras del más pequeño cae sobre el otro). Si es un cruce buscado, el texto de encima tiene que leerse entero; si no, sepáralos.`,
+          });
+        }
+      }
+    }
   }
 
   /** Dos textos apilados (uno encima del otro, compartiendo columna) necesitan aire entre ellos. Se mide la tinta. */
@@ -753,6 +912,37 @@ function resolverTinta(tinta: Tinta | undefined, color: (valor: Color) => string
 }
 
 const conTinta = (tinta: TintaResuelta | undefined) => (tinta ? { tinta } : {});
+
+/** El tratamiento con sus colores resueltos y la semilla fijada (de la identidad de la capa, si no la trae). */
+function resolverTratamiento(t: Tratamiento, color: (valor: Color) => string, identidad: string): TratamientoResuelto {
+  switch (t.tipo) {
+    case 'derretida':
+      return { tipo: 'derretida', gotas: t.gotas, largo: t.largo, brillo: t.brillo, semilla: t.semilla ?? semillaDe(identidad) };
+    case 'papel':
+      return { tipo: 'papel', alma: color(t.alma), giro: t.giro, sombra: t.sombra, semilla: t.semilla ?? semillaDe(identidad) };
+    case 'antigua':
+      return { tipo: 'antigua', desgaste: t.desgaste, semilla: t.semilla ?? semillaDe(identidad) };
+    case 'neon':
+      return { tipo: 'neon', halo: t.halo, alma: color(t.alma) };
+  }
+}
+
+/** Los textos que se leen en una capa (para buscar huecos de plantilla sin rellenar). */
+function textosVisibles(capa: CapaResuelta): string[] {
+  switch (capa.tipo) {
+    case 'texto':
+    case 'circulo-texto':
+      return [capa.texto];
+    case 'sello':
+      return [...capa.lineas.map((l) => l.texto), ...(capa.anillo ? [capa.anillo.texto] : [])];
+    case 'niveles':
+      return capa.lineas.flatMap((l) => [l.izquierda ?? '', l.derecha ?? '']);
+    case 'patron':
+      return capa.texto ? [capa.texto] : [];
+    default:
+      return [];
+  }
+}
 const conRecorte = (recorte: RecorteDeTexto | undefined) => (recorte ? { recorte } : {});
 
 export function resolverColor(intencion: Intencion, valor: Color): string {

@@ -219,6 +219,50 @@ export type Corte = z.infer<typeof Corte>;
  */
 export const RecortarCon = z.object({ sujeto: Id, modo: z.enum(['dentro', 'fuera']) });
 
+/**
+ * Tipografía especial: la letra se trata como un material (algo que se derrite, un recorte de papel, un tipo de
+ * imprenta gastado, un tubo de neón). Se pinta sobre los contornos reales de la fuente, así que el texto sale siempre
+ * bien escrito y es determinista (misma semilla, mismo resultado).
+ * Solo para el titular, una por pieza y cuando el material cuenta algo del plato o del local
+ * (conocimiento/oficios/tipografia-expresiva.md): si es adorno, sobra.
+ */
+export const Tratamiento = z.discriminatedUnion('tipo', [
+  z.object({
+    tipo: z.literal('derretida'),
+    /** Cuántas letras gotean (0 = ninguna, 1 = todas, algunas con dos gotas). */
+    gotas: z.number().min(0).max(1).default(0.6),
+    /** Largo de la gota más larga, en alturas de mayúscula. */
+    largo: z.number().min(0.1).max(1.2).default(0.8),
+    /** Brillo de líquido espeso (queso, chocolate, caramelo); sin brillo parece pintura. */
+    brillo: z.boolean().default(true),
+    semilla: z.number().int().optional(),
+  }),
+  z.object({
+    tipo: z.literal('papel'),
+    /** El color del alma del papel que asoma en el canto rasgado. */
+    alma: Color.default('#FBF6EA'),
+    /** Giro máximo de cada letra, en grados: son recortes pegados a mano. */
+    giro: z.number().min(0).max(8).default(3),
+    /** Cuánto se levanta el papel del fondo (opacidad de la sombra). */
+    sombra: z.number().min(0).max(0.8).default(0.45),
+    semilla: z.number().int().optional(),
+  }),
+  z.object({
+    tipo: z.literal('antigua'),
+    /** Desgaste del tipo de imprenta: motas sin tinta y zonas gastadas (0 = casi nuevo). */
+    desgaste: z.number().min(0).max(1).default(0.5),
+    semilla: z.number().int().optional(),
+  }),
+  z.object({
+    tipo: z.literal('neon'),
+    /** Intensidad del halo (0 = tubo apagado, 1 = mucho resplandor). */
+    halo: z.number().min(0).max(1).default(0.6),
+    /** Color del alma del tubo, la parte más caliente. */
+    alma: Color.default('#FFF6F0'),
+  }),
+]);
+export type Tratamiento = z.infer<typeof Tratamiento>;
+
 export const CapaTexto = z.object({
   ...base,
   tipo: z.literal('texto'),
@@ -246,6 +290,8 @@ export const CapaTexto = z.object({
   color: Color.optional(),
   corte: Corte.optional(),
   tinta: Tinta.optional(),
+  /** Tipografía especial (derretida, papel, antigua, neón). No se combina con contorno, corte ni tinta. */
+  tratamiento: Tratamiento.optional(),
   /**
    * - «fuera» sobre una foto a sangre: la palabra queda detrás del plato sin tener que recortarlo.
    * - «dentro» con `contorno`: el titular pasa a contorno al cruzar el producto (post-19, «BEST COFFEE EVER»).

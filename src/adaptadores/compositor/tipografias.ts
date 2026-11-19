@@ -11,6 +11,7 @@ interface EntradaCatalogo {
   familia: string;
   archivo: string;
   licencia: string;
+  clasificacion?: string[];
 }
 
 export interface FuenteResuelta {
@@ -31,6 +32,11 @@ export class CatalogoTipografico {
 
   familia(id: string): string {
     return this.entrada(id).familia;
+  }
+
+  /** Las etiquetas de la fuente en el catálogo (grotesca, didona, alto-contraste, script…). */
+  clasificacion(id: string): string[] {
+    return this.entrada(id).clasificacion ?? [];
   }
 
   /** Rango de un eje variable, o undefined si la fuente no lo tiene. */

@@ -49,6 +49,14 @@ export interface BloqueCompuesto {
   visual: { x: number; y: number; w: number; h: number };
 }
 
+/** Una letra ya colocada: su trazo SVG, el carácter, su caja (y crece hacia abajo) y su línea base. */
+export interface GlifoTrazado {
+  d: string;
+  caracter: string;
+  caja: { x0: number; y0: number; x1: number; y1: number };
+  base: number;
+}
+
 export type ModoAjuste = 'ancho' | 'ancho-por-linea' | 'alto' | 'eje-ancho' | 'caja' | 'fijo';
 
 export interface PeticionBloque {
@@ -90,6 +98,11 @@ export class MotorTexto {
     return this.catalogo.familia(fuente);
   }
 
+  /** Las etiquetas de una fuente del catálogo (para saber, por ejemplo, si tiene trazos muy finos). */
+  clasificacion(fuente: string): string[] {
+    return this.catalogo.clasificacion(fuente);
+  }
+
   medir(estilo: EstiloDeLinea, texto: string, tamano: number): Medida {
     const { fuente, ejes } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const rasgos = estilo.rasgos?.length ? estilo.rasgos : undefined;
@@ -118,19 +131,38 @@ export class MotorTexto {
 
   /** Trazo SVG de una línea con su origen en (x, base). */
   trazar(estilo: EstiloDeLinea, texto: string, tamano: number, x: number, base: number): string {
+    return this.glifos(estilo, texto, tamano, x, base)
+      .map((g) => g.d)
+      .join('');
+  }
+
+  /**
+   * Cada letra de una línea por separado: su trazo, el carácter que representa y su caja, con el origen en (x, base).
+   * Sirve para tratar las letras una a una (un recorte de papel que gira, una gota que cuelga de una letra) y para
+   * comprobar cuánto se ve de cada una.
+   */
+  glifos(estilo: EstiloDeLinea, texto: string, tamano: number, x: number, base: number): GlifoTrazado[] {
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const s = tamano / fuente.unitsPerEm;
     const linea = componerLinea(fuente, texto, estilo.rasgos);
     let pluma = 0;
-    const trazos: string[] = [];
+    const glifos: GlifoTrazado[] = [];
     linea.glyphs.forEach((glifo, i) => {
       const posicion = linea.positions[i]!;
       if (glifo.path.commands.length > 0) {
-        trazos.push(glifo.path.scale(s, -s).translate(x + (pluma + posicion.xOffset) * s, base - posicion.yOffset * s).toSVG());
+        const gx = x + (pluma + posicion.xOffset) * s;
+        const gy = base - posicion.yOffset * s;
+        const b = glifo.path.bbox;
+        glifos.push({
+          d: glifo.path.scale(s, -s).translate(gx, gy).toSVG(),
+          caracter: glifo.codePoints.length ? String.fromCodePoint(...glifo.codePoints) : '',
+          caja: { x0: gx + b.minX * s, x1: gx + b.maxX * s, y0: gy - b.maxY * s, y1: gy - b.minY * s },
+          base: gy,
+        });
       }
       pluma += posicion.xAdvance + estilo.tracking * fuente.unitsPerEm;
     });
-    return trazos.join('');
+    return glifos;
   }
 
   /** Texto repartido alrededor de un círculo completo, con las letras mirando hacia fuera. */

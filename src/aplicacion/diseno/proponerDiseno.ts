@@ -105,7 +105,7 @@ const PENDIENTE = 'propuesta del estudio, pendiente de confirmar con el local';
 /** Los avisos que no dependen del director (la foto o los activos): no se le devuelven. */
 const AVISOS_AJENOS = /^(ACTIVO|FIDELIDAD|RESOLUCION):/;
 /** Los avisos de oficio que pasan a ser obligatorios cuando la foto lo permite. */
-const OFICIO_OBLIGATORIO = /^(CRUCE|JERARQUIA|COBERTURA):/;
+const OFICIO_OBLIGATORIO = /^(CRUCE|JERARQUIA|COBERTURA|LETRA_TAPADA):/;
 /** Críticas visuales como mucho: la primera y, si su corrección se adopta, una para confirmarla. */
 export const MAX_CRITICAS = 2;
 

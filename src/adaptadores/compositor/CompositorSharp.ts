@@ -20,6 +20,7 @@ import type { MotorTexto } from './MotorTexto.js';
 import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
 import { aplicarTinta, papel } from './tinta.js';
+import { pintarTratamiento } from './tratamientos.js';
 import type { CatalogoTipografico } from './tipografias.js';
 import { radioDeCampo, tablaDuotono, tramar, tramarLuminancia } from './tramado.js';
 import { trazarGesto } from './trazoAMano.js';
@@ -221,8 +222,16 @@ export class CompositorSharp implements Compositor {
     const pintura = capa.contorno
       ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}" stroke-linejoin="round"`
       : `fill="${capa.estilo.color}"`;
-    const d = trazoDeTexto(this.motor, capa);
     const matriz = `matrix(${capa.matriz.join(' ')})`;
+    if (capa.tratamiento) {
+      // Tipografía especial: cada letra por separado, para que el tratamiento pueda trabajarlas una a una.
+      const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
+      const glifos = capa.lineas.flatMap((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base));
+      const cap = Math.max(...capa.lineas.map((l) => this.motor.alturaMayusculas(capa.estilo, l.tamano)));
+      const tratado = pintarTratamiento(capa.tratamiento, glifos, cap, capa.estilo.color, capa.id);
+      return { cuerpo: `<g transform="${matriz}" ${atributos}>${tratado.cuerpo}</g>`, definiciones: tratado.definiciones };
+    }
+    const d = trazoDeTexto(this.motor, capa);
     if (!capa.corte) return { cuerpo: `<path d="${d}" transform="${matriz}" ${pintura} ${atributos}/>`, definiciones: '' };
 
     const { punto: p, angulo, desplazamiento, separacion } = capa.corte;
@@ -400,15 +409,22 @@ export class CompositorSharp implements Compositor {
       const texto = await sharp(capas[i]!.png).resize(w, h).extractChannel(3).raw().toBuffer();
       const encima = i + 1 < capas.length ? await sharp(await componer(resuelto, capas, i + 1, capas.length)).resize(w, h).extractChannel(3).raw().toBuffer() : undefined;
       const lt = luminancia(...hexARgb(capa.estilo.color));
-      const ratios: number[] = [];
+      // Cada píxel se cuenta en su línea: una línea sobre un fondo bueno no debe tapar a otra sobre uno malo
+      // (pulpo-2, 18/11: «A LA BRASA» negro sobre el degradado oscuro, con el bloque entero en 3,8).
+      const linea = lineaDePixel(capa, this.motor, resuelto.lienzo.ancho / w);
+      const porLinea = capa.lineas.map(() => [] as number[]);
       for (let p = 0; p < w * h; p++) {
         if (texto[p]! < 200 || (encima && encima[p]! > 60)) continue;
         const lb = luminancia(debajo[p * 3]!, debajo[p * 3 + 1]!, debajo[p * 3 + 2]!);
-        ratios.push((Math.max(lt, lb) + 0.05) / (Math.min(lt, lb) + 0.05));
+        porLinea[linea(p % w, Math.floor(p / w))]!.push((Math.max(lt, lb) + 0.05) / (Math.min(lt, lb) + 0.05));
       }
-      if (ratios.length === 0) continue;
-      ratios.sort((a, b) => a - b);
-      resultado[capa.id] = Math.round(ratios[Math.floor(ratios.length * 0.1)]! * 100) / 100;
+      // La medida es la de la peor línea (el peor 10 % de sus píxeles). Las líneas con muy poca tinta visible
+      // (casi tapadas por el sujeto) no cuentan: diez píxeles no son una línea que se lea.
+      const peores = porLinea
+        .filter((ratios) => ratios.length >= 40)
+        .map((ratios) => ratios.sort((a, b) => a - b)[Math.floor(ratios.length * 0.1)]!);
+      if (peores.length === 0) continue;
+      resultado[capa.id] = Math.round(Math.min(...peores) * 100) / 100;
     }
     return resultado;
   }
@@ -427,7 +443,7 @@ export class CompositorSharp implements Compositor {
     const { ancho, alto } = resuelto.lienzo;
     const partes = resuelto.capas.map((capa, i) => {
       const fusion = capa.fusion === 'normal' ? '' : ` style="mix-blend-mode:${capa.fusion}"`;
-      const rasterizado = capa.tipo === 'texto' && modo === 'exacto' && (capa.tinta || capa.recorte);
+      const rasterizado = capa.tipo === 'texto' && modo === 'exacto' && (capa.tinta || capa.recorte || capa.tratamiento);
       if (capa.tipo !== 'texto' || rasterizado) {
         const datos = capas[i]!.png.toString('base64');
         return `  <image id="${capa.id}" data-archivo="capas/${nombreDeCapa(capa)}" href="data:image/png;base64,${datos}" x="0" y="0" width="${ancho}" height="${alto}"${fusion}/>`;
@@ -634,4 +650,23 @@ async function conFilo(recorte: Buffer, color: string, grosor: number): Promise<
   const alfa = await sharp(cortada).blur(1).extractChannel(0).raw().toBuffer();
   const relleno = await sharp({ create: { width, height, channels: 3, background: color } }).joinChannel(alfa, { raw: { width, height, channels: 1 } }).png().toBuffer();
   return sharp(relleno).composite([{ input: conMargen.data }]).png().toBuffer();
+}
+
+/**
+ * A qué línea de un texto pertenece un píxel de la medida (x, y a escala 1/escala del lienzo): se lleva al sistema
+ * del bloque con la matriz inversa y se elige la línea cuyo centro de mayúsculas queda más cerca.
+ */
+function lineaDePixel(capa: CapaTextoResuelta, motor: MotorTexto, escala: number): (x: number, y: number) => number {
+  if (capa.lineas.length <= 1) return () => 0;
+  const [a, b, c, d, e, f] = capa.matriz;
+  const det = a * d - b * c;
+  const centros = capa.lineas.map((l) => l.base - motor.alturaMayusculas(capa.estilo, l.tamano) / 2);
+  return (x, y) => {
+    const px = (x + 0.5) * escala - e;
+    const py = (y + 0.5) * escala - f;
+    const by = (-b * px + a * py) / det;
+    let mejor = 0;
+    for (let i = 1; i < centros.length; i++) if (Math.abs(by - centros[i]!) < Math.abs(by - centros[mejor]!)) mejor = i;
+    return mejor;
+  };
 }

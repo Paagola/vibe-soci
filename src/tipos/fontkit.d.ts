@@ -24,6 +24,8 @@ declare module 'fontkit' {
     readonly path: Trazo;
     readonly bbox: Caja;
     readonly advanceWidth: number;
+    /** Los caracteres Unicode que representa (una ligadura «fi» lleva dos). */
+    readonly codePoints: number[];
   }
 
   export interface PosicionGlifo {

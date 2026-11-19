@@ -2,7 +2,7 @@
  * El documento resuelto: la intención pasada a píxeles por el resolutor.
  * Es reproducible (misma intención y mismos activos → mismo documento) y es lo que pinta el renderizador.
  */
-import type { Fusion, Retoque } from './intencion.js';
+import type { Fusion, Retoque, Tratamiento } from './intencion.js';
 import type { MedidasDeOficio } from './oficio.js';
 import type { Lienzo, Rect } from './reticula.js';
 
@@ -30,6 +30,14 @@ export interface LineaResuelta {
 }
 
 /** Tinta impresa ya resuelta: con su semilla y el color del registro en HEX. */
+/** El tratamiento de una tipografía especial, con los colores ya resueltos y la semilla fijada. */
+export type TratamientoResuelto =
+  | { tipo: 'derretida'; gotas: number; largo: number; brillo: boolean; semilla: number }
+  | { tipo: 'papel'; alma: string; giro: number; sombra: number; semilla: number }
+  | { tipo: 'antigua'; desgaste: number; semilla: number }
+  | { tipo: 'neon'; halo: number; alma: string };
+export type TipoDeTratamiento = Tratamiento['tipo'];
+
 export interface TintaResuelta {
   densidad: number;
   bordeSeco: number;
@@ -119,6 +127,7 @@ export type CapaResuelta = BaseResuelta &
         giro?: number;
         corte?: CorteResuelto;
         tinta?: TintaResuelta;
+        tratamiento?: TratamientoResuelto;
         recorte?: RecorteDeTexto;
       }
     | {
@@ -224,6 +233,8 @@ export interface Problema {
    * Los seis últimos son avisos de oficio (F3): no rompen nada, pero señalan lo que delata una pieza de plantilla.
    * JERARQUIA: no hay salto de escala. DENSIDAD: demasiadas palabras o niveles. VOCES: demasiadas tipografías.
    * GESTOS: más de un gesto a mano. CRUCE: el titular no toca al producto. TINTA: tinta impresa en un texto pequeño.
+   * LETRA_PERDIDA: una letra se sale del lienzo y deja de leerse. LETRA_TAPADA: el sujeto tapa casi toda una letra.
+   * MARCADOR: queda un hueco de plantilla sin rellenar («[NOMBRE]»). TRATAMIENTO: tipografía especial mal usada.
    */
   tipo:
     | 'ZONA_SEGURA'
@@ -240,7 +251,11 @@ export interface Problema {
     | 'VOCES'
     | 'GESTOS'
     | 'CRUCE'
-    | 'TINTA';
+    | 'TINTA'
+    | 'LETRA_PERDIDA'
+    | 'LETRA_TAPADA'
+    | 'MARCADOR'
+    | 'TRATAMIENTO';
   mensaje: string;
 }
 
