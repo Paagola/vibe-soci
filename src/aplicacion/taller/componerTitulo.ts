@@ -1,3 +1,4 @@
+import { componerEnPlanos, type MascaraDePlano } from './profundidad.js';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { CatalogoTipografico } from '../../adaptadores/compositor/tipografias.js';
@@ -101,7 +102,8 @@ function trazar(titulo: string, receta: MaquetaDeTitulo, posicion: MaquetaDeTitu
 }
 
 /** La fotografía y la capa tipográfica tienen procedencias distintas. */
-export async function componerTitulo(base: Buffer, baseSha256: string, titulo: string, receta: MaquetaDeTitulo) {
+export async function componerTitulo(base: Buffer, baseSha256: string, titulo: string, receta: MaquetaDeTitulo, mascara?: MascaraDePlano) {
+  if (mascara) return componerEnPlanos(motor, base, baseSha256, titulo, receta, mascara);
   const rgb = await sharp(base).resize(muestra.width, muestra.height).removeAlpha().toColourspace('srgb').raw().toBuffer();
   let posicion = receta.posicion;
   let letras = trazar(titulo, receta, posicion);

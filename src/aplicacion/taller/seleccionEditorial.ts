@@ -6,7 +6,8 @@ import type { ComandaDeArte, Gesto, RutaEditorial, SeleccionEditorial, VistaDePr
 type Evidencia = SeleccionEditorial['evidencias'][number];
 type Observacion = Evidencia & { tema: string; procedencia: string };
 const corpus = JSON.parse(readFileSync(new URL('../../../conocimiento/referencias/corpus-editorial.json', import.meta.url), 'utf8')) as Observacion[];
-const indice = new Map(corpus.map(e => [e.id, e]));
+const suplemento = JSON.parse(readFileSync(new URL('../../../conocimiento/referencias/piloto-capas/referencias.json', import.meta.url), 'utf8')) as Observacion[];
+const indice = new Map([...corpus, ...suplemento].map(e => [e.id, e]));
 
 interface Pauta {
   enfoque: string;
@@ -46,6 +47,18 @@ const pautas = {
     escena: 'Desde un flanco, sigue la unión de dos estratos que ya se ven. Deja el borde de apoyo en cuadro. El foco recorre ese canto, con una sombra pequeña que permita leer el grosor.',
     comprobar: 'El borde, la base y el espesor relativo siguen siendo reconocibles. Se conserva el corte real.',
     ejemplos: ['blog-11', 'smacai-19'],
+  },
+  porcion: {
+    enfoque: 'El corte frente al acabado', vista: 'OBLICUA', gesto: 'MACRO',
+    escena: 'Acerca la cámara a la porción. Conserva la vista de la superficie y busca el flanco con el corte ya visible. Una luz lateral pasa del borde al interior sin borrar su diferencia de color.',
+    comprobar: 'La forma, el espesor del canto y el acabado coinciden con la foto. Compara el tamaño de los trocitos y la intensidad real del tostado.',
+    ejemplos: ['bliss-corte', 'espinel-canto'],
+  },
+  rebozado: {
+    enfoque: 'La corteza marca el ritmo', vista: 'OBLICUA', gesto: 'RITMO',
+    escena: 'Alterna la orientación de las piezas tal como aparecen en la fuente. Entra en oblicuo al borde del recipiente y deja que una luz lateral revele el grano de las piezas próximas.',
+    comprobar: 'El grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial.',
+    ejemplos: ['salorio-croquetas', 'oak-08'],
   },
   bebida: {
     enfoque: 'El borde y el nivel', vista: 'OBLICUA', gesto: 'LUZ_Y_SOMBRA',
@@ -91,6 +104,9 @@ function pautaPara(s: string, espacio: boolean): Pauta {
     if (/\bnoche|anochec|atardecer|penumbra|velas|nocturn/.test(s)) return pautas.noche;
     return /\bbarra\b/.test(s) ? pautas.barra : pautas.umbral;
   }
+  const sujeto = s.split(/[.!?\n]/, 1)[0]!.replace(/^(?:la|el|las|los|una?|unas?|unos?)\s+/, '');
+  if (/^(?:porcion|tarta|pastel|tartaleta)\b/.test(sujeto)) return pautas.porcion;
+  if (/^(?:croquetas?|bocados? rebozados?)\b/.test(sujeto)) return pautas.rebozado;
   if (/\b(mano|manos|sirviendo|sirve|servir|vierte|vertido|emplatando|emplata|pinzas|equipo|brigada|chef|camareros?|camareras?|cocineras?|cocineros?)\b/.test(s)) return pautas.servicio;
   if (/\b(hamburguesa|sandwich|bocadillo|milhojas|lasana|tarta|tortilla|tosta|capas|miga|corte)\b/.test(s)) return pautas.capas;
   if (/\b(cafe|coctel|copa|caldo|vino|cerveza|sopa|infusion|vermut|bebida|latte|gazpacho)\b/.test(s)) return pautas.bebida;
@@ -140,6 +156,7 @@ export function seleccionarEditorial(e: EncargoPost, foto: ComandaDeArte['fotogr
     (foto.luz < .38 ? 'La fuente tiene luminosidad media baja; conserva un borde legible en la sombra.' :
       foto.luz > .68 ? 'La fuente tiene luminosidad media alta; conserva el detalle en las luces.' : 'La fuente tiene luminosidad media intermedia; separa el foco por contraste local.');
   const ids = [...pauta.ejemplos, ...tratamiento.ejemplos];
+  if (ruta === 'TIPO_SOBRIA' && pauta === pautas.capas && /\b(hamburguesa|sandwich|bocadillo)\b/.test(s)) ids.push('stackhouse-titulo');
   const afin = observacionAfin(s, ruta, ids);
   if (afin) ids.push(afin);
   const editorial: SeleccionEditorial = { ruta, motivo, enfoque: pauta.enfoque, comprobar: pauta.comprobar,

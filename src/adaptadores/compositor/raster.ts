@@ -179,3 +179,13 @@ export async function conOpacidad(imagen: Buffer, opacidad: number): Promise<Buf
   if (opacidad >= 1) return imagen;
   return sharp(imagen).ensureAlpha().linear([1, 1, 1, opacidad], [0, 0, 0, 0]).png().toBuffer();
 }
+
+/** Recorta la tinta con el alfa alineado de la fotografía. */
+export async function aplicarMascaraDeSujeto(png: Buffer, sujeto: Uint8Array, modo: 'dentro' | 'fuera'): Promise<Buffer> {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 0; i < info.width * info.height; i++) {
+    const s = sujeto[i]!;
+    data[i * 4 + 3] = Math.round((data[i * 4 + 3]! * (modo === 'dentro' ? s : 255 - s)) / 255);
+  }
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}

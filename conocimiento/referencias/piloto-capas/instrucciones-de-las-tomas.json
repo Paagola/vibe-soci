@@ -1,0 +1,12 @@
+[
+  {
+    "caso": "tarta-de-pistacho",
+    "herramienta": "ImageGen del entorno",
+    "prompt": "Edit the provided photo as a single photoreal editorial food photograph, 4:5 portrait composition, no text added. The ONLY product is this exact triangular slice of pistachio tart. Preserve exact height and wedge geometry, thin warm golden baked rear rim, delicate pale side of the slice seen in the source, smooth beige-olive pistachio top and few irregular finely chopped pistachio flecks. Choose a lower three-quarter angle that shows the existing right cut face and the glancing light across the pistachio surface together. Stay faithful to visible features without specifying or inventing cheesecake/cake layers. Place or keep slice on its original open orange-and-white triangular takeaway holder, simplify background to charcoal warm unlit surface. Close crop foreground tip and rear rim both inside frame, food large, side light, physically grounded. No cutlery, berries, nuts outside slice, syrup, additional food, typography, graphic, mockup or watermark."
+  },
+  {
+    "caso": "croquetas",
+    "herramienta": "ImageGen del entorno",
+    "prompt": "Edit the source as one photoreal 4:5 portrait editorial food photograph of the intact croquetas only, shot in the actual aluminum serving trays. Keep both source groups distinct, the left group more oval and the right group rounder. Maintain coarse sandy matte breaded surface, irregular shapes and warm medium-brown tones; some are longer, some shorter. Take a tight angled crop across the two trays where their rims converge, with pieces continuing out of the picture. Frame as a close photographic detail of an abundant batch, never a counted commercial portion. Gentle directional sidelight grazes irregular breading, narrow metallic highlights on the tray rim; shade secondary rows. The picture must read at 360px wide without words. Preserve the preparation and shapes. No interiors, broken halves, invented filling, added garnish, steam, sauce, props, typography, logos or human hand. Crop away handwritten separator instead of inventing its writing."
+  }
+]

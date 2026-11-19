@@ -17,7 +17,7 @@ import type { Lienzo, Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from '../../puertos/Compositor.js';
 import { dibujoRama, trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
-import { alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
+import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
 import { aplicarTinta, papel } from './tinta.js';
 import type { CatalogoTipografico } from './tipografias.js';
@@ -253,12 +253,7 @@ export class CompositorSharp implements Compositor {
     const disponible = activos[recorte.activo]!;
     if (!disponible.rutaMascara) throw new RangeError(`El activo «${disponible.activo.id}» no tiene máscara: no se puede recortar un texto con él.`);
     const sujeto = await alfaDelSujeto(disponible.rutaMascara, recorte.origen, recorte.destino, lienzo, 1, disponible.activo.ancho, disponible.activo.alto, recorte.giro);
-    const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-    for (let i = 0; i < info.width * info.height; i++) {
-      const s = sujeto[i]!;
-      data[i * 4 + 3] = Math.round((data[i * 4 + 3]! * (recorte.modo === 'dentro' ? s : 255 - s)) / 255);
-    }
-    return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+    return aplicarMascaraDeSujeto(png, sujeto, recorte.modo);
   }
 
   /** El sello entero: sombra dura, forma, filete, anillo de texto y líneas del centro, todo girado como una pieza. */

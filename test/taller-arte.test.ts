@@ -175,3 +175,26 @@ it('imprime con tinta clara en una zona oscura y reserva el papel para una caja 
   assert.equal(sobreRayas.composicion.lineas.join(' '), 'Café del día');
   assert.ok(sobreRayas.composicion.caja.y > 1050);
 });
+
+it('oculta sólo tinta sobre la silueta y conserva la fotografía del sujeto en ambas maquetas', async () => {
+  const forma = '<ellipse cx="535" cy="790" rx="399" ry="315"';
+  const raster = (fondo: string, sujeto: string) => sharp(Buffer.from('<svg width="1080" height="1350"><rect width="1080" height="1350" fill="' + fondo + '"/>' + forma + ' fill="' + sujeto + '"/></svg>')).png().toBuffer();
+  const base = await raster('#56424a', '#cc8241');
+  const png = await sharp(await raster('#000', '#fff')).extractChannel(0).png().toBuffer();
+  const titulo = 'Prueba del taller';
+  const receta = maquetaDeTitulo(titulo, titulo, { opcion: 'AUTO', estiloTitulo: 'CONDENSADA', posicionTitulo: 'SUPERIOR_IZQUIERDA' });
+  const sujeto = await sharp(png).extractChannel(0).raw().toBuffer();
+  const foto = await sharp(base).removeAlpha().raw().toBuffer();
+  for (const plano of ['AIRE', 'DETRAS'] as const) {
+    const salida = await componerTitulo(base, 'a'.repeat(64), titulo, receta, { plano, png, sha256: 'b'.repeat(64), origen: 'IMPORTADA' });
+    const capas = salida.composicion.profundidad!;
+    assert.equal(capas.titulo, titulo);
+    assert.equal(salida.composicion.lineas.join(' '), titulo);
+    assert.ok(plano === 'AIRE' ? capas.oclusion === 0 : capas.oclusion > .03 && capas.oclusion <= .16);
+    assert.ok(capas.peorFranja <= .36);
+    const resultado = await sharp(salida.png).removeAlpha().raw().toBuffer();
+    for (let i = 0; i < sujeto.length; i += 7) {
+      if (sujeto[i] === 255) assert.ok(resultado.subarray(i * 3, i * 3 + 3).equals(foto.subarray(i * 3, i * 3 + 3)));
+    }
+  }
+});

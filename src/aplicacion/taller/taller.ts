@@ -15,6 +15,7 @@ import { guardarEncargo, type DepsPost, type ResultadoAvance } from '../post/ord
 import { coincideTexto, dirigir, huella } from './direccion.js';
 import type { AlProgresar } from '../progreso.js';
 import { guardarMuestras, leerMuestras } from './muestras.js';
+import type { MascaraDePlano } from './profundidad.js';
 import { componerTitulo } from './componerTitulo.js';
 import { maquetaDeTitulo } from './puesta.js';
 import { paqueteZip } from './paquete.js';
@@ -130,6 +131,36 @@ export async function bytesDeCandidata(deps: DepsPost, e: EncargoPost, version: 
   return { bytes, candidata };
 }
 
+export async function leerCapa(deps: DepsPost, e: EncargoPost, version: number, tipo: 'base' | 'mascara') {
+  const composicion = e.taller?.candidatas.find(c => c.version === version)?.composicion;
+  const hash = tipo === 'base' ? composicion?.baseSha256 : composicion?.profundidad?.mascaraSha256;
+  if (!hash) throw new ErrorDeUsuario('Esta versión carece de la capa solicitada.');
+  const ruta = join(carpeta(deps, e), tipo === 'base' ? 'bases' : 'mascaras', hash + '.png');
+  const bytes = await readFile(ruta);
+  if (huella(bytes) !== hash) throw new ErrorDeUsuario('La capa ha cambiado desde la composición.');
+  return { bytes, ruta };
+}
+
+async function mascaraDeBase(deps: DepsPost, e: EncargoPost, candidata: Candidata, rutaBase: string, plano: MascaraDePlano['plano'], subida?: string): Promise<MascaraDePlano> {
+  const previa = e.taller?.candidatas.findLast(c => c.composicion?.baseSha256 === candidata.composicion!.baseSha256 && c.composicion?.profundidad);
+  if (previa && !subida) {
+    const capa = previa.composicion!.profundidad!;
+    return { png: (await leerCapa(deps, e, previa.version, 'mascara')).bytes, sha256: capa.mascaraSha256, origen: capa.origenMascara, plano };
+  }
+  if (!subida && e.simulado) throw new ErrorDeUsuario('En una prueba simulada, importa la máscara PNG sobre la foto base.');
+  const bytes = subida ? await readFile(subida) : await deps.segmentador.mascara(rutaBase).catch(() => { throw new ErrorDeUsuario('El segmentador local no encontró una silueta. Puedes importar la máscara sobre esta misma base.'); });
+  const imagen = sharp(bytes, { limitInputPixels: 36_000_000 });
+  const meta = await imagen.metadata();
+  const transparente = meta.hasAlpha && (await imagen.stats()).channels.at(-1)!.min < 255;
+  if (meta.format !== 'png' || meta.width !== 1080 || meta.height !== 1350 || (meta.pages ?? 1) !== 1 || transparente) throw new ErrorDeUsuario('Usa una máscara PNG opaca de 1080 × 1350 con sujeto blanco y fondo negro.');
+  const png = await imagen.removeAlpha().greyscale().extractChannel(0).png().toBuffer();
+  const sha256 = huella(png);
+  const dir = join(carpeta(deps, e), 'mascaras');
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, sha256 + '.png'), png);
+  return { png, sha256, origen: subida ? 'IMPORTADA' : 'LOCAL', plano };
+}
+
 export async function exportarArte(deps: DepsPost, e: EncargoPost) {
   const ultima = e.taller?.candidatas.at(-1);
   if (e.paso !== 'HECHO' || !ultima?.revision) throw new ErrorDeUsuario('Revisa y aprueba esta versión antes de exportarla.');
@@ -144,7 +175,7 @@ async function superficieUniforme(bytes: Buffer): Promise<boolean> {
   return medidas.channels.every(c => c.stdev < 1);
 }
 
-async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte, bytes: Buffer, origen: Candidata['origen'], uso: Candidata['uso'], encuadreOriginal?: number, recomponer?: { receta: NonNullable<ComandaDeArte['tipografiaLocal']>; version: number }) {
+async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte, bytes: Buffer, origen: Candidata['origen'], uso: Candidata['uso'], encuadreOriginal?: number, recomponer?: { receta: NonNullable<ComandaDeArte['tipografiaLocal']>; version: number; mascara?: MascaraDePlano }) {
   const taller = e.taller!;
   if (!bytes.length || bytes.length > 32 * 1024 * 1024) throw new ErrorDeUsuario('La candidata no contiene una imagen del tamaño admitido.');
   const imagen = sharp(bytes, { failOn: 'warning', limitInputPixels: 36_000_000 });
@@ -157,7 +188,7 @@ async function incorporar(deps: DepsPost, e: EncargoPost, comanda: ComandaDeArte
   const base = recomponer ? bytes : await imagen.rotate().flatten({ background: '#fff' }).resize(1080, 1350, { fit: 'fill' }).png().toBuffer();
   const receta = recomponer?.receta ?? comanda.tipografiaLocal;
   const titulo = comanda.textos.find(b => b.papel === 'TITULAR')?.texto;
-  const impresa = receta && titulo ? await componerTitulo(base, huella(base), titulo, receta) : undefined;
+  const impresa = receta && titulo ? await componerTitulo(base, huella(base), titulo, receta, recomponer?.mascara) : undefined;
   const png = impresa?.png ?? base;
   const sha256 = huella(png);
   if (recomponer ? taller.candidatas.at(-1)?.sha256 === sha256 : taller.candidatas.some(c => c.sha256 === sha256)) throw new ErrorDeUsuario('Esta misma imagen ya se revisó. Importa la versión corregida.');
@@ -252,6 +283,17 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     if (e.paso !== 'GENERAR' || !(esFotoEditorial(comanda.editorial?.ruta) || comanda.tipografiaLocal) || comanda.muestras) throw new ErrorDeUsuario('La foto original sólo se puede encuadrar en una dirección fotográfica con fuente completa.');
     const bytes = await fuenteVerificada(deps, e, comanda);
     const { width, height } = (await sharp(bytes).metadata()).autoOrient;
+    if (accion.completa) {
+      if (!comanda.tipografiaLocal) throw new ErrorDeUsuario('El margen de composición pertenece a la foto con título.');
+      if (Math.min(width, height) < 360) throw new ErrorDeUsuario('La fotografía debe alcanzar 360 px en su lado menor.');
+      const foto = await sharp(bytes).rotate().resize(1080, 1350, { fit: 'inside' }).removeAlpha().png().toBuffer({ resolveWithObject: true });
+      const dx = 1080 - foto.info.width, dy = 1350 - foto.info.height;
+      const left = Math.floor(dx / 2), top = dy;
+      // Sólo los márgenes prolongan el color del borde. La fotografía completa queda intacta y legible.
+      const extendida = await sharp(foto.data).extend({ top, left, right: dx - left, bottom: dy - top, extendWith: 'copy' }).png().toBuffer();
+      const png = await sharp(extendida).blur(28).composite([{ input: foto.data, left, top }]).png().toBuffer();
+      return incorporar(deps, e, comanda, png, 'ORIGINAL', e.usoFotoReal);
+    }
     const unidad = Math.floor(Math.min(width / 4, height / 5));
     if (unidad < 90) throw new ErrorDeUsuario('El encuadre real debe alcanzar 360 × 450 px.');
     const ancho = 4 * unidad, alto = 5 * unidad;
@@ -284,10 +326,23 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
   const { bytes } = await bytesDeCandidata(deps, e, ultimo.version);
   if (accion.accion === 'RECOMPONER_TITULO') {
     if (!comanda.tipografiaLocal || !ultimo.composicion) throw new ErrorDeUsuario('Esta versión carece de una fotografía base para recomponer el título.');
-    const base = await readFile(join(carpeta(deps, e), 'bases', ultimo.composicion.baseSha256 + '.png'));
-    if (huella(base) !== ultimo.composicion.baseSha256) throw new ErrorDeUsuario('La fotografía ha cambiado desde que se ajustó la primera maqueta.');
-    const receta = maquetaDeTitulo(e.plato, comanda.nombrePlato ?? e.plato, { opcion: 'AUTO', estiloTitulo: accion.estiloTitulo, posicionTitulo: accion.posicionTitulo });
-    return incorporar(deps, e, comanda, base, ultimo.origen, ultimo.uso, ultimo.encuadreOriginal, { receta, version: ultimo.version });
+    if (accion.mascaraId && !accion.plano) throw new ErrorDeUsuario('Elige aire o solape para usar la máscara.');
+    const { bytes: base, ruta } = await leerCapa(deps, e, ultimo.version, 'base');
+    const mascara = accion.plano ? await mascaraDeBase(deps, e, ultimo, ruta, accion.plano, subida) : undefined;
+    let vigente = comanda;
+    if (accion.tituloLiteral && accion.tituloLiteral !== comanda.nombrePlato) {
+      vigente = await redactar(deps, e, { nombrePlato: accion.tituloLiteral, direccion: comanda.direccion });
+      if (vigente.fotoSha256 !== comanda.fotoSha256) throw new ErrorDeUsuario('La fuente ha cambiado desde que se preparó la foto base.');
+      await escribirJsonAtomico(join(carpeta(deps, e), 'comandas', vigente.huella + '.json'), vigente);
+      taller.comanda = vigente;
+      taller.confirmada = { fecha: deps.ahora(), huella: vigente.huella };
+    }
+    const receta = maquetaDeTitulo(e.plato, vigente.nombrePlato ?? e.plato, { opcion: 'AUTO', estiloTitulo: accion.estiloTitulo, posicionTitulo: accion.posicionTitulo });
+    return incorporar(deps, e, vigente, base, ultimo.origen, ultimo.uso, ultimo.encuadreOriginal, { receta, version: ultimo.version, mascara });
+  }
+  if (accion.accion === 'ANOTAR_REVISION') {
+    ultimo.avisoVisual = accion.observacion;
+    return registrar(deps, e, e.paso, 'Observación visual sobre la versión ' + ultimo.version + ': ' + accion.observacion);
   }
   if (accion.accion === 'DEVOLVER') {
     ultimo.devolucion = accion.motivo;

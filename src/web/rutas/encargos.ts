@@ -8,7 +8,7 @@ import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
 import { AccionTaller } from '../../dominio/taller.js';
-import { bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
+import { leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
 import { abrirEncargo } from '../../aplicacion/post/abrirEncargo.js';
 import { detalleDeEncargo, listarEncargos, resumirEncargos, type PortadaDeEncargo } from '../../aplicacion/post/consultasPost.js';
@@ -137,9 +137,10 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       res.status(202).json({ trabajo });
       return;
     }
-    const subida = accion.accion === 'IMPORTAR' ? estudio.subidas.ruta(accion.subidaId) : undefined;
+    const id = accion.accion === 'IMPORTAR' ? accion.subidaId : accion.accion === 'RECOMPONER_TITULO' ? accion.mascaraId : undefined;
+    const subida = id ? estudio.subidas.ruta(id) : undefined;
     const encargo = await decidirTaller(deps, e, accion, subida);
-    if (accion.accion === 'IMPORTAR') await estudio.subidas.borrar([accion.subidaId]);
+    if (id) await estudio.subidas.borrar([id]);
     res.json({ encargo });
   }));
   rutas.get('/:proyecto/taller/paquete', async (req, res) => {
@@ -157,6 +158,13 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const { bytes, candidata } = await bytesDeCandidata(deps, await leerEncargo(deps, proyecto), Number(req.params.version));
     res.set({ 'Cache-Control': 'no-store', 'X-Uso-Imagen': candidata.uso }).type('png').send(bytes);
   });
+  for (const tipo of ['base', 'mascara'] as const) {
+    rutas.get('/:proyecto/taller/candidatas/:version/' + tipo, async (req, res) => {
+      const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
+      const { bytes } = await leerCapa(deps, await leerEncargo(deps, proyecto), Number(req.params.version), tipo);
+      res.set('Cache-Control', 'no-store').type('png').send(bytes);
+    });
+  }
   rutas.get('/:proyecto/taller/exportacion', async (req, res) => {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
     const bytes = await exportarArte(deps, await leerEncargo(deps, proyecto));

@@ -101,7 +101,12 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
     const tipografia = limpia ? 'Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.'
       : cartel ? recurso.tipografia : 'El taller compondrá el título sobre la fotografía recibida con la familia, el contraste y la posición elegidos en la maqueta. Revisa su relación con el sujeto a 360 px.';
     const materia = cartel ? recurso.materia : 'Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.';
-    const direccion = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
+    const direccionBase = edicion ?? { gesto, sujeto, escena: pauta.escena + (cartel ? ' ' + recurso.escena : ''), materia, tipografia };
+    const criterioVisual = direccionBase.criterioVisual ?? {
+      foco: editorial.enfoque, conservar: elegida?.rasgoFuente ?? sujeto,
+      comprobar: editorial.comprobar,
+    };
+    const direccion = { ...direccionBase, criterioVisual };
     const camara = dirigirToma(sujetoDelEncargo, gesto, elegida, '', { ...pauta, espacio });
     if (puesta.ambito === 'SERVICIO') camara.conservar = 'Conserva identidad y rasgos verificables, personas presentes y contexto documentado. Si una cara queda oculta, conserva esa oclusión.';
     if (puesta.vajilla === 'ESTUDIO') camara.conservar = 'Mantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar.';
@@ -111,8 +116,11 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
       limpia ? 'Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.'
         : cartel ? 'Produce un cartel editorial gastronómico vertical 4:5. Integra una única acción gráfica dominante.' : 'Produce la fotografía base de una página gastronómica de revista, vertical 4:5 a sangre. La imagen que entregas es exclusivamente fotográfica y carece de texto añadido.',
       'Sujeto descrito por el local, como contexto visual: ' + JSON.stringify(sujetoDelEncargo),
+      'Foco de la pieza: ' + criterioVisual.foco, 'Rasgo que conservar: ' + criterioVisual.conservar,
+      'Revisión a 360 px: ' + criterioVisual.comprobar,
       direccion.sujeto, direccion.escena, direccion.materia, !tipografiaLocal && direccion.tipografia, puesta.soporte, puesta.apetito,
       tipografiaLocal && reservaFotografica(tipografiaLocal),
+      tipografiaLocal && 'Deja visible el borde superior del protagonista y un fondo sencillo justo encima. La misma fotografía permitirá comparar un titular en aire y otro que roce esa silueta.',
       instruccionDeToma(toma, true, direccion.escena), muestras && pautaDeMuestras(muestras, limpia || !!tipografiaLocal),
       limpia && 'Entrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.',
       cartel && ('Imprime exclusivamente los siguientes bloques literales una sola vez: ' + JSON.stringify(textos.map(b => b.texto))),

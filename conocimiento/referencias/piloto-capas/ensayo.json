@@ -1,0 +1,415 @@
+[
+  {
+    "id": "tarta-de-pistacho",
+    "fuenteSha256": "754b997439fb5a0b50dc5a15015a6daa47ff03f132e1e7bbcbbd007cf47f26ec",
+    "baseTallerSha256": "754b997439fb5a0b50dc5a15015a6daa47ff03f132e1e7bbcbbd007cf47f26ec",
+    "comanda": "7c798829d386be1680cb7804323a169ec44d867b43e534995e6a1802a5388e97",
+    "ruta": "FOTO_PLATO",
+    "referencias": [
+      "bliss-corte",
+      "espinel-canto",
+      "blog-68"
+    ],
+    "criterio": {
+      "foco": "El canto pálido y la cobertura de pistacho de una misma porción.",
+      "conservar": "Una cuña triangular en su caja naranja y blanca, borde superior tostado y trocitos de pistacho en la cobertura beige verdosa.",
+      "comprobar": "Comparar en móvil grosor, color del borde y escala de los trozos de pistacho."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "4178cbc29b5d139a8973572f1cbbef2ef31648b28a10a962eadfc47c570fad18",
+        "comanda": "7c798829d386be1680cb7804323a169ec44d867b43e534995e6a1802a5388e97",
+        "origen": "IMPORTACION",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        },
+        "avisoVisual": "La toma baja descubre el canto. El borde tostado se ensancha y los trozos de pistacho ganan tamaño e intensidad frente al original."
+      }
+    ]
+  },
+  {
+    "id": "hamburguesa",
+    "fuenteSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+    "baseTallerSha256": "62000fcabfca67f971478fbe83fbc782d8d2cb3820f31d73e55038caa51c3a19",
+    "comanda": "cb831aaaaab245456349253598fc6511484fc4c7311259e9772aa12bbe8e0237",
+    "ruta": "TIPO_SOBRIA",
+    "referencias": [
+      "blog-11",
+      "smacai-19",
+      "editsoc-10",
+      "ig-14",
+      "stackhouse-titulo",
+      "house-02"
+    ],
+    "criterio": {
+      "foco": "Seguir el pan brillante y las capas visibles desde el frontal.",
+      "conservar": "Conservar el perfil completo, el papel de Bendito Bocado y los colores de neón de la fotografía. Usar como título exacto Hamburguesa.",
+      "comprobar": "Leer la palabra entera, distinguir cada capa y cotejar ambos laterales del producto y el papel impreso."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "2a94272ac42fd54e73dc516d7cc30032a244449149c3b8cad2803ce5a9e8ca57",
+        "comanda": "cb831aaaaab245456349253598fc6511484fc4c7311259e9772aa12bbe8e0237",
+        "composicion": {
+          "baseSha256": "8129b93f826251945c43389fb46063285b52db0f75d3038cb2ebc9e14e0677d4",
+          "estilo": "CONDENSADA",
+          "posicionSolicitada": "INFERIOR_IZQUIERDA",
+          "posicion": "PAPEL",
+          "tinta": "#241912",
+          "contraste": 14.71,
+          "familia": "archivo",
+          "lineas": [
+            "Hamburguesa"
+          ],
+          "caja": {
+            "x": 64,
+            "y": 1077,
+            "ancho": 720,
+            "alto": 129
+          }
+        },
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "NO",
+            "R",
+            "Bocads",
+            "SyW",
+            "POR",
+            "REZA",
+            "Hamburguesa"
+          ],
+          "coincide": false,
+          "superficieUniforme": false
+        }
+      },
+      {
+        "version": 2,
+        "sha256": "a0deaf514d2eb38ee5f8caeae9b649f420646e27731b882f0a5ed89999da90c7",
+        "comanda": "cb831aaaaab245456349253598fc6511484fc4c7311259e9772aa12bbe8e0237",
+        "composicion": {
+          "profundidad": {
+            "esquema": "taller/capas@1",
+            "plano": "AIRE",
+            "titulo": "Hamburguesa",
+            "mascaraSha256": "3047713d54380163c64aef54d30266c15599b34218c2e3bce6d02ed70bad2354",
+            "origenMascara": "IMPORTADA",
+            "oclusion": 0,
+            "peorFranja": 0,
+            "cuerpo": 188.170455083251
+          },
+          "baseSha256": "8129b93f826251945c43389fb46063285b52db0f75d3038cb2ebc9e14e0677d4",
+          "versionBase": 1,
+          "estilo": "CONDENSADA",
+          "posicionSolicitada": "SUPERIOR_IZQUIERDA",
+          "posicion": "CENTRADA_EN_SILUETA",
+          "tinta": "#fff6e7",
+          "contraste": 17.95,
+          "familia": "archivo",
+          "lineas": [
+            "Hamburguesa"
+          ],
+          "caja": {
+            "x": 41.7500040107023,
+            "y": 190.66135225175321,
+            "ancho": 996.4999919785955,
+            "alto": 174.62218231725691
+          }
+        },
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "ON",
+            "REZA",
+            "POR",
+            "MAS"
+          ],
+          "coincide": false,
+          "superficieUniforme": false
+        }
+      },
+      {
+        "version": 3,
+        "sha256": "9a34a741c99ba52b95f51720167c419910819f392ff6467e01dba56a88d26a39",
+        "comanda": "cb831aaaaab245456349253598fc6511484fc4c7311259e9772aa12bbe8e0237",
+        "composicion": {
+          "profundidad": {
+            "esquema": "taller/capas@1",
+            "plano": "DETRAS",
+            "titulo": "Hamburguesa",
+            "mascaraSha256": "3047713d54380163c64aef54d30266c15599b34218c2e3bce6d02ed70bad2354",
+            "origenMascara": "IMPORTADA",
+            "oclusion": 0.07067180351553094,
+            "peorFranja": 0.2652370203160271,
+            "cuerpo": 188.170455083251
+          },
+          "baseSha256": "8129b93f826251945c43389fb46063285b52db0f75d3038cb2ebc9e14e0677d4",
+          "versionBase": 2,
+          "estilo": "CONDENSADA",
+          "posicionSolicitada": "SUPERIOR_IZQUIERDA",
+          "posicion": "CENTRADA_EN_SILUETA",
+          "tinta": "#fff6e7",
+          "contraste": 11.47,
+          "familia": "archivo",
+          "lineas": [
+            "Hamburguesa"
+          ],
+          "caja": {
+            "x": 41.7500040107023,
+            "y": 394.6613522517532,
+            "ancho": 996.4999919785955,
+            "alto": 174.62218231725691
+          }
+        },
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "REZA",
+            "BOR",
+            "MAS",
+            "esonaлпашен"
+          ],
+          "coincide": false,
+          "superficieUniforme": false
+        },
+        "avisoVisual": "El pan tapa una parte de las letras centrales. Cotejar el borde y leer la palabra completa a 360 px."
+      }
+    ]
+  },
+  {
+    "id": "croquetas",
+    "fuenteSha256": "c2e4079c2482637c16ab4fe637517b3f2873cca0eebd5d86605bd919194066df",
+    "baseTallerSha256": "c2e4079c2482637c16ab4fe637517b3f2873cca0eebd5d86605bd919194066df",
+    "comanda": "a8b2064be0a1290aa374df7b1dda79cd6b4d515b059645f4706fea46e587abae",
+    "ruta": "FOTO_PLATO",
+    "referencias": [
+      "salorio-croquetas",
+      "oak-08"
+    ],
+    "criterio": {
+      "foco": "Seguir los intervalos y reconocer el grano de la corteza.",
+      "conservar": "Piezas enteras ovaladas y redondas en dos fuentes de aluminio. Mantener ambos grupos y el rebozado documentado.",
+      "comprobar": "Comparar la variedad de siluetas, el color y el grano de las piezas enteras. Evitar atribuir sabor, interior o tamaño de ración."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "41b199bab8197552ac6ffbfb15a59126d26f6097d5e04a97ae73a172a527c1ca",
+        "comanda": "a8b2064be0a1290aa374df7b1dda79cd6b4d515b059645f4706fea46e587abae",
+        "origen": "IMPORTACION",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        },
+        "avisoVisual": "El grano y las dos formas se distinguen. La toma calienta el dorado, vuelve más redondas y abultadas varias piezas de la derecha y deja fuera el rótulo de la fuente."
+      }
+    ]
+  },
+  {
+    "id": "reserva-tostada",
+    "fuenteSha256": "57297f0e31f1dad9c807f41239d0850c064d8bbd5786b462d41cdf654808477b",
+    "baseTallerSha256": "57297f0e31f1dad9c807f41239d0850c064d8bbd5786b462d41cdf654808477b",
+    "comanda": "dba4f9c03f6a18160863c0772760b568b2764e691b7c7a2dbffe6b460149a1d1",
+    "ruta": "FOTO_PLATO",
+    "referencias": [
+      "oak-10",
+      "blog-21",
+      "lumiere-07",
+      "blog-29"
+    ],
+    "criterio": {
+      "foco": "El plato en su mesa",
+      "conservar": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+      "comprobar": "El alimento se reconoce al primer vistazo. La mesa sitúa su escala y el apoyo conserva una sombra coherente."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "0a756ee702d17e247dbb456ed4b23dee41779f3de782cfb4e5f0fff95b46e9cd",
+        "comanda": "dba4f9c03f6a18160863c0772760b568b2764e691b7c7a2dbffe6b460149a1d1",
+        "encuadreOriginal": 0.5,
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "reserva-tostada-titulo",
+    "fuenteSha256": "57297f0e31f1dad9c807f41239d0850c064d8bbd5786b462d41cdf654808477b",
+    "baseTallerSha256": "57297f0e31f1dad9c807f41239d0850c064d8bbd5786b462d41cdf654808477b",
+    "comanda": "170e8f31b9fe8bfb3b8831dbe90d9abe8347d372a9d96c6e368a5c489580d2f1",
+    "ruta": "TIPO_SOBRIA",
+    "referencias": [
+      "oak-10",
+      "blog-21",
+      "lumiere-07",
+      "editsoc-10",
+      "ig-14"
+    ],
+    "criterio": {
+      "foco": "El plato en su mesa",
+      "conservar": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+      "comprobar": "El alimento se reconoce al primer vistazo. La mesa sitúa su escala y el apoyo conserva una sombra coherente."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "9f75b171567d41e4bba77ae064cb6b2b316d6d0a862b11dc271534138cc794bb",
+        "comanda": "170e8f31b9fe8bfb3b8831dbe90d9abe8347d372a9d96c6e368a5c489580d2f1",
+        "composicion": {
+          "baseSha256": "0a756ee702d17e247dbb456ed4b23dee41779f3de782cfb4e5f0fff95b46e9cd",
+          "estilo": "CONDENSADA",
+          "posicionSolicitada": "INFERIOR_IZQUIERDA",
+          "posicion": "PAPEL",
+          "tinta": "#241912",
+          "contraste": 14.71,
+          "familia": "archivo",
+          "lineas": [
+            "Tostada"
+          ],
+          "caja": {
+            "x": 64,
+            "y": 1077,
+            "ancho": 416,
+            "alto": 103
+          }
+        },
+        "encuadreOriginal": 0.5,
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "Tostada"
+          ],
+          "coincide": true,
+          "superficieUniforme": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "regresion-cafe",
+    "fuenteSha256": "89c049169f6dc75c3a145ba66a4a538f7966ef49f8e022585351a946eb533318",
+    "baseTallerSha256": "89c049169f6dc75c3a145ba66a4a538f7966ef49f8e022585351a946eb533318",
+    "comanda": "19b3cefd2798d0f4404ea6111f589df27d94a8f7e9b67d58b07410e6326ab331",
+    "ruta": "TIPO_SOBRIA",
+    "referencias": [
+      "oak-07",
+      "lumiere-01",
+      "cin-06",
+      "editsoc-10",
+      "ig-14"
+    ],
+    "criterio": {
+      "foco": "El borde y el nivel",
+      "conservar": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+      "comprobar": "A tamaño móvil se reconocen el nivel, el contorno y el apoyo. Las luces conservan detalle."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "1caf069c056e836280a713757738df2bb6d4f7c9d2d6ccba4305f4849c20d58f",
+        "comanda": "19b3cefd2798d0f4404ea6111f589df27d94a8f7e9b67d58b07410e6326ab331",
+        "composicion": {
+          "baseSha256": "d035f75868780c8c1b1f8502677ddd07e4e56555dc9ab17655439da7267930b4",
+          "estilo": "CONTRASTE",
+          "posicionSolicitada": "SUPERIOR_DERECHA",
+          "posicion": "PAPEL",
+          "tinta": "#241912",
+          "contraste": 14.71,
+          "familia": "instrument-serif",
+          "lineas": [
+            "Café del día"
+          ],
+          "caja": {
+            "x": 64,
+            "y": 1079,
+            "ancho": 496,
+            "alto": 105
+          }
+        },
+        "encuadreOriginal": 0.5,
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [
+            "Café del día"
+          ],
+          "coincide": true,
+          "superficieUniforme": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "regresion-gamba",
+    "fuenteSha256": "a5402c8adb9f0f8f920b3ca4f8add5e7e44eea3f5ec405c8883772280c907d43",
+    "baseTallerSha256": "a5402c8adb9f0f8f920b3ca4f8add5e7e44eea3f5ec405c8883772280c907d43",
+    "comanda": "6d2710d2f1774e63452d647171e42c949b61801a44405698d4c3273dd78e25b1",
+    "ruta": "FOTO_PLATO",
+    "referencias": [
+      "blog-46",
+      "oak-04",
+      "blog-23",
+      "oak-08"
+    ],
+    "criterio": {
+      "foco": "El caparazón en relieve",
+      "conservar": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+      "comprobar": "El color y los reflejos describen la cocción a tamaño móvil. Cada cabeza conecta con su propio abdomen. La perspectiva cambia qué superficie queda visible."
+    },
+    "envios": 0,
+    "estado": "CONFIRMAR_FOTO",
+    "candidatas": [
+      {
+        "version": 1,
+        "sha256": "4f71c20e28a80c3383b214dc08bbd263a69e4937273e7c8aee2e4899885a6731",
+        "comanda": "6d2710d2f1774e63452d647171e42c949b61801a44405698d4c3273dd78e25b1",
+        "encuadreOriginal": 0.5,
+        "origen": "ORIGINAL",
+        "uso": "SOLO_PRUEBA_COMPOSICION",
+        "lectura": {
+          "motor": "Apple Vision",
+          "lineas": [],
+          "coincide": null,
+          "superficieUniforme": false
+        }
+      }
+    ]
+  }
+]

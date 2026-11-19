@@ -1,0 +1,42 @@
+[
+  {
+    "id": "bliss-corte",
+    "fuente": "Spotted Productions · Bliss Bakery",
+    "procedencia": "fotografía comercial",
+    "pagina": "https://spottedproductions.com/work/bliss-bakery/",
+    "imagen": "https://spottedproductions.com/img/portfolio/thumb/DSC02230-scaled.webp",
+    "sha256": "466bd3595662fe39a724f9831c7941bf0e2d20356e9711e297bf6686a64e8885",
+    "tema": "capas",
+    "lectura": "La vista oblicua reparte el encuadre entre la cara cortada y el acabado superior. El punto de vista permite cotejar el espesor de ambos planos."
+  },
+  {
+    "id": "espinel-canto",
+    "fuente": "Kimberly Espinel · Rebel Comfort, estilismo de Katie Marshall",
+    "procedencia": "fotografía editorial de libro",
+    "pagina": "https://thelittleplantation.co.uk/london-food-photographer-portfolio",
+    "imagen": "https://images.squarespace-cdn.com/content/v1/58dd75f229687f5a850ec676/71ec916f-8c13-40c1-aed8-2f39e5dc26c1/Kimberly-Espinel-portfolio-106.jpg",
+    "sha256": "de2afc64c2c02a17e92941087e9320f07eae8443390a693c23100796a5121446",
+    "tema": "capas",
+    "lectura": "La cámara casi a la altura del plato muestra la cara pálida de la porción. El borde tostado de la cobertura se recorta sobre el fondo oscuro. El ángulo y la separación tonal se pueden trasladar a otro acabado."
+  },
+  {
+    "id": "stackhouse-titulo",
+    "fuente": "Phiwe Dlamini · STACKHOUSE",
+    "procedencia": "concepto de portafolio",
+    "pagina": "https://contra.com/p/MLBPlEFO-stackhouse-bold-burger-restaurant",
+    "imagen": "https://media.contra.com/image/upload/fl_progressive/q_auto:best/tx0zpbldxkktfbcp2sjj.webp",
+    "sha256": "485122487a14209098e84133908357fd7b6f0020260940409152954d6ae4f8fe",
+    "tema": "sobria",
+    "lectura": "El titular ocupa el ancho superior y la vista frontal distingue los estratos. El contraste crema sobre oscuro mantiene la entrada por la palabra. La alternativa con el pan delante es una decisión del taller."
+  },
+  {
+    "id": "salorio-croquetas",
+    "fuente": "Eva Salorio · Croquetas",
+    "procedencia": "fotografía de autora",
+    "pagina": "https://evasalorio.com/portfolio/",
+    "imagen": "https://evasalorio.com/wp-content/uploads/2025/09/Croquetas-DEF.jpg",
+    "sha256": "494ea286e4d03776fa975917fb0f303dc6703e282139f3a723f2a8f4151c40de",
+    "tema": "detalle",
+    "lectura": "Las piezas ovales cambian de orientación dentro de un recipiente estrecho. La luz deja pequeñas sombras entre los rebozados. La referencia abre una pieza central; una fuente que sólo documenta piezas enteras conserva ese límite."
+  }
+]

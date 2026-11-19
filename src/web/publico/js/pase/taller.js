@@ -33,7 +33,8 @@ function encuadrarOriginal(ctx) {
   const posicion = h('input', { type: 'range', min: 0, max: 100, value: 50, name: 'posicionOriginal',
     oninput: e => { previa.style.objectPosition = e.target.value + '% ' + e.target.value + '%'; } });
   return detalle('Encuadrar la foto original', formulario(ctx, () => ({ accion: 'USAR_ORIGINAL', posicion: posicion.valueAsNumber / 100 }),
-    previa, campo('Posición del recorte', posicion), accion('Revisar este encuadre sin generar')));
+    previa, campo('Posición del recorte', posicion), accion('Revisar este encuadre sin generar')),
+    ctx.d.encargo.taller.comanda?.tipografiaLocal ? formulario(ctx, () => ({ accion: 'USAR_ORIGINAL', completa: true }), accion('Conservar toda la foto con margen para el título')) : null);
 }
 function camaraDe(ctx, toma, preferencias = vistas, comanda) {
   const seleccion = toma?.seleccion;
@@ -145,6 +146,7 @@ export function fichaTaller(ctx) {
     const gesto = opciones('gesto', gestos, c.direccion.gesto);
     const confirmoMuestras = h('input', { name: 'confirmoMuestras', type: 'checkbox', required: true });
     const nombre = texto('nombrePlato', 2, 300, c.nombrePlato ?? e.plato);
+    const criterios = c.direccion.criterioVisual && [['foco', 'Qué debe verse primero', 320], ['conservar', 'Qué se conserva de la fuente', 480], ['comprobar', 'Qué comprobar a 360 px', 480]].map(([k, label, max]) => [k, label, texto(k, 3, max, c.direccion.criterioVisual[k])]);
     const controles = campos.filter(([k]) => !((limpia || c.tipografiaLocal) && k === 'tipografia')).map(([k, titulo, min, max]) => [k, titulo, texto(k, min, max, c.direccion[k])]);
     return [titulo(ed ? etiquetaDe(rutas, ed.ruta) : 'Dirección del cartel'),
       ed ? [h('h3', {}, ed.enfoque), h('p', {}, ed.motivo)] : null,
@@ -155,8 +157,8 @@ export function fichaTaller(ctx) {
       ultima?.devolucion ? h('p', { class: 'aviso-linea' }, 'Corrección pendiente · ' + ultima.devolucion) : null, limpia ? null : [h('h3', {}, 'Palabras que aparecerán'), copy],
       ed && ed.ruta !== 'CARTEL_EXPRESIVO' ? null : detalle('Explorar otra acción en la imagen', formulario(ctx, () => ({ accion: 'PROPONER_GESTO', gesto: gesto.value }),
         campo('Relación entre letra y foto', gesto), accion('Proponer otra dirección'))),
-      detalle('Editar dirección', formulario(ctx, () => ({ accion: 'EDITAR', ...(limpia ? {} : { nombrePlato: nombre.value }), direccion: { ...c.direccion, ...Object.fromEntries(controles.map(([k, , input]) => [k, input.value])) } }),
-        limpia ? null : campo('Texto público, copiado de la nota del encargo', nombre), controles.map(([, label, input]) => campo(label, input)), accion('Guardar dirección'))),
+      detalle('Editar dirección', formulario(ctx, () => ({ accion: 'EDITAR', ...(limpia ? {} : { nombrePlato: nombre.value }), direccion: { ...c.direccion, ...(criterios ? { criterioVisual: Object.fromEntries(criterios.map(([k, , input]) => [k, input.value])) } : {}), ...Object.fromEntries(controles.map(([k, , input]) => [k, input.value])) } }),
+        limpia ? null : campo('Texto público, copiado de la nota del encargo', nombre), criterios?.map(([, label, input]) => campo(label, input)), controles.map(([, label, input]) => campo(label, input)), accion('Guardar dirección'))),
       detalle('Instrucción completa', h('p', { style: { whiteSpace: 'pre-wrap' } }, c.prompt)),
       formulario(ctx, () => ({ accion: 'CONFIRMAR_DIRECCION', ...(c.muestras ? { confirmoMuestras: confirmoMuestras.checked } : {}) }),
         c.muestras ? h('label', {}, confirmoMuestras, ' He comprobado el recuento en la fuente y que cada ventana aísla el rasgo de una sola pieza.') : null, accion(limpia ? 'Confirmar dirección fotográfica' : 'Confirmar dirección y textos'))];
@@ -190,20 +192,37 @@ export function fichaTaller(ctx) {
   const casillas = [['producto', cotejoProducto], ...(c.puesta && !original ? [['apetito', c.puesta.apetito]] : []),
     ...(ultima.composicion ? [['composicionTipografica', 'La ubicación y el peso del título funcionan a 360 px y dejan leer el sujeto.']] : []), ...(toma ? [['cambioDeToma', 'He comprobado el cambio de perspectiva en los bordes y solapes del producto.']] : []), ['gesto', original ? 'El encuadre conserva el motivo y sus bordes importantes.' : 'Se ve la acción descrita en la dirección.'], ['legibilidad', limpia ? 'El sujeto y su contexto se reconocen a 360 px.' : 'He leído todas las palabras en la vista a 360 px.'], ...(limpia ? [['sinTextoAnadido', 'He comprobado que sólo aparecen las letras que ya había en la fuente.']] : [])].map(([k, label]) => [k, label, h('input', { type: 'checkbox', name: k, required: true })]);
   const motivo = texto('motivo', 3, 480);
+  const observacion = texto('observacionVisual', 3, 480, ultima.avisoVisual ?? '');
   const impresa = ultima.composicion;
   const familia = opciones('familiaRevision', estilosTitulo, impresa?.estilo);
   const sitio = opciones('posicionRevision', posicionesTitulo, impresa?.posicionSolicitada);
+  const versionUrl = base + 'candidatas/' + ultima.version;
+  const literal = texto('tituloLiteral', 2, 300, c.nombrePlato);
+  const mascara = h('input', { type: 'file', name: 'mascara', accept: 'image/png' });
+  const plano = opciones('plano', [['AIRE', 'En el aire sobre el contorno'], ['DETRAS', 'Detrás del borde del sujeto']], impresa?.profundidad?.plano);
+  const capas = impresa ? detalle('Componer con la silueta',
+    enlace('Guardar la foto base limpia', versionUrl + '/base'),
+    impresa.profundidad ? [enlace('Ver la máscara utilizada', versionUrl + '/mascara'), h('p', {}, 'Tinta cubierta a 360 px · ' + Math.round(100 * impresa.profundidad.oclusion) + '% del título · ' + Math.round(100 * impresa.profundidad.peorFranja) + '% en la franja más tapada.')] : null,
+    formulario(ctx, async () => ({ accion: 'RECOMPONER_TITULO', version: ultima.version, estiloTitulo: familia.value, tituloLiteral: literal.value, posicionTitulo: 'SUPERIOR_IZQUIERDA', plano: plano.value,
+      ...(mascara.files.length ? { mascaraId: (await subirArchivo(mascara.files[0])).id } : {}) }),
+      campo('Relación entre titular y producto', plano),
+      campo('Máscara PNG de la base, sujeto blanco y fondo negro. Opcional con segmentación local.', mascara),
+      accion('Ver composición por capas'))) : null;
   const maquetar = impresa ? detalle('Recomponer el título sobre esta misma foto',
-    h('p', {}, etiquetaDe(estilosTitulo, impresa.estilo) + ' · ' + etiquetaDe(posicionesTitulo, impresa.posicion) + ' · contraste ' + impresa.contraste + ' a 1'),
-    impresa.posicion !== impresa.posicionSolicitada ? h('p', {}, 'La zona solicitada tenía demasiado detalle o poco contraste. Se utilizó otra posición para conservar la lectura.') : null,
-    formulario(ctx, () => ({ accion: 'RECOMPONER_TITULO', version: ultima.version, estiloTitulo: familia.value, posicionTitulo: sitio.value }),
-      campo('Familia y peso', familia), campo('Posición', sitio), accion('Ver la nueva composición sin generar'))) : null;
+    h('p', {}, etiquetaDe(estilosTitulo, impresa.estilo) + ' · ' + (impresa.profundidad ? etiquetaDe([['AIRE', 'Titular en aire'], ['DETRAS', 'Solape parcial']], impresa.profundidad.plano) : etiquetaDe(posicionesTitulo, impresa.posicion)) + ' · contraste ' + impresa.contraste + ' a 1'),
+    !impresa.profundidad && impresa.posicion !== impresa.posicionSolicitada ? h('p', {}, 'La zona solicitada tenía demasiado detalle o poco contraste. Se utilizó otra posición para conservar la lectura.') : null,
+    campo('Título que confirmas para esta maqueta, copiado de la nota original', literal),
+    formulario(ctx, () => ({ accion: 'RECOMPONER_TITULO', version: ultima.version, estiloTitulo: familia.value, tituloLiteral: literal.value, posicionTitulo: sitio.value }),
+      campo('Familia y peso', familia), campo('Posición', sitio), accion('Ver la nueva composición sin generar')), capas) : null;
   return [titulo(ed ? 'Revisar el post' : 'Revisar el cartel'), comparacion(ctx, url, ultima.version, original),
     toma ? [h('h3', {}, 'Punto de vista observado'), ...observables.map(p => h('p', {}, h('strong', {}, etiquetaDe(posiciones, p.vista) + '. '), p.evidencia))] : null,
-    h('h3', {}, 'Lectura a tamaño móvil'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), maquetar, detalle('Dirección y palabras confirmadas', h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
+    h('h3', {}, 'Lectura a tamaño móvil'), imagen, h('p', {}, 'Versión ' + ultima.version + ' · vista móvil'), maquetar, c.direccion.criterioVisual ? detalle('Criterio visual de esta versión', ...Object.values(c.direccion.criterioVisual).map(v => h('p', {}, v))) : null, detalle('Dirección y palabras confirmadas', h('p', {}, c.direccion.sujeto), h('p', {}, c.direccion.escena), copy),
+    ultima.avisoVisual ? h('p', { class: 'aviso-linea' }, 'Observación visual · ' + ultima.avisoVisual) : null,
+    detalle('Anotar una observación sobre esta versión', formulario(ctx, () => ({ accion: 'ANOTAR_REVISION', version: ultima.version, observacion: observacion.value }),
+      campo('Qué cambia al comparar con la fuente a 360 px', observacion), accion('Guardar observación sin generar'))),
     ultima.lectura.superficieUniforme ? h('p', { class: 'aviso-linea' }, 'La imagen aparece uniforme en la vista móvil. Devuelve esta versión e importa la imagen con el producto y sus palabras.') : null,
     ultima.lectura.coincide === false ? h('p', { class: 'aviso-linea' }, 'El lector automático encontró diferencias. Amplía la imagen y coteja también las palabras pequeñas.') : null,
-    detalle('Lectura automática de la imagen', h('p', {}, ultima.lectura.lineas.join(' · ') || 'Requiere lectura manual.'), h('p', {}, limpia ? 'Compara cualquier rótulo detectado con la foto del local.' : ultima.lectura.coincide === true ? 'El lector local reconoce los bloques confirmados.' : 'Comprueba las letras en la imagen, especialmente las cursivas.')),
+    detalle('Controles técnicos de lectura', h('p', {}, ultima.lectura.lineas.join(' · ') || 'Requiere lectura manual.'), h('p', {}, limpia ? 'Compara cualquier rótulo detectado con la foto del local.' : ultima.lectura.coincide === true ? 'El lector local reconoce los bloques confirmados.' : 'Comprueba las letras en la imagen, especialmente las cursivas.')),
     formulario(ctx, () => ({ accion: 'APROBAR', version: ultima.version, ...(c.muestras ? { recuentoObservado: recuento.valueAsNumber } : {}), ...(toma ? { vistaObservada: observables.length === 1 ? toma.camara.vista : vistaLeida.value } : {}), transcripcion: limpia ? [] : transcripcion.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean), ...Object.fromEntries(casillas.map(([k, , box]) => [k, box.checked])) }),
       c.muestras ? campo('Cuenta las piezas que se ven en el cartel (' + c.muestras.unidad + ')', recuento) : null, observables.length > 1 ? campo('Qué punto de vista se ve en el cartel', vistaLeida) : null, limpia ? null : campo('Transcribe los bloques añadidos, uno por línea', transcripcion), casillas.map(([, label, control]) => h('label', {}, control, ' ' + label)), accion('Aprobar esta versión', ultima.lectura.superficieUniforme)),
     detalle('Pedir una corrección', formulario(ctx, () => ({ accion: 'DEVOLVER', version: ultima.version, motivo: motivo.value,

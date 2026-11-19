@@ -377,7 +377,14 @@ describe('API web · encargos de la orden única (simulado)', () => {
     const v3 = vuelta.datos.encargo.taller.candidatas[2];
     assert.equal(v3.sha256, v1.sha256);
     assert.deepEqual(vuelta.datos.encargo.taller.envios, []);
-    const revision = { version: 3, transcripcion: ['Café del día'], producto: true, gesto: true, legibilidad: true };
+    const editar = { version: 3, estiloTitulo: 'CONDENSADA', posicionTitulo: 'SUPERIOR_IZQUIERDA' };
+    assert.notEqual((await decidir('RECOMPONER_TITULO', { ...editar, tituloLiteral: 'Texto inventado' })).status, 200);
+    const editada = (await decidir('RECOMPONER_TITULO', { ...editar, tituloLiteral: 'Café' })).datos.encargo.taller;
+    assert.notEqual(editada.comanda.huella, comanda.huella);
+    assert.equal(editada.comanda.textos[0].texto, 'Café');
+    assert.equal(editada.confirmada.huella, editada.candidatas[3].comanda);
+    assert.equal(editada.candidatas[3].composicion.baseSha256, v1.composicion.baseSha256);
+    const revision = { version: 4, transcripcion: ['Café'], producto: true, gesto: true, legibilidad: true };
     assert.notEqual((await decidir('APROBAR', revision)).status, 200);
     assert.equal((await decidir('APROBAR', { ...revision, composicionTipografica: true })).status, 200);
     assert.notEqual((await archivo(ruta + '/taller/exportacion')).status, 200);
