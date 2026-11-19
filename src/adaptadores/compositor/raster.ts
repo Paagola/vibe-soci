@@ -19,10 +19,20 @@ export function documentoSvg(lienzo: Lienzo, cuerpo: string, escala = 1, defs = 
 export const escaparXml = (texto: string) =>
   texto.replace(/[<>&'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[c] ?? c);
 
-/** Trazo de todas las líneas de un texto resuelto, en el sistema del bloque. */
+/** Trazo de todas las líneas de un texto resuelto, en el sistema del bloque (con su forma, si la tiene). */
 export function trazoDeTexto(motor: MotorTexto, capa: CapaTextoResuelta): string {
-  const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
-  return capa.lineas.map((linea) => motor.trazar(estilo, linea.texto, linea.tamano, linea.x, linea.base)).join('');
+  return motor.trazarBloque(estiloDeTexto(capa), capa.lineas);
+}
+
+/** Lo que el motor necesita del estilo de un texto resuelto para trazarlo o medirlo, forma incluida. */
+export function estiloDeTexto(capa: CapaTextoResuelta): Parameters<MotorTexto['trazarBloque']>[0] {
+  return {
+    fuente: capa.estilo.fuente,
+    ejes: capa.estilo.ejes,
+    tracking: capa.estilo.tracking,
+    ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}),
+    ...(capa.estilo.forma ? { forma: capa.estilo.forma } : {}),
+  };
 }
 
 /** Alfa (0–255) de un SVG pintado a w × h. */
