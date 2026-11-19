@@ -6,6 +6,8 @@
 import type { Activo } from '../../dominio/activos.js';
 import { semillaDe } from '../../dominio/diseno/azar.js';
 import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque, Tinta, Tratamiento } from '../../dominio/diseno/intencion.js';
+import { problemasDeReceta, valoresDeParametros, type Receta } from '../../dominio/tipografia/receta.js';
+import type { BibliotecaDeTratamientos } from '../../puertos/BibliotecaDeTratamientos.js';
 import { medirOficio, problemasDeOficio } from '../../dominio/diseno/oficio.js';
 import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, RecorteDeTexto, Resuelto, TintaResuelta, TratamientoResuelto } from '../../dominio/diseno/resuelto.js';
 import { alinearEn, dentroDe, lienzoDe, rectDeCaja, zonaSegura, type Lienzo, type Rect } from '../../dominio/diseno/reticula.js';
@@ -41,11 +43,6 @@ export const ALTURA_MINIMA_PARA_TINTA = 48;
  * el efecto se come la letra (gotas que tapan la siguiente línea, un canto rasgado más grueso que el trazo).
  */
 export const ALTURA_MINIMA_PARA_TRATAMIENTO = 56;
-/**
- * Los tratamientos que desplazan o funden el canto de la letra se comen los trazos finos de una didona o de una
- * itálica de alto contraste (muestras del 19/11: «El Mesón de Cervantes» en Bodoni Moda itálica perdía la «M»).
- */
-const TRATAMIENTOS_QUE_ROMPEN_TRAZOS_FINOS = new Set(['derretida', 'antigua']);
 /** Una letra de la que se ve menos de esta fracción (se sale del lienzo o la tapa el sujeto) deja de leerse. */
 export const FRACCION_VISIBLE_MINIMA = 0.6;
 /** El sujeto tapa más de esta fracción de una letra: avisa. */
@@ -64,7 +61,10 @@ interface Transformacion {
 }
 
 export class ResolutorDiseno {
-  constructor(private readonly motor: MotorTexto) {}
+  constructor(
+    private readonly motor: MotorTexto,
+    private readonly biblioteca?: BibliotecaDeTratamientos,
+  ) {}
 
   async resolver(intencion: Intencion, activos: Record<string, ActivoDisponible>): Promise<Resuelto> {
     const lienzo = lienzoDe(intencion.lienzo.formato);
@@ -199,23 +199,28 @@ export class ResolutorDiseno {
           const resuelta = this.resolverTexto(capa, comun, rect(capa.caja), estilo(capa.estilo), color, contenido);
           if (capa.tratamiento) {
             if (capa.contorno || capa.corte || capa.tinta) throw new RangeError(`«${capa.id}»: la tipografía especial no se combina con contorno, corte ni tinta.`);
+            const receta = this.recetaDe(capa.tratamiento, capa.id);
             const menor = Math.min(...resuelta.lineas.map((l) => this.motor.alturaMayusculas(resuelta.estilo, l.tamano)));
-            const finos = this.motor.clasificacion(resuelta.estilo.fuente).includes('alto-contraste');
-            if (finos && TRATAMIENTOS_QUE_ROMPEN_TRAZOS_FINOS.has(capa.tratamiento.tipo)) {
+            const noAptas = receta.ficha.fuentes.noAptas.filter((c) => this.motor.clasificacion(resuelta.estilo.fuente).includes(c));
+            if (receta.estado !== 'APROBADO') {
+              // Un estilo que no has aprobado se puede probar, pero no publicar.
+              problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'TRATAMIENTO', mensaje: `«${capa.id}» usa el estilo «${receta.id}» v${receta.version}, que está en ${receta.estado}: se puede probar, pero no publicar hasta que lo apruebes.` });
+            }
+            if (noAptas.length) {
               problemas.push({
                 gravedad: 'AVISO',
                 capa: capa.id,
                 tipo: 'TRATAMIENTO',
-                mensaje: `«${capa.id}»: ${this.motor.familia(resuelta.estilo.fuente)} tiene trazos muy finos (alto contraste) y la letra ${capa.tratamiento.tipo} los rompe (la «M» deja de leerse), así que se pinta limpio. Con esta fuente van papel o neón; para ${capa.tratamiento.tipo}, una de trazo grueso.`,
+                mensaje: `«${capa.id}»: ${this.motor.familia(resuelta.estilo.fuente)} es ${noAptas.join(', ')} y el estilo «${receta.nombre}» no va con esas fuentes (${receta.ficha.evitar.join('; ') || 'rompe sus trazos'}), así que se pinta limpio. Elige otra fuente u otro estilo.`,
               });
-            } else if (menor < ALTURA_MINIMA_PARA_TRATAMIENTO) {
+            } else if (menor < receta.ficha.fuentes.cuerpoMinimo) {
               problemas.push({
                 gravedad: 'AVISO',
                 capa: capa.id,
                 tipo: 'TRATAMIENTO',
-                mensaje: `«${capa.id}» pide letra ${capa.tratamiento.tipo} con mayúsculas de ${menor.toFixed(1)} px: por debajo de ${ALTURA_MINIMA_PARA_TRATAMIENTO} px el efecto se come la letra, así que se pinta limpio. Es para el titular.`,
+                mensaje: `«${capa.id}» pide el estilo «${receta.nombre}» con mayúsculas de ${menor.toFixed(1)} px: por debajo de ${receta.ficha.fuentes.cuerpoMinimo} px el efecto se come la letra, así que se pinta limpio. Es para el titular.`,
               });
-            } else resuelta.tratamiento = resolverTratamiento(capa.tratamiento, color, `${intencion.id}:${capa.id}`);
+            } else resuelta.tratamiento = resolverTratamiento(receta, capa.tratamiento, color, `${intencion.id}:${capa.id}`);
           }
           const marcas = tinta(capa, resuelta.estilo.color);
           if (marcas) {
@@ -348,6 +353,19 @@ export class ResolutorDiseno {
         Object.entries(activos).map(([papel, { activo }]) => [papel, { id: activo.id, sha256: activo.sha256, uso: activo.uso, tipo: activo.tipo, alteraciones: activo.alteraciones }]),
       ),
     };
+  }
+
+  /** La receta de un estilo: la de la biblioteca por su id o la que viene en línea (las pruebas del creador), validada. */
+  private recetaDe(t: Tratamiento, capa: string): Receta {
+    let receta: Receta;
+    if (typeof t.receta === 'string') {
+      if (!this.biblioteca) throw new RangeError(`«${capa}» pide el estilo «${t.receta}», pero este compositor no tiene biblioteca de estilos.`);
+      receta = this.biblioteca.obtener(t.receta);
+    } else receta = t.receta;
+    const problemas = problemasDeReceta(receta);
+    if (problemas.length) throw new RangeError(`«${capa}»: la receta «${receta.id}» no es válida: ${problemas.join(' ')}`);
+    if (receta.estado === 'RETIRADO') throw new RangeError(`«${capa}»: el estilo «${receta.id}» está retirado.`);
+    return receta;
   }
 
   private resolverTexto(capa: CapaDe<'texto'>, comun: Comun, marco: Rect, estilo: EstiloTexto, color: (valor: Color) => string, contenido: string): CapaTextoResuelta {
@@ -913,18 +931,14 @@ function resolverTinta(tinta: Tinta | undefined, color: (valor: Color) => string
 
 const conTinta = (tinta: TintaResuelta | undefined) => (tinta ? { tinta } : {});
 
-/** El tratamiento con sus colores resueltos y la semilla fijada (de la identidad de la capa, si no la trae). */
-function resolverTratamiento(t: Tratamiento, color: (valor: Color) => string, identidad: string): TratamientoResuelto {
-  switch (t.tipo) {
-    case 'derretida':
-      return { tipo: 'derretida', gotas: t.gotas, largo: t.largo, brillo: t.brillo, semilla: t.semilla ?? semillaDe(identidad) };
-    case 'papel':
-      return { tipo: 'papel', alma: color(t.alma), giro: t.giro, sombra: t.sombra, semilla: t.semilla ?? semillaDe(identidad) };
-    case 'antigua':
-      return { tipo: 'antigua', desgaste: t.desgaste, semilla: t.semilla ?? semillaDe(identidad) };
-    case 'neon':
-      return { tipo: 'neon', halo: t.halo, alma: color(t.alma) };
+/** El estilo con sus parámetros comprobados (los colores, de «@token» a hex) y la semilla fijada. */
+function resolverTratamiento(receta: Receta, t: Tratamiento, color: (valor: Color) => string, identidad: string): TratamientoResuelto {
+  const { valores, problemas } = valoresDeParametros(receta, t.parametros);
+  if (problemas.length) throw new RangeError(`Estilo «${receta.id}»: ${problemas.join(' ')}`);
+  for (const [nombre, p] of Object.entries(receta.parametros)) {
+    if (p.tipo === 'color') valores[nombre] = color(valores[nombre] as Color);
   }
+  return { receta, valores, semilla: t.semilla ?? semillaDe(identidad) };
 }
 
 /** Los textos que se leen en una capa (para buscar huecos de plantilla sin rellenar). */

@@ -1,0 +1,43 @@
+{
+  "esquema": "tipografia/receta@1",
+  "id": "papel",
+  "nombre": "Papel recortado",
+  "version": 1,
+  "estado": "APROBADO",
+  "descripcion": "Cada letra es un recorte de papel algo girado y pegado a mano: canto rasgado que deja ver el alma clara del papel, grano y una sombra que lo levanta del fondo.",
+  "origen": { "autor": "ESTUDIO", "fecha": "2026-11-19", "aprobado": { "por": "Víctor (hoja de muestras del 19/11: «me gustan bastante»)", "fecha": "2026-11-19" } },
+  "ficha": {
+    "materiales": ["papel", "cartón", "kraft", "masa", "pan"],
+    "identidades": ["artesanal", "casero", "cafetería", "familiar", "tradicional", "desenfadado"],
+    "evitar": ["fuentes de trazo muy fino a cuerpo pequeño"],
+    "fuentes": { "noAptas": [], "cuerpoMinimo": 56 },
+    "observaciones": [
+      "19/11, hoja de 10 locales: se lee en 10 de 10; el más «de marca» en Asador Etxebarri, Café Albor y Torre de Vega (con el dorado oliva parece pan de oro)."
+    ]
+  },
+  "parametros": {
+    "alma": { "tipo": "color", "defecto": "#FBF6EA", "descripcion": "Color del alma del papel que asoma en el canto rasgado." },
+    "giro": { "tipo": "numero", "min": 0, "max": 8, "defecto": 3, "descripcion": "Giro máximo de cada letra, en grados." },
+    "sombra": { "tipo": "numero", "min": 0, "max": 0.8, "defecto": 0.45, "descripcion": "Cuánto se levanta el papel del fondo (opacidad de la sombra)." }
+  },
+  "letras": { "giro": "$giro", "desplazamientoY": 0.03 },
+  "filtros": {
+    "papel": [
+      { "tipo": "turbulencia", "frecuencia": 9, "octavas": 3, "semilla": 0, "resultado": "fibra" },
+      { "tipo": "dilatar", "entrada": "alfa", "radio": 0.022, "resultado": "ancho" },
+      { "tipo": "desplazar", "entrada": "ancho", "mapa": "fibra", "escala": 0.05, "resultado": "rasgado" },
+      { "tipo": "inundar", "color": "$alma", "resultado": "alma" },
+      { "tipo": "componer", "entrada": "alma", "con": "rasgado", "operador": "dentro", "resultado": "canto" },
+      { "tipo": "desplazar", "entrada": "origen", "mapa": "fibra", "escala": 0.012, "resultado": "cara" },
+      { "tipo": "turbulencia", "frecuencia": 2.5, "octavas": 4, "semilla": 7, "resultado": "grano" },
+      { "tipo": "alfa", "entrada": "grano", "canal": "R", "a": 0.9, "b": -0.35, "resultado": "manchas" },
+      { "tipo": "componer", "entrada": "manchas", "con": "cara", "operador": "dentro", "resultado": "manchasDentro" },
+      { "tipo": "fundir", "entradas": ["canto", "cara", "manchasDentro"], "resultado": "hoja" },
+      { "tipo": "desenfocar", "entrada": "rasgado", "radio": 0.03, "resultado": "difusa" },
+      { "tipo": "mover", "entrada": "difusa", "dx": 0.025, "dy": 0.05, "resultado": "caida" },
+      { "tipo": "alfa", "entrada": "caida", "canal": "A", "a": "$sombra", "b": 0, "resultado": "sombra" },
+      { "tipo": "fundir", "entradas": ["sombra", "hoja"] }
+    ]
+  },
+  "dibujo": { "grupo": [{ "letras": true }], "filtro": "papel", "relleno": "@texto" }
+}

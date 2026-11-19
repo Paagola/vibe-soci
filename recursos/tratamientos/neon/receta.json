@@ -1,0 +1,33 @@
+{
+  "esquema": "tipografia/receta@1",
+  "id": "neon",
+  "nombre": "Neón",
+  "version": 1,
+  "estado": "APROBADO",
+  "descripcion": "Un tubo de luz que sigue el contorno de la letra, con alma clara y halo. Mejor con fuentes monolineales o finas; en fuentes muy gruesas queda como un contorno doble.",
+  "origen": { "autor": "ESTUDIO", "fecha": "2026-11-19", "aprobado": { "por": "Víctor (hoja de muestras del 19/11: «me gustan bastante»)", "fecha": "2026-11-19" } },
+  "ficha": {
+    "materiales": ["luz", "neón", "cóctel"],
+    "identidades": ["nocturno", "bar", "coctelería", "urbano", "burger"],
+    "evitar": ["fondos claros", "fuentes muy gruesas o extendidas (contorno doble)", "locales tradicionales"],
+    "fuentes": { "noAptas": [], "cuerpoMinimo": 56 },
+    "observaciones": ["19/11, hoja de 10 locales: en Casa Aranda y Mesón Lo Güeno (fuentes muy gruesas) parece un rótulo de contorno, no un tubo."]
+  },
+  "parametros": {
+    "halo": { "tipo": "numero", "min": 0, "max": 1, "defecto": 0.6, "descripcion": "Intensidad del halo (0 = tubo apagado)." },
+    "alma": { "tipo": "color", "defecto": "#FFF6F0", "descripcion": "Color del alma del tubo, la parte más caliente." }
+  },
+  "filtros": {
+    "halo": [
+      { "tipo": "desenfocar", "entrada": "origen", "radio": { "param": "halo", "por": 0.05 }, "resultado": "a" },
+      { "tipo": "desenfocar", "entrada": "origen", "radio": { "param": "halo", "por": 0.18 }, "resultado": "b" },
+      { "tipo": "fundir", "entradas": ["b", "b", "a", "origen"] }
+    ]
+  },
+  "dibujo": {
+    "grupo": [
+      { "grupo": [{ "letras": true, "trazo": { "color": "@texto", "grosor": 0.055 } }], "filtro": "halo" },
+      { "letras": true, "trazo": { "color": "$alma", "grosor": 0.01925 }, "opacidad": 0.9 }
+    ]
+  }
+}

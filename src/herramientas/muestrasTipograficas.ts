@@ -1,12 +1,12 @@
 /**
- * Hoja de muestras de las tipografías especiales: cada tratamiento (derretida, papel, antigua, neón) sobre la fuente
+ * Hoja de muestras de las tipografías especiales: cada estilo de la biblioteca (recursos/tratamientos/) sobre la fuente
  * de titular y los colores de cada local (marcas/<slug>/tokens.json). Pasa por el compositor de verdad, así que lo que
  * se ve es lo que saldría en una pieza. Sin IA y sin coste.
  *
  * Sirve para decidir a ojo qué tratamiento le va a cada identidad antes de usarlo en un post.
  * Escribe en una carpeta nueva de datos/disenos/muestras-tipograficas/ (nunca sobrescribe).
  *
- * Uso: npm run muestras-tipo [-- --locales torre-de-vega,cafe-albor] [--texto "Pulpo"]
+ * Uso: npm run muestras-tipo [-- --locales torre-de-vega,cafe-albor] [--texto "Pulpo"] [--estilos papel,neon] [--receta ruta.json]
  */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -16,15 +16,21 @@ import sharp from 'sharp';
 import { CompositorSharp } from '../adaptadores/compositor/CompositorSharp.js';
 import { MotorTexto } from '../adaptadores/compositor/MotorTexto.js';
 import { CatalogoTipografico } from '../adaptadores/compositor/tipografias.js';
+import { BibliotecaTratamientosFicheros } from '../adaptadores/ficheros/BibliotecaTratamientosFicheros.js';
 import { RAIZ } from '../config.js';
 import { contraste, hexARgb } from '../dominio/diseno/color.js';
 import { Intencion, Tokens } from '../dominio/diseno/intencion.js';
+import { Receta } from '../dominio/tipografia/receta.js';
 
-const { values } = parseArgs({ options: { locales: { type: 'string' }, texto: { type: 'string' } } });
+const { values } = parseArgs({ options: { locales: { type: 'string' }, texto: { type: 'string' }, estilos: { type: 'string' }, receta: { type: 'string' } } });
 
 const catalogo = new CatalogoTipografico(join(RAIZ, 'recursos', 'tipografias'));
-const compositor = new CompositorSharp(new MotorTexto(catalogo), catalogo);
-const TRATAMIENTOS = ['derretida', 'papel', 'antigua', 'neon'] as const;
+const biblioteca = new BibliotecaTratamientosFicheros(join(RAIZ, 'recursos', 'tratamientos'));
+const compositor = new CompositorSharp(new MotorTexto(catalogo), catalogo, biblioteca);
+// Los estilos de la biblioteca (los aprobados y los que están en prueba), o los que se pidan con --estilos.
+// Con --receta, un estilo que aún no está en la biblioteca (lo que prueba el creador de estilos), pasado entero.
+const enLinea = values.receta ? Receta.parse(JSON.parse(readFileSync(values.receta, 'utf8'))) : undefined;
+const TRATAMIENTOS = enLinea ? [enLinea.id] : values.estilos ? values.estilos.split(',').map((s) => s.trim()) : biblioteca.listar().map((r) => r.id);
 
 const croma = (hex: string) => {
   const rgb = hexARgb(hex);
@@ -42,7 +48,7 @@ function paleta(tokens: Tokens): { claro: string; oscuro: string; acento: string
 }
 
 /** Fondo y color del texto de cada tratamiento, con los colores del local donde tienen sentido. */
-function puesta(tratamiento: (typeof TRATAMIENTOS)[number], p: ReturnType<typeof paleta>): { fondo: string; texto: string } {
+function puesta(tratamiento: string, p: ReturnType<typeof paleta>): { fondo: string; texto: string } {
   switch (tratamiento) {
     case 'derretida':
       // Un líquido espeso se lee sobre oscuro; si el acento no destaca, el claro.
@@ -53,6 +59,9 @@ function puesta(tratamiento: (typeof TRATAMIENTOS)[number], p: ReturnType<typeof
       return { fondo: p.claro, texto: p.oscuro };
     case 'neon':
       return { fondo: '#0E0B12', texto: contraste(p.acento, '#0E0B12') >= 3 ? p.acento : p.claro };
+    default:
+      // Un estilo nuevo: el acento sobre el oscuro de la marca (o el claro, si el acento no destaca).
+      return { fondo: p.oscuro, texto: contraste(p.acento, p.oscuro) >= 3 ? p.acento : p.claro };
   }
 }
 
@@ -93,7 +102,7 @@ for (const slug of slugs) {
       tokens: { colores: { fondo, tinta }, estilos: { titular: { ...titular, color: '@tinta' } } },
       capas: [
         { id: 'fondo', tipo: 'relleno', color: '@fondo' },
-        { id: 'titular', tipo: 'texto', texto, estilo: 'titular', caja: { x: 0.1, y: 0.36, w: 0.8, h: 0.2 }, ajuste: 'caja', alinear: 'centro', vertical: 'centro', tratamiento: { tipo: tratamiento } },
+        { id: 'titular', tipo: 'texto', texto, estilo: 'titular', caja: { x: 0.1, y: 0.36, w: 0.8, h: 0.2 }, ajuste: 'caja', alinear: 'centro', vertical: 'centro', tratamiento: { receta: enLinea ?? tratamiento } },
       ],
     });
     const resuelto = await compositor.resolver(intencion, {});

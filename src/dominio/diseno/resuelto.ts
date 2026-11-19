@@ -2,7 +2,8 @@
  * El documento resuelto: la intención pasada a píxeles por el resolutor.
  * Es reproducible (misma intención y mismos activos → mismo documento) y es lo que pinta el renderizador.
  */
-import type { Fusion, Retoque, Tratamiento } from './intencion.js';
+import type { Receta } from '../tipografia/receta.js';
+import type { Fusion, Retoque } from './intencion.js';
 import type { MedidasDeOficio } from './oficio.js';
 import type { Lienzo, Rect } from './reticula.js';
 
@@ -30,13 +31,13 @@ export interface LineaResuelta {
 }
 
 /** Tinta impresa ya resuelta: con su semilla y el color del registro en HEX. */
-/** El tratamiento de una tipografía especial, con los colores ya resueltos y la semilla fijada. */
-export type TratamientoResuelto =
-  | { tipo: 'derretida'; gotas: number; largo: number; brillo: boolean; semilla: number }
-  | { tipo: 'papel'; alma: string; giro: number; sombra: number; semilla: number }
-  | { tipo: 'antigua'; desgaste: number; semilla: number }
-  | { tipo: 'neon'; halo: number; alma: string };
-export type TipoDeTratamiento = Tratamiento['tipo'];
+/** Una tipografía especial resuelta: la receta entera (para que el documento se pueda volver a pintar sin la
+ * biblioteca), los valores comprobados de sus parámetros (colores en hex) y la semilla fijada. */
+export interface TratamientoResuelto {
+  receta: Receta;
+  valores: Record<string, number | boolean | string>;
+  semilla: number;
+}
 
 export interface TintaResuelta {
   densidad: number;

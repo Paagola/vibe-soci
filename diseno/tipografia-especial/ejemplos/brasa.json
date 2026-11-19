@@ -1,0 +1,47 @@
+{
+  "esquema": "tipografia/receta@1",
+  "id": "brasa",
+  "nombre": "Brasa",
+  "version": 1,
+  "estado": "BORRADOR",
+  "descripcion": "Letra de carbón con grietas encendidas y un resplandor de brasa alrededor: madera quemada que aún quema. Para asadores y parrillas.",
+  "origen": { "autor": "ESTUDIO", "fecha": "2026-11-19", "brief": "Prueba del lenguaje de recetas: un estilo nuevo escrito solo en JSON, como lo haría el agente creador. Asador (Etxebarri, Torre de Vega): carne a la brasa de encina." },
+  "ficha": {
+    "materiales": ["brasa", "carbón", "fuego", "parrilla", "madera quemada"],
+    "identidades": ["asador", "parrilla", "tradicional", "rústico"],
+    "evitar": ["platos fríos o crudos", "fondos claros (el carbón no se ve)"],
+    "fuentes": { "noAptas": ["alto-contraste", "script"], "cuerpoMinimo": 64 },
+    "observaciones": []
+  },
+  "parametros": {
+    "carbon": { "tipo": "color", "defecto": "#1C1714", "descripcion": "Color del carbón (el cuerpo de la letra)." },
+    "fuego": { "tipo": "color", "defecto": "#FF6A1A", "descripcion": "Color de las grietas y el resplandor." },
+    "grietas": { "tipo": "numero", "min": 0, "max": 1, "defecto": 0.5, "descripcion": "Cuántas grietas encendidas (0 = ninguna)." },
+    "resplandor": { "tipo": "numero", "min": 0, "max": 1, "defecto": 0.6, "descripcion": "Intensidad del resplandor alrededor de la letra." }
+  },
+  "filtros": {
+    "brasa": [
+      { "tipo": "turbulencia", "ruido": "turbulencia", "frecuencia": 3.2, "octavas": 3, "semilla": 0, "resultado": "ruido" },
+      { "tipo": "alfa", "entrada": "ruido", "canal": "R", "a": -22, "b": { "param": "grietas", "por": 3, "mas": 1.2 }, "resultado": "vetas" },
+      { "tipo": "erosionar", "entrada": "alfa", "radio": 0.03, "resultado": "nucleo" },
+      { "tipo": "componer", "entrada": "vetas", "con": "nucleo", "operador": "dentro", "resultado": "vetasDentro" },
+      { "tipo": "inundar", "color": "$fuego", "resultado": "llama" },
+      { "tipo": "componer", "entrada": "llama", "con": "vetasDentro", "operador": "dentro", "resultado": "grietasVivas" },
+      { "tipo": "desenfocar", "entrada": "grietasVivas", "radio": 0.012, "resultado": "grietasBrillo" },
+      { "tipo": "turbulencia", "frecuencia": 6, "octavas": 3, "semilla": 4, "resultado": "veta" },
+      { "tipo": "desplazar", "entrada": "alfa", "mapa": "veta", "escala": 0.02, "resultado": "canto" },
+      { "tipo": "inundar", "color": "$carbon", "resultado": "negro" },
+      { "tipo": "componer", "entrada": "negro", "con": "canto", "operador": "dentro", "resultado": "cuerpo" },
+      { "tipo": "alfa", "entrada": "veta", "canal": "R", "a": 1.4, "b": -0.55, "resultado": "ceniza" },
+      { "tipo": "inundar", "color": "#5A4F48", "resultado": "gris" },
+      { "tipo": "componer", "entrada": "gris", "con": "ceniza", "operador": "dentro", "resultado": "grisCeniza" },
+      { "tipo": "componer", "entrada": "grisCeniza", "con": "canto", "operador": "dentro", "resultado": "cenizaDentro" },
+      { "tipo": "dilatar", "entrada": "canto", "radio": 0.02, "resultado": "ancho" },
+      { "tipo": "desenfocar", "entrada": "ancho", "radio": 0.12, "resultado": "difuso" },
+      { "tipo": "alfa", "entrada": "difuso", "canal": "A", "a": "$resplandor", "b": 0, "resultado": "difusoSuave" },
+      { "tipo": "componer", "entrada": "llama", "con": "difusoSuave", "operador": "dentro", "resultado": "halo" },
+      { "tipo": "fundir", "entradas": ["halo", "cuerpo", "cenizaDentro", "grietasBrillo", "grietasVivas"] }
+    ]
+  },
+  "dibujo": { "grupo": [{ "letras": true }], "filtro": "brasa", "relleno": "@texto" }
+}

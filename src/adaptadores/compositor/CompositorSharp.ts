@@ -8,19 +8,23 @@
  * solo se monta y se pinta.
  */
 import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 import sharp, { type Blend, type Sharp } from 'sharp';
 import { mulberry32 } from '../../dominio/diseno/azar.js';
 import { hexARgb, luminancia } from '../../dominio/diseno/color.js';
 import type { Fusion, Intencion, Retoque } from '../../dominio/diseno/intencion.js';
 import { nombreDeCapa, type CapaResuelta, type Resuelto } from '../../dominio/diseno/resuelto.js';
 import type { Lienzo, Rect } from '../../dominio/diseno/reticula.js';
+import { RAIZ } from '../../config.js';
+import type { BibliotecaDeTratamientos } from '../../puertos/BibliotecaDeTratamientos.js';
 import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from '../../puertos/Compositor.js';
+import { BibliotecaTratamientosFicheros } from '../ficheros/BibliotecaTratamientosFicheros.js';
 import { dibujoRama, trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
 import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
 import { aplicarTinta, papel } from './tinta.js';
-import { pintarTratamiento } from './tratamientos.js';
+import { interpretarReceta } from './interpreteRecetas.js';
 import type { CatalogoTipografico } from './tipografias.js';
 import { radioDeCampo, tablaDuotono, tramar, tramarLuminancia } from './tramado.js';
 import { trazarGesto } from './trazoAMano.js';
@@ -47,8 +51,10 @@ export class CompositorSharp implements Compositor {
   constructor(
     private readonly motor: MotorTexto,
     private readonly catalogo: CatalogoTipografico,
+    /** Los estilos de tipografía especial; por defecto, los de recursos/tratamientos/. */
+    biblioteca: BibliotecaDeTratamientos = new BibliotecaTratamientosFicheros(join(RAIZ, 'recursos', 'tratamientos')),
   ) {
-    this.resolutor = new ResolutorDiseno(motor);
+    this.resolutor = new ResolutorDiseno(motor, biblioteca);
   }
 
   resolver(intencion: Intencion, activos: Record<string, ActivoDisponible>): Promise<Resuelto> {
@@ -228,7 +234,8 @@ export class CompositorSharp implements Compositor {
       const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
       const glifos = capa.lineas.flatMap((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base));
       const cap = Math.max(...capa.lineas.map((l) => this.motor.alturaMayusculas(capa.estilo, l.tamano)));
-      const tratado = pintarTratamiento(capa.tratamiento, glifos, cap, capa.estilo.color, capa.id);
+      const { receta, valores, semilla } = capa.tratamiento;
+      const tratado = interpretarReceta({ receta, valores, semilla, glifos, cap, color: capa.estilo.color, idCapa: capa.id });
       return { cuerpo: `<g transform="${matriz}" ${atributos}>${tratado.cuerpo}</g>`, definiciones: tratado.definiciones };
     }
     const d = trazoDeTexto(this.motor, capa);

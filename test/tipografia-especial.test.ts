@@ -12,7 +12,6 @@ import { after, before, describe, it } from 'node:test';
 import sharp from 'sharp';
 import { CompositorSharp } from '../src/adaptadores/compositor/CompositorSharp.js';
 import { MotorTexto } from '../src/adaptadores/compositor/MotorTexto.js';
-import { ALTURA_MINIMA_PARA_TRATAMIENTO } from '../src/adaptadores/compositor/resolutor.js';
 import { CatalogoTipografico } from '../src/adaptadores/compositor/tipografias.js';
 import { AlmacenActivosFicheros } from '../src/adaptadores/ficheros/AlmacenActivosFicheros.js';
 import { RAIZ } from '../src/config.js';
@@ -119,7 +118,7 @@ describe('tipografías especiales', () => {
 
   it('derretida: cuelgan gotas por debajo de la línea base que el texto limpio no tiene', async () => {
     const limpio = await alfaDe((await pintar(intencion([fondo, titular()]))).render, 't');
-    const derretido = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { tipo: 'derretida', gotas: 1, largo: 1 } })]))).render, 't');
+    const derretido = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { receta: 'derretida', parametros: { gotas: 1, largo: 1 } } })]))).render, 't');
     const base = fondoDeTinta(limpio);
     assert.ok(fondoDeTinta(derretido) > base + 40, `las gotas bajan de la base (${base} → ${fondoDeTinta(derretido)})`);
     assert.ok(tintaEntre(derretido, base + 4, ALTO) > 500, 'hay tinta bajo la línea base');
@@ -129,7 +128,7 @@ describe('tipografías especiales', () => {
   });
 
   it('es determinista: la misma intención pinta los mismos píxeles; otra semilla, otras gotas', async () => {
-    const t = { tipo: 'derretida', semilla: 7 };
+    const t = { receta: 'derretida', semilla: 7 };
     const a = (await pintar(intencion([fondo, titular({ tratamiento: t })]))).render.capas.find((c) => c.id === 't')!.png;
     const b = (await pintar(intencion([fondo, titular({ tratamiento: t })]))).render.capas.find((c) => c.id === 't')!.png;
     const c = (await pintar(intencion([fondo, titular({ tratamiento: { ...t, semilla: 8 } })]))).render.capas.find((c2) => c2.id === 't')!.png;
@@ -141,25 +140,25 @@ describe('tipografías especiales', () => {
     const limpio = await alfaDe((await pintar(intencion([fondo, titular()]))).render, 't');
     const suma = (a: Uint8Array) => a.reduce((s, v) => s + v / 255, 0);
     for (const tipo of ['papel', 'antigua', 'neon'] as const) {
-      const alfa = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { tipo } })]))).render, 't');
+      const alfa = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { receta: tipo } })]))).render, 't');
       assert.ok(suma(alfa) > 1000, `${tipo} pinta`);
       assert.notEqual(suma(alfa).toFixed(0), suma(limpio).toFixed(0), `${tipo} cambia la letra`);
     }
-    const neon = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { tipo: 'neon', halo: 1 } })]))).render, 't');
+    const neon = await alfaDe((await pintar(intencion([fondo, titular({ tratamiento: { receta: 'neon', parametros: { halo: 1 } } })]))).render, 't');
     assert.ok(fondoDeTinta(neon) > fondoDeTinta(limpio) + 10, 'el halo pasa del borde de la letra');
   });
 
   it('en un texto pequeño no se aplica: avisa y lo pinta limpio', async () => {
-    const pequeno = titular({ caja: { x: 0.1, y: 0.3, w: 0.2, h: 0.05 }, tratamiento: { tipo: 'derretida' } });
+    const pequeno = titular({ caja: { x: 0.1, y: 0.3, w: 0.2, h: 0.05 }, tratamiento: { receta: 'derretida' } });
     const { render, problemas } = await pintar(intencion([fondo, pequeno]));
-    assert.ok(problemas.some((p) => p.tipo === 'TRATAMIENTO' && p.mensaje.includes(String(ALTURA_MINIMA_PARA_TRATAMIENTO))));
+    assert.ok(problemas.some((p) => p.tipo === 'TRATAMIENTO' && p.mensaje.includes('56 px')));
     const limpio = (await pintar(intencion([fondo, { ...pequeno, tratamiento: undefined }]))).render;
     assert.equal(hash(render.capas.find((c) => c.id === 't')!.png), hash(limpio.capas.find((c) => c.id === 't')!.png));
   });
 
   it('no se combina con contorno, corte ni tinta; y dos en la misma pieza avisan', async () => {
-    await assert.rejects(pintar(intencion([fondo, titular({ contorno: 3, tratamiento: { tipo: 'papel' } })])), /no se combina/);
-    const dos = await pintar(intencion([fondo, titular({ tratamiento: { tipo: 'papel' } }), { ...titular({ tratamiento: { tipo: 'neon' } }), id: 't2', texto: 'BRASA', caja: { x: 0.1, y: 0.6, w: 0.8, h: 0.15 } }]));
+    await assert.rejects(pintar(intencion([fondo, titular({ contorno: 3, tratamiento: { receta: 'papel' } })])), /no se combina/);
+    const dos = await pintar(intencion([fondo, titular({ tratamiento: { receta: 'papel' } }), { ...titular({ tratamiento: { receta: 'neon' } }), id: 't2', texto: 'BRASA', caja: { x: 0.1, y: 0.6, w: 0.8, h: 0.15 } }]));
     assert.ok(dos.problemas.some((p) => p.tipo === 'TRATAMIENTO' && /compiten/.test(p.mensaje)));
   });
 });
@@ -207,16 +206,16 @@ describe('tipografías especiales y fuentes de trazo fino', () => {
   it('derretida o antigua sobre una didona de alto contraste avisa y pinta limpio; papel sí se aplica', async () => {
     const didona = (tipo: string) =>
       Intencion.parse({
-        ...intencion([fondo, titular({ texto: 'Mesón', tratamiento: { tipo } })]),
+        ...intencion([fondo, titular({ texto: 'Mesón', tratamiento: { receta: tipo } })]),
         tokens: { colores: { queso: '#F2C14E', cacao: '#2A1A12' }, estilos: { cartel: { fuente: 'bodoni-moda-italica', ejes: { wght: 600 }, caso: 'tal-cual', tracking: 0, interlineado: 1, color: '@queso' } } },
       });
     for (const tipo of ['derretida', 'antigua']) {
       const r = await compositor.resolver(didona(tipo), {});
-      assert.ok(r.problemas.some((p) => p.tipo === 'TRATAMIENTO' && /trazos muy finos/.test(p.mensaje)), tipo);
+      assert.ok(r.problemas.some((p) => p.tipo === 'TRATAMIENTO' && /alto-contraste/.test(p.mensaje)), tipo);
       assert.ok(r.capas.every((c) => c.tipo !== 'texto' || !c.tratamiento), `${tipo} se pinta limpio`);
     }
     const papel = await compositor.resolver(didona('papel'), {});
-    assert.ok(papel.capas.some((c) => c.tipo === 'texto' && c.tratamiento?.tipo === 'papel'));
+    assert.ok(papel.capas.some((c) => c.tipo === 'texto' && c.tratamiento?.receta.id === 'papel'));
   });
 });
 
@@ -244,7 +243,7 @@ describe('contraste por líneas', () => {
 
 describe('derretida en varias líneas', () => {
   it('las gotas de una línea no caen sobre la de debajo', async () => {
-    const dos = { id: 't', tipo: 'texto', texto: 'CASA\nARANDA', estilo: 'cartel', caja: { x: 0.1, y: 0.3, w: 0.8, h: 0.3 }, ajuste: 'ancho', tratamiento: { tipo: 'derretida', gotas: 1, largo: 1.2 } };
+    const dos = { id: 't', tipo: 'texto', texto: 'CASA\nARANDA', estilo: 'cartel', caja: { x: 0.1, y: 0.3, w: 0.8, h: 0.3 }, ajuste: 'ancho', tratamiento: { receta: 'derretida', parametros: { gotas: 1, largo: 1.2 } } };
     const limpio = { ...dos, tratamiento: undefined };
     const resuelto = await compositor.resolver(intencion([fondo, limpio]), {});
     const t = resuelto.capas.find((c) => c.tipo === 'texto')!;
