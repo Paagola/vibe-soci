@@ -3,7 +3,7 @@
  * La IA (y quien escribe una intención a mano) habla en celdas; esto lo pasa a píxeles.
  */
 import { RECORTE_4_5_PX, TAMANO_PROPORCION } from '../reglas.js';
-import type { Caja, Reticula } from './intencion.js';
+import type { Caja, FormatoDeLienzo, Reticula } from './intencion.js';
 
 export interface Rect {
   x: number;
@@ -17,8 +17,12 @@ export interface Lienzo {
   alto: number;
 }
 
-export function lienzoDe(formato: 'FEED_3_4' | 'HISTORIA_9_16'): Lienzo {
-  const { ancho, alto } = TAMANO_PROPORCION[formato === 'HISTORIA_9_16' ? '9:16' : '3:4'];
+export const exportacionesDe = {
+  FEED_3_4: ['3:4', '4:5'], FEED_4_5: ['4:5'], HISTORIA_9_16: ['9:16'],
+} as const;
+
+export function lienzoDe(formato: FormatoDeLienzo): Lienzo {
+  const { ancho, alto } = TAMANO_PROPORCION[exportacionesDe[formato][0]];
   return { ancho, alto };
 }
 
@@ -51,7 +55,7 @@ export function zonaSegura(lienzo: Lienzo, margen: number): Rect {
     const abajo = lienzo.alto * 0.2;
     return { x: margen, y: arriba, w: lienzo.ancho - 2 * margen, h: lienzo.alto - arriba - abajo };
   }
-  const vertical = margen + RECORTE_4_5_PX;
+  const vertical = margen + (lienzo.alto * 3 === lienzo.ancho * 4 ? RECORTE_4_5_PX : 0);
   return { x: margen, y: vertical, w: lienzo.ancho - 2 * margen, h: lienzo.alto - 2 * vertical };
 }
 

@@ -7,7 +7,7 @@
 import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { enviosDisponibles, MODELO_CARTEL } from '../../adaptadores/openai/GeneradorCartel.js';
-import { TomaDeSerie } from '../../dominio/secuenciaTaller.js';
+import { puedeValorarFotografias, TomaDeSerie } from '../../dominio/secuenciaTaller.js';
 import { AccionTaller } from '../../dominio/taller.js';
 import { descargarSerie, descargarTomaSerie, leerCapa, bytesDeCandidata, bytesDeMuestras, descargarPaquete, decidirTaller, exportarArte } from '../../aplicacion/taller/taller.js';
 import { revisionDeEncargo } from '../../aplicacion/productor/revision.js';
@@ -119,7 +119,8 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const api = detalle.encargo.taller && deps.tallerApi;
     const tallerApi = api ? { modelo: MODELO_CARTEL, limite: api.limite, disponibles: await enviosDisponibles(api.reservas, api.limite) } : null;
     res.json({ ...detalle, tallerApi, base: baseDeEncargo(proyecto), trabajo,
-      serieDirector: Boolean(deps.directorSecuencia), directorCarrusel: Boolean(deps.directorCarrusel), serieGenerador: deps.generador.disponible().ok });
+      serieDirector: Boolean(deps.directorSecuencia), directorCarrusel: Boolean(deps.directorCarrusel), revisorCarrusel: Boolean(deps.revisorDeCarrusel),
+      serieGenerador: deps.generador.disponible().ok });
   });
 
   rutas.post('/:proyecto/taller', conEscritura(async (req, res) => {
@@ -141,10 +142,12 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     }
     const dirigePortada = deps.directorPortada && e.taller?.seleccionEditorial &&
       ['SIN_REFERENCIA', 'FICHAR_REFERENCIA', 'EXPLORAR_RUTA'].includes(accion.accion);
-    const maquetacionEditorial = accion.accion === 'MAQUETAR_SERIE' && accion.usarTomas && e.taller?.secuencia &&
-      'paginas' in e.taller.secuencia.direccion;
+    const maquetacionEditorial = accion.accion === 'MAQUETAR_SOLO_FOTOS' ||
+      accion.accion === 'MAQUETAR_SERIE' && accion.usarTomas && e.taller?.secuencia && 'paginas' in e.taller.secuencia.direccion;
+    const lecturaTrasAprobacion = accion.accion === 'REVISAR_TOMA_SERIE' && accion.decision === 'APROBAR' &&
+      deps.revisorDeCarrusel && puedeValorarFotografias(e.taller?.secuencia, accion.toma);
     if (accion.accion === 'DIRIGIR_SECUENCIA' || accion.accion === 'DIRIGIR_CARRUSEL' || accion.accion === 'GENERAR_TOMA_SERIE' ||
-      accion.accion === 'GENERAR_PORTADA_FOTO' || dirigePortada || maquetacionEditorial) {
+      accion.accion === 'GENERAR_PORTADA_FOTO' || accion.accion === 'VALORAR_FOTOS_SERIE' || lecturaTrasAprobacion || dirigePortada || maquetacionEditorial) {
       const referencia = accion.accion === 'DIRIGIR_CARRUSEL' ? accion.referenciaVisualId : undefined;
       const subida = referencia ? estudio.subidas.ruta(referencia) : undefined;
       const trabajo = await lanzar(estudio, proyecto, async (_deps, alProgresar) => {
@@ -157,7 +160,8 @@ export function rutasDeEncargos(estudio: Estudio): Router {
       res.status(202).json({ trabajo });
       return;
     }
-    const id = accion.accion === 'IMPORTAR' || accion.accion === 'IMPORTAR_TOMA_SERIE' ? accion.subidaId : accion.accion === 'RECOMPONER_TITULO' ? accion.mascaraId : undefined;
+    const id = accion.accion === 'IMPORTAR' || accion.accion === 'IMPORTAR_TOMA_SERIE' || accion.accion === 'IMPORTAR_MASCARA_SERIE'
+      ? accion.subidaId : accion.accion === 'RECOMPONER_TITULO' ? accion.mascaraId : undefined;
     const subida = id ? estudio.subidas.ruta(id) : undefined;
     const encargo = await decidirTaller(deps, e, accion, subida);
     if (id) await estudio.subidas.borrar([id]);
@@ -200,9 +204,9 @@ export function rutasDeEncargos(estudio: Estudio): Router {
     const proyecto = proyectoDe(req), deps = await estudio.post(proyecto);
     const archivo = String(req.params.archivo), paquete = archivo === 'paquete';
     if (!paquete && !/^[1-6]$/.test(archivo)) throw new ErrorHttp(404, 'NO_ENCONTRADO', 'No existe esa lámina.');
-    const { bytes, uso } = await descargarSerie(deps, await leerEncargo(deps, proyecto), String(req.params.huella), paquete ? undefined : Number(archivo));
+    const { bytes, uso, soloFotos } = await descargarSerie(deps, await leerEncargo(deps, proyecto), String(req.params.huella), paquete ? undefined : Number(archivo));
     res.set({ 'Cache-Control': 'no-store', 'X-Uso-Imagen': uso });
-    if (paquete) res.attachment(proyecto + '-serie-' + uso.toLowerCase() + '.zip');
+    if (paquete) res.attachment(proyecto + (soloFotos ? '-solo-fotos-' : '-serie-') + uso.toLowerCase() + '.zip');
     else res.type('png');
     res.send(bytes);
   });

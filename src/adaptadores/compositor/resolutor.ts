@@ -125,7 +125,8 @@ export class ResolutorDiseno {
           transformaciones.set(capa.id, { escala, ox, oy, marco });
           medidas.ampliacion[capa.id] = redondear3(escala);
           avisarAmpliacion(problemas, capa.id, escala, activo);
-          resueltas.set(capa.id, { ...comun, tipo: 'imagen', activo: capa.activo, origen: { x: ox, y: oy, w, h }, destino: marco, marco, retoque: conColorResuelto(capa.retoque, color) });
+          resueltas.set(capa.id, { ...comun, tipo: 'imagen', activo: capa.activo, origen: { x: ox, y: oy, w, h }, destino: marco, marco,
+            retoque: conColorResuelto(capa.retoque, color), ...(capa.ventana ? { ventana: capa.ventana } : {}) });
           break;
         }
         case 'recorte': {

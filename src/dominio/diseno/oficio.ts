@@ -12,6 +12,7 @@
  * Son AVISOS: un criterio se puede romper con una razón, y la razón se escribe en las notas de la intención.
  */
 import type { CapaResuelta, Problema } from './resuelto.js';
+import type { FormatoDeLienzo } from './intencion.js';
 import type { Lienzo, Rect } from './reticula.js';
 
 export const SALTO_DE_ESCALA_MINIMO = 3.5;
@@ -165,7 +166,7 @@ export interface LimitesMedibles {
   recursosMaximos: number;
 }
 
-export function problemasDeOficio(m: MedidasDeOficio, formato: 'FEED_3_4' | 'HISTORIA_9_16' = 'FEED_3_4', l?: LimitesMedibles): Problema[] {
+export function problemasDeOficio(m: MedidasDeOficio, formato: FormatoDeLienzo = 'FEED_3_4', l?: LimitesMedibles): Problema[] {
   const SALTO_DE_ESCALA_MINIMO = l?.saltoMinimo ?? SALTO_MINIMO_EDITORIAL;
   const PALABRAS_MAXIMAS = l?.palabrasMaximas ?? PALABRAS_MAXIMAS_EDITORIAL;
   const NIVELES_MAXIMOS = l?.nivelesMaximos ?? NIVELES_MAXIMOS_EDITORIAL;

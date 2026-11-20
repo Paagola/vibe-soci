@@ -18,3 +18,7 @@ En la [plantilla usada para la ensalada César](https://www.pinterest.com/pin/15
 ## Cómo elegir la composición
 
 Una foto a sangre deja respirar la escena. El arco con dos voces puede anunciar el nombre. Un díptico muestra dos detalles reales o contrasta dos escalas. Una lámina tipográfica crea una pausa cuando hay algo breve que decir. El texto sobre el aire de una foto sirve para rematar un gesto. Evita meter titulares en todas las láminas por costumbre. Conserva el nombre confirmado y usa solo ingredientes y propiedades que consten en la nota o se vean en la fuente. Cualquier copy sugerido debe poder revisarse.
+
+Usa la profundidad cuando una mano, un utensilio o el borde del producto ya cruza el espacio del título. Prevé tres capas en este orden: foto, titular y primer plano recortado. Reserva un espacio más estrecho para el apoyo, fuera del gesto, y limita cuánto tapa la silueta de las letras para conservar la lectura en móvil.
+
+Vuelve a mirar las fotos aprobadas juntas antes de componer. Si el servicio, el conjunto, la textura y el bocado se entienden por sí solos, propón una foto por lámina con el encuadre aprobado. Reserva texto y efectos para una información solicitada o una relación visual que las fotos aún no expresen.

@@ -59,12 +59,13 @@ import { prepararRecuperacion } from './recuperarGeneracion.js';
 import { prepararTaller } from '../taller/taller.js';
 import type { GeneradorCartel } from '../../adaptadores/openai/GeneradorCartel.js';
 
-import type { DirectorCarrusel, DirectorPortada, DirectorSecuencia, PostReciente } from '../../dominio/secuenciaTaller.js';
+import type { DirectorCarrusel, DirectorPortada, DirectorSecuencia, PostReciente, RevisorDeCarrusel } from '../../dominio/secuenciaTaller.js';
 import { luzSolicitada } from '../../dominio/luzFotografica.js';
 
 export interface DepsPost {
   directorSecuencia?: DirectorSecuencia;
   directorCarrusel?: DirectorCarrusel;
+  revisorDeCarrusel?: RevisorDeCarrusel;
   directorPortada?: DirectorPortada;
   postsRecientes?: (encargo: EncargoPost) => Promise<PostReciente[]>;
   tallerApi?: { generador: GeneradorCartel; limite: number; reservas: string };

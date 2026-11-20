@@ -7,7 +7,7 @@ import { listarEncargos, portadaDe, rutaDeRecurso, type DepsConsultasPost } from
 type DepsHistorial = Pick<DepsConsultasPost, 'raiz' | 'proyectos' | 'activos' | 'galeria' | 'referencias'>;
 
 async function miniaturaHistorica(deps: DepsHistorial, e: EncargoPost): Promise<Buffer | undefined> {
-  const serie = e.taller?.serie;
+  const serie = serieParaHistorial(e);
   const candidata = e.taller?.candidatas.at(-1);
   const salidaSerie = serie && await descargarSerie(deps, e, serie.huella, 1).catch(() => undefined);
   const portada = salidaSerie || candidata?.revision ? undefined : await portadaDe(deps, e);
@@ -16,6 +16,11 @@ async function miniaturaHistorica(deps: DepsHistorial, e: EncargoPost): Promise<
   return archivo ? sharp(archivo, { limitInputPixels: 36_000_000 }).rotate().resize(384, 480, {
     fit: 'inside', withoutEnlargement: true,
   }).flatten({ background: '#fff' }).jpeg({ quality: 82 }).toBuffer() : undefined;
+}
+
+function serieParaHistorial(e: EncargoPost) {
+  return e.taller?.secuencia?.lecturaFotografica?.recomendacion === 'FOTOGRAFIA'
+    ? e.taller.serieFotografica ?? e.taller.serie : e.taller?.serie ?? e.taller?.serieFotografica;
 }
 
 export async function postsRecientes(deps: DepsHistorial, actual: EncargoPost): Promise<PostReciente[]> {
@@ -37,7 +42,7 @@ export async function postsRecientes(deps: DepsHistorial, actual: EncargoPost): 
         const toma = tomaPlaneada(serie.direccion, nombre);
         return toma && serie.tomas[nombre]?.candidata?.aprobada ? [{ vista: toma.vista, plano: toma.plano, gesto: toma.gesto }] : [];
       }) } : {}),
-      ...(e.taller?.serie ? { estructura: e.taller.serie.paginas.map(p => p.tratamiento) } : {}),
+      estructura: serieParaHistorial(e)?.paginas.map(p => p.tratamiento),
       miniatura: await miniaturaHistorica(deps, e).catch(() => undefined),
     };
   }));

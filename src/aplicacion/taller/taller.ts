@@ -18,10 +18,10 @@ import { guardarMuestras, leerMuestras } from './muestras.js';
 import type { MascaraDePlano } from './profundidad.js';
 import { componerTitulo } from './componerTitulo.js';
 import { maquetaDeTitulo } from './puesta.js';
-import { maquetarSerie, leerSerie, type TomasParaSerie } from './serie.js';
+import { maquetarSerie, maquetarSoloFotos, leerMascaraDeSerie, leerSerie, type TomasParaSerie } from './serie.js';
 import { paqueteZip } from './paquete.js';
 import { guardarToma, leerToma, normalizarFotoDeSerie, paqueteDeToma, promptDeToma, rutaToma } from './secuencia.js';
-import { DireccionSecuencia, formatoDeToma, GuionEditorial, TomaDeSerie, tomaPlaneada, type FotoDePagina } from '../../dominio/secuenciaTaller.js';
+import { DireccionSecuencia, esquemaDeLectura, formatoDeToma, GuionEditorial, ordenFotografico, puedeValorarFotografias, tomaPlaneada, type SecuenciaTaller, type TomaDeSerie } from '../../dominio/secuenciaTaller.js';
 import { maquetarCarrusel } from './maquetarCarrusel.js';
 import { luzSolicitada } from '../../dominio/luzFotografica.js';
 
@@ -201,6 +201,67 @@ function secuenciaVigente(e: EncargoPost) {
   return serie;
 }
 
+async function fotosAprobadasDelGuion(
+  deps: DepsPost, e: EncargoPost, secuencia: SecuenciaTaller, guion: GuionEditorial, base: { bytes: Buffer; ruta: string }, usoBase: Candidata['uso'],
+) {
+  return Promise.all(ordenFotografico(guion).map(async id => {
+    if (id === 'base') return { id, ...base, sha256: secuencia.baseSha256, uso: usoBase };
+    const toma = secuencia.tomas[id]?.candidata;
+    if (!toma?.aprobada) throw new ErrorDeUsuario('Revisa y aprueba las tomas del guion antes de maquetar.');
+    return { id, bytes: await leerToma(carpeta(deps, e), toma.sha256), ruta: rutaToma(carpeta(deps, e), toma.sha256), sha256: toma.sha256, uso: toma.uso };
+  }));
+}
+
+type FotoAprobada = Awaited<ReturnType<typeof fotosAprobadasDelGuion>>[number];
+
+async function limitarMascara(
+  bytes: Buffer, ancho: number, alto: number, region: NonNullable<DireccionSecuencia['portada']>['primerPlano'],
+) {
+  const alfa = await sharp(bytes).resize(ancho, alto, { fit: 'fill' }).extractChannel(0).raw().toBuffer();
+  const recortada = Buffer.alloc(alfa.length);
+  const izquierda = Math.floor(region.x * ancho), derecha = Math.min(ancho, Math.ceil((region.x + region.w) * ancho));
+  for (let y = Math.floor(region.y * alto); y < Math.min(alto, Math.ceil((region.y + region.h) * alto)); y++) {
+    const desde = y * ancho + izquierda;
+    alfa.copy(recortada, desde, desde, y * ancho + derecha);
+  }
+  return sharp(recortada, { raw: { width: ancho, height: alto, channels: 1 } }).png().toBuffer();
+}
+
+async function prepararSerieFotografica(
+  deps: DepsPost, e: EncargoPost, secuencia: SecuenciaTaller, portada: Candidata, fotos: FotoAprobada[],
+) {
+  if (fotos.length < 2) throw new ErrorDeUsuario('La versión fotográfica necesita al menos dos fotos aprobadas.');
+  const comanda = exigirConfirmada(e);
+  const orden = secuencia.lecturaFotografica?.orden ?? [];
+  const ordenadas = orden.map(id => fotos.find(f => f.id === id));
+  const serie = await maquetarSoloFotos(carpeta(deps, e), {
+    comanda: comanda.huella, fotoSha256: comanda.fotoSha256, baseSha256: secuencia.baseSha256,
+    versionBase: portada.version, origen: portada.origen,
+    uso: portada.uso === 'PUBLICABLE' && fotos.every(f => f.uso === 'PUBLICABLE') ? 'PUBLICABLE' : 'SOLO_PRUEBA_COMPOSICION',
+  }, secuencia.huella, ordenadas.length === fotos.length && ordenadas.every(f => f !== undefined) ? ordenadas : fotos);
+  return serie;
+}
+
+async function valorarFotografias(deps: DepsPost, e: EncargoPost, secuencia: SecuenciaTaller, progreso?: AlProgresar) {
+  if (!deps.revisorDeCarrusel || !puedeValorarFotografias(secuencia) || !('paginas' in secuencia.direccion)) return e;
+  const portada = portadaAprobada(e);
+  const base = await leerPortada(deps, e, portada);
+  const fotos = await fotosAprobadasDelGuion(deps, e, secuencia, secuencia.direccion, base, portada.uso);
+  progreso?.({ mensaje: 'El director revisa si las fotografías cuentan la historia por sí solas.', hechas: 0, total: 1,
+    pasosRestantes: { director: 1, tandas: 0 } });
+  const { modelo, ...lectura } = await deps.revisorDeCarrusel({
+    nota: e.plato, preferencia: secuencia.preferencia, guion: secuencia.direccion,
+    fotos: fotos.map(({ id, bytes }) => ({ id, bytes })),
+  });
+  const resultado = { ...esquemaDeLectura(fotos.map(f => f.id)).parse(lectura), modelo };
+  const taller = e.taller!;
+  if (resultado.recomendacion === 'FOTOGRAFIA' && taller.serieFotografica?.guionSha256 !== secuencia.huella) {
+    taller.serieFotografica = await prepararSerieFotografica(deps, e, { ...secuencia, lecturaFotografica: resultado }, portada, fotos);
+  }
+  secuencia.lecturaFotografica = resultado;
+  return registrar(deps, e, 'HECHO', 'Valoradas las fotos aprobadas y la aportación del guion gráfico.');
+}
+
 export async function descargarTomaSerie(deps: DepsPost, e: EncargoPost, toma: TomaDeSerie, paquete: boolean) {
   const secuencia = secuenciaVigente(e);
   if (!tomaPlaneada(secuencia.direccion, toma)) throw new ErrorDeUsuario('Esta toma no figura en la dirección del carrusel.');
@@ -214,19 +275,19 @@ export async function descargarTomaSerie(deps: DepsPost, e: EncargoPost, toma: T
 }
 
 export async function descargarSerie(deps: Pick<DepsPost, 'raiz' | 'proyectos'>, e: EncargoPost, hash: string, pagina?: number) {
-  const serie = e.taller?.serie;
+  const serie = [e.taller?.serie, e.taller?.serieFotografica].find(s => s?.huella === hash);
   if (e.paso !== 'HECHO' || !serie || serie.huella !== hash) throw new ErrorDeUsuario('Esta serie no corresponde a la edición vigente.');
   await fuenteVerificada(deps, e, exigirConfirmada(e));
   const candidata = e.taller?.candidatas.find(c => c.version === serie.versionBase);
   if (!candidata?.revision) throw new ErrorDeUsuario('Falta la revisión de la base de esta serie.');
-  const base = pagina !== undefined ? undefined : candidata.composicion ? (await leerCapa(deps, e, candidata.version, 'base')).bytes : (await bytesDeCandidata(deps, e, candidata.version)).bytes;
-  const fotos = pagina !== undefined ? [] : await Promise.all(serie.paginas.flatMap((p, i) => {
+  const base = pagina !== undefined || serie.soloFotos ? undefined : candidata.composicion ? (await leerCapa(deps, e, candidata.version, 'base')).bytes : (await bytesDeCandidata(deps, e, candidata.version)).bytes;
+  const fotos = pagina !== undefined || serie.soloFotos ? [] : await Promise.all(serie.paginas.flatMap((p, i) => {
     if (p.fotoSha256) return [leerToma(carpeta(deps, e), p.fotoSha256).then(bytes => ({ nombre: 'foto-' + (i + 1) + '.png', bytes }))];
     return (p.fotosSha256 ?? []).flatMap((sha, j) => sha === serie.baseSha256 ? [] :
       [leerToma(carpeta(deps, e), sha).then(bytes => ({ nombre: 'foto-' + (i + 1) + '-' + (j + 1) + '.png', bytes }))]);
   }));
   if (pagina === undefined && serie.mascaraSha256) fotos.push({ nombre: 'mascara-portada.png', bytes: await leerToma(carpeta(deps, e), serie.mascaraSha256) });
-  return { bytes: await leerSerie(carpeta(deps, e), serie, pagina, base, fotos), uso: serie.uso };
+  return { bytes: await leerSerie(carpeta(deps, e), serie, pagina, base, fotos), uso: serie.uso, soloFotos: serie.soloFotos };
 }
 
 export async function exportarArte(deps: DepsPost, e: EncargoPost) {
@@ -372,6 +433,7 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
       preferencia: libre ? accion.preferencia : undefined, referenciaVisual, documental });
     const direccion = libre ? GuionEditorial.parse(salida.direccion) : DireccionSecuencia.parse(salida.direccion);
     const base = { comanda: comanda.huella, version: aprobada.version, baseSha256: huella(portada.bytes), modelo: salida.modelo, luz, direccion, documental,
+      ...(libre && accion.preferencia ? { preferencia: accion.preferencia } : {}),
       ...(referenciaVisual ? { referenciaVisualSha256: huella(referenciaVisual) } : {}) };
     const extra = 'paginas' in direccion && direccion.tomas.extra;
     taller.secuencia = { ...base, huella: huella(JSON.stringify(base)), tomas: { detalle: {}, cierre: {}, ...(extra ? { extra: {} } : {}) } };
@@ -392,7 +454,10 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
       await leerToma(carpeta(deps, e), accion.sha256);
       if (accion.decision === 'APROBAR') estado.candidata.aprobada = true;
       else delete estado.candidata;
-      return registrar(deps, e, 'HECHO', accion.decision === 'APROBAR' ? 'Toma de serie aprobada.' : 'Toma devuelta. Puedes importar otra.');
+      const revisado = await registrar(deps, e, 'HECHO', accion.decision === 'APROBAR' ? 'Toma de serie aprobada.' : 'Toma devuelta. Puedes importar otra.');
+      if (accion.decision !== 'APROBAR') return revisado;
+      // La aprobación queda guardada incluso si falla el proveedor de lectura.
+      return valorarFotografias(deps, revisado, secuencia, progreso).catch(() => revisado);
     }
     if (estado.candidata) throw new ErrorDeUsuario('Revisa la candidata antes de pedir otra toma.');
     let datos: Buffer;
@@ -433,28 +498,77 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
     estado.candidata = candidata;
     return registrar(deps, e, 'HECHO', 'Toma de ' + accion.toma + ' disponible para revisión.');
   }
-  if (accion.accion === 'MAQUETAR_SERIE') {
+  if (accion.accion === 'VALORAR_FOTOS_SERIE') {
+    const secuencia = secuenciaVigente(e);
+    if (secuencia.version !== accion.version) throw new ErrorDeUsuario('La portada ha cambiado.');
+    if (secuencia.lecturaFotografica) return e;
+    if (!deps.revisorDeCarrusel || !puedeValorarFotografias(secuencia)) throw new ErrorDeUsuario('La lectura requiere un guion gráfico con fotos aprobadas.');
+    return valorarFotografias(deps, e, secuencia, progreso);
+  }
+  if (accion.accion === 'IMPORTAR_MASCARA_SERIE') {
+    const secuencia = secuenciaVigente(e);
+    const pagina = 'paginas' in secuencia.direccion ? secuencia.direccion.paginas[Number(accion.pagina) - 1] : undefined;
+    if (secuencia.version !== accion.version || !subida || pagina?.tratamiento !== 'TEXTO_EN_AIRE') throw new ErrorDeUsuario('Elige una máscara para una lámina vigente con texto sobre fotografía.');
+    await fuenteVerificada(deps, e, comanda);
+    const id = pagina.fotos[0]!;
+    const toma = id === 'base' ? undefined : secuencia.tomas[id]?.candidata;
+    if (id !== 'base' && !toma?.aprobada) throw new ErrorDeUsuario('Aprueba la foto de la lámina antes de importar su máscara.');
+    const foto = toma ? await leerToma(carpeta(deps, e), toma.sha256) : (await leerPortada(deps, e)).bytes;
+    const { width, height } = await sharp(foto).metadata();
+    const imagen = sharp(subida, { limitInputPixels: 36_000_000 });
+    const meta = await imagen.metadata().catch(() => undefined);
+    if (meta?.format !== 'png' || meta.width !== width || meta.height !== height || meta.hasAlpha || (meta.pages ?? 1) !== 1) {
+      throw new ErrorDeUsuario('Sube un PNG opaco de ' + width + ' × ' + height + ' px. Usa blanco para el primer plano y negro para el fondo.');
+    }
+    const gris = imagen.greyscale().extractChannel(0);
+    const mascara = await gris.png().toBuffer();
+    const { min, max } = (await sharp(mascara).stats()).channels[0]!;
+    if (min > 32 || max < 223) throw new ErrorDeUsuario('La máscara necesita un primer plano blanco y un fondo negro.');
+    const sha = huella(mascara);
+    await mkdir(join(carpeta(deps, e), 'tomas-serie'), { recursive: true });
+    await writeFile(rutaToma(carpeta(deps, e), sha), mascara);
+    secuencia.mascaras = { ...secuencia.mascaras, [accion.pagina]: sha };
+    return registrar(deps, e, 'HECHO', 'Máscara guardada para la lámina ' + accion.pagina + '.');
+  }
+  if (accion.accion === 'MAQUETAR_SERIE' || accion.accion === 'MAQUETAR_SOLO_FOTOS') {
     if (e.paso !== 'HECHO' || !ultimo?.revision || ultimo.version !== accion.version || ultimo.comanda !== comanda.huella) throw new ErrorDeUsuario('Aprueba primero la candidata que quieres maquetar.');
     if (!ultimo.composicion && !esFotoEditorial(comanda.editorial?.ruta)) throw new ErrorDeUsuario('Una serie requiere una base fotográfica sin el texto integrado en los píxeles.');
     await fuenteVerificada(deps, e, comanda);
     await bytesDeCandidata(deps, e, ultimo.version);
     const base = await leerPortada(deps, e, ultimo);
-    const secuencia = accion.usarTomas ? secuenciaVigente(e) : undefined;
+    const soloFotos = accion.accion === 'MAQUETAR_SOLO_FOTOS';
+    const secuencia = soloFotos || accion.usarTomas ? secuenciaVigente(e) : undefined;
+    if (soloFotos) {
+      if (!secuencia || !('paginas' in secuencia.direccion)) throw new ErrorDeUsuario('La versión fotográfica se prepara desde un guion editorial.');
+      const fotos = await fotosAprobadasDelGuion(deps, e, secuencia, secuencia.direccion, base, ultimo.uso);
+      taller.serieFotografica = await prepararSerieFotografica(deps, e, secuencia, ultimo, fotos);
+      return registrar(deps, e, 'HECHO', 'Carrusel fotográfico guardado con las fotos aprobadas en su proporción.');
+    }
     const baseSerie = {
       comanda: comanda.huella, fotoSha256: comanda.fotoSha256, baseSha256: huella(base.bytes), versionBase: ultimo.version, uso: ultimo.uso,
       origen: ultimo.origen, ...(comanda.referencia ? { referencia: { id: comanda.referencia.id, mecanismos: comanda.referencia.mecanismos, voces: comanda.referencia.voces } } : {}),
     };
     if (secuencia && 'paginas' in secuencia.direccion) {
-      if (accion.paginas.length !== secuencia.direccion.paginas.length) throw new ErrorDeUsuario('La edición debe corresponder a las láminas dirigidas.');
-      const fotos = new Map<FotoDePagina, { sha256: string; bytes: Buffer }>([['base', { sha256: baseSerie.baseSha256, bytes: base.bytes }]]);
-      for (const id of TomaDeSerie.options) {
-        if (!secuencia.direccion.tomas[id]) continue;
-        const toma = secuencia.tomas[id]?.candidata;
-        if (!toma?.aprobada) throw new ErrorDeUsuario('Revisa y aprueba las tomas del guion antes de maquetar.');
-        if (toma.uso !== 'PUBLICABLE') baseSerie.uso = 'SOLO_PRUEBA_COMPOSICION';
-        fotos.set(id, { sha256: toma.sha256, bytes: await leerToma(carpeta(deps, e), toma.sha256) });
-      }
-      taller.serie = await maquetarCarrusel(deps.raiz, carpeta(deps, e), baseSerie, secuencia, secuencia.direccion, accion.paginas, fotos);
+      const guion = secuencia.direccion;
+      const aprobadas = await fotosAprobadasDelGuion(deps, e, secuencia, guion, base, ultimo.uso);
+      if (aprobadas.some(f => f.uso !== 'PUBLICABLE')) baseSerie.uso = 'SOLO_PRUEBA_COMPOSICION';
+      const fotos = new Map(aprobadas.map(f => [f.id, f]));
+      if (accion.paginas.length !== guion.paginas.length) throw new ErrorDeUsuario('La edición debe corresponder a las láminas dirigidas.');
+      const previa = taller.serie?.guionSha256 === secuencia.huella ? taller.serie : undefined;
+      taller.serie = await maquetarCarrusel(deps.raiz, carpeta(deps, e), baseSerie, secuencia, guion, accion.paginas, fotos, {
+        marca: e.local,
+        primerPlano: async (n, id) => {
+          const manual = secuencia.mascaras?.[String(n) as '1' | '2' | '3' | '4' | '5'];
+          if (manual) return leerToma(carpeta(deps, e), manual);
+          const anterior = previa && await leerMascaraDeSerie(carpeta(deps, e), previa, n);
+          if (anterior) return anterior;
+          const region = guion.paginas[n - 1]?.profundidad?.primerPlano;
+          const foto = fotos.get(id);
+          if (!region || !foto || e.simulado) return undefined;
+          const meta = await sharp(foto.bytes).metadata();
+          return deps.segmentador.mascara(foto.ruta).then(bytes => limitarMascara(bytes, meta.width, meta.height, region)).catch(() => undefined);
+        },
+      });
       return registrar(deps, e, 'HECHO', 'Carrusel editorial compuesto con las fotografías revisadas y el texto confirmado.');
     }
     let tomas: TomasParaSerie | undefined;
@@ -470,16 +584,7 @@ export async function decidirTaller(deps: DepsPost, e: EncargoPost, accion: Acci
       };
       if (secuencia.direccion.portada && accion.paginas[0]?.titulo) {
         const region = secuencia.direccion.portada.primerPlano;
-        const mascara = await deps.segmentador.mascara(base.ruta).then(async bytes => {
-          const alfa = await sharp(bytes).resize(1080, 1350).extractChannel(0).raw().toBuffer();
-          const recortada = Buffer.alloc(alfa.length);
-          const izquierda = Math.floor(region.x * 1080), derecha = Math.min(1080, Math.ceil((region.x + region.w) * 1080));
-          for (let y = Math.floor(region.y * 1350); y < Math.min(1350, Math.ceil((region.y + region.h) * 1350)); y++) {
-            const desde = y * 1080 + izquierda;
-            alfa.copy(recortada, desde, desde, y * 1080 + derecha);
-          }
-          return sharp(recortada, { raw: { width: 1080, height: 1350, channels: 1 } }).png().toBuffer();
-        }).catch(() => undefined);
+        const mascara = await deps.segmentador.mascara(base.ruta).then(bytes => limitarMascara(bytes, 1080, 1350, region)).catch(() => undefined);
         if (mascara) tomas.portada = { mascara, zona: secuencia.direccion.portada.zonaTexto };
       }
     }

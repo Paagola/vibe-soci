@@ -9,6 +9,7 @@ export interface ActivoDisponible {
   ruta: string;
   /** Ruta absoluta de la máscara (PNG en escala de grises), si tiene. */
   rutaMascara?: string;
+  mascaraSha256?: string;
 }
 
 export interface CapaRenderizada {

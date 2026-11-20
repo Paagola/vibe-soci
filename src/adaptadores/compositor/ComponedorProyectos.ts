@@ -17,6 +17,7 @@ import { componerDiseno, type ResultadoComponer } from '../../aplicacion/diseno/
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import { conTokensDeMarca } from '../../dominio/diseno/operaciones.js';
 import { nombreDeCapa } from '../../dominio/diseno/resuelto.js';
+import { exportacionesDe } from '../../dominio/diseno/reticula.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ComponedorDePiezas, DiapositivaCompuesta, PiezaCompuesta } from '../../puertos/ComponedorDePiezas.js';
 import { AlmacenActivosFicheros } from '../ficheros/AlmacenActivosFicheros.js';
@@ -41,7 +42,7 @@ const ResueltoGuardado = z.object({
 });
 
 const carpetaDeVersion = (version: number) => `v${String(version).padStart(3, '0')}`;
-const nombreDeExportacion = (i: Intencion) => i.lienzo.formato === 'HISTORIA_9_16' ? ['9x16.jpg'] : ['3x4.jpg', '4x5.jpg'];
+const nombreDeExportacion = (i: Intencion) => exportacionesDe[i.lienzo.formato].map(p => p.replace(':', 'x') + '.jpg');
 
 async function versionesEn(carpeta: string): Promise<number[]> {
   const entradas = await readdir(carpeta).catch((err: NodeJS.ErrnoException) => {

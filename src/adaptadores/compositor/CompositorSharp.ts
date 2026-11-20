@@ -107,10 +107,18 @@ export class CompositorSharp implements Compositor {
         const { ancho, alto } = disponible.activo;
         const w = Math.max(1, Math.round(capa.destino.w));
         const h = Math.max(1, Math.round(capa.destino.h));
-        const foto = await (await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(capa.origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), capa.retoque))
+        let foto = await (await retocar(sharp(disponible.ruta).rotate().removeAlpha().extract(redondear(capa.origen, ancho, alto)).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }), capa.retoque))
           .ensureAlpha()
           .png()
           .toBuffer();
+        if (capa.ventana) {
+          const ventana = capa.ventana;
+          const contorno = ventana.forma === 'arco'
+            ? `<path d="${arcoDe({ x: 0, y: 0, w, h })}"/>`
+            : `<rect width="${w}" height="${h}" rx="${Math.min(ventana.radio, w / 2, h / 2)}"/>`;
+          const mascara = Buffer.from(documentoSvg({ ancho: w, alto: h }, contorno));
+          foto = await sharp(foto).composite([{ input: mascara, blend: 'dest-in' }]).png().toBuffer();
+        }
         return conOpacidad(await enLienzo(foto, capa.destino.x, capa.destino.y, lienzo), capa.opacidad);
       }
 
@@ -479,10 +487,11 @@ export class CompositorSharp implements Compositor {
 /** Lo que define el contenido de una capa: si no cambia, la capa no se vuelve a pintar. */
 function claveDe(capa: CapaResuelta, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): string {
   const { z: _z, ...contenido } = capa;
-  const activo = 'activo' in capa ? activos[capa.activo]?.activo.sha256 : undefined;
-  // Una capa recortada por el sujeto depende también de la foto de ese sujeto.
-  const sujeto = 'recorte' in capa && capa.recorte ? activos[capa.recorte.activo]?.activo.sha256 : undefined;
-  return createHash('sha256').update(JSON.stringify({ contenido, lienzo, activo, ...(sujeto ? { sujeto } : {}) })).digest('hex');
+  const disponible = 'activo' in capa ? activos[capa.activo] : undefined;
+  const sujeto = 'recorte' in capa && capa.recorte ? activos[capa.recorte.activo] : undefined;
+  const mascara = sujeto ?? (capa.tipo === 'recorte' || capa.tipo === 'sombra' ? disponible : undefined);
+  return createHash('sha256').update(JSON.stringify({ contenido, lienzo, activo: disponible?.activo.sha256,
+    sujeto: sujeto?.activo.sha256, mascara: mascara?.mascaraSha256 ?? mascara?.rutaMascara })).digest('hex');
 }
 
 async function componer(resuelto: Resuelto, capas: CapaRenderizada[], desde: number, hasta: number): Promise<Buffer> {
@@ -499,6 +508,11 @@ function vectorial(lienzo: Lienzo, cuerpo: string, definiciones = ''): Promise<B
 }
 
 /** La figura de una capa de forma, con su giro alrededor de su centro. */
+function arcoDe({ x, y, w, h }: Rect): string {
+  const radio = Math.min(w / 2, h);
+  return `M${x} ${y + h} V${y + radio} A${w / 2} ${radio} 0 0 1 ${x + w} ${y + radio} V${y + h} Z`;
+}
+
 function figura(capa: CapaForma): string {
   const trazo = capa.grosor
     ? `fill="none" stroke="${capa.color}" stroke-width="${capa.grosor}"${capa.discontinua ? ` stroke-dasharray="${capa.discontinua.join(' ')}"` : ''}`
@@ -511,6 +525,9 @@ function figura(capa: CapaForma): string {
     centro = { x: (capa.desde.x + capa.hasta.x) / 2, y: (capa.desde.y + capa.hasta.y) / 2 };
   } else if (capa.figura === 'rect' && capa.rect) {
     dibujo = `<rect x="${capa.rect.x}" y="${capa.rect.y}" width="${capa.rect.w}" height="${capa.rect.h}"${capa.radio ? ` rx="${capa.radio}"` : ''} ${trazo}/>`;
+    centro = centroDe(capa.rect);
+  } else if (capa.figura === 'arco' && capa.rect) {
+    dibujo = `<path d="${arcoDe(capa.rect)}" ${trazo}/>`;
     centro = centroDe(capa.rect);
   } else if (capa.figura === 'elipse' && capa.rect) {
     dibujo = `<ellipse cx="${capa.rect.x + capa.rect.w / 2}" cy="${capa.rect.y + capa.rect.h / 2}" rx="${capa.rect.w / 2}" ry="${capa.rect.h / 2}" ${trazo}/>`;

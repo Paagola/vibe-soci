@@ -1,17 +1,18 @@
 import { strict as assert } from 'node:assert';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { it } from 'node:test';
 import sharp from 'sharp';
 import { ClienteGemini } from '../src/adaptadores/gemini/ClienteGemini.js';
-import { directorPortadaGemini, directorSecuenciaGemini } from '../src/adaptadores/gemini/DirectorSecuenciaGemini.js';
+import { directorPortadaGemini, directorSecuenciaGemini, revisorDeCarruselGemini } from '../src/adaptadores/gemini/DirectorSecuenciaGemini.js';
 import { guardarToma, leerToma, promptDeToma } from '../src/aplicacion/taller/secuencia.js';
 import { postsRecientes } from '../src/aplicacion/post/historialFotografico.js';
 import { EncargoPost } from '../src/dominio/post.js';
-import { DireccionSecuencia, direccionSecuenciaSimulada, directorCarruselSimulado, GuionEditorial, SecuenciaTaller, soloFotografia, type FotoDePagina } from '../src/dominio/secuenciaTaller.js';
+import { Intencion } from '../src/dominio/diseno/intencion.js';
+import { DireccionSecuencia, direccionSecuenciaSimulada, directorCarruselSimulado, esquemaDeLectura, GuionEditorial, ordenFotografico, puedeValorarFotografias, SecuenciaTaller, soloFotografia, type FotoDePagina } from '../src/dominio/secuenciaTaller.js';
 import { maquetarCarrusel } from '../src/aplicacion/taller/maquetarCarrusel.js';
-import { leerSerie } from '../src/aplicacion/taller/serie.js';
+import { leerSerie, maquetarSoloFotos } from '../src/aplicacion/taller/serie.js';
 import { huella } from '../src/aplicacion/taller/direccion.js';
 import { RAIZ } from '../src/config.js';
 
@@ -131,5 +132,90 @@ it('maqueta un guion variable con ventana arqueada, dos fotos en una lámina y a
     assert.deepEqual([width, height], [1080, 1350]);
     const zip = await leerSerie(dir, serie);
     assert.ok(zip.includes(Buffer.from('3.svg')));
+    const leerCapas = async (n: number) => Intencion.parse(JSON.parse(await readFile(join(dir, 'series', serie.huella, n + '.json'), 'utf8')));
+    const arco = await leerCapas(2);
+    assert.equal(arco.lienzo.formato, 'FEED_4_5');
+    assert.ok(arco.capas.some(c => c.tipo === 'imagen' && c.ventana?.forma === 'arco'));
+    const diptico = await leerCapas(3);
+    assert.equal(diptico.capas.filter(c => c.tipo === 'imagen').length, 2);
+    assert.match(await readFile(join(dir, 'series', serie.huella, '3.svg'), 'utf8'), /<text [^>]*>Entre hojas|<text [^>]*>De cerca/);
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+it('guarda fotografía, titular editable y primer plano en ese orden, con su máscara vinculada a la lámina', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'carrusel-profundidad-'));
+  try {
+    const base = await sharp({ create: { width: 1080, height: 1350, channels: 3, background: '#222126' } }).png().toBuffer();
+    const toma = await foto(1080, 1350);
+    const mascara = await sharp(Buffer.from('<svg width="1080" height="1350"><rect width="1080" height="1350" fill="black"/><rect x="422" y="220" width="118" height="55" fill="white"/></svg>')).png().toBuffer();
+    const { direccion: variada, modelo } = await directorCarruselSimulado({ original: base, portada: base,
+      encargo: 'Croquetas', producto: 'Croquetas', nombre: 'Croquetas' });
+    const direccion = GuionEditorial.parse({ ...variada, tomas: { detalle: variada.tomas.detalle }, paginas: [
+      { tratamiento: 'TEXTO_EN_AIRE', fotos: ['base'], intencion: 'La mano pasa por encima de las letras.', titulo: 'Croquetas', apoyo: 'Primer bocado', nota: '',
+        profundidad: { primerPlano: { x: .35, y: .13, w: .16, h: .12 }, zonaTexto: { x: .045, y: .13, w: .61, h: .23 } } },
+      { tratamiento: 'FOTO', fotos: ['detalle'], intencion: 'Se ve de cerca la corteza de la croqueta.', titulo: '', apoyo: '', nota: '' },
+    ] });
+    const sha = huella(base), comanda = 'c'.repeat(64);
+    const secuencia = SecuenciaTaller.parse({ huella: 'a'.repeat(64), comanda, version: 1, baseSha256: sha, direccion, modelo, tomas: { detalle: {}, cierre: {} } });
+    const serie = await maquetarCarrusel(RAIZ, dir, { baseSha256: sha, fotoSha256: sha, comanda, uso: 'PUBLICABLE', origen: 'ORIGINAL', versionBase: 1 },
+      secuencia, direccion, direccion.paginas.map((p, i) => ({ funcion: i === 0 ? 'PORTADA' : 'CIERRE', titulo: p.titulo, apoyo: p.apoyo, enfoque: { x: .5, y: .5 } })),
+      new Map([['base', { bytes: base, sha256: sha }], ['detalle', { bytes: toma, sha256: huella(toma) }]]),
+      { marca: 'prueba', primerPlano: async () => mascara });
+    assert.equal(serie.paginas[0]?.tratamiento, 'PORTADA_DETRAS');
+    assert.equal(serie.paginas[0]?.mascaraSha256, huella(mascara));
+    const carpeta = join(dir, 'series', serie.huella);
+    const intencion = Intencion.parse(JSON.parse(await readFile(join(carpeta, '1.json'), 'utf8')));
+    assert.deepEqual(intencion.capas.map(c => c.tipo), ['imagen', 'texto', 'texto', 'recorte']);
+    const svg = await readFile(join(carpeta, '1.svg'), 'utf8');
+    assert.ok(svg.indexOf('id="foto-1"') < svg.indexOf('id="titular"') && svg.indexOf('id="titular"') < svg.indexOf('id="primer-plano"'));
+    assert.match(svg, /<text [^>]*>Croquetas<\/text>/);
+    const zip = await leerSerie(dir, serie);
+    assert.ok(zip.includes(Buffer.from('mascara-1.png')));
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+
+it('valora el guion frente a todas las tomas aprobadas y guarda cada foto byte por byte en el orden recomendado', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'carrusel-fotografico-'));
+  try {
+    const base = await foto(720, 900);
+    const cuadro = await foto(540, 540);
+    const candidato = (bytes: Buffer, aprobada = true) => ({ sha256: huella(bytes), aprobada, modelo: 'prueba', uso: 'PUBLICABLE' as const });
+    const { direccion, modelo } = await directorCarruselSimulado({ original: base, portada: base,
+      encargo: 'Ensalada César', producto: 'Ensalada César', nombre: 'Ensalada' });
+    const secuencia = SecuenciaTaller.parse({
+      huella: 'a'.repeat(64), comanda: 'b'.repeat(64), version: 1, baseSha256: huella(base), direccion, modelo,
+      tomas: { extra: { candidata: candidato(cuadro) }, detalle: { candidata: candidato(base) }, cierre: { candidata: candidato(base, false) } },
+    });
+    assert.equal(puedeValorarFotografias(secuencia), false);
+    assert.equal(puedeValorarFotografias(secuencia, 'cierre'), true);
+    secuencia.tomas.cierre.candidata!.aprobada = true;
+    assert.equal(puedeValorarFotografias(secuencia), true);
+    const ids = ordenFotografico(direccion);
+    const lectura = { recomendacion: 'FOTOGRAFIA', orden: ['base', 'detalle', 'extra', 'cierre'],
+      motivo: 'La planta y el detalle alternan escalas antes del bocado.' };
+    assert.equal(esquemaDeLectura(ids).safeParse({ ...lectura, orden: ['base', 'extra', 'cierre'] }).success, false);
+    assert.equal(esquemaDeLectura(ids).safeParse({ ...lectura, orden: ['base', 'extra', 'extra', 'cierre'] }).success, false);
+    const fotos = ids.map(id => ({ id, bytes: id === 'extra' ? cuadro : base }));
+    const cliente = new ClienteGemini('prueba', ['gemini-4-hydrogen'], { fetch: async (_url, init) => {
+      const carga = JSON.parse(String(init?.body));
+      const partes = carga.contents[0].parts;
+      assert.match(partes[0].text, /deja una apertura limpia/i);
+      assert.deepEqual(partes.filter((p: { text?: string }) => p.text?.startsWith('Fotografía aprobada'))
+        .map((p: { text: string }) => p.text), ids.map(id => 'Fotografía aprobada «' + id + '».'));
+      assert.equal(partes.filter((p: { inlineData?: { mimeType: string } }) => p.inlineData?.mimeType === 'image/jpeg').length, 4);
+      return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify(lectura) }] } }] });
+    } });
+    const resultado = await revisorDeCarruselGemini(cliente)({ nota: 'Ensalada César', preferencia: 'Deja una apertura limpia', guion: direccion, fotos });
+    assert.deepEqual(resultado, { ...lectura, modelo: 'gemini-4-hydrogen' });
+    secuencia.lecturaFotografica = resultado;
+    assert.equal(puedeValorarFotografias(secuencia), false);
+    const ordenadas = resultado.orden.map(id => fotos.find(f => f.id === id)!.bytes);
+    const serie = await maquetarSoloFotos(dir, { baseSha256: huella(base), fotoSha256: huella(base), comanda: secuencia.comanda,
+      uso: 'PUBLICABLE', origen: 'ORIGINAL', versionBase: 1 }, secuencia.huella, ordenadas.map(bytes => ({ bytes, sha256: huella(bytes) })));
+    assert.equal(serie.soloFotos, true);
+    for (const [i, p] of serie.paginas.entries()) {
+      assert.deepEqual([p.tratamiento, p.edicion.titulo, p.edicion.apoyo, p.svgSha256, p.medidas], ['FOTO', '', '', undefined, []]);
+      assert.deepEqual(await leerSerie(dir, serie, i + 1), ordenadas[i]);
+    }
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

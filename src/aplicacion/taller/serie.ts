@@ -38,12 +38,12 @@ const tinta = '#251E1A';
 // El compositor trabaja en 3:4; toda caja se define en el 4:5 que verá el lector.
 const caja = (x: number, y: number, w: number, h: number) => ({ x, y: (45 + y * 1350) / 1440, w, h: h * 1350 / 1440 });
 
-async function activoFoto(ruta: string, bytes: Buffer, marca: string, fuente: Base, sha256: string): Promise<ActivoDisponible> {
+export async function activoFoto(ruta: string, bytes: Buffer, marca: string, fuente: Base, sha256: string, id = 'base'): Promise<ActivoDisponible> {
   if (huella(bytes) !== sha256) throw new ErrorDeUsuario('La foto ya no coincide con la versión revisada.');
   const meta = await sharp(bytes).metadata();
-  return { ruta, activo: Activo.parse({ id: 'base', localSlug: marca, tipo: fuente.origen === 'ORIGINAL' ? 'REAL' : 'GENERADO',
-    uso: fuente.uso, descripcion: 'Foto base de maquetación', archivo: 'base.png', ancho: meta.width, alto: meta.height,
-    sha256, procedencia: { ruta: 'base.png', sha256, copiadoEn: '' } }) };
+  return { ruta, activo: Activo.parse({ id, localSlug: marca, tipo: fuente.origen === 'ORIGINAL' ? 'REAL' : 'GENERADO',
+    uso: fuente.uso, descripcion: 'Foto aprobada de maquetación', archivo: id + '.png', ancho: meta.width, alto: meta.height,
+    sha256, procedencia: { ruta: id + '.png', sha256, copiadoEn: '' } }) };
 }
 
 async function capaFrontal(base: Buffer, mascara: Buffer) {
@@ -229,6 +229,28 @@ export async function guardarSerie(carpeta: string, cuerpo: Omit<SerieDelTaller,
   return serie;
 }
 
+export async function maquetarSoloFotos(carpeta: string, base: BaseDeSerie, guionSha256: string, fotos: { bytes: Buffer; sha256: string }[]) {
+  const archivos: { nombre: string; bytes: Buffer }[] = [];
+  const paginas: Pagina[] = fotos.map((foto, i) => {
+    if (huella(foto.bytes) !== foto.sha256) throw new ErrorDeUsuario('La foto ya no coincide con la versión revisada.');
+    const funcion = i === 0 ? 'PORTADA' : i === fotos.length - 1 ? 'CIERRE' : 'DETALLE';
+    const edicion = { funcion, titulo: '', apoyo: '', enfoque: { x: .5, y: .5 } } as const;
+    const json = Buffer.from(JSON.stringify({ edicion, tratamiento: 'FOTO', fotoSha256: foto.sha256 }));
+    archivos.push({ nombre: (i + 1) + '.png', bytes: foto.bytes }, { nombre: (i + 1) + '.json', bytes: json });
+    return { edicion, fotosSha256: [foto.sha256], tratamiento: 'FOTO', motivo: 'Se conserva la foto aprobada y su proporción.',
+      sha256: foto.sha256, intencionSha256: huella(json), medidas: [] };
+  });
+  return guardarSerie(carpeta, { esquema: 'taller/serie@1', ...base, guionSha256, soloFotos: true, paginas }, archivos);
+}
+
+export async function leerMascaraDeSerie(carpeta: string, serie: SerieDelTaller, pagina: number) {
+  const sha = serie.paginas[pagina - 1]?.mascaraSha256;
+  if (!sha) return undefined;
+  const bytes = await readFile(join(carpeta, 'series', serie.huella, 'mascara-' + pagina + '.png'));
+  if (huella(bytes) !== sha) throw new ErrorDeUsuario('La máscara ya no coincide con el carrusel guardado.');
+  return bytes;
+}
+
 export async function leerSerie(carpeta: string, serie: SerieDelTaller, pagina?: number, base?: Buffer, tomas: { nombre: string; bytes: Buffer }[] = []) {
   const destino = join(carpeta, 'series', serie.huella);
   const archivo = async (nombre: string, hash: string) => {
@@ -249,6 +271,7 @@ export async function leerSerie(carpeta: string, serie: SerieDelTaller, pagina?:
   for (const [i, p] of serie.paginas.entries()) {
     archivos.push(await archivo((i + 1) + '.png', p.sha256), await archivo((i + 1) + '.json', p.intencionSha256));
     if (p.svgSha256) archivos.push(await archivo((i + 1) + '.svg', p.svgSha256));
+    if (p.mascaraSha256) archivos.push(await archivo('mascara-' + (i + 1) + '.png', p.mascaraSha256));
   }
   return paqueteZip([...archivos, ...tomas]);
 }

@@ -32,7 +32,7 @@ import { AnalistaReferenciasGemini } from './adaptadores/gemini/AnalistaReferenc
 import { DirectorDisenoGemini } from './adaptadores/gemini/DirectorDisenoGemini.js';
 import { AnalistaReferenciasSimulado } from './adaptadores/simulado/AnalistaSimulado.js';
 import { DirectorFotoGemini } from './adaptadores/gemini/DirectorFotoGemini.js';
-import { directorCarruselGemini, directorPortadaGemini, directorSecuenciaGemini } from './adaptadores/gemini/DirectorSecuenciaGemini.js';
+import { directorCarruselGemini, directorPortadaGemini, directorSecuenciaGemini, revisorDeCarruselGemini } from './adaptadores/gemini/DirectorSecuenciaGemini.js';
 import { postsRecientes } from './aplicacion/post/historialFotografico.js';
 import { direccionSecuenciaSimulada, directorCarruselSimulado } from './dominio/secuenciaTaller.js';
 import { GeneradorFotoGemini, gastoAcumuladoGemini } from './adaptadores/gemini/GeneradorFotoGemini.js';
@@ -151,6 +151,10 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
       ...(editorial ? { criticoEditorial: new CriticoEditorialSimulado() } : {}),
       directorSecuencia: async () => ({ direccion: direccionSecuenciaSimulada, modelo: 'Simulador de secuencia' }),
       directorCarrusel: directorCarruselSimulado,
+      revisorDeCarrusel: async ({ fotos }) => ({
+        recomendacion: 'FOTOGRAFIA', orden: fotos.map(f => f.id),
+        motivo: 'En la simulación, la secuencia se puede revisar también como fotografías sin rotular.', modelo: 'Simulador de lectura',
+      }),
       director: new DirectorFotoSimulado(),
       generador: new GeneradorFotoSimulado(),
       revisor: new RevisorVisualSimulado(),
@@ -183,7 +187,10 @@ export async function crearDepsPost(config: Config, opciones: OpcionesDepsPost):
     ...comunes,
     postsRecientes: historialFotografico,
     ...(editorial && geminiApiKey ? { criticoEditorial: new CriticoEditorialGemini(cliente(geminiApiKey, 'critica-editorial', 'critico')) } : {}),
-    ...(geminiApiKey ? { directorCarrusel: directorCarruselGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
+    ...(geminiApiKey ? { revisorDeCarrusel: revisorDeCarruselGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
+      avisar, alUsar: registradorDeUso(config.carpetaDatos, 'lectura-fotografica', config.geminiFacturacion, opciones.proyecto),
+      antesDeEnviar: async modelo => opciones.alIntervenir?.('critico', modelo),
+    })), directorCarrusel: directorCarruselGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {
       avisar, alUsar: registradorDeUso(config.carpetaDatos, 'director-carrusel', config.geminiFacturacion, opciones.proyecto),
       antesDeEnviar: async modelo => opciones.alIntervenir?.('director-diseno', modelo),
     })), directorSecuencia: directorSecuenciaGemini(new ClienteGemini(geminiApiKey, [config.geminiModeloProductor ?? 'gemini-4-hydrogen'], {

@@ -32,19 +32,17 @@ export type DirectorPortada = (entrada: {
   luzSolicitada?: ModoDeLuz;
   recientes: PostReciente[];
 }) => Promise<DireccionPortada>;
-const caja = z.strictObject({
+export const CajaDeCarrusel = z.strictObject({
   x: z.number().min(0).lt(1), y: z.number().min(0).lt(1),
   w: z.number().min(.05).max(1), h: z.number().min(.05).max(1),
-}).refine(b => b.x + b.w <= 1.000001 && b.y + b.h <= 1.000001);
+}).refine(b => b.x + b.w <= 1.000001 && b.y + b.h <= 1.000001, 'La caja tiene que quedar dentro de la lámina.');
+const profundidadEditorial = z.strictObject({ primerPlano: CajaDeCarrusel, zonaTexto: CajaDeCarrusel });
 
 export const DireccionSecuencia = z.strictObject({
   continuidad: texto,
   detalle: toma,
   cierre: toma,
-  portada: z.strictObject({
-    primerPlano: caja,
-    zonaTexto: caja,
-  }).nullable(),
+  portada: profundidadEditorial.nullable(),
 }).refine(d => d.detalle.vista !== d.cierre.vista &&
   d.detalle.plano !== d.cierre.plano &&
   d.detalle.gesto.toLocaleLowerCase('es') !== d.cierre.gesto.toLocaleLowerCase('es'),
@@ -67,6 +65,7 @@ const paginaEditorial = z.strictObject({
   encuadres: z.array(z.strictObject({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), zoom: z.number().min(1).max(3) })).max(2).optional(),
   ordenTexto: z.enum(['TITULO_ANTES', 'APOYO_ANTES']).optional(),
   esquina: z.enum(['SUPERIOR_IZQUIERDA', 'SUPERIOR_DERECHA', 'INFERIOR_IZQUIERDA', 'INFERIOR_DERECHA']).optional(),
+  profundidad: profundidadEditorial.optional(),
 });
 export type PaginaEditorial = z.infer<typeof paginaEditorial>;
 const tomaEditorial = toma.extend({ nombre: texto, reserva: z.string().trim().max(240), formato: z.enum(['4:5', '1:1']).optional() });
@@ -90,6 +89,7 @@ export const GuionEditorial = z.strictObject({
       error('La página fotográfica va sin texto y las demás necesitan un titular breve.', ['paginas', i, 'titulo']);
     }
     if (p.nota && p.tratamiento !== 'DIPTICO') error('Reserva nota para el segundo pie del díptico.', ['paginas', i, 'nota']);
+    if (p.profundidad && p.tratamiento !== 'TEXTO_EN_AIRE') error('La profundidad requiere una foto a sangre con texto.', ['paginas', i, 'profundidad']);
     for (const id of p.fotos) {
       usadas.add(id);
       if (id !== 'base' && !g.tomas[id]) error('Describe esta toma antes de utilizarla.', ['paginas', i, 'fotos']);
@@ -125,15 +125,48 @@ const foto = z.object({
   aprobada: z.boolean().default(false),
 });
 const estado = z.object({ envioReservado: z.literal(true).optional(), candidata: foto.optional() });
+export const LecturaFotografica = z.strictObject({
+  recomendacion: z.enum(['FOTOGRAFIA', 'EDITORIAL']),
+  orden: z.array(FotoDePagina).min(2).max(4).refine(ids => new Set(ids).size === ids.length, 'Cada foto aparece una vez.'),
+  motivo: texto,
+});
+export type LecturaFotografica = z.infer<typeof LecturaFotografica>;
 export const SecuenciaTaller = z.object({
   huella: hash, comanda: hash, version: z.int().positive(), baseSha256: hash, modelo: z.string(),
   luz: ModoDeLuz.optional(),
   direccion: z.union([DireccionSecuencia, GuionEditorial]),
   documental: z.literal(true).optional(),
+  preferencia: z.string().trim().max(480).optional(),
   referenciaVisualSha256: hash.optional(),
+  lecturaFotografica: LecturaFotografica.extend({ modelo: z.string() }).optional(),
+  mascaras: z.partialRecord(z.enum(['1', '2', '3', '4', '5']), hash).optional(),
   tomas: z.object({ detalle: estado, cierre: estado, extra: estado.optional() }),
 });
 export type SecuenciaTaller = z.infer<typeof SecuenciaTaller>;
+
+export function ordenFotografico(direccion: GuionEditorial): FotoDePagina[] {
+  return [...new Set(direccion.paginas.flatMap(p => p.fotos))];
+}
+
+export function puedeValorarFotografias(secuencia?: SecuenciaTaller, alAprobar?: TomaDeSerie) {
+  if (!secuencia || secuencia.lecturaFotografica || !('paginas' in secuencia.direccion) ||
+    secuencia.direccion.paginas.every(p => p.tratamiento === 'FOTO')) return false;
+  const fotos = ordenFotografico(secuencia.direccion);
+  return fotos.length >= 2 && fotos.every(id => id === 'base' || secuencia.tomas[id]?.candidata?.aprobada ||
+    (id === alAprobar && secuencia.tomas[id]?.candidata));
+}
+
+export function esquemaDeLectura(ids: readonly FotoDePagina[]) {
+  return LecturaFotografica.refine(l => l.orden.length === ids.length && l.orden.every(id => ids.includes(id)),
+    'Ordena las fotos aprobadas que recibiste, sin inventar ni repetir identificadores.');
+}
+
+export type RevisorDeCarrusel = (entrada: {
+  nota: string;
+  preferencia?: string;
+  guion: GuionEditorial;
+  fotos: { id: FotoDePagina; bytes: Buffer }[];
+}) => Promise<LecturaFotografica & { modelo: string }>;
 
 export type DirectorSecuencia = (entrada: {
   original: Buffer;

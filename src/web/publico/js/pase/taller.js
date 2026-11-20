@@ -210,6 +210,10 @@ function carruselEditorial(ctx, ultima, serie, base, secuencia) {
   const tomaPara = id => id === 'base' ? 'Foto base aprobada' : guion.tomas[id].nombre;
   const listo = Object.keys(guion.tomas).every(toma => secuencia.tomas[toma].candidata?.aprobada);
   const conTexto = guion.paginas.some(p => p.tratamiento !== 'FOTO');
+  const admiteSoloFotos = new Set(guion.paginas.flatMap(p => p.fotos)).size >= 2;
+  const lectura = secuencia.lecturaFotografica;
+  const serieFotografica = ctx.d.encargo.taller.serieFotografica;
+  const fotografica = serieFotografica?.guionSha256 === secuencia.huella ? serieFotografica : undefined;
   const permiso = h('input', { type: 'checkbox', name: 'confirmoTextos', required: true });
   const edicion = serie?.guionSha256 === secuencia.huella ? serie : undefined;
   const campos = guion.paginas.map((p, i) => {
@@ -217,12 +221,28 @@ function carruselEditorial(ctx, ultima, serie, base, secuencia) {
     const literal = h('textarea', { name: 'tituloSerie' + i, rows: 2, maxlength: 80, value: actual.titulo, required: p.tratamiento !== 'FOTO' });
     const apoyo = h('textarea', { name: 'apoyoSerie' + i, rows: 2, maxlength: 110, value: actual.apoyo });
     const nota = h('textarea', { name: 'notaSerie' + i, rows: 2, maxlength: 55, value: actual.nota ?? '' });
+    const enFoto = p.tratamiento === 'TEXTO_EN_AIRE';
+    const esquina = p.esquina ?? 'SUPERIOR_IZQUIERDA';
+    const zona = actual.zonaTexto ?? p.profundidad?.zonaTexto ?? {
+      x: (esquina.endsWith('IZQUIERDA') ? 64 : 522) / 1080, y: (esquina.startsWith('SUPERIOR') ? 74 : 926) / 1350, w: 494 / 1080, h: 310 / 1350,
+    };
+    const ajuste = [['x', 'Desde la izquierda'], ['y', 'Desde arriba'], ['w', 'Ancho'], ['h', 'Alto']].map(([key, rotulo]) => [
+      key, rotulo, h('input', { type: 'number', min: key === 'w' || key === 'h' ? 5 : 0, max: 100, step: 'any', required: enFoto, value: zona[key] * 100 }),
+    ]);
+    const numero = String(i + 1);
+    const archivo = h('input', { type: 'file', accept: 'image/png', required: true });
     const funcion = i === 0 ? 'PORTADA' : i === guion.paginas.length - 1 ? 'CIERRE' : 'DETALLE';
     return {
       controles: h('fieldset', {}, h('legend', {}, (i + 1) + ' · ' + tratamientosEditoriales[p.tratamiento]),
         p.tratamiento !== 'FOTO' ? [campo('Título literal', literal), campo(p.tratamiento === 'DIPTICO' ? 'Primer pie de foto' : 'Apoyo literal', apoyo)] : null,
-        p.tratamiento === 'DIPTICO' ? campo('Segundo pie de foto', nota) : null),
-      valor: () => ({ funcion, titulo: literal.value, apoyo: apoyo.value, ...(p.tratamiento === 'DIPTICO' ? { nota: nota.value } : {}) }),
+        p.tratamiento === 'DIPTICO' ? campo('Segundo pie de foto', nota) : null,
+        enFoto ? detalle('Ajustar la posición del texto', ajuste.map(([, rotulo, input]) => campo(rotulo + ' (%)', input))) : null),
+      mascara: enFoto ? detalle('Primer plano de la lámina ' + numero,
+        h('p', {}, secuencia.mascaras?.[numero] ? 'Máscara importada.' : 'Puedes indicar qué parte de la foto queda delante del titular.'),
+        formulario(ctx, async () => ({ accion: 'IMPORTAR_MASCARA_SERIE', version: ultima.version, pagina: numero, subidaId: (await subirArchivo(archivo.files[0])).id }),
+          campo('Máscara PNG (blanco delante, negro detrás)', archivo), accion('Guardar máscara de la lámina ' + numero))) : null,
+      valor: () => ({ funcion, titulo: literal.value, apoyo: apoyo.value, ...(p.tratamiento === 'DIPTICO' ? { nota: nota.value } : {}),
+        ...(enFoto ? { zonaTexto: Object.fromEntries(ajuste.map(([key, , input]) => [key, input.valueAsNumber / 100])) } : {}) }),
     };
   });
   return [
@@ -230,11 +250,18 @@ function carruselEditorial(ctx, ultima, serie, base, secuencia) {
     h('ol', {}, guion.paginas.map(p => h('li', {}, h('strong', {}, tratamientosEditoriales[p.tratamiento]),
       h('p', {}, p.intencion), p.fotos.length ? h('small', {}, p.fotos.map(tomaPara).join(' · ')) : null))),
     Object.keys(guion.tomas).length ? tomasDeSerie(ctx, ultima, secuencia, base) : null,
-    listo ? detalle(edicion ? 'Editar el texto del carrusel' : 'Revisar y maquetar el carrusel',
+    listo && admiteSoloFotos ? h('section', {},
+      h('h3', {}, lectura?.recomendacion === 'FOTOGRAFIA' ? 'Las fotos cuentan la historia por sí solas' : 'Carrusel solo con las fotos'),
+      lectura ? h('p', {}, lectura.motivo) : null,
+      !lectura && conTexto && ctx.d.revisorCarrusel ? formulario(ctx,
+        () => ({ accion: 'VALORAR_FOTOS_SERIE', version: ultima.version }), accion('Valorar si bastan las fotos')) : null,
+      !fotografica ? formulario(ctx, () => ({ accion: 'MAQUETAR_SOLO_FOTOS', version: ultima.version }),
+        accion('Ver carrusel solo con las fotos')) : vistaSerie(fotografica, base)) : null,
+    listo && (conTexto || !admiteSoloFotos) ? detalle(edicion ? 'Editar el texto del carrusel' : 'Revisar y maquetar el carrusel',
       formulario(ctx, () => ({ accion: 'MAQUETAR_SERIE', version: ultima.version, usarTomas: true, confirmoTextos: !conTexto || permiso.checked, paginas: campos.map(c => c.valor()) }),
         conTexto ? [campos.map(c => c.controles), h('label', {}, permiso, ' Confirmo que el texto es correcto y puede aparecer en el carrusel.')] : null,
-        accion('Ver carrusel a 360 px')))
-      : h('p', {}, 'Aprueba cada fotografía del guion para ver la maqueta.'),
+        accion('Ver carrusel a 360 px')), campos.map(c => c.mascara)) : null,
+    !listo ? h('p', {}, 'Aprueba cada fotografía del guion para ver la maqueta.') : null,
     vistaSerie(serie, base),
   ];
 }
@@ -243,12 +270,13 @@ function vistaSerie(serie, base) {
   if (!serie) return null;
   const etiquetas = { ...tratamientosEditoriales, MARCO_ARQUEADO: 'Marco arqueado', PORTADA_DETRAS: 'Titular detrás del primer plano', TITULO_EN_AIRE: 'Título sobre el aire de la foto', ECO_EN_CONTORNO: 'Titular y eco en contorno', APERTURA_EN_PAPEL: 'Título sobre papel', ACENTO_INCLINADO: 'Título y acento en cursiva', PIE_DE_FOTO: 'Texto en recuadro', CIERRE_A_DOS_VOCES: 'Cierre editorial' };
   const url = base + 'serie/' + serie.huella + '/';
-  return [h('h3', {}, 'Serie · revisión a 360 px'), h('p', {}, serie.uso === 'PUBLICABLE' ? 'Base con permiso de publicación.' : 'Base con permiso de prueba de composición.'),
+  return [h(serie.soloFotos ? 'h4' : 'h3', {}, serie.soloFotos ? 'Vista del carrusel fotográfico' : 'Serie · revisión a 360 px'),
+    h('p', {}, serie.uso === 'PUBLICABLE' ? 'Con permiso de publicación.' : 'Con permiso de prueba de composición.'),
     serie.paginas.map((p, i) => h('figure', {}, h('img', { src: url + (i + 1), alt: p.edicion.titulo || 'Fotografía ' + (i + 1), width: 360, style: { width: 'min(100%, 360px)', height: 'auto' } }),
       h('figcaption', {}, (i + 1) + ' · ' + etiquetas[p.tratamiento], h('p', {}, p.motivo),
         p.referente ? h('a', { href: p.referente, target: '_blank', rel: 'noopener noreferrer' }, 'Referencia de esta lámina') : null,
         p.medidas.length ? h('p', {}, p.medidas.map(m => m.capa + ' · ' + Math.round(m.cuerpoMovil) + ' px · contraste ' + m.contraste + ' a 1').join(' / ')) : null))),
-    enlace('Guardar paquete de trabajo (' + (serie.uso === 'PUBLICABLE' ? 'publicable' : 'solo prueba') + ')', url + 'paquete')];
+    enlace((serie.soloFotos ? 'Guardar fotos aprobadas' : 'Guardar paquete de trabajo') + ' (' + (serie.uso === 'PUBLICABLE' ? 'publicable' : 'solo prueba') + ')', url + 'paquete')];
 }
 
 function serieDeCandidata(ctx, ultima, serie, base, comanda, secuencia) {

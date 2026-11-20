@@ -127,6 +127,10 @@ export const CapaImagen = z.object({
   enfoque: Punto.default({ x: 0.5, y: 0.5 }),
   /** 1 = la foto cubre el marco justo; 1,2 = se acerca un 20 %. */
   zoom: z.number().min(1).max(6).default(1),
+  ventana: z.discriminatedUnion('forma', [
+    z.object({ forma: z.literal('arco') }),
+    z.object({ forma: z.literal('redondeada'), radio: z.number().min(0).max(600) }),
+  ]).optional(),
   retoque: Retoque.optional(),
 });
 
@@ -275,7 +279,7 @@ export const CapaForma = z.object({
   ...base,
   tipo: z.literal('forma'),
   /** `mancha` es una forma orgánica dentro de su caja (las de post-17 y post-19); `poligono`, un bloque de color libre. */
-  figura: z.enum(['rect', 'elipse', 'linea', 'poligono', 'mancha', 'rama']),
+  figura: z.enum(['rect', 'arco', 'elipse', 'linea', 'poligono', 'mancha', 'rama']),
   /** rect, elipse, mancha y rama (F3.3: una rama de cerezo dibujada a tinta que entra por el canto derecho de la caja). */
   caja: Caja.optional(),
   /** linea: de un punto a otro, en fracciones del lienzo. */
@@ -515,6 +519,9 @@ export const Reticula = z.object({
 });
 export type Reticula = z.infer<typeof Reticula>;
 
+export const FormatoDeLienzo = z.enum(['FEED_3_4', 'FEED_4_5', 'HISTORIA_9_16']);
+export type FormatoDeLienzo = z.infer<typeof FormatoDeLienzo>;
+
 export const Intencion = z.object({
   esquema: z.literal('diseno/intencion@1'),
   id: Id,
@@ -524,7 +531,7 @@ export const Intencion = z.object({
   /** Dirección de arte: qué se busca y por qué. */
   notas: z.string().default(''),
   marca: z.string(),
-  lienzo: z.object({ formato: z.enum(['FEED_3_4', 'HISTORIA_9_16']).default('FEED_3_4') }).default({ formato: 'FEED_3_4' }),
+  lienzo: z.object({ formato: FormatoDeLienzo.default('FEED_3_4') }).default({ formato: 'FEED_3_4' }),
   reticula: Reticula.default({ columnas: 12, filas: 16, margen: 72, medianil: 12 }),
   tokens: Tokens.default({ colores: {}, estilos: {} }),
   /** Papel de cada activo en el diseño («plato») → id del activo. */

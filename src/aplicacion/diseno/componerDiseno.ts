@@ -4,6 +4,7 @@
  */
 import { Intencion, type Tokens } from '../../dominio/diseno/intencion.js';
 import { conTokensDeMarca } from '../../dominio/diseno/operaciones.js';
+import { exportacionesDe } from '../../dominio/diseno/reticula.js';
 import type { Problema, Resuelto } from '../../dominio/diseno/resuelto.js';
 import { validar } from '../../dominio/validacion.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
@@ -46,8 +47,7 @@ export async function componerDiseno(
 
   const guardado = await deps.disenos.guardar(destino, intencion, final, renderizado);
   const exportadas: string[] = [];
-  const formato = intencion.lienzo.formato;
-  for (const proporcion of formato === 'HISTORIA_9_16' ? (['9:16'] as const) : (['3:4', '4:5'] as const)) {
+  for (const proporcion of exportacionesDe[intencion.lienzo.formato]) {
     const archivo = `exportadas/${proporcion.replace(':', 'x')}.jpg`;
     await deps.procesador.exportar(`${guardado.carpeta}/diseno.png`, `${guardado.carpeta}/${archivo}`, proporcion);
     exportadas.push(archivo);

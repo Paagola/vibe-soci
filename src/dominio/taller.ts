@@ -102,6 +102,7 @@ export type Profundidad = z.infer<typeof profundidad>;
 const revision = z.object({ escenaCotejada: z.literal(true).optional(), apetito: z.literal(true).optional(), composicionTipografica: z.literal(true).optional(), sinTextoAnadido: z.literal(true).optional(), recuentoObservado: z.int().positive().optional(), vistaObservada: VistaDeProducto.optional(), cambioDeToma: z.literal(true).optional(), transcripcion: z.array(z.string()), producto: z.literal(true), legibilidad: z.literal(true), gesto: z.literal(true), fecha: z.string() });
 export const TallerDeArte = z.object({
   serie: SerieDelTaller.optional(),
+  serieFotografica: SerieDelTaller.optional(),
   secuencia: SecuenciaTaller.optional(),
   seleccionEditorial: z.literal(true).optional(),
   elegirReferenciaAlAbrir: z.literal(true).optional(),
@@ -121,6 +122,10 @@ export type TallerDeArte = z.infer<typeof TallerDeArte>;
 
 export const AccionTaller = z.discriminatedUnion('accion', [
   z.strictObject({ accion: z.literal('MAQUETAR_SERIE'), revision: z.string().min(1), version: z.int().positive(), confirmoTextos: z.literal(true), paginas: SecuenciaDeSerie, usarTomas: z.literal(true).optional() }),
+  z.strictObject({ accion: z.literal('MAQUETAR_SOLO_FOTOS'), revision: z.string().min(1), version: z.int().positive() }),
+  z.strictObject({ accion: z.literal('VALORAR_FOTOS_SERIE'), revision: z.string().min(1), version: z.int().positive() }),
+  z.strictObject({ accion: z.literal('IMPORTAR_MASCARA_SERIE'), revision: z.string().min(1), version: z.int().positive(),
+    pagina: z.enum(['1', '2', '3', '4', '5']), subidaId: z.string().min(1) }),
   z.strictObject({ accion: z.literal('DIRIGIR_SECUENCIA'), revision: z.string().min(1), version: z.int().positive() }),
   z.strictObject({ accion: z.literal('DIRIGIR_CARRUSEL'), revision: z.string().min(1), version: z.int().positive(),
     referenciaVisualId: z.string().min(1).optional(), preferencia: z.string().trim().max(480).optional() }),

@@ -3,7 +3,7 @@
  * Es reproducible (misma intención y mismos activos → mismo documento) y es lo que pinta el renderizador.
  */
 import type { Receta } from '../tipografia/receta.js';
-import type { Fusion, Retoque } from './intencion.js';
+import type { CapaDe, Fusion, Retoque } from './intencion.js';
 import type { MedidasDeOficio } from './oficio.js';
 import type { Lienzo, Rect } from './reticula.js';
 
@@ -82,7 +82,7 @@ export type CapaResuelta = BaseResuelta &
   (
     | { tipo: 'relleno'; color: string }
     | { tipo: 'degradado'; forma: 'lineal' | 'radial'; rect: Rect; angulo: number; paradas: Array<{ en: number; color: string; opacidad: number }> }
-    | { tipo: 'imagen'; activo: string; origen: Rect; destino: Rect; marco: Rect; retoque?: Retoque }
+    | { tipo: 'imagen'; activo: string; origen: Rect; destino: Rect; marco: Rect; retoque?: Retoque; ventana?: CapaDe<'imagen'>['ventana'] }
     | {
         tipo: 'recorte';
         activo: string;
@@ -133,7 +133,7 @@ export type CapaResuelta = BaseResuelta &
       }
     | {
         tipo: 'forma';
-        figura: 'rect' | 'elipse' | 'linea' | 'poligono' | 'mancha' | 'rama';
+        figura: CapaDe<'forma'>['figura'];
         rect?: Rect;
         desde?: { x: number; y: number };
         hasta?: { x: number; y: number };
