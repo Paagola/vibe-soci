@@ -3,7 +3,7 @@
  * Es reproducible (misma intención y mismos activos → mismo documento) y es lo que pinta el renderizador.
  */
 import type { Receta } from '../tipografia/receta.js';
-import type { CapaDe, Fusion, Retoque } from './intencion.js';
+import type { CapaDe, FormaTexto, Fusion, Retoque } from './intencion.js';
 import type { MedidasDeOficio } from './oficio.js';
 import type { Lienzo, Rect } from './reticula.js';
 
@@ -15,6 +15,11 @@ export interface EstiloResuelto {
   color: string;
   /** Rasgos OpenType activados (solo si hay alguno). */
   rasgos?: string[];
+  /**
+   * Edición fina de la letra de una capa de texto (escala, inclinación, espaciado por línea, ajustes por letra), solo
+   * si cambia algo. Viaja con el estilo para que todo lo que mide o pinta el texto (MotorTexto) use la misma geometría.
+   */
+  forma?: FormaTexto;
 }
 
 export interface LineaResuelta {

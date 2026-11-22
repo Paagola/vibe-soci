@@ -21,7 +21,7 @@ import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from 
 import { BibliotecaTratamientosFicheros } from '../ficheros/BibliotecaTratamientosFicheros.js';
 import { dibujoRama, trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
-import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
+import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, estiloDeTexto, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
 import { aplicarTinta, papel } from './tinta.js';
 import { interpretarReceta } from './interpreteRecetas.js';
@@ -238,9 +238,8 @@ export class CompositorSharp implements Compositor {
       : `fill="${capa.estilo.color}"`;
     const matriz = `matrix(${capa.matriz.join(' ')})`;
     if (capa.tratamiento) {
-      // Tipografía especial: cada letra por separado, para que el tratamiento pueda trabajarlas una a una.
-      const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
-      const glifos = capa.lineas.flatMap((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base));
+      // Tipografía especial: cada letra por separado (ya con su forma), para que el tratamiento las trabaje una a una.
+      const glifos = this.motor.glifosDeBloque(estiloDeTexto(capa), capa.lineas).flat();
       const cap = Math.max(...capa.lineas.map((l) => this.motor.alturaMayusculas(capa.estilo, l.tamano)));
       const { receta, valores, semilla } = capa.tratamiento;
       const tratado = interpretarReceta({ receta, valores, semilla, glifos, cap, color: capa.estilo.color, idCapa: capa.id });
@@ -453,6 +452,10 @@ export class CompositorSharp implements Compositor {
    * Exacto: el texto va como trazos (igual que el PNG, sin depender de las fuentes).
    * Un texto con tinta impresa o recortado por el sujeto va, en el exacto, como imagen (es lo que se ve); en el
    * editable sigue siendo texto limpio, que es lo que se puede retocar.
+   * Con forma (edición fina de la letra), el exacto lleva los trazos ya transformados. El editable aplica a cada línea
+   * la escala, la inclinación y su espaciado con un transform del <text>, pero NO los ajustes por letra (kerning, subir,
+   * escalar o girar una letra): un <text> no los puede guardar sin partirse en letras sueltas, que ya no se editan como
+   * texto. Para ver la pieza exacta está el exacto (o el PNG).
    */
   private svg(resuelto: Resuelto, capas: CapaRenderizada[], modo: 'editable' | 'exacto'): string {
     const { ancho, alto } = resuelto.lienzo;
@@ -473,8 +476,15 @@ export class CompositorSharp implements Compositor {
       const peso = capa.estilo.ejes.wght ?? 400;
       const anchura = capa.estilo.ejes.wdth ?? 100;
       const pintura = capa.contorno ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}"` : `fill="${capa.estilo.color}"`;
+      const forma = capa.estilo.forma;
       const lineas = capa.lineas
-        .map((l) => `<text x="${l.x}" y="${l.base}" font-size="${l.tamano}" letter-spacing="${capa.estilo.tracking * l.tamano}">${escaparXml(l.texto)}</text>`)
+        .map((l, i) => {
+          if (!forma) return `<text x="${l.x}" y="${l.base}" font-size="${l.tamano}" letter-spacing="${capa.estilo.tracking * l.tamano}">${escaparXml(l.texto)}</text>`;
+          // El espaciado se da antes de escalar: se divide por la escala para que, ya escalado, mida lo mismo que en el PNG.
+          const tracking = forma.trackingPorLinea?.[i] ?? capa.estilo.tracking;
+          const transformacion = `translate(${l.x} ${l.base}) skewX(${-forma.inclinacion}) scale(${forma.escalaX} ${forma.escalaY})`;
+          return `<text transform="${transformacion}" font-size="${l.tamano}" letter-spacing="${redondear4((tracking * l.tamano) / forma.escalaX)}">${escaparXml(l.texto)}</text>`;
+        })
         .join('');
       return `  <g id="${capa.id}" transform="${matriz}" font-family="${familia}" font-weight="${Math.round(peso)}" style="font-variation-settings:'wdth' ${anchura}, 'wght' ${peso}${capa.fusion === 'normal' ? '' : `; mix-blend-mode:${capa.fusion}`}" ${pintura} opacity="${capa.opacidad}">${lineas}</g>`;
     });
@@ -483,6 +493,8 @@ export class CompositorSharp implements Compositor {
 }
 
 // ------------------------------------------------------------------ Ayudantes
+
+const redondear4 = (n: number) => Math.round(n * 10000) / 10000;
 
 /** Lo que define el contenido de una capa: si no cambia, la capa no se vuelve a pintar. */
 function claveDe(capa: CapaResuelta, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): string {
@@ -684,6 +696,7 @@ function lineaDePixel(capa: CapaTextoResuelta, motor: MotorTexto, escala: number
   if (capa.lineas.length <= 1) return () => 0;
   const [a, b, c, d, e, f] = capa.matriz;
   const det = a * d - b * c;
+  // Con forma, la altura de mayúscula ya es la de la letra estirada o encogida (escalaY).
   const centros = capa.lineas.map((l) => l.base - motor.alturaMayusculas(capa.estilo, l.tamano) / 2);
   return (x, y) => {
     const px = (x + 0.5) * escala - e;
