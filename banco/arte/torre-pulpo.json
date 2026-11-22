@@ -1,0 +1,32 @@
+{
+  "id": "torre-pulpo",
+  "local": "torre-de-vega",
+  "activo": "2026-11-17-pulpo-a-la-gallega-foto-1",
+  "plato": "Pulpo a la gallega",
+  "elementos": [
+    {
+      "nombre": "tentáculo de pulpo",
+      "estado": "asado y troceado en espiral, con pimentón y aceite verde",
+      "recuento": 1
+    },
+    {
+      "nombre": "gambas peladas con cola",
+      "estado": "espolvoreadas con pimentón",
+      "recuento": 3
+    },
+    {
+      "nombre": "patatas en rodajas",
+      "estado": "cubiertas de aceite y pimentón",
+      "recuento": null
+    },
+    {
+      "nombre": "tabla de madera redonda",
+      "estado": "estriada",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "Un plato de toda la vida, para compartir en familia.",
+  "creativo": true,
+  "previa": "datos/disenos/2026-11-17-pulpo-a-la-gallega/post/v001/diseno.png",
+  "referencia": "ref-propia-1"
+}

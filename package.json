@@ -22,7 +22,9 @@
     "referencia": "tsx src/herramientas/referencia.ts",
     "comprobar-foto": "tsx --env-file-if-exists=.env src/herramientas/comprobarFoto.ts",
     "post": "tsx --env-file-if-exists=.env src/herramientas/post.ts",
-    "muestras-tipo": "tsx src/herramientas/muestrasTipograficas.ts"
+    "muestras-tipo": "tsx src/herramientas/muestrasTipograficas.ts",
+    "arte": "tsx --env-file-if-exists=.env src/herramientas/arte.ts",
+    "lote": "tsx --env-file-if-exists=.env src/herramientas/lote.ts"
   },
   "dependencies": {
     "express": "^5.3.0",

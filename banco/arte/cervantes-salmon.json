@@ -1,0 +1,37 @@
+{
+  "id": "cervantes-salmon",
+  "local": "meson-de-cervantes",
+  "activo": "prueba-f3-meson-foto-1",
+  "plato": "Salmón glaseado sobre arroz negro",
+  "elementos": [
+    {
+      "nombre": "lomo de salmón",
+      "estado": "glaseado, dorado y brillante",
+      "recuento": 1
+    },
+    {
+      "nombre": "arroz negro",
+      "estado": "con espinacas, húmedo y compacto",
+      "recuento": null
+    },
+    {
+      "nombre": "quenelle de puré naranja",
+      "estado": "con escamas negras",
+      "recuento": 1
+    },
+    {
+      "nombre": "brotes",
+      "estado": "frescos",
+      "recuento": null
+    },
+    {
+      "nombre": "aceite verde de hierbas",
+      "estado": "en el fondo del plato",
+      "recuento": null
+    }
+  ],
+  "mensaje": "Un plato nuevo de la carta de cenas.",
+  "creativo": true,
+  "previa": "datos/disenos/prueba-f3-meson/post/v001/diseno.png",
+  "referencia": "ref-post-22"
+}

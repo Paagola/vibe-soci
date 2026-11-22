@@ -1,0 +1,3 @@
+{"fecha":"2026-11-21T17:26:02.879Z","quien":"analista","paso":"REFERENCIA","tipo":"LLAMADA","texto":"Llamada 1 de 12 (analista).","datos":{"briefVersion":null,"modelo":"gemini-4-hydrogen"}}
+{"fecha":"2026-11-21T17:26:03.399Z","quien":"director-foto","paso":"PROPUESTA","tipo":"LLAMADA","texto":"Llamada 2 de 12 (director-foto).","datos":{"briefVersion":null,"modelo":"gemini-4-hydrogen"}}
+{"fecha":"2026-11-21T17:26:16.762Z","quien":"director-foto","paso":"PROPUESTA","tipo":"LLAMADA","texto":"Llamada 3 de 12 (director-foto).","datos":{"briefVersion":null,"modelo":"gemini-4-hydrogen"}}

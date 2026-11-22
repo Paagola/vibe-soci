@@ -1,0 +1,37 @@
+{
+  "id": "sushita-tabla",
+  "local": "sushita-chinitas",
+  "activo": "sushita-tabla-sushi-foto-1",
+  "plato": "Tabla de sushi para compartir: nigiri de salmón con foie y trufa, gunkan de toro y maki de atún picante",
+  "elementos": [
+    {
+      "nombre": "nigiri de salmón flameado con foie y trufa",
+      "estado": "marcado con soplete y glaseado",
+      "recuento": 4
+    },
+    {
+      "nombre": "uramaki",
+      "estado": "con sésamo y salsa cremosa verde",
+      "recuento": 5
+    },
+    {
+      "nombre": "gunkan de toro",
+      "estado": "con tartar de toro, sésamo negro y brotes",
+      "recuento": 2
+    },
+    {
+      "nombre": "pensamiento comestible",
+      "estado": "amarillo y granate",
+      "recuento": 1
+    },
+    {
+      "nombre": "tabla de madera clara",
+      "estado": "curvada y pulida",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "Una tabla para compartir.",
+  "creativo": true,
+  "previa": "datos/disenos/sushita-tabla-sushi/post/v007/diseno.png",
+  "referencia": "ref-pin-34"
+}

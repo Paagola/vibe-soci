@@ -51,6 +51,8 @@ export interface OpcionesClienteGemini {
   avisar?: (mensaje: string) => void;
   /** Se llama tras cada respuesta con su recuento de tokens. */
   alUsar?: (uso: UsoGemini) => void;
+  /** Tiempo máximo por petición (por defecto, 90 s). Pensar sobre varias imágenes puede necesitar más. */
+  tiempoMaximoMs?: number;
 }
 
 export class ClienteGemini {
@@ -58,6 +60,7 @@ export class ClienteGemini {
   private readonly dormir: (ms: number) => Promise<void>;
   private readonly avisar: (mensaje: string) => void;
   private readonly alUsar: (uso: UsoGemini) => void;
+  private readonly tiempoMaximoMs: number;
   /** Si un modelo falla, las siguientes llamadas de esta ejecución empiezan por el de respaldo. */
   private primerModelo = 0;
   private readonly antesDeEnviar: OpcionesClienteGemini['antesDeEnviar'];
@@ -78,6 +81,7 @@ export class ClienteGemini {
     this.dormir = opciones.dormir ?? ((ms) => new Promise((resolver) => setTimeout(resolver, ms)));
     this.avisar = opciones.avisar ?? (() => {});
     this.alUsar = opciones.alUsar ?? (() => {});
+    this.tiempoMaximoMs = opciones.tiempoMaximoMs ?? TIEMPO_MAXIMO_PETICION_MS;
   }
 
   async generarJson<T>(instrucciones: string, partes: ParteGemini[], esquema: z.ZodType<T>): Promise<T> {
@@ -150,7 +154,7 @@ export class ClienteGemini {
           method: 'POST',
           headers: { 'x-goog-api-key': this.apiKey, 'Content-Type': 'application/json' },
           body: JSON.stringify(cuerpo),
-          signal: AbortSignal.timeout(TIEMPO_MAXIMO_PETICION_MS),
+          signal: AbortSignal.timeout(this.tiempoMaximoMs),
         });
       } catch (error) {
         // Si no contesta en el tiempo máximo, no se repite: se pasa al modelo de respaldo.

@@ -1,0 +1,42 @@
+{
+  "id": "dak-manhattan",
+  "local": "dak-burger",
+  "activo": "dak-post-f2-foto-mcp-1",
+  "plato": "Manhattan Tower: brioche, tres carnes, bacon y cheddar",
+  "elementos": [
+    {
+      "nombre": "pan brioche",
+      "estado": "dorado y brillante",
+      "recuento": 2
+    },
+    {
+      "nombre": "carnes de vaca",
+      "estado": "gruesas y tostadas por los bordes",
+      "recuento": 3
+    },
+    {
+      "nombre": "bacon",
+      "estado": "crujiente",
+      "recuento": 3
+    },
+    {
+      "nombre": "cheddar",
+      "estado": "fundido",
+      "recuento": 3
+    },
+    {
+      "nombre": "papel",
+      "estado": "beige impreso en negro",
+      "recuento": null
+    },
+    {
+      "nombre": "tabla de madera",
+      "estado": "oscura y rugosa",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "Presentar el producto estrella de la casa.",
+  "creativo": true,
+  "previa": "datos/disenos/dak/dak-post/v007/diseno.png",
+  "referencia": "ref-post-09"
+}

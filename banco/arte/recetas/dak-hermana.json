@@ -1,0 +1,81 @@
+{
+  "nombre": "Hermana",
+  "idea": "El ritmo de filas rojas sobre papel repite MANHATTAN y remata con TRES CARNES para explicar la altura de la torre sin añadir texto superfluo.",
+  "lecturas": [
+    "La torre de tres carnes centrada y erguida rompiendo el bloque rojo",
+    "La repetición MANHATTAN rematada en TRES CARNES",
+    "La firma DAK BURGER arriba y LA CALA DE MIJAS abajo"
+  ],
+  "esqueleto": "PATRON",
+  "fondo": "@papel",
+  "acento": "@rojo",
+  "textos": [
+    {
+      "clave": "titular",
+      "texto": "MANHATTAN",
+      "fuente": "PLATO",
+      "cita": "Manhattan Tower: brioche, tres carnes, bacon y cheddar"
+    },
+    {
+      "clave": "remate",
+      "texto": "TRES CARNES",
+      "fuente": "PLATO",
+      "cita": "Manhattan Tower: brioche, tres carnes, bacon y cheddar"
+    },
+    {
+      "clave": "firma",
+      "texto": "DAK BURGER",
+      "fuente": "MARCA",
+      "cita": "DAK Burger"
+    },
+    {
+      "clave": "apoyo",
+      "texto": "LA CALA DE MIJAS",
+      "fuente": "MARCA",
+      "cita": "La Cala de Mijas (Málaga)"
+    }
+  ],
+  "producto": {
+    "escala": "grande",
+    "giro": 0,
+    "sombra": "proyectada",
+    "lado": "centro"
+  },
+  "titular": {
+    "texto": "titular",
+    "voz": "estudio-extendida",
+    "escala": "monumental",
+    "relacion": "detras",
+    "color": "@rojo",
+    "tinta": "limpia",
+    "giro": 0
+  },
+  "apoyo": {
+    "texto": "apoyo",
+    "voz": "rotulo",
+    "color": "@rojo"
+  },
+  "remate": {
+    "texto": "remate",
+    "voz": "estudio-extendida",
+    "color": "@rojo"
+  },
+  "firma": {
+    "texto": "firma",
+    "voz": "versalita",
+    "color": "@rojo"
+  },
+  "operaciones": [
+    {
+      "tipo": "FILETES",
+      "color": "@rojo"
+    },
+    {
+      "tipo": "TEXTURA",
+      "recurso": "papel"
+    }
+  ],
+  "elementos": [],
+  "parentesco": "Conserva el esqueleto F2 de patrón repetido a ancho completo en rojo sobre crema, la grotesca extendida extranegra y la marca y cierre entre filetes.",
+  "mejora": "Mantiene la torre erguida con sombra proyectada sobre fibra de papel y sustituye los reclamos genéricos por el hecho clave del plato (TRES CARNES) y la ubicación real."
+}

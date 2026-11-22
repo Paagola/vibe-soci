@@ -75,6 +75,25 @@ describe('F3.1 · mecanismos: TITULAR_DETRAS', () => {
     assert.ok(texto(r.capas, 'firma')!.caja.fila[0]! > m.sujeto!.fila[1], 'la firma, en el lado contrario, pegada al borde');
   });
 
+  it('lo pequeño nunca cae en la franja por la que el compositor mueve el titular hacia el plato (Etxebarri, 22/11)', () => {
+    // El plato llega casi al borde de abajo: el apoyo y la firma no caben en el lado contrario y buscan sitio en el del
+    // titular. Antes caían junto al plato, dentro de «entre», y el titular, al bajar, quedaba encima de ellos.
+    for (const cy of [0.7, 0.74, 0.78]) {
+      const m = mapaSintetico({ cy, ry: 0.2 });
+      const r = colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma', apoyo: 'apoyo' }), entorno(m));
+      const t = texto(r.capas, 'titular')!;
+      assert.ok(t.entre, `cy ${cy}: el titular va detrás y tiene franja`);
+      for (const id of ['firma', 'apoyo'] as const) {
+        const x = texto(r.capas, id);
+        if (!x) {
+          assert.ok(r.problemas.some((p) => p.includes(textos[id])), `cy ${cy}: si «${id}» no cabe, lo dice`);
+          continue;
+        }
+        assert.ok(x.caja.fila[0]! > t.entre![1]! || x.caja.fila[1]! < t.entre![0]!, `cy ${cy}: «${id}» ${JSON.stringify(x.caja)} cae en la franja del titular ${JSON.stringify(t.entre)}`);
+      }
+    }
+  });
+
   it('con «lado: abajo» el titular va debajo; con más aire abajo, va abajo solo', () => {
     const m = mapaSintetico({ cy: 0.38 });
     const t = texto(colocar(comp({ mecanismo: 'TITULAR_DETRAS' }), entorno(m)).capas, 'titular')!;

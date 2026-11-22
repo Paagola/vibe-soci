@@ -1,0 +1,20 @@
+{
+  "nombre": "Réplica F2",
+  "idea": "La referencia convierte el nombre del producto en un patrón que atrapa y el producto lo rompe: aquí MANHATTAN se repite hasta que TOWER lo remata, como el nombre de la torre.",
+  "lecturas": ["la hamburguesa girada rompiendo el patrón", "MANHATTAN repetido y el remate TOWER", "DAK BURGER entre filetes"],
+  "esqueleto": "PATRON",
+  "fondo": "@papel",
+  "acento": "@rojo",
+  "textos": [
+    { "clave": "titular", "texto": "MANHATTAN", "fuente": "PLATO", "cita": "Manhattan Tower" },
+    { "clave": "remate", "texto": "TOWER", "fuente": "PLATO", "cita": "Manhattan Tower" },
+    { "clave": "apoyo", "texto": "3 carnes · 3 bacon · 3 cheddar", "fuente": "RECUENTO", "cita": "3 carnes de vaca" },
+    { "clave": "firma", "texto": "DAK Burger", "fuente": "MARCA", "cita": "DAK Burger" }
+  ],
+  "producto": { "escala": "grande", "giro": -8, "sombra": "no", "lado": "centro" },
+  "titular": { "texto": "titular", "voz": "estudio-extendida", "escala": "monumental", "relacion": "detras", "color": "@rojo", "tinta": "limpia" },
+  "remate": { "texto": "remate", "voz": "estudio-extendida", "color": "@rojo" },
+  "apoyo": { "texto": "apoyo", "voz": "texto" },
+  "firma": { "texto": "firma", "voz": "rotulo" },
+  "operaciones": []
+}
