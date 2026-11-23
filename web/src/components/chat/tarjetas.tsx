@@ -171,7 +171,7 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
               <div className="min-w-0 flex-1">
                 <div className="text-sm">{d.resumen}</div>
                 <div className="text-xs text-muted-foreground">
-                  {PAPEL[d.papel] ?? d.papel} · {d.visual.foto === 'real' ? 'tu foto' : 'foto nueva'} · {d.visual.receta.esqueleto.toLowerCase().replace(/_/g, ' ')}
+                  {PAPEL[d.papel] ?? d.papel} · {d.visual.foto === 'real' ? 'tu foto' : 'foto nueva'} · {d.soloFoto ? 'foto sola, sin texto' : d.visual.receta.esqueleto.toLowerCase().replace(/_/g, ' ')}
                   {!rehace && ' · se queda igual'}
                 </div>
               </div>
@@ -279,6 +279,13 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
               <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-500">
                 <AlertTriangle className="mt-0.5 size-3.5 shrink-0" /> El código midió: {actual.problemas[0]}
               </p>
+            )}
+            {(actual.decisiones?.length ?? 0) > 0 && (
+              <ul className="mt-2 space-y-1 border-l-2 border-acento/40 pl-2.5 text-xs text-muted-foreground" aria-label="Decisiones del director">
+                {actual.decisiones!.map((t, k) => (
+                  <li key={k}>{t}</li>
+                ))}
+              </ul>
             )}
           </div>
           {listas.length > 1 && (

@@ -335,3 +335,25 @@ describe('Estudio de arte · arreglos del código tras pintar', () => {
     assert.equal((r.find((c) => c.tipo === 'foto') as Extract<CapaPropuesta, { tipo: 'foto' }>).velo, 'ambos');
   });
 });
+
+describe('estudio de arte · legibilidad del titular a 360 px', () => {
+  it('tolera una letra confundida por el OCR, pero no una palabra tapada', async () => {
+    const { seLee } = await import('../src/aplicacion/arte/estudioDeArte.js');
+    assert.equal(seLee('Croquetas\nvariadas', ['EL ANDEN', 'Croquelas', 'variadas', 'ETXEBARRI']), true);
+    assert.equal(seLee('CHULETÓN\nTRINCHADO', ['CARNES A LA BRASA', 'TORRE DE VEGA', 'CHU', 'TRJ', '[TON']), false);
+    assert.equal(seLee('CHULETÓN\nTRINCHADO', ['CHULETÓNI', 'TRINCHAD0']), true);
+    assert.equal(seLee('AL CENTRO', ['ALCELTRO', 'TORRE DE VEGA']), true, 'palabras pegadas con una letra mal');
+    assert.equal(seLee('AL CENTRO', ['AL', 'CHIRO']), false);
+  });
+});
+
+describe('estudio de arte · textos que explican', () => {
+  it('un «parentesco» o una idea demasiado largos se recortan en lugar de tumbar el plan (Argon, 23/11)', async () => {
+    const { Receta } = await import('../src/dominio/arte/receta.js');
+    const largo = 'Toma de la referencia la retícula vertical, el titular gigante entrelazado y los filetes finos '.repeat(5);
+    const r = Receta.shape.parentesco.parse(largo)!;
+    assert.ok(r.length <= 240);
+    assert.ok(r.endsWith('…'));
+    assert.ok(Receta.shape.idea.parse(largo).length <= 280);
+  });
+});

@@ -77,6 +77,11 @@ export interface EntradaEstudioDeArte {
   enriquecer?: boolean | 'todas';
   /** Enriquecer también con los elementos generados por separado y colocados por el código (por defecto, solo inserción en contexto). */
   aislados?: boolean;
+  /**
+   * Esqueletos de las otras láminas de la serie (un carrusel): un parche del crítico no puede convertir esta lámina en
+   * otra igual (Torre de Vega, 23/11: el despiece acabó siendo una segunda portada).
+   */
+  evitarEsqueletos?: string[];
 }
 
 export interface Vuelta {
@@ -427,6 +432,13 @@ export async function estudioDeArte(deps: DepsEstudioDeArte, entrada: EntradaEst
         const esperados = receta.textos.filter((t) => !receta.operaciones.some((o) => o.tipo === 'REPETICION' && o.texto === t.clave));
         const faltan = esperados.filter((t) => !norm(t.texto).split(' ').filter((p) => p.length > 2).every((p) => leidas.includes(p)));
         vuelta.medidas.push(`OCR a 360 px: se leen ${esperados.length - faltan.length} de ${esperados.length} textos${faltan.length ? ` (no se leen: ${faltan.map((t) => `«${t.texto.replace(/\n/g, ' ')}»`).join(', ')})` : ''}.`);
+        // Un titular que no se lee en el móvil no es un detalle: es la pieza (Torre de Vega, 23/11: el hueso tapaba
+        // «TRINCHADO»). Se repara como cualquier otro problema medido.
+        // Con tolerancia: el OCR confunde letras sueltas («Croquelas»); lo que no lee es una palabra tapada («CHU», «TRJ»).
+        const titular = esperados.find((t) => t.clave === receta.titular.texto && !seLee(t.texto, lineas));
+        // Sin ninguna línea leída, el OCR no está disponible o falló: no se acusa al titular.
+        // En COLUMNA el titular va girado y el OCR no lee texto vertical: ahí no se acusa (sería un falso positivo).
+        if (titular && lineas.length && receta.esqueleto !== 'COLUMNA') vuelta.problemas.push(`LEGIBILIDAD: el titular «${titular.texto.replace(/\n/g, ' ')}» no se lee a 360 px (el producto lo tapa o la letra es demasiado fina): que el producto tape menos (relación «aparte» o el otro lado), o un titular de una línea.`);
       }
       log(`■ ${inicial.nombre} v${v} → ${pintura.png}${pintura.errores.length ? ` · ${pintura.errores.length} errores` : ''}`);
       const critica = await deps.critico.criticar(encargo, { receta, png: pintura.png, movil: pintura.movil, medidas: vuelta.medidas });
@@ -453,6 +465,10 @@ export async function estudioDeArte(deps: DepsEstudioDeArte, entrada: EntradaEst
       if (v > entrada.vueltas || !critica.parches.length || !critica.receta) break;
       // La siguiente vuelta parte de la mejor receta con el parche de la crítica de la mejor vuelta.
       if (d.mejor !== vuelta) break;
+      if (critica.receta.esqueleto !== receta.esqueleto && entrada.evitarEsqueletos?.includes(critica.receta.esqueleto)) {
+        log(`  ! El parche pasa a ${critica.receta.esqueleto}, que ya usa otra lámina de la serie: se descarta.`);
+        break;
+      }
       receta = critica.receta;
       // Un parche que no se puede ejecutar (un texto que no consta, algo que no cabe) vuelve UNA vez al director.
       const prueba = compilar(receta, 'prueba', 1);
@@ -545,6 +561,50 @@ export async function estudioDeArte(deps: DepsEstudioDeArte, entrada: EntradaEst
     enriquecimientos.push({ direccion: ganadora.nombre, porque: propuesta.porque, mejoras: propuesta.mejoras, elementos: propuesta.elementos, insercion: propuesta.insercion, versiones, ...(comp ? { comparacion: comp } : {}) });
   }
   return { encargo, referencias, propuestas, devuelto, direcciones, ...(comparacion ? { comparacion } : {}), ...(analisis ? { analisis } : {}), ...(enriquecimientos.length ? { enriquecimientos } : {}), mapa };
+}
+
+/** Distancia de edición (Levenshtein). */
+function distancia(a: string, b: string): number {
+  const f = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = f[0]!;
+    f[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const t = f[j]!;
+      f[j] = Math.min(f[j]! + 1, f[j - 1]! + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = t;
+    }
+  }
+  return f[b.length]!;
+}
+
+/** La menor distancia de edición de `p` a cualquier trozo de `t` (búsqueda aproximada de Sellers). */
+function distanciaEnTexto(p: string, t: string): number {
+  let fila = Array.from({ length: p.length + 1 }, (_, i) => i);
+  let mejor = fila[p.length]!;
+  for (const c of t) {
+    const nueva = [0];
+    for (let i = 1; i <= p.length; i++) nueva[i] = Math.min(fila[i]! + 1, nueva[i - 1]! + 1, fila[i - 1]! + (p[i - 1] === c ? 0 : 1));
+    fila = nueva;
+    mejor = Math.min(mejor, fila[p.length]!);
+  }
+  return mejor;
+}
+
+/**
+ * Si un texto se lee en las líneas del OCR: cada palabra con contenido aparece, con una letra de error por cada cinco.
+ * El OCR a veces pega palabras («ALCELTRO» por «AL CENTRO»): se busca también dentro del texto leído sin espacios.
+ */
+export function seLee(texto: string, lineas: string[]): boolean {
+  const leidas = norm(lineas.join(' ')).split(' ').filter(Boolean);
+  const seguido = leidas.join('');
+  return norm(texto)
+    .split(' ')
+    .filter((p) => p.length > 2)
+    .every((p) => {
+      const tolerancia = Math.max(1, Math.floor(p.length / 5));
+      return leidas.some((l) => distancia(p, l) <= tolerancia) || distanciaEnTexto(p, seguido) <= tolerancia;
+    });
 }
 
 const norm = (s: string) =>

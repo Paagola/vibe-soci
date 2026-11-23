@@ -9,6 +9,7 @@
  */
 import { z } from 'zod';
 import { Visual } from './arte/lote.js';
+import { explicacion } from './arte/receta.js';
 
 const Id = z.string().regex(/^[a-z0-9][a-z0-9-]{0,80}$/);
 
@@ -44,13 +45,33 @@ export const PapelDeDiapositiva = z.enum(['portada', 'detalle', 'ambiente', 'pro
 
 export const DiapositivaDePieza = z.object({
   papel: PapelDeDiapositiva,
-  resumen: z.string().min(8).max(200).describe('Qué es esta diapositiva, en una frase para el cliente (castellano).'),
+  resumen: explicacion(8, 200).describe('Qué es esta diapositiva, en una frase para el cliente (castellano).'),
   visual: Visual,
+  soloFoto: z
+    .boolean()
+    .default(false)
+    .describe('true: la lámina es la foto sola, sin texto (la receta no se pinta). Para tomas que se sostienen solas en un carrusel editorial; nunca la portada de un carrusel, y en un post solo si el cliente lo pide.'),
 });
 export type DiapositivaDePieza = z.infer<typeof DiapositivaDePieza>;
 
+/**
+ * Un concepto de serie: la idea de la pieza ANTES del plan, con su historia lámina a lámina y su manera de fotografiar.
+ * El director propone tres que se distinguen de verdad (no tres titulares para la misma serie) y el cliente elige.
+ * Torre de Vega, 23/11: sin este paso, Hydrogen y Argon planificaban el mismo carrusel (mismas cinco tomas, mismo cierre).
+ */
+export const ConceptoDeSerie = z.object({
+  nombre: explicacion(3, 60).describe('El nombre del concepto, corto («El ritual del corte»).'),
+  idea: explicacion(20, 320).describe('La idea en dos frases, para el cliente: qué cuenta la serie y por qué engancha.'),
+  titular: z.string().min(2).max(40).describe('El titular de la portada: creativo, con idea (un juego, una tensión, una frase con intención), hasta 4 palabras, sin cifras ni reclamos («casero», «el mejor», «brasa»…). Nada de describir el ingrediente.'),
+  fotografia: explicacion(20, 320).describe('Cómo se fotografía la serie: escenas, gestos, objetos, luz y lo que NO sale. Puede incluir tomas sin el plato (el fuego, el cuchillo, las manos, el local).'),
+  laminas: z.array(explicacion(8, 200)).min(1).max(6).describe('Una línea por lámina: qué muestra y qué aporta a la historia.'),
+});
+export type ConceptoDeSerie = z.infer<typeof ConceptoDeSerie>;
+
+export const PropuestaDeConceptos = z.object({ conceptos: z.array(ConceptoDeSerie).length(3) });
+
 export const PlanDePieza = z.object({
-  idea: z.string().min(12).max(320).describe('La idea de la pieza y por qué funciona, para el cliente.'),
+  idea: explicacion(12, 320).describe('La idea de la pieza y por qué funciona, para el cliente.'),
   diapositivas: z.array(DiapositivaDePieza).min(1).max(6),
 });
 export type PlanDePieza = z.infer<typeof PlanDePieza>;
@@ -66,6 +87,14 @@ export function problemasDePieza(plan: PlanDePieza, formato: Formato, n: number)
   const p: string[] = [];
   const d = plan.diapositivas;
   if (d.length !== n) p.push(`Hacen falta ${n} diapositiva(s) y hay ${d.length}.`);
+  // La portada lleva un titular CREATIVO, con idea: describir el ingrediente («Rojo jugoso», «Tiras doradas») no
+  // detiene el dedo (Torre de Vega, 23/11).
+  const portada = d[0];
+  if (portada && !portada.soloFoto) {
+    const r = portada.visual.receta;
+    const t = r.textos.find((x) => x.clave === r.titular.texto);
+    if (t && t.fuente !== 'CREATIVO') p.push(`La portada lleva un titular CREATIVO (fuente «CREATIVO», hasta 4 palabras, con idea y sin reclamos): «${t.texto.replace(/\n/g, ' ')}» es ${t.fuente}.`);
+  }
   for (const [i, x] of d.entries()) {
     if (x.visual.foto === 'generada' && !x.visual.generar) p.push(`Diapositiva ${i + 1}: foto «generada» sin «generar».`);
     if (x.visual.foto === 'real' && x.visual.generar) p.push(`Diapositiva ${i + 1}: foto «real» con «generar»: o una o la otra.`);
@@ -78,19 +107,49 @@ export function problemasDePieza(plan: PlanDePieza, formato: Formato, n: number)
       if (d[i]!.visual.receta.esqueleto === d[i - 1]!.visual.receta.esqueleto) p.push(`Las diapositivas ${i} y ${i + 1} repiten el esqueleto ${d[i]!.visual.receta.esqueleto}: cada una con otra maquetación.`);
     }
     if (d.length >= 4 && new Set(d.map((x) => x.visual.receta.esqueleto)).size < 3) p.push('El carrusel usa menos de tres esqueletos distintos: varía la maquetación.');
+    // La serie se cierra: portada y cierre con texto (al menos la firma) y como mucho N−2 láminas solo foto
+    // (Torre de Vega, 23/11: tres de cinco sin texto y un cierre sin firma).
+    if (d[0]?.soloFoto) p.push('La portada de un carrusel lleva texto: no puede ser «soloFoto».');
+    if (d.length > 1 && d[d.length - 1]?.soloFoto) p.push('El cierre de un carrusel lleva al menos la firma: no puede ser «soloFoto».');
+    const solas = d.filter((x) => x.soloFoto).length;
+    if (d.length > 2 && solas > d.length - 2) p.push(`Hay ${solas} láminas «soloFoto» en un carrusel de ${d.length}: como mucho ${d.length - 2}.`);
     const prompts = d.flatMap((x) => (x.visual.generar ? [x.visual.generar.prompt.toLowerCase().slice(0, 120)] : []));
     if (new Set(prompts).size < prompts.length) p.push('Dos tomas nuevas tienen el mismo prompt: cada una con su punto de vista.');
   }
   return p;
 }
 
-/** Coste estimado de producir un plan (USD): fotos nuevas + llamadas a Hydrogen (reparaciones). */
-export function costeEstimado(plan: PlanDePieza, o: { usdPorFoto: number; esfuerzo: Esfuerzo; soloDiapositivas?: number[] }): number {
-  const cuenta = plan.diapositivas.filter((_, i) => !o.soloDiapositivas?.length || o.soloDiapositivas.includes(i + 1));
-  const fotos = cuenta.filter((x) => x.visual.foto === 'generada').length;
-  const llamadasPorVisual = o.esfuerzo === 'rapido' ? 0 : o.esfuerzo === 'normal' ? 1 : 2.5;
-  return Math.round((fotos * o.usdPorFoto + cuenta.length * llamadasPorVisual * 0.05) * 100) / 100;
+/** Qué láminas llevan acabado de Nano Banana 2: en «normal», la portada (la primera); en «máximo», todas; en «rápido», ninguna. */
+export function llevaAcabado(n: number, esfuerzo: Esfuerzo): boolean {
+  return esfuerzo === 'maximo' || (esfuerzo === 'normal' && n === 1);
 }
+
+/** Lo que cuesta, de media, el acabado de una lámina: la propuesta de Hydrogen, la imagen de Nano Banana 2, su crítica y la comparación a ciegas. */
+export const USD_ACABADO = 0.2;
+
+/**
+ * Coste estimado de producir un plan (USD): fotos nuevas, la revisión de cada foto, la crítica (y su parche) de cada
+ * lámina con texto y el acabado de Nano Banana 2 donde toque. Es una estimación: el tope mensual mide el gasto real.
+ */
+export function costeEstimado(plan: PlanDePieza, o: { usdPorFoto: number; esfuerzo: Esfuerzo; soloDiapositivas?: number[] }): number {
+  const cuenta = plan.diapositivas.map((d, i) => ({ d, n: i + 1 })).filter(({ n }) => !o.soloDiapositivas?.length || o.soloDiapositivas.includes(n));
+  const fotos = cuenta.filter(({ d }) => d.visual.foto === 'generada').length;
+  const conTexto = cuenta.filter(({ d }) => !d.soloFoto);
+  const llamadasPorVisual = o.esfuerzo === 'rapido' ? 0 : o.esfuerzo === 'normal' ? 2 : 4;
+  const revisiones = o.esfuerzo === 'rapido' ? 0 : fotos;
+  const acabados = conTexto.filter(({ n }) => llevaAcabado(n, o.esfuerzo)).length;
+  return Math.round((fotos * o.usdPorFoto + conTexto.length * llamadasPorVisual * 0.05 + revisiones * 0.02 + acabados * USD_ACABADO) * 100) / 100;
+}
+
+/** El veredicto del director sobre una foto generada, antes de maquetarla. */
+export const RevisionDeFoto = z.object({
+  veredicto: z.enum(['USAR', 'REPETIR']).describe('REPETIR si el plato no es el mismo, hay algo raro (manos, cubiertos, texto, objetos que no se pidieron) o no hay el aire que pide la toma.'),
+  motivo: z.string().min(3).max(300).describe('En castellano y en una frase: qué ves y por qué decides así.'),
+  corregir: z.string().max(400).optional().describe('Si REPETIR: lo que hay que cambiar, en inglés, como una instrucción para el fotógrafo.'),
+  sinTexto: z.boolean().describe('true si la foto se sostiene sola y cualquier texto encima la empeoraría (nunca en la portada ni en el cierre de un carrusel).'),
+  frenteAAnterior: z.enum(['MEJOR', 'PEOR', 'IGUAL']).optional().describe('Si te paso un INTENTO ANTERIOR de esta misma toma: si esta es mejor, peor o igual que aquel.'),
+});
+export type RevisionDeFoto = z.infer<typeof RevisionDeFoto>;
 
 export const EstadoDeTarjeta = z.enum(['PENDIENTE', 'HECHO', 'DESCARTADO']);
 
@@ -137,6 +196,16 @@ export const Bloque = z.discriminatedUnion('tipo', [
     elegida: z.string().optional(),
     error: z.string().optional(),
   }),
+  /** Tres conceptos de serie para elegir antes del plan (o «decide tú»). */
+  z.object({
+    tipo: z.literal('conceptos'),
+    id: Id,
+    estado: z.enum(['BUSCANDO', 'PENDIENTE', 'HECHO', 'ERROR']),
+    pedido: z.object({ formato: Formato, diapositivas: z.number().int().min(1).max(6), indicaciones: z.string(), esfuerzo: Esfuerzo }),
+    conceptos: z.array(ConceptoDeSerie).default([]),
+    elegido: z.number().int().min(0).max(2).optional(),
+    error: z.string().optional(),
+  }),
   /** Un encargo de la orden paso a paso (editorial, cartel integrado, por capas, F3). Sin proyecto, aún por crear. */
   z.object({ tipo: z.literal('encargo'), id: Id, proyecto: z.string().optional(), modo: z.string().optional() }),
 ]);
@@ -161,6 +230,10 @@ export const DiapositivaProducida = z.object({
   movil: z.string().optional(),
   problemas: z.array(z.string()).default([]),
   foto: z.string().optional(),
+  /** La lámina es la foto sola (lo planificó el director, lo decidió al ver la foto o no cabía el texto sin taparla). */
+  soloFoto: z.boolean().optional(),
+  /** Lo que decidieron los agentes por el camino (foto repetida, sin texto, acabado elegido a ciegas…), para el cliente. */
+  decisiones: z.array(z.string()).default([]),
 });
 
 export const Pieza = z.object({
@@ -193,6 +266,8 @@ export const Conversacion = z.object({
   piezas: z.array(Pieza).default([]),
   /** La referencia de la conversación (id de una imagen): la de la ficha o la que se eligió de la biblioteca. */
   referencia: Id.optional(),
+  /** La ficha de la referencia (la analiza el director al elegirla): las piezas parten de ella como hermanas. */
+  fichaReferencia: z.object({ imagen: Id, ficha: z.unknown(), apta: z.boolean(), problemas: z.array(z.string()).default([]) }).optional(),
   mensajes: z.array(Mensaje).default([]),
   /** Hay una respuesta del director en marcha. */
   pensando: z.boolean().default(false),

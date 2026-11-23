@@ -28,6 +28,15 @@ export type Bloque =
   | { tipo: 'herramienta'; id: string; herramienta: string; estado: 'FORMULARIO' | 'EN_CURSO' | 'HECHO' | 'ERROR' | 'DESCARTADO'; valores: Record<string, unknown>; progreso: string[]; resultado?: Resultado; error?: string }
   | { tipo: 'encargo'; id: string; proyecto?: string; modo?: string }
   | {
+      tipo: 'conceptos';
+      id: string;
+      estado: 'BUSCANDO' | 'PENDIENTE' | 'HECHO' | 'ERROR';
+      pedido: { formato: Formato; diapositivas: number; indicaciones: string; esfuerzo: Esfuerzo };
+      conceptos: Array<{ nombre: string; idea: string; titular: string; fotografia: string; laminas: string[] }>;
+      elegido?: number;
+      error?: string;
+    }
+  | {
       tipo: 'referencias';
       id: string;
       estado: 'BUSCANDO' | 'PENDIENTE' | 'HECHO' | 'DESCARTADO' | 'ERROR';
@@ -81,6 +90,7 @@ export interface Diapositiva {
   papel: string;
   resumen: string;
   visual: { foto: 'real' | 'generada'; generar?: { tipo: string; prompt: string; conPlato: boolean }; receta: { esqueleto: string; nombre: string } };
+  soloFoto?: boolean;
 }
 
 export interface Pieza {
@@ -95,7 +105,7 @@ export interface Pieza {
   base?: string;
   rehacer: number[];
   progreso: Array<{ texto: string; estado: 'en-curso' | 'hecho' | 'error' }>;
-  diapositivas: Array<{ n: number; png?: string; movil?: string; problemas: string[] }>;
+  diapositivas: Array<{ n: number; png?: string; movil?: string; problemas: string[]; soloFoto?: boolean; decisiones?: string[] }>;
   error?: string;
 }
 
@@ -134,6 +144,7 @@ export const api = {
     pedir(`/api/chat/${id}/mensajes`, { method: 'POST', body: JSON.stringify(m) }),
   hechos: (id: string, bloque: string, r: { confirmar: boolean; hechos?: Hechos; formato?: Formato | 'auto'; esfuerzo?: Esfuerzo }) =>
     pedir(`/api/chat/${id}/tarjetas/${bloque}/hechos`, { method: 'POST', body: JSON.stringify(r) }),
+  elegirConcepto: (id: string, bloque: string, eleccion: number | 'auto') => pedir(`/api/chat/${id}/tarjetas/${bloque}/conceptos`, { method: 'POST', body: JSON.stringify({ eleccion }) }),
   elegirEstetica: (id: string, bloque: string, eleccion: string) => pedir(`/api/chat/${id}/tarjetas/${bloque}/referencias`, { method: 'POST', body: JSON.stringify({ eleccion }) }),
   plan: (id: string, bloque: string, aprobar: boolean) => pedir(`/api/chat/${id}/tarjetas/${bloque}/plan`, { method: 'POST', body: JSON.stringify({ aprobar }) }),
   archivo: (id: string, ruta: string) => `/api/chat/${id}/archivos/${ruta.split('/').map(encodeURIComponent).join('/')}`,

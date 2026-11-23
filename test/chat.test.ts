@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import sharp from 'sharp';
 import { ServicioChat, type DepsChat } from '../src/aplicacion/chat/servicioChat.js';
+import { degrada } from '../src/aplicacion/arte/pieza.js';
 import { Receta } from '../src/dominio/arte/receta.js';
 import { costeEstimado, problemasDePieza, type Conversacion, type PlanDePieza } from '../src/dominio/chat.js';
 import type { Marca } from '../src/dominio/modelos.js';
@@ -21,7 +22,7 @@ const receta = (esqueleto: string) =>
     lecturas: ['el plato', 'el titular', 'la firma'],
     esqueleto,
     fondo: '@negro',
-    textos: [{ clave: 'titular', texto: 'CROQUETAS', fuente: 'PLATO', cita: 'Croquetas de jamón' }],
+    textos: [{ clave: 'titular', texto: 'Una más', fuente: 'CREATIVO', cita: '' }],
     producto: { escala: 'grande' },
     titular: { texto: 'titular', voz: 'titular', escala: 'monumental', relacion: 'detras' },
     operaciones: [],
@@ -39,11 +40,11 @@ const plan = (n: number): PlanDePieza => ({
   ].slice(0, n) as PlanDePieza['diapositivas'],
 });
 
-async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['buscarReferencias'] } = {}) {
+async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['buscarReferencias']; extra?: Partial<DepsChat>; plan?: () => PlanDePieza } = {}) {
   const carpeta = await mkdtemp(join(tmpdir(), 'chat-'));
   const png = join(carpeta, 'pintada.png');
   await sharp({ create: { width: 108, height: 144, channels: 3, background: '#553311' } }).png().toFile(png);
-  const llamadas = { turnos: 0, planes: 0, fotos: 0, composiciones: 0, registros: [] as string[] };
+  const llamadas = { turnos: 0, planes: 0, fotos: 0, composiciones: 0, registros: [] as string[], generadas: [] as Array<Parameters<DepsChat['generarFoto']>[0]>, compuestas: [] as Array<{ id: string; enriquecer: unknown; esqueleto: string }>, encargos: [] as Array<{ referencia?: unknown }> };
   const deps: DepsChat = {
     carpeta,
     usdPorFoto: 0.15,
@@ -61,7 +62,7 @@ async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['
             },
             planificarPieza: async () => {
               llamadas.planes++;
-              return plan(4);
+              return o.plan ? o.plan() : plan(4);
             },
           },
         }),
@@ -69,15 +70,21 @@ async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['
       llamadas.registros.push(`${x.tipo}:${x.id}`);
       return { ruta: x.ruta, activo: { id: x.id, sha256: 'a'.repeat(64) } } as never;
     },
-    prepararEncargo: async () => ({}) as never,
-    generarFoto: async () => {
+    prepararEncargo: async (entrada) => {
+      llamadas.encargos.push({ ...(entrada.referencia ? { referencia: entrada.referencia } : {}) });
+      return {} as never;
+    },
+    generarFoto: async (x) => {
       llamadas.fotos++;
+      llamadas.generadas.push(x);
       return { bytes: await sharp(png).toBuffer(), costeUsd: 0.14, modelo: 'doble' };
     },
-    componer: async (_e, r) => {
+    componer: async (e, r) => {
       llamadas.composiciones++;
+      llamadas.compuestas.push({ id: e.foto.activo.id, enriquecer: e.enriquecer, esqueleto: r.esqueleto });
       return { png, problemas: [], reparada: false, receta: r };
     },
+    ...o.extra,
   };
   return { chat: new ServicioChat(deps), llamadas, carpeta };
 }
@@ -200,6 +207,249 @@ describe('chat del estudio · estética de referencia', () => {
   });
 });
 
+describe('chat del estudio · producción con criterio (sesión, revisión, foto sola, acabado)', () => {
+  /** De la foto al plan aprobado y la pieza lista. */
+  const producir = async (m: Awaited<ReturnType<typeof montar>>) => {
+    const c = await m.chat.crear();
+    const jpg = await sharp({ create: { width: 30, height: 40, channels: 3, background: '#996633' } }).jpeg().toBuffer();
+    await m.chat.enviar(c.id, { texto: 'Un carrusel de croquetas', imagenes: [{ nombre: 'croquetas.jpg', bytes: jpg }] });
+    const conHechos = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'hechos')));
+    await m.chat.responderHechos(c.id, conHechos.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'hechos')!.id, { confirmar: true });
+    const conPlan = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'plan')));
+    await m.chat.responderPlan(c.id, conPlan.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'plan')!.id, true);
+    return esperar(m.chat, c.id, (x) => x.piezas[0]?.estado === 'LISTA' || x.piezas[0]?.estado === 'ERROR');
+  };
+
+  it('la primera toma va sola y es la continuidad de las demás; el director repite la que no vale y deja sin texto la que se sostiene sola', async () => {
+    const revisiones: string[] = [];
+    const m = await montar({
+      extra: {
+        revisarFoto: async (o) => {
+          revisiones.push(o.toma.slice(0, 20));
+          if (/macro/i.test(o.toma) && !o.foto.endsWith('-2.png')) return { veredicto: 'REPETIR', motivo: 'Sale una botella que no se pidió', corregir: 'Remove the bottle.', sinTexto: false };
+          if (/barra/i.test(o.toma)) return { veredicto: 'USAR', motivo: 'El gesto lo cuenta todo', sinTexto: true };
+          return { veredicto: 'USAR', motivo: 'Bien', sinTexto: false };
+        },
+      },
+    });
+    const lista = await producir(m);
+    const p = lista.piezas[0]!;
+    assert.equal(p.estado, 'LISTA');
+    const g = m.llamadas.generadas;
+    // La diapositiva 1 es la foto real; la 2 es la primera toma: va sola, solo con el plato real.
+    assert.match(g[0]!.id, /-2$/);
+    assert.equal(g[0]!.referencias.length, 1);
+    assert.doesNotMatch(g[0]!.prompt, /session continuity/);
+    // El director la repite con su corrección.
+    assert.match(g[1]!.id, /-2-2$/);
+    assert.match(g[1]!.prompt, /CORRECTION after reviewing a first attempt: Remove the bottle\./);
+    // Las demás reciben la toma aceptada como continuidad de la sesión.
+    for (const x of g.slice(2)) {
+      assert.equal(x.referencias.length, 2);
+      assert.match(x.referencias[1]!.etiqueta, /session continuity/);
+      assert.match(x.referencias[1]!.ruta, /fotos\/02-2\.png$/);
+      assert.match(x.prompt, /@image2 is an earlier photograph from this same shoot/);
+    }
+    assert.equal(m.llamadas.fotos, 4);
+    // La 3 va sin texto: no se maqueta. Las demás sí; el acabado, solo en la portada.
+    assert.equal(m.llamadas.composiciones, 3);
+    const conAcabado = m.llamadas.compuestas.filter((x) => x.enriquecer === true);
+    assert.equal(conAcabado.length, 1, 'el acabado, solo en una lámina');
+    assert.doesNotMatch(conAcabado[0]!.id, /^chat-pieza-/, 'y es la portada (la foto real), no una toma nueva');
+    const d = (n: number) => p.diapositivas.find((x) => x.n === n)!;
+    assert.equal(d(3).soloFoto, true);
+    assert.match(d(3).decisiones.join(), /Va sin texto: la foto se sostiene sola/);
+    assert.match(d(2).decisiones.join(), /Repetí la foto: Sale una botella/);
+    assert.ok(d(3).png && d(3).movil);
+    assert.match((await sharp(m.chat.rutaArchivo(lista.id, d(3).png!)).metadata()).width!.toString(), /^1080$/);
+    assert.match(lista.mensajes.at(-1)!.texto, /Lo que decidí por el camino/);
+  });
+
+  it('una foto con dominante excesiva se repite con la corrección en el prompt, y una moderada la neutraliza el código', async () => {
+    const m = await montar({
+      extra: {
+        defectoDeFoto: async (ruta) => (/02\.png$/.test(ruta) ? 'una dominante amarilla de IA (blancos R−B 120)' : undefined),
+        corregirFoto: async (ruta) => (/03\.png$/.test(ruta) ? 'Neutralicé la dominante amarilla de la foto (blancos R−B 50 → 9): los blancos tiraban a crema.' : undefined),
+      },
+    });
+    const lista = await producir(m);
+    const g = m.llamadas.generadas;
+    assert.match(g[1]!.id, /-2-2$/, 'la toma con dominante excesiva se repite');
+    assert.match(g[1]!.prompt, /CORRECTION after a first attempt that came out with «una dominante amarilla de IA/);
+    assert.match(g[1]!.prompt, /whites must read truly white/);
+    const d = (n: number) => lista.piezas[0]!.diapositivas.find((x) => x.n === n)!;
+    assert.match(d(2).decisiones.join(), /Repetí la foto: salió con una dominante amarilla de IA/);
+    assert.match(d(3).decisiones.join(), /Neutralicé la dominante amarilla/);
+  });
+
+  it('una lámina «solo foto» del plan no se maqueta, y si el texto no cabe sin tapar una foto nueva, va la foto sola', async () => {
+    const m = await montar({
+      plan: () => {
+        const p = plan(4);
+        p.diapositivas[2] = { ...p.diapositivas[2]!, soloFoto: true };
+        return p;
+      },
+      extra: {
+        componer: async (e, r) => {
+          intentos.push({ id: e.foto.activo.id, esqueleto: r.esqueleto });
+          return /-2$/.test(e.foto.activo.id) ? { problemas: ['No cabe «apoyo»'], reparada: true, receta: r } : { png: join(e.salida, '..', 'fotos', '03.png'), problemas: [], reparada: false, receta: r };
+        },
+      },
+    });
+    const intentos: Array<{ id: string; esqueleto: string }> = [];
+    const lista = await producir(m);
+    const d = (n: number) => lista.piezas[0]!.diapositivas.find((x) => x.n === n)!;
+    assert.equal(d(3).soloFoto, true);
+    assert.match(d(3).decisiones.join(), /Foto sola, como pedía el plan/);
+    // Antes de la foto sola, se probó la foto a sangre con titular y firma.
+    assert.ok(intentos.some((x) => /-2$/.test(x.id) && x.esqueleto === 'FOTO_A_SANGRE'));
+    assert.equal(d(2).soloFoto, true, 'sin maqueta posible, la foto nueva antes que un diseño degradado');
+    assert.match(d(2).decisiones.join(), /El texto no cabía sin tapar la foto/);
+    assert.ok(d(2).png);
+  });
+
+  it('si el segundo intento sale peor, se queda el primero; el cierre nunca va sin texto; y cada lámina conoce las maquetas de las demás', async () => {
+    const m = await montar({
+      extra: {
+        revisarFoto: async (o) => {
+          if (/macro/i.test(o.toma) && !o.anterior) return { veredicto: 'REPETIR', motivo: 'Corta el plato', corregir: 'Wider.', sinTexto: false };
+          if (/macro/i.test(o.toma)) return { veredicto: 'USAR', motivo: 'Más amarilla que la primera', sinTexto: false, frenteAAnterior: 'PEOR' };
+          return { veredicto: 'USAR', motivo: 'Se sostiene sola', sinTexto: true };
+        },
+        componer: async (e, r) => {
+          llamadasEvitar.push({ esqueleto: r.esqueleto, evitar: e.evitarEsqueletos ?? [] });
+          return { png: join(e.salida, '..', 'fotos', '03.png'), problemas: [], reparada: false, receta: r };
+        },
+      },
+    });
+    const llamadasEvitar: Array<{ esqueleto: string; evitar: string[] }> = [];
+    const lista = await producir(m);
+    const d = (n: number) => lista.piezas[0]!.diapositivas.find((x) => x.n === n)!;
+    assert.match(d(2).decisiones.join(), /Me quedo con el primer intento: el segundo salió peor/);
+    assert.match(d(2).foto ?? '', /-2$/);
+    // La 3 se sostiene sola; la 4 es el cierre: lleva texto aunque el director la vea sola.
+    assert.equal(d(3).soloFoto, true);
+    assert.notEqual(d(4).soloFoto, true);
+    const portada = llamadasEvitar.find((x) => x.esqueleto === 'FOTO_A_SANGRE')!;
+    assert.deepEqual(portada.evitar.sort(), ['EDITORIAL', 'PARTIDA'], 'la portada no puede pasar a la maqueta de otra lámina con texto (la 3, sin texto, no cuenta)');
+    const otra = llamadasEvitar.find((x) => x.esqueleto === 'PARTIDA')!;
+    assert.ok(!otra.evitar.includes('FOTO_A_SANGRE'), 'la foto a sangre nunca se bloquea: cada una es distinta por su foto');
+  });
+
+  it('la portada lleva un titular creativo: describir el plato no vale', () => {
+    const p = plan(4);
+    const r = p.diapositivas[0]!.visual.receta;
+    p.diapositivas[0] = { ...p.diapositivas[0]!, visual: { ...p.diapositivas[0]!.visual, receta: { ...r, textos: [{ clave: 'titular', texto: 'ROJO JUGOSO', fuente: 'ELEMENTO', cita: 'rojo y jugoso' }] } } };
+    assert.match(problemasDePieza(p, 'carrusel', 4).join(), /La portada lleva un titular CREATIVO .*«ROJO JUGOSO» es ELEMENTO/);
+    assert.doesNotMatch(problemasDePieza(plan(4), 'carrusel', 4).join(), /titular CREATIVO/);
+  });
+
+  it('antes del plan, tres conceptos: el cliente elige uno y el plan lo sigue; si fallan, se planifica igual', async () => {
+    const recibidos: Array<string | undefined> = [];
+    const conceptos = ['El ritual del corte', 'Del fuego a la mesa', 'El hueso en pie'].map((nombre, i) => ({ nombre, idea: `Una idea distinta número ${i + 1} para contar el plato`, titular: ['Despacio', 'Antes del fuego', 'En pie'][i]!, fotografia: 'Manos, cuchillo y tabla; sin el comedor ni otra comida.', laminas: ['uno uno uno', 'dos dos dos', 'tres tres tres', 'cuatro cuatro'] }));
+    const m = await montar();
+    const director = (m.chat as unknown as { d: DepsChat }).d.director!;
+    const planificar = director.planificarPieza.bind(director);
+    director.planificarPieza = async (e, o, dev) => {
+      recibidos.push(o.concepto?.nombre);
+      return planificar(e, o, dev);
+    };
+    director.proponerConceptos = async () => conceptos;
+    const c = await m.chat.crear();
+    const jpg = await sharp({ create: { width: 30, height: 40, channels: 3, background: '#996633' } }).jpeg().toBuffer();
+    await m.chat.enviar(c.id, { texto: 'Un carrusel de croquetas', imagenes: [{ nombre: 'croquetas.jpg', bytes: jpg }] });
+    const conHechos = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'hechos')));
+    await m.chat.responderHechos(c.id, conHechos.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'hechos')!.id, { confirmar: true });
+    const conConceptos = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'conceptos' && b.estado === 'PENDIENTE')));
+    assert.equal(m.llamadas.planes, 0, 'no se planifica hasta elegir el concepto');
+    const bloque = conConceptos.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'conceptos')!;
+    await m.chat.elegirConcepto(c.id, bloque.id, 1);
+    const conPlan = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'plan')));
+    assert.deepEqual(recibidos, ['Del fuego a la mesa']);
+    const hecho = conPlan.mensajes.flatMap((mm) => mm.bloques).find((b) => b.id === bloque.id);
+    assert.equal(hecho?.tipo === 'conceptos' && hecho.elegido, 1);
+    await assert.rejects(m.chat.elegirConcepto(c.id, bloque.id, 'auto'), /ya está hecha/);
+
+    // Si el director no puede proponer conceptos, la pieza se planifica igual.
+    const m2 = await montar();
+    (m2.chat as unknown as { d: DepsChat }).d.director!.proponerConceptos = async () => {
+      throw new Error('Gemini caído');
+    };
+    const c2 = await m2.chat.crear();
+    await m2.chat.enviar(c2.id, { texto: 'Un carrusel de croquetas', imagenes: [{ nombre: 'croquetas.jpg', bytes: jpg }] });
+    const h2 = await esperar(m2.chat, c2.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'hechos')));
+    await m2.chat.responderHechos(c2.id, h2.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'hechos')!.id, { confirmar: true });
+    const p2 = await esperar(m2.chat, c2.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'plan')));
+    assert.ok(p2.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'conceptos' && b.estado === 'ERROR')));
+  });
+
+  it('si una maqueta de recorte deja el producto diminuto en una foto nueva, se rehace a sangre con la misma foto', async () => {
+    const intentos: Array<{ n: string; esqueleto: string }> = [];
+    const m = await montar({
+      extra: {
+        componer: async (e, r) => {
+          intentos.push({ n: e.foto.activo.id, esqueleto: r.esqueleto });
+          const png = join(e.salida, '..', 'fotos', '03.png');
+          return /-3$/.test(e.foto.activo.id) && r.esqueleto === 'MARCO' ? { png, problemas: ['PRODUCTO_PEQUEÑO: en MARCO el producto ocupa el 30 % del ancho (mínimo 45 %).'], reparada: false, receta: r } : { png, problemas: [], reparada: false, receta: r };
+        },
+      },
+    });
+    const lista = await producir(m);
+    const d3 = lista.piezas[0]!.diapositivas.find((x) => x.n === 3)!;
+    assert.ok(intentos.some((x) => /-3$/.test(x.n) && x.esqueleto === 'FOTO_A_SANGRE'), 'probó la foto a sangre');
+    assert.deepEqual(d3.problemas, []);
+    assert.match(d3.decisiones.join(), /el producto quedaba diminuto .*la hice a sangre/);
+  });
+
+  it('el plan de un carrusel: portada y cierre con texto, y como mucho N−2 láminas solas', () => {
+    const p = plan(4);
+    p.diapositivas[0] = { ...p.diapositivas[0]!, soloFoto: true };
+    p.diapositivas[3] = { ...p.diapositivas[3]!, soloFoto: true };
+    p.diapositivas[1] = { ...p.diapositivas[1]!, soloFoto: true };
+    const problemas = problemasDePieza(p, 'carrusel', 4).join(' | ');
+    assert.match(problemas, /La portada de un carrusel lleva texto/);
+    assert.match(problemas, /El cierre de un carrusel lleva al menos la firma/);
+    assert.match(problemas, /Hay 3 láminas «soloFoto» en un carrusel de 4: como mucho 2/);
+  });
+
+  it('con referencia, el director la analiza una vez y el plan la recibe con su ficha', async () => {
+    const analizadas: string[] = [];
+    const m = await montar({
+      buscarReferencias: async (o) => {
+        await sharp({ create: { width: 40, height: 50, channels: 3, background: '#224466' } }).jpeg().toFile(join(o.destino, 'pinterest-01.jpg'));
+        return { consultas: ['x'], candidatas: [{ id: 'pinterest-1', origen: 'pinterest', archivo: `${o.prefijo}/pinterest-01.jpg`, titulo: 'Pin' }] };
+      },
+      extra: {
+        analizarReferencia: async (ruta) => {
+          analizadas.push(ruta);
+          return { ficha: { familia: 'F2', titulo: 'Patrón' }, apta: true, problemas: [] };
+        },
+      },
+    });
+    const c = await m.chat.crear();
+    const jpg = await sharp({ create: { width: 30, height: 40, channels: 3, background: '#996633' } }).jpeg().toBuffer();
+    await m.chat.enviar(c.id, { texto: 'Un carrusel de croquetas', imagenes: [{ nombre: 'croquetas.jpg', bytes: jpg }] });
+    const conHechos = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'hechos')));
+    await m.chat.responderHechos(c.id, conHechos.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'hechos')!.id, { confirmar: true });
+    const conRefs = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'referencias' && b.estado === 'PENDIENTE')));
+    await m.chat.elegirEstetica(c.id, conRefs.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'referencias')!.id, 'auto');
+    const conPlan = await esperar(m.chat, c.id, (x) => x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'plan')));
+    assert.equal(analizadas.length, 1);
+    assert.equal(conPlan.fichaReferencia?.apta, true);
+    assert.equal(conPlan.fichaReferencia?.imagen, conPlan.referencia);
+    const ref = m.llamadas.encargos.at(-1)!.referencia as { id: string; ficha?: unknown };
+    assert.equal(ref.id, conPlan.referencia);
+    assert.deepEqual(ref.ficha, { familia: 'F2', titulo: 'Patrón' });
+  });
+
+  it('una reparación que pasa de foto a sangre a plato recortado sobre color degrada la pieza', () => {
+    assert.equal(degrada(receta('FOTO_A_SANGRE'), receta('PRODUCTO_SOBRE_COLOR')), true);
+    assert.equal(degrada(receta('PARTIDA'), receta('EDITORIAL')), true);
+    assert.equal(degrada(receta('FOTO_A_SANGRE'), receta('PARTIDA')), false);
+    assert.equal(degrada(receta('CARTEL'), receta('PRODUCTO_SOBRE_COLOR')), false);
+  });
+});
+
 describe('plan de una pieza', () => {
   it('un carrusel no repite la foto real ni el esqueleto en dos seguidas', () => {
     const malo = plan(4);
@@ -213,8 +463,15 @@ describe('plan de una pieza', () => {
 
   it('el coste cuenta las fotos nuevas y las reparaciones (y en un ajuste, solo lo que se rehace)', () => {
     assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'rapido' }), 0.45);
-    assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'normal' }), 0.65);
-    assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'normal', soloDiapositivas: [2] }), 0.2);
+    // normal: 3 fotos (0,45) + crítica de 4 láminas (0,40) + revisión de 3 fotos (0,06) + acabado de la portada (0,20).
+    assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'normal' }), 1.11);
+    assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'normal', soloDiapositivas: [2] }), 0.27);
+    // máximo: acabado en todas.
+    assert.equal(costeEstimado(plan(4), { usdPorFoto: 0.15, esfuerzo: 'maximo' }), 2.11);
+    // Una lámina «solo foto» no se critica ni lleva acabado.
+    const conSola = plan(4);
+    conSola.diapositivas[3] = { ...conSola.diapositivas[3]!, soloFoto: true };
+    assert.equal(costeEstimado(conSola, { usdPorFoto: 0.15, esfuerzo: 'normal' }), 1.01);
   });
 });
 

@@ -57,7 +57,7 @@ export function Lateral(p: {
   );
 }
 
-const PASOS = ['Foto', 'Ficha del plato', 'Estética', 'Plan', 'Producción', 'Listo'] as const;
+const PASOS = ['Foto', 'Ficha del plato', 'Estética', 'Concepto', 'Plan', 'Producción', 'Listo'] as const;
 
 /** Por dónde va la conversación: lo hecho, en verde; lo actual, en el color de acento. */
 export function Recorrido({ c }: { c: Conversacion }) {
@@ -65,6 +65,7 @@ export function Recorrido({ c }: { c: Conversacion }) {
     c.imagenes.length > 0,
     Boolean(c.hechos),
     c.piezas.some((x) => x.plan) || c.mensajes.some((m) => m.bloques.some((b) => b.tipo === 'referencias' && ['HECHO', 'DESCARTADO', 'ERROR'].includes(b.estado))),
+    c.piezas.some((x) => x.plan) || c.mensajes.some((m) => m.bloques.some((b) => b.tipo === 'conceptos' && ['HECHO', 'ERROR'].includes(b.estado))),
     c.piezas.some((x) => x.plan),
     c.piezas.some((x) => x.estado === 'PRODUCIENDO' || x.estado === 'LISTA'),
     c.piezas.some((x) => x.estado === 'LISTA'),

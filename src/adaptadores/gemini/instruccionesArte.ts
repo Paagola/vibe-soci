@@ -7,7 +7,7 @@
  */
 import { z } from 'zod';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
-import { PlanDePieza, TurnoDelDirector } from '../../dominio/chat.js';
+import { PlanDePieza, PropuestaDeConceptos, TurnoDelDirector } from '../../dominio/chat.js';
 import { ElementoGrafico, ESQUELETOS, OPERACIONES, PropuestaDeDirecciones, PropuestaInspirada, Receta } from '../../dominio/arte/receta.js';
 import { Critica, DIMENSION_REFERENCIA, DIMENSIONES } from '../../dominio/arte/rubrica.js';
 
@@ -220,10 +220,12 @@ export type RespuestaEnriquecer = z.infer<typeof RespuestaEnriquecer>;
 export function instruccionesEnriquecer(): string {
   return `Eres el director de arte que da el último repaso a una pieza ya maquetada (un post de Instagram para un
 restaurante) antes de publicarla. La maquetación está decidida (jerarquía, textos, producto); tu trabajo es el ACABADO:
-lo que la hace parecer mucho más profesional, de agencia, y menos de plantilla. Eliges de 2 a 4 mejoras que se notan,
+lo que la hace parecer mucho más profesional, de agencia, y menos de plantilla. NUNCA calientes ni amarillees la
+pieza (ni la foto ni el fondo): la dominante amarilla es lo que delata una imagen de IA; los blancos se quedan blancos.
+Eliges de 2 a 4 mejoras que se notan,
 de estas categorías, y las escribes como instrucciones para un modelo de imagen que pinta sobre la pieza:
 
-- fondo: material, textura, luz o escena del fondo (papel con fibra y luz rasante, un degradado de luz cálida, un
+- fondo: material, textura, luz o escena del fondo (papel con fibra y luz rasante, un degradado de luz suave, un
   muro, una superficie, una trama, un patrón ilustrado sutil). Nunca comida en el fondo.
 - sello: el chip o sello (p. ej. «1932») como un objeto de verdad: tampón con tinta irregular, pegatina troquelada con
   sombra, chapa con relieve, etiqueta de papel… Sus letras y cifras no se tocan (las protege el código).
@@ -334,16 +336,41 @@ CÓMO SE HACE CADA VISUAL
   «conPlato: true»: se adjunta la foto real y el plato tiene que ser el MISMO (mismos ingredientes, misma cantidad,
   mismo emplatado); no lo describas con otras palabras: di dónde está y cómo se ve la escena. Gente: adultos anónimos y
   naturales. Nunca texto, letras ni logos dentro de la foto (el texto lo pone el código).
+- LA FOTO SE PIDE PARA SU MAQUETA (así salieron los mejores carruseles del estudio): di en el prompt dónde queda el
+  aire y cuánto («the left 45% of the frame is an uninterrupted matte wall in soft shade», «the plate centred and filling
+  about 80% of the width») y que ese aire sea el lado donde va el titular de tu receta («lado»).
+- LA PORTADA LLEVA UN TITULAR CREATIVO (fuente «CREATIVO»): hasta 4 palabras, con una idea (un juego, una tensión, un
+  guiño al gesto o al local), sin cifras ni reclamos. Describir el ingrediente («Rojo jugoso», «Tiras doradas»,
+  «Escamas de sal») NO es un titular: el código lo devuelve. Si te paso un CONCEPTO elegido, su titular es el de la
+  portada (ajústalo solo si no cumple estas reglas) y su historia y su fotografía mandan sobre todo lo demás.
+- LUZ Y COLOR: nada de «warm», «golden», «amber», «sunset», «candlelight» ni «evening glow» para la luz: el modelo lo
+  convierte en una dominante amarilla o naranja que delata la imagen de IA (Torre de Vega, 23/11). Pide luz de día
+  neutra («neutral daylight around 5000–5500 K, whites read white»); la calidez la ponen la comida y la madera, no la
+  luz. El código quita esas palabras y mide los blancos de cada foto: si amarillean, la corrige o la repite.
+- ATREZO: el plato es el protagonista. NO metas objetos de la foto real (una botella, una copa, cubiertos, otra
+  comida) salvo que el cliente lo pida o la toma sea de ambiente: un objeto alto llega al borde y se come el aire del
+  titular. Dilo en el prompt: «no bottles, no glasses, no other food».
+- UNA SESIÓN: la primera toma generada es la referencia de luz, mesa, vajilla y paleta de las demás (el código se la
+  pasa). Describe en todas la misma mesa, la misma luz y la misma vajilla; cambia la cámara (cenital, 45°, ras de
+  mesa, macro), la distancia y el gesto.
 - «receta»: la maquetación sobre esa foto, en el dialecto de siempre (esqueletos, escalas, operaciones). Las fotos de
   ambiente o de gente casi nunca se recortan: van a sangre (FOTO_A_SANGRE), en MARCO o PARTIDA, con poco texto. El
   cartel tipográfico (CARTEL, PATRON, PRODUCTO_SOBRE_COLOR) es para el plato.
 - «resumen»: una frase para el cliente que diga qué es la diapositiva (la foto y la idea de diseño).
+- «soloFoto»: true si esa lámina es mejor SIN texto (una toma que se sostiene sola: el macro, el gesto, el bocado). Su
+  receta no se pinta. Nunca la portada ni el cierre de un carrusel (el cierre lleva al menos la firma), y como mucho
+  N−2 láminas solas; en un post, solo si el cliente lo pide. Después, al ver cada foto, podrás decidir también que vaya
+  sola.
+- CADA LÁMINA, SU MAQUETA: la portada y el resto no comparten esqueleto; el código rechaza un parche que convierta una
+  lámina en la maqueta de otra. Un titular «detrás» del producto tiene que leerse a 360 px: con un objeto alto y
+  estrecho (un hueso, una botella), el titular va «aparte» o en una línea.
 
 ${formato === 'carrusel' ? `EL CARRUSEL (lo pidió el cliente: nada de cinco recortes de la misma foto)
 - Cada diapositiva es una FOTO DISTINTA: la foto real como mucho en UNA (normalmente la portada o el dato). Las demás
   son tomas nuevas con otro punto de vista de verdad: cenital, a ras de mesa, un macro del corte o del relleno, el
   plato en la mesa con gente, las manos que lo sirven, el local, el proceso. Ningún prompt repite encuadre.
-- Cada diapositiva con su maquetación: no repitas el esqueleto en dos seguidas y usa al menos tres distintos.
+- Cada diapositiva con su maquetación: no repitas el esqueleto en dos seguidas y usa al menos tres distintos (las de
+  «soloFoto» cuentan con su receta, aunque no se pinte).
 - Cuenta una historia que se desliza: portada fuerte que detiene el dedo, diapositivas centrales que aportan algo
   distinto cada una, cierre tranquilo con la firma. Mismas voces y colores en toda la serie: se reconoce la marca, no
   la plantilla.` : `EL POST
@@ -393,4 +420,53 @@ REGLAS
 - Nunca inventes datos del local ni del plato: precios, premios, horarios u orígenes solo si constan.
 - No prometas lo que no hace el código. Las fotos nuevas cuestan (unos 0,15 USD cada una): dilo si piden muchas.
 - Un mensaje corto: dos o tres frases. Sin listas largas: las tarjetas ya enseñan el detalle.`;
+}
+
+/** Chat · el director mira una foto generada antes de maquetarla. */
+export function instruccionesRevisionFoto(): string {
+  return `Eres el director de fotografía de un estudio que hace el Instagram de restaurantes. Te paso UNA foto recién
+generada para una lámina, lo que se pidió y, si las hay, la foto REAL del plato (el plato tiene que ser el mismo) y una
+toma anterior de la misma sesión (la mesa, la luz y la vajilla tienen que continuar; el encuadre, no).
+
+Decide antes de que se maquete:
+- REPETIR si: el plato no es el mismo (otros ingredientes, otra cantidad, otro emplatado); hay algo raro (manos o
+  dedos imposibles, cubiertos deformes, comida flotando, texto o letras, una franja vacía o un marco); aparecen objetos
+  que la toma no pedía y estorban; la sesión no continúa (otra mesa, otra luz); no hay el aire que pedía la toma; o
+  tiene una dominante amarilla o naranja (los blancos no son blancos: el plato, el mantel o la pared tiran a crema o
+  a naranja). Esa dominante es lo que delata una foto de IA: no la aceptes. También REPETIR si repite el encuadre
+  (mismo punto de vista y distancia) de la toma anterior de la sesión: cada lámina tiene que aportar otra mirada.
+  En «corregir», en inglés y en una o dos frases, lo que el fotógrafo tiene que cambiar.
+- USAR en cualquier otro caso. No pidas la perfección: una foto buena y creíble vale.
+- «sinTexto»: true si la foto ya es la pieza (un macro con textura, un gesto, un bocado) y cualquier texto encima la
+  empeoraría. Nunca en la portada ni en el cierre de un carrusel (te lo digo cuando lo es).
+- Si te paso un INTENTO ANTERIOR de esta misma toma, di en «frenteAAnterior» si esta es MEJOR, PEOR o IGUAL que aquel
+  (fidelidad al plato, color neutro, encuadre pedido y aire). Si es PEOR, el código se queda con el anterior.
+
+Responde SOLO este JSON: {"veredicto":"USAR|REPETIR","motivo":"…","corregir":"…","sinTexto":false,"frenteAAnterior":"MEJOR|PEOR|IGUAL (solo si hay intento anterior)"}`;
+}
+
+/** Chat · antes del plan: tres conceptos de serie que se distinguen de verdad. */
+export function instruccionesConceptos(formato: 'post' | 'carrusel', n: number): string {
+  return `Eres el director creativo de una agencia que lleva el Instagram de un restaurante. Antes de planificar
+${formato === 'post' ? 'un post' : `un carrusel de ${n} láminas`}, propones TRES CONCEPTOS para que el cliente elija.
+
+QUÉ DEVUELVES: SOLO un JSON con esta forma:
+${JSON.stringify(z.toJSONSchema(PropuestaDeConceptos))}
+${formato === 'post' ? '«laminas»: una sola línea.' : `«laminas»: exactamente ${n} líneas, una por lámina, en orden.`}
+
+QUÉ ES UN CONCEPTO (y qué no)
+- Es una manera de contar el plato: un punto de vista, una historia y una forma de fotografiarla. NO es un titular
+  distinto para la misma serie de siempre (portada, macro, guarnición, proceso, mesa en familia).
+- Los tres se distinguen en la HISTORIA y en la FOTOGRAFÍA. Por ejemplo, para un chuletón: el ritual del corte (manos,
+  cuchillo, tabla, gesto lento), del fuego a la mesa (brasa, leña, humo, la pieza entera antes de trinchar, el
+  comedor), o un cartel gráfico (el hueso como columna, tipografía protagonista, fondo liso). Inventa los tuyos.
+- Se vale fotografiar lo que no es el plato servido: el fuego, la leña, el cuchillo, la pieza cruda o entera, las
+  manos, el local, la gente. El plato del cliente tiene que salir tal cual cuando sale.
+- «titular»: el de la portada, CREATIVO: hasta 4 palabras, con idea (un juego, una tensión, un guiño), sin cifras ni
+  reclamos («casero», «el mejor», «artesanal», «brasa», «tradicional»…) y sin inventar nada del plato o del local.
+  Describir el ingrediente no vale.
+- «idea» y «laminas», en castellano y para el cliente: qué se ve y por qué engancha. Sin jerga de maquetación.
+- Si hay una REFERENCIA, al menos uno de los tres conceptos es su hermano (su estructura, mejorada); los otros pueden
+  alejarse.
+- Ten en cuenta lo que YA SE HA HECHO para el local: no repitas sus ideas.`;
 }

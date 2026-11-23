@@ -13,6 +13,7 @@ import Markdown from 'react-markdown';
 import { Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, PanelLeftOpen, Sparkles, Square, Wand2 } from 'lucide-react';
 import { PromptInput } from '@/components/ui/ai-chat-input';
 import { TarjetaReferencias } from '@/components/chat/referencias';
+import { TarjetaConceptos } from '@/components/chat/conceptos';
 import MorphOrb, { ThinkingOrb } from '@/components/ui/ai-thiking-orb-and-input';
 import { Bandeja, PanelDeHerramientas } from '@/components/chat/bandeja';
 import { TarjetaEncargo } from '@/components/chat/encargo';
@@ -310,6 +311,8 @@ function BloqueDelMensaje({ b, c, locales, herramientas }: { b: Bloque; c: Conve
     }
     case 'referencias':
       return <TarjetaReferencias conversacion={c} bloque={b} />;
+    case 'conceptos':
+      return <TarjetaConceptos conversacion={c} bloque={b} />;
     case 'encargo':
       return <TarjetaEncargo conversacion={c} bloque={b} locales={locales} />;
     case 'error':

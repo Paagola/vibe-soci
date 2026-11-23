@@ -9,6 +9,7 @@
  *   POST /api/chat/:id/tarjetas/:b/hechos   { confirmar, hechos?, formato?, esfuerzo? }
  *   POST /api/chat/:id/tarjetas/:b/plan     { aprobar }
  *   POST /api/chat/:id/tarjetas/:b/referencias { eleccion: id | auto | ninguna }  la estética de referencia
+ *   POST /api/chat/:id/tarjetas/:b/conceptos   { eleccion: 0 | 1 | 2 | auto }  el concepto de la serie
  *   GET  /api/chat/:id/archivos/<ruta>      imágenes de la conversación y piezas
  *   GET  /api/chat/herramientas             el catálogo de herramientas (formularios rápidos)
  *   GET  /api/chat/biblioteca               las familias de referencias de la biblioteca · /biblioteca/:post su imagen
@@ -110,6 +111,12 @@ export function rutasDelChat(chat: ServicioChat, herramientas?: HerramientasDeLa
   rutas.post('/:id/tarjetas/:bloque/plan', async (req, res) => {
     const r = z.object({ aprobar: z.boolean() }).parse(req.body);
     await chat.responderPlan(req.params.id, req.params.bloque, r.aprobar);
+    res.status(202).json({ ok: true });
+  });
+
+  rutas.post('/:id/tarjetas/:bloque/conceptos', async (req, res) => {
+    const r = z.object({ eleccion: z.union([z.literal('auto'), z.number().int().min(0).max(2)]) }).parse(req.body);
+    await chat.elegirConcepto(req.params.id, req.params.bloque, r.eleccion);
     res.status(202).json({ ok: true });
   });
 

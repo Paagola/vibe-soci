@@ -225,6 +225,35 @@ describe('F3.2 · sin aire no hay titular detrás', () => {
   });
 });
 
+describe('F3.2 · el aire real de una escena (Etxebarri, 23/11)', () => {
+  it('con una botella que llega al borde de arriba, el titular va en el aire de la esquina, sin pasar por detrás y sin pisar nada', () => {
+    // Plato abajo a la derecha y una botella alta a la derecha que toca el borde: ni encima ni debajo quedan filas
+    // enteras libres, pero el cuadrante de arriba a la izquierda es pared lisa.
+    const ancho = 120;
+    const alto = 160;
+    const rgb = new Uint8Array(ancho * alto * 3);
+    const mascara = new Uint8Array(ancho * alto);
+    for (let y = 0; y < alto; y++) {
+      for (let x = 0; x < ancho; x++) {
+        const i = y * ancho + x;
+        const plato = (x / ancho - 0.55) ** 2 / 0.42 ** 2 + (y / alto - 0.8) ** 2 / 0.2 ** 2 <= 1;
+        const botella = x / ancho >= 0.72 && x / ancho <= 0.86 && y / alto <= 0.66;
+        rgb.set(plato || botella ? [200, 80, 50] : [30, 30, 30], i * 3);
+        mascara[i] = plato || botella ? 255 : 0;
+      }
+    }
+    const m = construirMapa({ ancho, alto, rgb, mascara });
+    const r = colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma' }), entorno(m));
+    assert.deepEqual(r.problemas, []);
+    const t = texto(r.capas, 'titular')!;
+    assert.equal(t.relacion, 'aparte');
+    assert.ok(!pisaElPlato(m, t.caja), `el titular no pisa ni el plato ni la botella: ${JSON.stringify(t.caja)}`);
+    assert.ok(t.caja.col[0] === 1 && t.caja.col[1]! >= 5, 'en el aire de la izquierda, con anchura de titular');
+    assert.ok(r.capas.some((c) => c.tipo === 'foto'), 'la foto sigue a sangre');
+    assert.match(r.notas.join(), /aire de la foto/);
+  });
+});
+
 describe('F3.1 · mecanismos: detalles de oficio', () => {
   it('«sangra» corta los dos cantos con una sola palabra (ancho, centrado); con varias se ignora y se dice', () => {
     const m = mapaSintetico();

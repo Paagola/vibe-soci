@@ -12,10 +12,10 @@ import { mapaEnTexto } from '../../dominio/diseno/mapaDeFoto.js';
 import type { ComparadorDeArte, CriticoDeArte, DirectorDeArte, EncargoDeArte, PiezaPintada } from '../../puertos/EstudioDeArte.js';
 import type { ClienteGemini, ParteGemini } from './ClienteGemini.js';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
-import { PlanDePieza, TurnoDelDirector } from '../../dominio/chat.js';
+import { PlanDePieza, PropuestaDeConceptos, RevisionDeFoto, TurnoDelDirector, type ConceptoDeSerie } from '../../dominio/chat.js';
 import {
   EvaluacionDeLote, instruccionesChat, instruccionesEvaluacionLote, instruccionesLote, instruccionesPieza,
-  instruccionesComparador, instruccionesComparadorConReferencia, instruccionesCriticoArte, instruccionesDirectorArte, instruccionesEnriquecer, instruccionesInspiradas, instruccionesPlantilla,
+  instruccionesComparador, instruccionesComparadorConReferencia, instruccionesCriticoArte, instruccionesDirectorArte, instruccionesEnriquecer, instruccionesInspiradas, instruccionesPlantilla, instruccionesRevisionFoto, instruccionesConceptos,
   RespuestaComparacion, RespuestaEnriquecer, RespuestaPlantilla,
 } from './instruccionesArte.js';
 
@@ -100,7 +100,7 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
    */
   async planificarPieza(
     e: EncargoDeArte,
-    o: { formato: 'post' | 'carrusel'; diapositivas: number; indicaciones: string; base?: { plan: PlanDePieza; rehacer: number[] } },
+    o: { formato: 'post' | 'carrusel'; diapositivas: number; indicaciones: string; base?: { plan: PlanDePieza; rehacer: number[] }; concepto?: ConceptoDeSerie },
     devolver: string[],
   ): Promise<PlanDePieza> {
     const partes: ParteGemini[] = [
@@ -108,13 +108,47 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
       { text: 'La FOTO REAL del plato del local («foto: real»):' },
       await imagen(e.foto, 640),
     ];
-    if (e.referencia) partes.push({ text: `Un post de REFERENCIA que le gusta al cliente («${e.referencia.id}»): tómalo como listón de oficio y de tono, no lo copies.` }, await imagen(e.referencia.ruta, 640));
+    if (e.referencia) {
+      partes.push(
+        {
+          text: e.referencia.ficha
+            ? `La REFERENCIA que eligió el cliente («${e.referencia.id}»), con su ficha: ${JSON.stringify(e.referencia.ficha)}\nLa portada${o.formato === 'post' ? ' (el post)' : ''} es una HERMANA de la referencia: estudia qué la hace funcionar y toma su ESTRUCTURA (familia, retícula, mecanismo, jerarquía, tratamiento, cómo se relacionan texto y producto), adaptada a este plato y esta marca, y mejórala en algo concreto. Rellena «parentesco» (qué tomas) y «mejora» (qué mejoras). Copiar sus textos, su marca o su plato es un fracaso; parecerse en la estructura es lo que se busca.${o.formato === 'carrusel' ? ' Las demás láminas siguen la serie con la misma familia visual.' : ''}`
+            : `Un post de REFERENCIA que le gusta al cliente («${e.referencia.id}»): toma su estructura y su tono como listón (rellena «parentesco» y «mejora»); nunca sus textos, su marca ni su plato.`,
+        },
+        await imagen(e.referencia.ruta, 900),
+      );
+    }
+    if (o.concepto) {
+      partes.push({
+        text: `EL CONCEPTO QUE ELIGIÓ EL CLIENTE (manda sobre todo lo demás): «${o.concepto.nombre}». ${o.concepto.idea}\nTITULAR DE PORTADA: «${o.concepto.titular}» (fuente CREATIVO).\nFOTOGRAFÍA: ${o.concepto.fotografia}\nLÁMINAS, EN ORDEN:\n${o.concepto.laminas.map((l, i) => `${i + 1}. ${l}`).join('\n')}`,
+      });
+    }
     if (o.base) {
       const rehacer = o.base.rehacer.length ? o.base.rehacer : o.base.plan.diapositivas.map((_, i) => i + 1);
       partes.push({ text: `AJUSTE DE UNA PIEZA HECHA. El plan anterior:\n${JSON.stringify(o.base.plan)}\nRehaz SOLO las diapositivas ${rehacer.join(', ')} según lo que pide el cliente; las demás devuélvelas IGUALES (mismo visual y receta). Devuelve el plan entero.` });
     }
     if (devolver.length) partes.push({ text: `TU PLAN ANTERIOR TENÍA ESTOS PROBLEMAS (corrígelos todos y devuelve el plan entero):\n${devolver.map((p) => `- ${p}`).join('\n')}` });
     return this.cliente.generarJson(instruccionesPieza(o.formato, o.diapositivas), partes, PlanDePieza);
+  }
+
+  /** Chat · antes del plan, tres conceptos de serie que se distinguen en la historia y en la fotografía. */
+  async proponerConceptos(e: EncargoDeArte, o: { formato: 'post' | 'carrusel'; diapositivas: number; indicaciones: string }): Promise<ConceptoDeSerie[]> {
+    const partes: ParteGemini[] = [
+      { text: `${hechosEnTexto(e)}\n\n${e.anteriores?.length ? `YA HECHAS PARA ESTE LOCAL (no repitas sus ideas): ${e.anteriores.join(' | ')}\n\n` : ''}LO QUE PIDE EL CLIENTE: ${o.indicaciones || 'sin indicaciones: decide tú.'}` },
+      { text: 'La FOTO REAL del plato del local:' },
+      await imagen(e.foto, 640),
+    ];
+    if (e.referencia) partes.push({ text: `La REFERENCIA que eligió el cliente («${e.referencia.id}»)${e.referencia.ficha ? `, con su ficha: ${JSON.stringify(e.referencia.ficha)}` : ''}:` }, await imagen(e.referencia.ruta, 700));
+    return (await this.cliente.generarJson(instruccionesConceptos(o.formato, o.diapositivas), partes, PropuestaDeConceptos)).conceptos;
+  }
+
+  /** Chat · mira una foto generada antes de maquetarla: si se repite (y qué corregir) y si va sin texto. */
+  async revisarFoto(o: { foto: string; real?: string; continuidad?: string; anterior?: string; toma: string; papel: string; portada: boolean }): Promise<RevisionDeFoto> {
+    const partes: ParteGemini[] = [{ text: `LÁMINA: ${o.papel}${o.portada ? ' (es la PORTADA o el CIERRE del carrusel: nunca sin texto)' : ''}.\nLO QUE SE PIDIÓ: ${o.toma}` }, { text: 'La foto GENERADA:' }, await imagen(o.foto, 900)];
+    if (o.anterior) partes.push({ text: 'El INTENTO ANTERIOR de esta misma toma (di si la nueva es MEJOR, PEOR o IGUAL):' }, await imagen(o.anterior, 640));
+    if (o.real) partes.push({ text: 'La foto REAL del plato (tiene que ser el mismo):' }, await imagen(o.real, 640));
+    if (o.continuidad) partes.push({ text: 'Una toma anterior de la MISMA sesión (mesa, luz y vajilla tienen que continuar):' }, await imagen(o.continuidad, 640));
+    return this.cliente.generarJson(instruccionesRevisionFoto(), partes, RevisionDeFoto);
   }
 
   /** Chat · un turno del director: lee la conversación (y las imágenes que toque) y responde con un mensaje y, quizá, una acción. */

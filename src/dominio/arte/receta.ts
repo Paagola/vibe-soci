@@ -16,6 +16,12 @@ import type { EstiloTexto } from '../diseno/intencion.js';
 
 const Clave = z.string().regex(/^[a-z][a-z0-9-]*$/);
 const Token = z.string().regex(/^@[a-z][a-zA-Z0-9-]*$/);
+/**
+ * Texto que explica (no se pinta): si el modelo se alarga, se recorta en lugar de tumbar la respuesta entera
+ * (23/11: Argon escribía «parentesco» de más de 240 caracteres y el plan se rechazaba tres veces).
+ */
+export const explicacion = (min: number, max: number) => z.preprocess((v) => (typeof v === 'string' && v.length > max ? `${v.slice(0, max - 1).trimEnd()}…` : v), z.string().min(min).max(max));
+
 const Fraccion = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) });
 
 /** La estructura de la pieza: dónde vive el producto y dónde vive el texto. Cambiarla es cambiar de pieza. */
@@ -141,8 +147,8 @@ export type ElementoGrafico = z.infer<typeof ElementoGrafico>;
 /** Una dirección visual: lo que escribe el director de arte. */
 export const Receta = z.object({
   nombre: z.string().min(2).max(40).describe('Nombre corto de la dirección («Alzado», «Prensa», «Corte»).'),
-  idea: z.string().min(12).max(280).describe('La idea en una frase: de qué hecho del producto, del mensaje o del local nace.'),
-  lecturas: z.array(z.string().min(3).max(120)).length(3).describe('Qué se ve primero, segundo y tercero.'),
+  idea: explicacion(12, 280).describe('La idea en una frase: de qué hecho del producto, del mensaje o del local nace.'),
+  lecturas: z.array(explicacion(3, 120)).length(3).describe('Qué se ve primero, segundo y tercero.'),
   esqueleto: Esqueleto,
   lado: z.enum(['izquierda', 'derecha', 'arriba', 'abajo']).optional().describe('PARTIDA y COLUMNA: dónde va la zona de texto. CARTEL y FOTO_A_SANGRE: dónde va el titular.'),
   fondo: Token.describe('Color del campo (de la lista).'),
@@ -156,22 +162,22 @@ export const Receta = z.object({
   firma: TextoSecundario.optional(),
   operaciones: z.array(Operacion).max(4).default([]),
   elementos: z.array(ElementoGrafico).max(3).default([]).describe('Elementos dibujados por un modelo de imagen secundario (opcional).'),
-  parentesco: z.string().min(8).max(240).optional().describe('Con referencia: qué se toma de ella (estructura, mecanismo, ritmo, tratamiento).'),
-  mejora: z.string().min(8).max(240).optional().describe('Con referencia: la decisión propia que hace esta pieza mejor que la referencia.'),
+  parentesco: explicacion(8, 240).optional().describe('Con referencia: qué se toma de ella (estructura, mecanismo, ritmo, tratamiento).'),
+  mejora: explicacion(8, 240).optional().describe('Con referencia: la decisión propia que hace esta pieza mejor que la referencia.'),
 });
 export type Receta = z.infer<typeof Receta>;
 export type RecetaEntrada = z.input<typeof Receta>;
 
 /** Lo que el director estudia de la referencia antes de proponer (modo referencia). */
 export const AnalisisDeReferencia = z.object({
-  queLaHaceFuncionar: z.array(z.string().min(5).max(200)).min(2).max(5),
-  estructura: z.string().min(10).max(300).describe('Dónde va cada cosa y en qué proporción.'),
-  tipografia: z.string().min(5).max(220),
-  color: z.string().min(5).max(220),
-  producto: z.string().min(5).max(220).describe('Cómo se trata el producto: recorte, giro, escala, posición, sombra.'),
+  queLaHaceFuncionar: z.array(explicacion(5, 200)).min(2).max(5),
+  estructura: explicacion(10, 300).describe('Dónde va cada cosa y en qué proporción.'),
+  tipografia: explicacion(5, 220),
+  color: explicacion(5, 220),
+  producto: explicacion(5, 220).describe('Cómo se trata el producto: recorte, giro, escala, posición, sombra.'),
   recursos: z.array(z.string().max(160)).max(6),
   elementosDibujados: z.array(z.string().max(160)).max(4).describe('Lo que la referencia tiene dibujado a mano o ilustrado (el compositor no lo pinta).'),
-  mejorable: z.array(z.string().min(5).max(200)).min(1).max(4).describe('Lo que se puede hacer mejor que la referencia.'),
+  mejorable: z.array(explicacion(5, 200)).min(1).max(4).describe('Lo que se puede hacer mejor que la referencia.'),
 });
 export type AnalisisDeReferencia = z.infer<typeof AnalisisDeReferencia>;
 
