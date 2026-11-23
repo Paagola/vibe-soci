@@ -1,0 +1,576 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Tema del estudio: superficies sólidas en niveles y UN solo color de acento (azul sereno) para lo que se puede hacer.
+   Jerarquía, de abajo arriba:
+     fondo (--background) < barra lateral (--lateral) < superficie (--card) < superficie elevada (--popover, --muted)
+   Texto en tres niveles: --foreground (lo principal), --muted-foreground (lo secundario), --tenue (pies y ayudas).
+   El acento solo marca: acción principal, selección, foco y lo activo. Éxito y error tienen su color propio. */
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.975 0.003 260);
+  --lateral: oklch(0.955 0.004 260);
+  --foreground: oklch(0.21 0.012 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.012 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.012 260);
+  --primary: oklch(0.52 0.16 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.94 0.005 260);
+  --secondary-foreground: oklch(0.25 0.012 260);
+  --muted: oklch(0.955 0.004 260);
+  --muted-foreground: oklch(0.47 0.014 260);
+  --tenue: oklch(0.6 0.012 260);
+  --accent: oklch(0.93 0.006 260);
+  --accent-foreground: oklch(0.21 0.012 260);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --exito: oklch(0.55 0.13 155);
+  --border: oklch(0.89 0.005 260);
+  --input: oklch(0.86 0.006 260);
+  --ring: oklch(0.52 0.16 258);
+  --acento: oklch(0.52 0.16 258);
+}
+
+.dark {
+  --background: oklch(0.16 0.006 262);
+  --lateral: oklch(0.135 0.006 262);
+  --foreground: oklch(0.955 0.004 262);
+  --card: oklch(0.205 0.007 262);
+  --card-foreground: oklch(0.955 0.004 262);
+  --popover: oklch(0.235 0.008 262);
+  --popover-foreground: oklch(0.955 0.004 262);
+  --primary: oklch(0.6 0.15 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.26 0.008 262);
+  --secondary-foreground: oklch(0.955 0.004 262);
+  --muted: oklch(0.245 0.008 262);
+  --muted-foreground: oklch(0.72 0.012 262);
+  --tenue: oklch(0.56 0.012 262);
+  --accent: oklch(0.275 0.009 262);
+  --accent-foreground: oklch(0.955 0.004 262);
+  --destructive: oklch(0.65 0.19 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --exito: oklch(0.72 0.14 155);
+  --border: oklch(0.285 0.008 262);
+  --input: oklch(0.33 0.009 262);
+  --ring: oklch(0.66 0.14 258);
+  --acento: oklch(0.7 0.13 258);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-lateral: var(--lateral);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-tenue: var(--tenue);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-exito: var(--exito);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-acento: var(--acento);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* ───────── El orbe pensante (components/ui/ai-thiking-orb-and-input.tsx) ─────────
+   El componente solo trae su lógica y los keyframes; estos estilos leen las variables que anima su motor:
+   --w, --h, --r (tamaño y radio del actor), --oPill, --oBall, --oGreen, --oCard, --oRing, --oInput, --oGlow, --oAur,
+   --oHalo (opacidades de cada capa), --inScale, --gs, --cs, --hOp, --dotS, y en la raíz --oCenter; en el estado,
+   --sOp y --sTy. */
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes mo-spin {
+  to {
+    --angle: 360deg;
+  }
+}
+@keyframes mo-drift {
+  from {
+    transform: translateX(-14%);
+  }
+  to {
+    transform: translateX(14%);
+  }
+}
+@keyframes mo-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@keyframes mo-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+@keyframes mo-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mo-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes mo-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes mo-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes mo-shake {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    transform: translate(calc(-50% - 4px), -50%);
+  }
+  75% {
+    transform: translate(calc(-50% + 4px), -50%);
+  }
+}
+
+.mo-root {
+  --mo-verde: 52 211 153;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 24rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+.mo-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  /* Estudio: fondo sólido, sin degradado cálido. */
+  background: transparent;
+}
+.mo-halo {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 26rem;
+  height: 26rem;
+  z-index: -1;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in oklch, var(--acento) 10%, transparent), transparent 65%);
+  opacity: var(--oCenter, 0);
+  pointer-events: none;
+}
+.mo-mover {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+.mo-trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 30%, oklch(0.98 0 0 / 0.8), color-mix(in oklch, var(--acento) 45%, transparent) 55%, transparent 72%);
+}
+.mo-actor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--w, 560px);
+  height: var(--h, 60px);
+  border-radius: var(--r, 999px);
+  transform: translate(-50%, -50%);
+}
+.mo-actor[data-shake] {
+  animation: mo-shake 0.26s ease-in-out;
+}
+.mo-actor > * {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.mo-underglow {
+  /* Estudio: sin resplandor; una sombra sólida y corta. */
+  inset: 70% 6% -12% 6%;
+  filter: blur(18px);
+  background: rgb(0 0 0 / 0.45);
+  opacity: var(--oGlow, 1);
+  pointer-events: none;
+}
+.mo-actor[data-typing] .mo-underglow {
+  opacity: var(--oGlow, 1);
+}
+.mo-halo-green {
+  inset: -40%;
+  border-radius: 999px;
+  filter: blur(30px);
+  background: rgb(var(--mo-verde) / 0.45);
+  opacity: var(--oHalo, 0);
+  pointer-events: none;
+}
+.mo-surface {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 1px 0 0 oklch(1 0 0 / 0.04) inset, 0 12px 32px -16px rgb(0 0 0 / 0.55);
+  opacity: var(--oPill, 1);
+}
+.mo-actor[data-flash] .mo-surface {
+  border-color: var(--destructive);
+}
+.mo-aurora {
+  /* Estudio: sin aurora de colores: la superficie es sólida. */
+  display: none;
+}
+.mo-aurora i {
+  position: absolute;
+  top: -60%;
+  width: 45%;
+  height: 220%;
+  border-radius: 999px;
+  filter: blur(22px);
+  animation: mo-drift 7s ease-in-out infinite alternate;
+}
+.mo-aurora i:nth-child(1) {
+  left: -5%;
+  background: color-mix(in oklch, var(--acento) 30%, transparent);
+}
+.mo-aurora i:nth-child(2) {
+  left: 25%;
+  background: rgb(120 140 255 / 0.12);
+  animation-duration: 9s;
+  animation-direction: alternate-reverse;
+}
+.mo-aurora i:nth-child(3) {
+  left: 55%;
+  background: color-mix(in oklch, var(--acento) 18%, transparent);
+  animation-duration: 11s;
+}
+.mo-aurora i:nth-child(4) {
+  left: 80%;
+  background: rgb(var(--mo-verde) / 0.08);
+  animation-duration: 8s;
+  animation-direction: alternate-reverse;
+}
+.mo-ball {
+  border-radius: 999px;
+  opacity: var(--oBall, 0);
+  background: radial-gradient(circle at 35% 30%, oklch(0.98 0 0), color-mix(in oklch, var(--acento) 70%, oklch(0.98 0 0)) 55%, var(--acento) 100%);
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+.mo-green {
+  border-radius: 999px;
+  opacity: var(--oGreen, 0);
+  transform: scale(var(--gs, 0.55));
+  background: radial-gradient(circle at 40% 35%, rgb(var(--mo-verde) / 0.95), rgb(var(--mo-verde) / 0.55) 70%);
+  pointer-events: none;
+}
+.mo-card {
+  opacity: var(--oCard, 0);
+  transform: scale(var(--cs, 1));
+  border: 1px solid var(--border);
+  background: var(--card);
+  box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+}
+.mo-ring {
+  padding: 1px;
+  opacity: calc(var(--oRing, 1) * 0.9);
+  background: conic-gradient(from var(--angle), transparent 0 78%, var(--acento) 92%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: mo-spin 5s linear infinite;
+  pointer-events: none;
+}
+.mo-input {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.55rem 0 1.1rem;
+  opacity: var(--oInput, 1);
+  transform: scale(var(--inScale, 1));
+}
+.mo-spark {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  color: var(--acento);
+}
+.mo-field {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--foreground);
+}
+.mo-field::placeholder {
+  color: var(--muted-foreground);
+}
+.mo-send {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.mo-send svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.mo-send[data-ready] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.mo-send:active {
+  transform: scale(0.94);
+}
+.mo-orb {
+  inset: auto !important;
+  left: 50% !important;
+  top: 50% !important;
+  width: 220px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  border-radius: 0 !important;
+  pointer-events: none;
+}
+.mo-pulse {
+  border-radius: 999px;
+  border: 2px solid rgb(var(--mo-verde) / 0.9);
+  opacity: 0;
+  pointer-events: none;
+}
+.mo-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  overflow: hidden;
+  opacity: var(--oCard, 0);
+  pointer-events: none;
+  outline: none;
+}
+.mo-root[data-phase="answered"] .mo-answer {
+  pointer-events: auto;
+}
+.mo-a-head {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  opacity: var(--hOp, 0);
+}
+.mo-a-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgb(var(--mo-verde));
+  transform: scale(var(--dotS, 0));
+}
+.mo-a-body {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--foreground);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.mo-w {
+  display: inline-block;
+  opacity: 0;
+}
+.mo-status {
+  position: absolute;
+  left: 50%;
+  top: calc(46% + 92px);
+  display: grid;
+  justify-items: center;
+  transform: translate(-50%, calc(var(--sTy, 6) * 1px));
+  opacity: var(--sOp, 0);
+  pointer-events: none;
+}
+.mo-status .mo-lab {
+  grid-area: 1 / 1;
+}
+.mo-lab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.1rem;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+  background: linear-gradient(90deg, var(--muted-foreground) 0%, var(--foreground) 50%, var(--muted-foreground) 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.mo-lab-t {
+  color: transparent;
+  animation: mo-shimmer 2.2s linear infinite;
+  background: inherit;
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.mo-lab-done {
+  color: rgb(var(--mo-verde));
+  font-weight: 600;
+}
+.mo-in {
+  animation: mo-in 0.32s ease-out both;
+}
+.mo-out {
+  animation: mo-out 0.24s ease-in both;
+}
+.mo-dots {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--muted-foreground);
+}
+.mo-dots i {
+  font-style: normal;
+  animation: mo-dot 1.2s infinite;
+}
+.mo-dots i::before {
+  content: ".";
+}
+.mo-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.mo-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.mo-reset {
+  position: absolute;
+  left: 50%;
+  top: calc(46% + 78px);
+  transform: translate(-50%, 6px);
+  height: 2.2rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.mo-root[data-phase="answered"] .mo-reset {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+.mo-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.mo-debug {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.75rem;
+}
+.mo-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mo-aurora i,
+  .mo-ring,
+  .mo-lab-t,
+  .mo-dots i {
+    animation: none;
+  }
+}

@@ -32,7 +32,7 @@ import { MedidorDeFotoSharp } from '../adaptadores/imagen/MedidorDeFotoSharp.js'
 import { ProcesadorSharp } from '../adaptadores/imagen/ProcesadorSharp.js';
 import { SegmentadorVision } from '../adaptadores/imagen/SegmentadorVision.js';
 import { estudioDeArte, prepararEncargo, type EntradaEstudioDeArte, type Pintura } from '../aplicacion/arte/estudioDeArte.js';
-import { componerDiseno } from '../aplicacion/diseno/componerDiseno.js';
+import { componerVisual, crearPintor, promptFinal } from '../aplicacion/arte/pieza.js';
 import { PlanDeLote, problemasDelPlan, visualesDe, type Visual } from '../dominio/arte/lote.js';
 import type { Receta } from '../dominio/arte/receta.js';
 import { leerCorpus } from '../dominio/arte/referencias.js';
@@ -81,22 +81,7 @@ function opcion(nombre: string, porDefecto: string): string {
   return i > 0 && process.argv[i + 1] ? process.argv[i + 1]! : porDefecto;
 }
 
-/** El prompt final para el modelo de imagen: el del director más las reglas de fidelidad y de imagen sin texto. */
-export function promptFinal(v: NonNullable<Visual['generar']>, local: { nombre: string; ciudad: string; descripcion: string }): string {
-  return [
-    v.conPlato
-      ? '@image1 is the real dish from this restaurant. Keep the dish exactly as it is: the same food, the same ingredients and quantities, the same plate and garnish; do not add, remove or restyle anything on the plate. You may change the camera angle slightly, the surroundings, the props and the light.'
-      : '',
-    v.prompt,
-    `The place: ${local.descripcion} (${local.ciudad}).`,
-    'Photorealistic professional editorial photograph, vertical 3:4. People, if any, are anonymous adults, natural and candid. Absolutely no text, letters, numbers, signs, menus, logos or watermarks anywhere in the image.',
-    // Nano Banana Pro tomó «clean dark shadow space in the upper area» al pie de la letra y pintó una franja negra
-    // plana (Lo Güeno, lote-1): el aire para el texto tiene que salir de la propia escena.
-    'Any calm area left for typography must be part of the real scene (a dark wall, deep shadow, sky, tablecloth or an out-of-focus background) and the photograph must fill the whole frame: never a flat empty band, border, frame or letterbox.',
-  ]
-    .filter(Boolean)
-    .join(' ');
-}
+export { promptFinal };
 
 async function existe(ruta: string) {
   return stat(ruta).then(
@@ -112,6 +97,8 @@ async function main() {
   const modelos = [process.env.GEMINI_MODELO_ARTE ?? 'gemini-4-hydrogen', process.env.GEMINI_MODELO ?? 'gemini-3.8-flash'];
   const facturacion = process.env.GEMINI_FACTURACION === 'si';
   const carpetaCorrida = join(DATOS, 'arte', corrida);
+  // --banco <carpeta>: de dónde se leen los encargos al componer y evaluar (el chat usa la suya, fuera del repositorio).
+  const carpetaBanco = resolve(opcion('banco', join(RAIZ, 'banco', 'arte')));
   const catalogo = new CatalogoTipografico(join(RAIZ, 'recursos', 'tipografias'));
   const motor = new MotorTexto(catalogo);
   const compositor = new CompositorSharp(motor, catalogo);
@@ -245,7 +232,7 @@ async function main() {
       if (!(await existe(join(salida, 'plan.json')))) continue;
       const plan = PlanDeLote.parse(JSON.parse(await readFile(join(salida, 'plan.json'), 'utf8')));
       const pedidos = z.array(Pedido).parse(JSON.parse(await readFile(join(salida, 'pedidos.json'), 'utf8')));
-      const banco = join(RAIZ, 'banco', 'arte', `${id}.json`);
+      const banco = join(carpetaBanco, `${id}.json`);
       const { e, foto, tokensMarca, entrada, marca } = await cargar(banco);
       console.log(`\n══ ${id} · ${marca.nombre}`);
 
@@ -340,36 +327,12 @@ async function main() {
       }
 
       // 2. Cada visual con su receta, sobre su foto (sin modelos: el director ya decidió).
-      const pintar = async (intencion: Intencion, carpeta: string): Promise<Pintura> => {
-        await mkdir(carpeta, { recursive: true });
-        const r = await componerDiseno(
-          {
-            compositor,
-            activos,
-            disenos: new AlmacenDisenosFicheros(carpeta),
-            procesador,
-          },
-          intencion,
-          'pieza',
-          { tokensMarca },
-        );
-        const png = join(r.guardado.carpeta, 'diseno.png');
-        const movil = join(carpeta, 'movil.png');
-        await sharp(png).resize(360).png().toFile(movil);
-        const problemas = r.resuelto.problemas.filter((x) => !AJENOS.test(String(x.tipo)));
-        return {
-          png,
-          movil,
-          errores: problemas.filter((x) => x.gravedad === 'ERROR').map((x) => `${x.tipo}: ${x.mensaje}`),
-          avisos: problemas.filter((x) => x.gravedad !== 'ERROR').map((x) => `${x.tipo}: ${x.mensaje}`),
-        };
-      };
+      const pintar = crearPintor({ compositor, activos, procesador, tokensMarca });
       // La receta del plan se escribió antes de que existiera la foto generada: si no cabe en la foto de verdad (no
       // compila) o, ya pintada, el código mide errores (contraste, solape), Hydrogen la repara VIENDO esa foto, como en
       // el flujo normal (proponer → compilar → reparar). Sin clave, la receta va tal cual.
       const reparador = clave && !process.argv.includes('--sin-reparar') ? gemini('estudio-de-arte/lote-reparar', id) : undefined;
-      const neutra = { nivel: 2, motivo: 'sin crítica: composición del lote' };
-      type Resultado = {
+            type Resultado = {
         png?: string;
         problemas: string[];
         reparada: boolean;
@@ -402,84 +365,21 @@ async function main() {
         const huellaPlan = createHash('sha256').update(JSON.stringify(v.visual.receta)).digest('hex').slice(0, 16);
         const previa = anteriores.get(v.id);
         const reutiliza = previa?.reparada && previa.foto === fotoDeEsta.activo.sha256 && previa.plan === huellaPlan;
-        let receta = reutiliza ? previa.receta : v.visual.receta;
-        let pendientes: string[] = [];
         let mejor: Resultado | undefined;
         try {
-          for (let pasada = 1; pasada <= (reparador ? 2 : 1); pasada++) {
-            let reparada = pasada > 1 || Boolean(reutiliza);
-            const r = await estudioDeArte(
-              {
-                director: {
-                  nombre: 'plan del lote',
-                  proponer: async (enc) => ({
-                    direcciones: [pendientes.length && reparador ? await reparador.reparar(enc, receta, pendientes) : receta],
-                  }),
-                  reparar: async (enc, r0, problemas) => {
-                    if (!reparador) return r0;
-                    reparada = true;
-                    return reparador.reparar(enc, r0, problemas);
-                  },
-                },
-                critico: {
-                  nombre: 'sin crítica',
-                  criticar: async () => ({
-                    primeraLectura: 'sin crítica',
-                    puntuaciones: {
-                      idea: neutra,
-                      composicion: neutra,
-                      tipografia: neutra,
-                      relacion: neutra,
-                      identidad: neutra,
-                      acabado: neutra,
-                    },
-                    defectoPrincipal: '—',
-                    parches: [],
-                  }),
-                },
-                medidor,
-                silueta: (f) => medidor.silueta(f),
-                pintar,
-                metricas: {
-                  ancho: (est, t, n) => motor.medir(est, t, n).ancho,
-                  mayusculas: (est) => motor.alturaMayusculas(est, 1000) / 1000,
-                },
-                corpus,
-              },
-              // Cada composición en su carpeta fechada: el almacén de diseños no sobrescribe versiones.
-              {
-                ...entrada(fotoDeEsta, join(salida, 'piezas', v.id, sello, `p${pasada}`)),
-                referencia: undefined,
-              },
-            );
-            const vuelta = r.direcciones[0]?.mejor ?? r.direcciones[0]?.vueltas[0];
-            const esta = {
-              ...(vuelta?.png ? { png: vuelta.png } : {}),
-              problemas: vuelta?.problemas ?? ['no compila'],
-              reparada,
-              receta: vuelta?.receta ?? receta,
-            };
-            // Se queda la pasada pintada con menos errores (una reparación que empeora no sustituye a la anterior).
-            if (!mejor || (esta.png && (!mejor.png || esta.problemas.length < mejor.problemas.length))) mejor = esta;
-            // Lo que sigue sin compilar después de la reparación de dentro también tiene una segunda vuelta.
-            if (!esta.problemas.length) break;
-            pendientes = esta.problemas;
-            receta = esta.receta;
-          }
+          const hecho = await componerVisual(
+            { medidor, silueta: (f) => medidor.silueta(f), pintar, metricas: { ancho: (est, t, n) => motor.medir(est, t, n).ancho, mayusculas: (est) => motor.alturaMayusculas(est, 1000) / 1000 }, corpus },
+            // Cada composición en su carpeta fechada: el almacén de diseños no sobrescribe versiones.
+            entrada(fotoDeEsta, join(salida, 'piezas', v.id, sello)),
+            reutiliza ? previa.receta : v.visual.receta,
+            reparador,
+          );
+          mejor = { ...hecho, reparada: hecho.reparada || Boolean(reutiliza) };
         } catch (error) {
           // Un fallo en una pieza no para el lote: se queda la versión anterior, si la había.
           const mensaje = error instanceof Error ? error.message : String(error);
           console.log(`  ✖ ${v.id}: ${mensaje.slice(0, 200)}${anterior?.png ? ' (se queda la versión anterior)' : ''}`);
-          resultados.set(
-            v.id,
-            anterior?.png
-              ? anterior
-              : {
-                  problemas: [`error: ${mensaje.slice(0, 300)}`],
-                  reparada: false,
-                  receta: v.visual.receta,
-                },
-          );
+          resultados.set(v.id, anterior?.png ? anterior : { problemas: [`error: ${mensaje.slice(0, 300)}`], reparada: false, receta: v.visual.receta });
           continue;
         }
         const defectoDeFoto = defectosDeFoto.get(v.id);
@@ -539,7 +439,7 @@ async function main() {
       if (!(await existe(join(salida, 'hoja.jpg')))) continue;
       const plan = PlanDeLote.parse(JSON.parse(await readFile(join(salida, 'plan.json'), 'utf8')));
       const ids = [...plan.posts.map((p) => `${p.id} (post, ${p.tipo})`), ...plan.carruseles.flatMap((c) => c.diapositivas.map((d, i) => `${c.id}-${i + 1} (carrusel, ${d.papel})`))];
-      const marca = Marca.parse(JSON.parse(await readFile(join(DATOS, 'locales', (await readFile(join(RAIZ, 'banco', 'arte', `${id}.json`), 'utf8').then((t) => JSON.parse(t) as { local: string })).local, 'marca.json'), 'utf8')));
+      const marca = Marca.parse(JSON.parse(await readFile(join(DATOS, 'locales', (await readFile(join(carpetaBanco, `${id}.json`), 'utf8').then((t) => JSON.parse(t) as { local: string })).local, 'marca.json'), 'utf8')));
       const ev = await gemini('estudio-de-arte/evaluar-lote', id).evaluarLote(
         join(salida, 'hoja.jpg'),
         ids,

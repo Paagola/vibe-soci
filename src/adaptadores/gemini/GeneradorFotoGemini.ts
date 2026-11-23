@@ -1,7 +1,7 @@
 /**
  * Generador de la foto nueva con Gemini de imagen de pago (vía de producción elegida el 09/11/2026).
  * - Sin facturación activada (GEMINI_FACTURACION=no) no envía nada: la API no tiene tier gratuito de imagen (429).
- * - Antes de cada envío suma lo gastado en datos/gasto/gemini.jsonl y se niega si se pasaría del tope (GEMINI_TOPE_USD).
+ * - Antes de cada envío suma lo gastado este mes en datos/gasto/gemini.jsonl y se niega si se pasaría del tope mensual (GEMINI_TOPE_USD).
  *   El tope lo pone el código porque un presupuesto de Google Cloud solo avisa.
  * - No reintenta: Gemini no tiene clave de idempotencia y un reintento podría cobrar dos veces.
  * - Apunta el coste real con el recuento de tokens de la respuesta.
@@ -12,7 +12,7 @@ import sharp from 'sharp';
 import { z } from 'zod';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { FotoGenerada, GeneradorFoto, PeticionFoto } from '../../puertos/Foto.js';
-import { construirContenido, construirPeticion, costeRealUsd, estimarUsd, GastoGemini, leerRespuesta, sumarGasto, TARIFAS, type ReferenciaImagen } from './imagenGemini.js';
+import { construirContenido, construirPeticion, costeRealUsd, estimarUsd, GastoGemini, inicioDelMes, leerRespuesta, sumarGasto, TARIFAS, type ReferenciaImagen } from './imagenGemini.js';
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const TIEMPO_MAXIMO_MS = 240_000;
@@ -51,9 +51,18 @@ export async function pedirGemini(clave: string, url: string, cuerpo: unknown, f
   return respuesta.json();
 }
 
-export async function gastoAcumuladoGemini(registro: string): Promise<number> {
+/**
+ * Lo gastado en imágenes de Gemini en el mes natural de `ahora` (el tope GEMINI_TOPE_USD es mensual). Si junto al
+ * registro hay un reinicio (`gemini-reinicio.json`, `{ "desde": "<fecha ISO>" }`) posterior al día 1, cuenta desde
+ * él: pone el contador a cero sin borrar el historial de gasto.
+ */
+export async function gastoAcumuladoGemini(registro: string, ahora = new Date()): Promise<number> {
   const existe = await stat(registro).then(() => true, () => false);
-  return existe ? sumarGasto((await readFile(registro, 'utf8')).split('\n')) : 0;
+  if (!existe) return 0;
+  let desde = inicioDelMes(ahora);
+  const reinicio = await readFile(join(dirname(registro), 'gemini-reinicio.json'), 'utf8').then((t) => new Date((JSON.parse(t) as { desde: string }).desde), () => undefined);
+  if (reinicio && !Number.isNaN(reinicio.getTime()) && reinicio > desde && reinicio <= ahora) desde = reinicio;
+  return sumarGasto((await readFile(registro, 'utf8')).split('\n'), desde);
 }
 
 export async function apuntarGastoGemini(registro: string, gasto: GastoGemini): Promise<void> {
@@ -120,7 +129,7 @@ export class GeneradorFotoGemini implements GeneradorFoto {
     await reservarGasto(this.registro, async () => {
       const gastado = await gastoAcumuladoGemini(this.registro);
       if (gastado + estimado > this.o.topeUsd) {
-        throw new ErrorDeUsuario(`Se pasaría del tope de Gemini: ${gastado.toFixed(3)} ya gastados + ${estimado.toFixed(3)} > ${this.o.topeUsd} USD (GEMINI_TOPE_USD).`);
+        throw new ErrorDeUsuario(`Se pasaría del tope de Gemini: ${gastado.toFixed(3)} gastados este mes + ${estimado.toFixed(3)} > ${this.o.topeUsd} USD (GEMINI_TOPE_USD, tope mensual).`);
       }
       await p.antesDeEnviar?.();
       await apuntarGastoGemini(this.registro, { ...base, fecha: new Date().toISOString(), estado: 'ENVIADO' });

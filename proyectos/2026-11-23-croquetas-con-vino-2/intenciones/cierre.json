@@ -1,0 +1,131 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "cierre",
+  "version": 1,
+  "titulo": "Asador Etxebarri · cierre",
+  "notas": "Brief v3 · CIERRE_TEXTO · LUZ.",
+  "marca": "asador-etxebarri",
+  "lienzo": {
+    "formato": "FEED_3_4"
+  },
+  "reticula": {
+    "columnas": 12,
+    "filas": 16,
+    "margen": 72,
+    "medianil": 12
+  },
+  "tokens": {
+    "colores": {},
+    "estilos": {
+      "voz": {
+        "fuente": "league-gothic",
+        "ejes": {
+          "wdth": 100
+        },
+        "caso": "tal-cual",
+        "tracking": 0.004,
+        "interlineado": 0.9,
+        "color": "#EDE7DD",
+        "rasgos": []
+      },
+      "apoyo": {
+        "fuente": "plex-mono",
+        "ejes": {},
+        "caso": "mayusculas",
+        "tracking": 0.14,
+        "interlineado": 1.55,
+        "color": "#EDE7DD",
+        "rasgos": []
+      }
+    }
+  },
+  "activos": {
+    "foto": "2026-11-23-croquetas-con-vino-2-foto-1"
+  },
+  "textos": {
+    "dato-1": "Asador Etxebarri",
+    "dato-2": "Axpe (Bizkaia)"
+  },
+  "capas": [
+    {
+      "id": "foto",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "imagen",
+      "activo": "foto",
+      "caja": {
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1
+      },
+      "enfoque": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "zoom": 1
+    },
+    {
+      "id": "campo",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "forma",
+      "figura": "rect",
+      "caja": {
+        "x": 0,
+        "y": 0.5800000000000001,
+        "w": 1,
+        "h": 0.42
+      },
+      "color": "#111111",
+      "giro": 0,
+      "lobulos": 5,
+      "irregularidad": 0.35
+    },
+    {
+      "id": "dato-1",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@dato-1",
+      "estilo": "voz",
+      "caja": {
+        "x": 0.072,
+        "y": 0.6250000000000001,
+        "w": 0.856,
+        "h": 0.115
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false
+    },
+    {
+      "id": "dato-2",
+      "opacidad": 1,
+      "fusion": "normal",
+      "oculta": false,
+      "tipo": "texto",
+      "texto": "@dato-2",
+      "estilo": "apoyo",
+      "caja": {
+        "x": 0.072,
+        "y": 0.7450000000000001,
+        "w": 0.856,
+        "h": 0.042
+      },
+      "ajuste": "caja",
+      "alinear": "izquierda",
+      "vertical": "centro",
+      "rotacion": 0,
+      "giro": 0,
+      "sangrado": false
+    }
+  ],
+  "relaciones": []
+}

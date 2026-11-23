@@ -1,0 +1,181 @@
+{
+  "director": "Gemini (gemini-4-hydrogen)",
+  "fecha": "2026-11-22T23:49:32.858Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 65,
+      "distancia": "PRIMER_PLANO",
+      "encuadre": "Vertical casi cenital centrado en el bol; los elementos de alrededor quedan cortados en el borde superior.",
+      "luz": "Lateral suave con ligera dominante cálida sobre mesa de madera oscura.",
+      "elementos": [
+        {
+          "nombre": "Penne rigate",
+          "estado": "cocidos y cubiertos de salsa roja brillante",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Demasiadas piezas superpuestas para contar.",
+          "ingles": "ridged penne rigate pasta coated in glossy red tomato sauce",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Trozos de tomate y copos de chile",
+          "estado": "cocinados y repartidos entre la pasta",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "No cuantificables.",
+          "ingles": "cooked red tomato chunks and crushed red chili flakes",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Queso rallado",
+          "estado": "en hebras finas sobre la pasta y el borde del plato",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Hebras sueltas no cuantificables.",
+          "ingles": "fine strands of pale shredded cheese on the pasta and plate rim",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Bol cerámico oscuro",
+          "estado": "azul negro moteado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Contenedor principal.",
+          "ingles": "one dark blue-black speckled stoneware bowl",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "Plato bajo acanalado negro",
+          "estado": "mate con borde estriado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Bajoplato oscuro.",
+          "ingles": "one dark matte fluted underplate",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Marca de agua sobre el lado derecho del plato",
+        "Atrezo cortado que sobra en el borde superior: pan, rallador y cuenco de chile",
+        "Encuadre demasiado cerrado sin margen para recorte ni titular"
+      ],
+      "utilizable": true,
+      "motivo": "El plato principal y su vajilla se ven íntegros y con textura nítida."
+    },
+    "huecos": {
+      "plato": "penne arrabiata",
+      "origen": "at a restaurant",
+      "elementos": "ridged penne rigate pasta coated in glossy red tomato sauce, cooked red tomato chunks, crushed red chili flakes, fine strands of pale shredded cheese, one dark blue-black speckled stoneware bowl, and one dark matte fluted underplate",
+      "recuento": "Exactly one dark blue-black speckled stoneware bowl resting on one dark matte fluted underplate.",
+      "camara": {
+        "anguloGrados": 40,
+        "descripcion": "slightly high three-quarter view rotated around the dish, showing the whole bowl and fluted underplate centered in the lower half with generous margin on all sides",
+        "objetivoMm": 50,
+        "apertura": 5.6,
+        "giroGrados": 60,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "the whole dish and dark tableware sit intact in the lower center over a plain uniform white-grey surface for clean cutout, leaving wide empty space above for the stacked headline behind the bowl",
+      "aire": "arriba",
+      "luz": "bright 5000 K directional studio side light like a large window, illuminating one side more than the other, casting a crisp soft-edged contact shadow with neutral white balance",
+      "colorDominante": "neutral white-grey background and dark tableware making the saturated orange-red tomato pasta the sole strong color"
+    },
+    "decisiones": [
+      "Se excluyen pan, rallador y cuenco de chile de la lista para cumplir con 'no props: only the dish on its real tableware' y permitir un recorte limpio.",
+      "Plano MEDIO a 40° y giro de 60° respecto a la toma original (65°) para cumplir la regla de nueva toma y dejar el plato entero sin cortes.",
+      "Composición simétrica baja con aire 'arriba' inspirada en ref-post-17 para colocar el titular detrás y encima del bol.",
+      "Luz lateral neutra a 5000 K con sombra de contacto nítida para corregir la dominante cálida y facilitar el recorte en Color pop.",
+      "Tres tomas de detalle MACRO centradas en pasta, tomate con chile y queso para completar el carrusel siguiendo la estética de DAK Burger y Mesón de Cervantes."
+    ],
+    "tomas": [
+      {
+        "elemento": "Penne rigate",
+        "huecos": {
+          "plato": "close-up of penne rigate pasta in arrabiata sauce",
+          "origen": "at a restaurant",
+          "elementos": "ridged penne rigate pasta tubes coated in glossy red tomato sauce",
+          "recuento": "Exactly three ridged penne rigate tubes in crisp foreground focus.",
+          "camara": {
+            "anguloGrados": 15,
+            "descripcion": "low side macro framing three glistening penne tubes in the lower third",
+            "objetivoMm": 100,
+            "apertura": 4,
+            "giroGrados": 90,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "three glossy pasta tubes occupy the lower frame against a clean uniform bright background above for a short title",
+          "aire": "arriba",
+          "luz": "bright 5000 K side light highlighting the sauce sheen and pasta ridges with crisp contact shadow",
+          "colorDominante": "vivid orange-red tomato sauce against a clean neutral light background"
+        }
+      },
+      {
+        "elemento": "Trozos de tomate y copos de chile",
+        "huecos": {
+          "plato": "close-up of cooked tomato chunks and chili flakes",
+          "origen": "at a restaurant",
+          "elementos": "cooked red tomato chunks speckled with crushed red chili flakes",
+          "recuento": "Exactly two cooked red tomato chunks with crushed chili flakes.",
+          "camara": {
+            "anguloGrados": 25,
+            "descripcion": "tight macro angle focusing on the texture of tomato chunks and chili seeds in the lower half",
+            "objetivoMm": 100,
+            "apertura": 3.5,
+            "giroGrados": 45,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "two glistening spiced tomato pieces anchor the bottom center with clean out-of-focus neutral space above",
+          "aire": "arriba",
+          "luz": "directional 5000 K side light catching glossy oil highlights on the tomato and chili flakes",
+          "colorDominante": "deep crimson red and chili flecks over a clean neutral surface"
+        }
+      },
+      {
+        "elemento": "Queso rallado",
+        "huecos": {
+          "plato": "close-up of fine shredded cheese strands",
+          "origen": "at a restaurant",
+          "elementos": "fine strands of pale shredded cheese resting on red tomato sauce",
+          "recuento": "Exactly five fine strands of pale shredded cheese.",
+          "camara": {
+            "anguloGrados": 20,
+            "descripcion": "low macro view isolating five cheese strands in the lower half",
+            "objetivoMm": 100,
+            "apertura": 4,
+            "giroGrados": 120,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "five pale cheese strands form a crisp diagonal in the lower frame, leaving clean uniform space above",
+          "aire": "arriba",
+          "luz": "even 5000 K lateral studio light preserving the neutral pale tone of the cheese without yellow cast",
+          "colorDominante": "pale neutral cheese strands contrasted against rich red sauce and a clean light background"
+        }
+      }
+    ]
+  },
+  "prompt": "@image1 is a real photo of penne arrabiata at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: ridged penne rigate pasta coated in glossy red tomato sauce; cooked red tomato chunks and crushed red chili flakes; fine strands of pale shredded cheese on the pasta and plate rim; one dark blue-black speckled stoneware bowl; one dark matte fluted underplate. Exactly 1 × one dark blue-black speckled stoneware bowl; 1 × one dark matte fluted underplate. Nothing else added. New composition by a professional food photographer: slightly high three-quarter view rotated around the dish, showing the whole bowl and fluted underplate centered in the lower half with generous margin on all sides, 50 mm lens at f/5.6, the whole dish and dark tableware sit intact in the lower center over a plain uniform white-grey surface for clean cutout, leaving wide empty space above for the stacked headline behind the bowl, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright 5000 K directional studio side light like a large window, illuminating one side more than the other, casting a crisp soft-edged contact shadow with neutral white balance, neutral white-grey background and dark tableware making the saturated orange-red tomato pasta the sole strong color. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Luz natural de una ventana lateral, balance de día neutro de unos 5000 K. Sombras direccionales de borde suave con detalle, como en una mesa junto a la ventana. Una parte del plato recibe más luz que la otra. Conserva el color de los materiales, como la tela teja y la loza clara en una sesión editorial casera. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": [
+        "La toma nueva deja fuera «Rebanadas de pan»: con esa cámara no cabe en la foto. Cambia la toma (más abierta o desde más arriba) para que quepa, o quita «Rebanadas de pan» de la lista si no tiene que salir.",
+        "La toma nueva deja fuera «Rallador metálico»: con esa cámara no cabe en la foto. Cambia la toma (más abierta o desde más arriba) para que quepa, o quita «Rallador metálico» de la lista si no tiene que salir.",
+        "La toma nueva deja fuera «Cuenco con chile»: con esa cámara no cabe en la foto. Cambia la toma (más abierta o desde más arriba) para que quepa, o quita «Cuenco con chile» de la lista si no tiene que salir."
+      ]
+    },
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "familia": "F3",
+    "estetica": "COLOR_POP",
+    "desdeElInventario": true,
+    "modoDeLuz": "NATURAL"
+  }
+}

@@ -7,6 +7,7 @@
  */
 import { z } from 'zod';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
+import { PlanDePieza, TurnoDelDirector } from '../../dominio/chat.js';
 import { ElementoGrafico, ESQUELETOS, OPERACIONES, PropuestaDeDirecciones, PropuestaInspirada, Receta } from '../../dominio/arte/receta.js';
 import { Critica, DIMENSION_REFERENCIA, DIMENSIONES } from '../../dominio/arte/rubrica.js';
 
@@ -311,4 +312,85 @@ de 0 a 4 (0 roto · 1 plantilla genérica · 2 correcto pero previsible · 3 dec
 comentario concreto, y di si el conjunto parece el feed de una marca llevada por profesionales. Sé exigente y concreto.
 Devuelves SOLO un JSON con esta forma:
 ${JSON.stringify(z.toJSONSchema(EvaluacionDeLote))}`;
+}
+
+/**
+ * Chat · una pieza (post o carrusel) para el encargo del chat. Lo que pidió el cliente: cada diapositiva de un
+ * carrusel es una foto DISTINTA (no recortes de la misma) y cada una con su maquetación; nada de plantilla fija.
+ */
+export function instruccionesPieza(formato: 'post' | 'carrusel', n: number): string {
+  return `Eres el director creativo y de arte de una agencia que lleva el Instagram de un restaurante. Planificas UNA
+pieza: ${formato === 'post' ? 'un post (3:4, 1080 × 1440)' : `un carrusel de ${n} diapositivas (3:4, 1080 × 1440)`}.
+
+QUÉ DEVUELVES: SOLO un JSON con esta forma:
+${JSON.stringify(z.toJSONSchema(PlanDePieza))}
+${formato === 'post' ? 'Una sola diapositiva (papel «post»).' : `Exactamente ${n} diapositivas.`}
+
+CÓMO SE HACE CADA VISUAL
+- «foto: real»: la foto real del plato que te paso (el código la recorta con su máscara o la pone a sangre).
+- «foto: generada»: una foto NUEVA que hará Nano Banana Pro a partir de tu «generar.prompt», en inglés, como lo
+  escribiría un fotógrafo: escena, encuadre, punto de vista, óptica, luz, color, gente y dónde queda aire para el texto
+  (que salga de la escena: una pared en sombra, el fondo desenfocado; nunca una franja vacía). Si sale el plato,
+  «conPlato: true»: se adjunta la foto real y el plato tiene que ser el MISMO (mismos ingredientes, misma cantidad,
+  mismo emplatado); no lo describas con otras palabras: di dónde está y cómo se ve la escena. Gente: adultos anónimos y
+  naturales. Nunca texto, letras ni logos dentro de la foto (el texto lo pone el código).
+- «receta»: la maquetación sobre esa foto, en el dialecto de siempre (esqueletos, escalas, operaciones). Las fotos de
+  ambiente o de gente casi nunca se recortan: van a sangre (FOTO_A_SANGRE), en MARCO o PARTIDA, con poco texto. El
+  cartel tipográfico (CARTEL, PATRON, PRODUCTO_SOBRE_COLOR) es para el plato.
+- «resumen»: una frase para el cliente que diga qué es la diapositiva (la foto y la idea de diseño).
+
+${formato === 'carrusel' ? `EL CARRUSEL (lo pidió el cliente: nada de cinco recortes de la misma foto)
+- Cada diapositiva es una FOTO DISTINTA: la foto real como mucho en UNA (normalmente la portada o el dato). Las demás
+  son tomas nuevas con otro punto de vista de verdad: cenital, a ras de mesa, un macro del corte o del relleno, el
+  plato en la mesa con gente, las manos que lo sirven, el local, el proceso. Ningún prompt repite encuadre.
+- Cada diapositiva con su maquetación: no repitas el esqueleto en dos seguidas y usa al menos tres distintos.
+- Cuenta una historia que se desliza: portada fuerte que detiene el dedo, diapositivas centrales que aportan algo
+  distinto cada una, cierre tranquilo con la firma. Mismas voces y colores en toda la serie: se reconoce la marca, no
+  la plantilla.` : `EL POST
+- Elige si la pieza es fotográfica (una toma nueva que mejora la real: otro ángulo, mejor luz, la escena) o de diseño
+  gráfico con la foto real. Pocas palabras y una idea clara.`}
+
+${OFICIO}
+
+${VERDAD}
+
+ESQUELETOS
+${lista(ESQUELETOS)}
+
+OPERACIONES (como mucho 3 por receta)
+${operacionesDelDirector()}
+
+${SIN_DIBUJOS}`;
+}
+
+/** Chat · el director que habla con el cliente y decide qué hace el código. */
+export function instruccionesChat(): string {
+  return `Eres el director creativo de un estudio que hace el Instagram de restaurantes. Hablas con el cliente en un
+chat, en castellano, breve y cercano (como un buen director de arte: das tu criterio, no un formulario). El código
+ejecuta lo que decides con una ACCIÓN; las tarjetas que ve el cliente las pinta la web.
+
+QUÉ DEVUELVES: SOLO un JSON con esta forma:
+${JSON.stringify(z.toJSONSchema(TurnoDelDirector))}
+
+CÓMO TRABAJAS
+1. Cuando el cliente sube la foto de un plato y no hay HECHOS confirmados para ella, mira la foto y devuelve
+   PROPONER_HECHOS: el local (de la lista; si no sabes cuál, el que diga el cliente; si no lo dice, pregunta sin
+   acción), el plato, los elementos que SE VEN (con su estado y recuento solo si se cuentan bien) y el mensaje. «foto»
+   es el id de la imagen. Si el cliente subió además un post que le gusta como referencia, ponlo en «referencia».
+   El cliente revisa y corrige la tarjeta: tú no confirmas nada.
+2. Con los hechos confirmados, si el cliente pide una pieza (o ya la pidió), devuelve PROPONER_PIEZA: formato «post» o
+   «carrusel» (por defecto: lo que pida; si no dice nada, un carrusel de 5 para un plato con historia, un post si es
+   un anuncio rápido), el número de diapositivas y las indicaciones (lo que pidió y tu dirección: tono, momento,
+   tipo de tomas). En «busqueda», 2 o 3 búsquedas cortas en inglés para Pinterest que traigan POSTS DISEÑADOS afines
+   (p. ej. «croquetas instagram post typography», «tapas bar poster bold serif»): antes del plan, el cliente elige con
+   ellas (y con los posts anteriores del local) la estética de referencia. El código planifica cada diapositiva y le
+   enseña al cliente el plan y el coste para que lo apruebe.
+3. Si el cliente pide cambios sobre una pieza hecha («la tercera más oscura», «otra portada»), AJUSTAR_PIEZA con las
+   diapositivas a rehacer y las indicaciones.
+4. Si solo hace falta hablar (una duda, una opinión), sin acción.
+
+REGLAS
+- Nunca inventes datos del local ni del plato: precios, premios, horarios u orígenes solo si constan.
+- No prometas lo que no hace el código. Las fotos nuevas cuestan (unos 0,15 USD cada una): dilo si piden muchas.
+- Un mensaje corto: dos o tres frases. Sin listas largas: las tarjetas ya enseñan el detalle.`;
 }

@@ -97,3 +97,21 @@ describe('Generador de foto con Gemini de pago', () => {
     assert.ok(await gastoAcumuladoGemini(registro) > 0);
   });
 });
+
+describe('tope de Gemini: reinicio del contador', () => {
+  it('con gemini-reinicio.json cuenta desde esa fecha, sin borrar el historial; uno anterior al día 1 no cambia nada', async () => {
+    const { mkdtemp, writeFile } = await import('node:fs/promises');
+    const { tmpdir } = await import('node:os');
+    const dir = await mkdtemp(join(tmpdir(), 'tope-'));
+    const registro = join(dir, 'gemini.jsonl');
+    const linea = (activo: string, fecha: string) => JSON.stringify({ fecha, receta: 'r', activo, modelo: 'gemini-3-pro-image', estimadoUsd: 0.16, realUsd: 0.15, estado: 'COMPLETADO' });
+    await writeFile(registro, [linea('a', '2026-11-10T10:00:00'), linea('b', '2026-11-23T12:00:00')].join('\n') + '\n');
+    const ahora = new Date(2026, 10, 23, 18);
+    assert.equal(Math.round((await gastoAcumuladoGemini(registro, ahora)) * 100) / 100, 0.3);
+    await writeFile(join(dir, 'gemini-reinicio.json'), JSON.stringify({ desde: new Date(2026, 10, 23, 11).toISOString() }));
+    assert.equal(await gastoAcumuladoGemini(registro, ahora), 0.15, 'solo lo posterior al reinicio');
+    assert.equal(await gastoAcumuladoGemini(registro, new Date(2026, 11, 2)), 0, 'en diciembre manda el mes');
+    await writeFile(join(dir, 'gemini-reinicio.json'), JSON.stringify({ desde: new Date(2026, 9, 1).toISOString() }));
+    assert.equal(Math.round((await gastoAcumuladoGemini(registro, ahora)) * 100) / 100, 0.3, 'un reinicio de octubre no cambia noviembre');
+  });
+});

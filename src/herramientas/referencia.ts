@@ -52,7 +52,8 @@ async function principal(): Promise<void> {
   const biblioteca = new BibliotecaDeReferenciasFicheros(join(RAIZ, 'conocimiento', 'referencias'), join(config.carpetaBiblioteca, 'referencias'));
   const deps: DepsReferencias = {
     piezas: new AlmacenPiezasFicheros(join(config.carpetaDatos, 'piezas')),
-    piezasHechas: new PiezasHechasFicheros(join(RAIZ, 'proyectos')),
+    // ESTUDIO_PROYECTOS: otra carpeta de proyectos (las pruebas usan una vacía, para no depender de las piezas reales).
+    piezasHechas: new PiezasHechasFicheros(process.env.ESTUDIO_PROYECTOS ?? join(RAIZ, 'proyectos')),
     locales: new AlmacenLocalesFicheros(carpetaLocales),
     referencias: new AlmacenReferenciasFicheros(carpetaLocales),
     biblioteca,

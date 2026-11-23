@@ -12,8 +12,9 @@ import { mapaEnTexto } from '../../dominio/diseno/mapaDeFoto.js';
 import type { ComparadorDeArte, CriticoDeArte, DirectorDeArte, EncargoDeArte, PiezaPintada } from '../../puertos/EstudioDeArte.js';
 import type { ClienteGemini, ParteGemini } from './ClienteGemini.js';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
+import { PlanDePieza, TurnoDelDirector } from '../../dominio/chat.js';
 import {
-  EvaluacionDeLote, instruccionesEvaluacionLote, instruccionesLote,
+  EvaluacionDeLote, instruccionesChat, instruccionesEvaluacionLote, instruccionesLote, instruccionesPieza,
   instruccionesComparador, instruccionesComparadorConReferencia, instruccionesCriticoArte, instruccionesDirectorArte, instruccionesEnriquecer, instruccionesInspiradas, instruccionesPlantilla,
   RespuestaComparacion, RespuestaEnriquecer, RespuestaPlantilla,
 } from './instruccionesArte.js';
@@ -91,6 +92,36 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
     if (e.referencia) partes.push({ text: `Un post de REFERENCIA que le gusta al local («${e.referencia.id}»): tómalo como listón de oficio para la pieza de diseño gráfico, no lo copies.` }, await imagen(e.referencia.ruta, 640));
     if (devolver.length) partes.push({ text: `TU PLAN ANTERIOR TENÍA ESTOS PROBLEMAS (corrígelos todos y devuelve el plan entero):\n${devolver.map((p) => `- ${p}`).join('\n')}` });
     return this.cliente.generarJson(instruccionesLote(), partes, PlanDeLote);
+  }
+
+  /**
+   * Chat · planifica UNA pieza (post o carrusel). Con `base`, es un ajuste: se le pasa el plan anterior y las
+   * diapositivas que hay que rehacer; las demás se devuelven tal cual.
+   */
+  async planificarPieza(
+    e: EncargoDeArte,
+    o: { formato: 'post' | 'carrusel'; diapositivas: number; indicaciones: string; base?: { plan: PlanDePieza; rehacer: number[] } },
+    devolver: string[],
+  ): Promise<PlanDePieza> {
+    const partes: ParteGemini[] = [
+      { text: `${hechosEnTexto(e)}\n\n${materialEnTexto(e)}\n\nLO QUE PIDE EL CLIENTE: ${o.indicaciones || 'sin indicaciones: decide tú.'}` },
+      { text: 'La FOTO REAL del plato del local («foto: real»):' },
+      await imagen(e.foto, 640),
+    ];
+    if (e.referencia) partes.push({ text: `Un post de REFERENCIA que le gusta al cliente («${e.referencia.id}»): tómalo como listón de oficio y de tono, no lo copies.` }, await imagen(e.referencia.ruta, 640));
+    if (o.base) {
+      const rehacer = o.base.rehacer.length ? o.base.rehacer : o.base.plan.diapositivas.map((_, i) => i + 1);
+      partes.push({ text: `AJUSTE DE UNA PIEZA HECHA. El plan anterior:\n${JSON.stringify(o.base.plan)}\nRehaz SOLO las diapositivas ${rehacer.join(', ')} según lo que pide el cliente; las demás devuélvelas IGUALES (mismo visual y receta). Devuelve el plan entero.` });
+    }
+    if (devolver.length) partes.push({ text: `TU PLAN ANTERIOR TENÍA ESTOS PROBLEMAS (corrígelos todos y devuelve el plan entero):\n${devolver.map((p) => `- ${p}`).join('\n')}` });
+    return this.cliente.generarJson(instruccionesPieza(o.formato, o.diapositivas), partes, PlanDePieza);
+  }
+
+  /** Chat · un turno del director: lee la conversación (y las imágenes que toque) y responde con un mensaje y, quizá, una acción. */
+  async turnoDelChat(contexto: string, imagenes: Array<{ id: string; ruta: string }>): Promise<TurnoDelDirector> {
+    const partes: ParteGemini[] = [{ text: contexto }];
+    for (const i of imagenes) partes.push({ text: `Imagen «${i.id}»:` }, await imagen(i.ruta, 768));
+    return this.cliente.generarJson(instruccionesChat(), partes, TurnoDelDirector);
   }
 
   /** Audita el lote entero (una hoja con todas las piezas a tamaño de móvil). */

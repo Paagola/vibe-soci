@@ -209,7 +209,7 @@ Decide el código. El resultado va al activo (`revisionAutomatica`), y tu veredi
 | `GEMINI_MODELO_PRODUCTOR` | `gemini-4-hydrogen` | Modelo de texto y visión de los encargos editoriales |
 | `GEMINI_MODELO_PRODUCTOR_RESPALDO` | — | Respaldo opcional de los encargos editoriales |
 | `GEMINI_FACTURACION` | `no` | `si` **solo** cuando la clave tenga la facturación de Google activada. Es la vía de generación del producto (09/11/2026). Con `no`, la orden única no genera por la API |
-| `GEMINI_TOPE_USD` | `1` | Tope acumulado de gasto en imágenes de Gemini, que el código comprueba **antes** de cada envío (un presupuesto de Google Cloud solo avisa) |
+| `GEMINI_TOPE_USD` | `1` | Tope **mensual** de gasto en imágenes de Gemini (cuenta lo enviado en el mes natural en curso), que el código comprueba **antes** de cada envío (un presupuesto de Google Cloud solo avisa) |
 | `GEMINI_MODELO_IMAGEN` | `gemini-3-pro-image` | Modelo de imagen de la vía de producción |
 | `HF_KEY` | — | Higgsfield, con el formato `KEY_ID:KEY_SECRET` |
 | `HF_MODELO` | `marketing-studio/image` | También `ideogram/v4.0` o `xai/grok-imagine-image-2.0` |

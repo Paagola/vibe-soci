@@ -1,0 +1,58 @@
+{
+  "huella": "4d0833c6623155b36fdead5136c9bf5adb5e926e9a8ba8d24d658c86f214b239",
+  "briefVersion": 3,
+  "modelo": "gemini-4-hydrogen",
+  "paginas": [
+    {
+      "id": "post",
+      "version": 1,
+      "sha256": "88d97d21ed93b505a875216fd1d95e2db69cfc1c35216f74545f7a8ea714fd3b"
+    },
+    {
+      "id": "detalle-1",
+      "version": 1,
+      "sha256": "d9b8fef497b6e59ff955fcd404be7bae13b20dd79fd967421a9e4f9959da1c5c"
+    },
+    {
+      "id": "detalle-2",
+      "version": 1,
+      "sha256": "fd24a533dc6e0cb58c5403cba122b58082c91abeca8748bc67d7480d35206184"
+    },
+    {
+      "id": "detalle-3",
+      "version": 1,
+      "sha256": "ed85f919f7d4c1a710f11ac4fe3b3e70fd0b528fd3e2834d14b22ac4585c7809"
+    },
+    {
+      "id": "cierre",
+      "version": 1,
+      "sha256": "cd0badeb895f23628a0b3ff4333b5dd0fe8caa8e986a291133ac9ae741a63c74"
+    }
+  ],
+  "incidencias": [
+    {
+      "id": "detalle-1",
+      "version": 1,
+      "motivo": "El recorte procede de la foto original con luz diurna y mantel claro en lugar de la versión oscura usada en portada y cierre, rompiendo la continuidad visual.",
+      "correccion": {
+        "tipo": "REVISION_HUMANA"
+      }
+    },
+    {
+      "id": "detalle-2",
+      "version": 1,
+      "motivo": "El recorte usa la foto con luz diurna y fondo de sala claro en lugar de la versión oscura de portada y cierre, rompiendo la continuidad visual y perdiendo nitidez.",
+      "correccion": {
+        "tipo": "REVISION_HUMANA"
+      }
+    },
+    {
+      "id": "detalle-3",
+      "version": 1,
+      "motivo": "El recorte usa la foto diurna en lugar de la versión oscura de portada y cierre, rompiendo la continuidad visual, y repite casi el mismo encuadre de detalle-1 sin centrar la salsa.",
+      "correccion": {
+        "tipo": "REVISION_HUMANA"
+      }
+    }
+  ]
+}

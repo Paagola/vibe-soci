@@ -302,7 +302,8 @@ describe('F1.6 · «referencia comprobar» solo lee (09/11/2026)', () => {
       const orden = (sub: string) =>
         execFileSync(process.execPath, ['--import', 'tsx', join(RAIZ, 'src', 'herramientas', 'referencia.ts'), sub, '--local', marca.slug], {
           cwd: RAIZ,
-          env: { ...process.env, ESTUDIO_DATOS: datos },
+          // Sin las piezas reales del repositorio: el local del ejemplo es Etxebarri, que ya tiene las suyas.
+          env: { ...process.env, ESTUDIO_DATOS: datos, ESTUDIO_PROYECTOS: join(datos, 'proyectos') },
           encoding: 'utf8',
         });
       const salida = orden('comprobar');

@@ -1,0 +1,163 @@
+{
+  "director": "Gemini (gemini-4-hydrogen)",
+  "fecha": "2026-11-23T00:17:13.804Z",
+  "propuesta": {
+    "descripcion": {
+      "anguloGrados": 40,
+      "distancia": "MEDIO",
+      "encuadre": "Plano medio vertical en tres cuartos alto desde el lado izquierdo-frontal. El plato cuadrado ocupa los dos tercios inferiores ligeramente en diagonal, con la esquina inferior derecha y la sexta croqueta recortadas por el borde; la botella de vino está de pie detrás a la izquierda, con el cuello cortado por el borde superior.",
+      "luz": "Luz ambiental interior cálida y plana, sin contraste direccional ni sombras marcadas, con ligera dominante beige procedente del mantel y el salón.",
+      "elementos": [
+        {
+          "nombre": "croqueta de rebozado fino",
+          "estado": "dorada, de forma oblonga con rebozado liso y fino y ligeras marcas de tueste",
+          "recuento": 3,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "Columna izquierda del plato, las tres piezas se ven enteras.",
+          "ingles": "oblong croquette with a smooth fine golden-brown breadcrumb crust",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "croqueta de rebozado grueso",
+          "estado": "dorada oscura, de forma oblonga con rebozado grueso y crujiente",
+          "recuento": 2,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Columna derecha del plato; las dos superiores están enteras y la inferior derecha queda ligeramente cortada en su extremo por el borde derecho de la foto.",
+          "ingles": "oblong croquette with a coarse crunchy golden-brown breadcrumb crust",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "porción de salsa blanca",
+          "estado": "cremosa, brillante, situada como base bajo cada croqueta",
+          "recuento": 5,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "Hay una base blanca bajo cada croqueta; la situada bajo la croqueta inferior derecha queda tocando el borde derecho.",
+          "ingles": "small mound of glossy creamy white sauce",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "cebollino picado",
+          "estado": "fresco, cortado en trozos pequeños verdes esparcidos por el centro del plato y sobre las salsas",
+          "recuento": null,
+          "cortados": 0,
+          "dudoso": false,
+          "nota": "No contable por tratarse de hierba picada dispersa.",
+          "ingles": "finely chopped fresh green chives",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "plato cuadrado de cerámica",
+          "estado": "blanco roto con borde oscuro moteado y motivo floral negro estampado en el centro",
+          "recuento": null,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "No se ve entero porque su esquina inferior derecha queda recortada por el encuadre.",
+          "ingles": "square off-white ceramic plate with a speckled rim and a black floral stencil pattern in the center",
+          "enEncuadre": true
+        },
+        {
+          "nombre": "botella de vino tinto",
+          "estado": "botella cerrada de vidrio oscuro con etiqueta color crema con tipografía negra",
+          "recuento": null,
+          "cortados": 1,
+          "dudoso": false,
+          "nota": "No se ve entera porque la parte superior del cuello queda cortada por el borde superior.",
+          "ingles": "dark glass wine bottle with a cream paper label",
+          "enEncuadre": true
+        }
+      ],
+      "defectos": [
+        "Baja resolución (382 x 510 px)",
+        "Fondo muy ruidoso con comensales, sillas de madera y pared de ladrillo que distraen",
+        "Botella cortada por arriba y esquina del plato y croqueta inferior derecha cortadas por el borde",
+        "Luz ambiental plana sin volumen y dominante cálida"
+      ],
+      "utilizable": true,
+      "motivo": "Sirve perfectamente como inventario de elementos: se distinguen con claridad los dos tipos de rebozado de las croquetas, la salsa blanca, el cebollino, el plato cuadrado estampado y la botella de vino."
+    },
+    "huecos": {
+      "plato": "croquettes on white sauce with a bottle of wine",
+      "origen": "at a restaurant",
+      "elementos": "oblong croquettes with a smooth fine golden-brown breadcrumb crust, oblong croquettes with a coarse crunchy golden-brown breadcrumb crust, small mounds of glossy creamy white sauce beneath each croquette, finely chopped fresh green chives scattered across the center, the square off-white ceramic plate with a speckled rim and a black floral stencil pattern in the center, and the dark glass wine bottle with its cream paper label",
+      "recuento": "Exactly six croquettes in total (three smooth-breaded on one side and three coarse-breaded on the other), six mounds of white sauce, one square ceramic plate, and one wine bottle.",
+      "camara": {
+        "anguloGrados": 22,
+        "descripcion": "a low three-quarter view at 22 degrees above a dark matte surface, rotated 70 degrees to the right side of the plate, framing the entire square plate angled diagonally in the lower half while the wine bottle stands further back on the left",
+        "objetivoMm": 85,
+        "apertura": 2.8,
+        "giroGrados": 70,
+        "distancia": "MEDIO"
+      },
+      "ideaGrafica": "the square ceramic plate sits low in the lower-right and lower-center of the frame with the two parallel rows of croquettes leading the eye toward the dark wine bottle standing softly out of focus in the back-left shadow, keeping every element complete and leaving the upper-right quadrant completely dark and uncluttered for the title",
+      "aire": "arriba-derecha",
+      "luz": "a single neutral 5000 K hard studio side-back light from the left-rear, raking across the golden crusts and bottle edge to sculpt crisp texture and specular highlights on the white sauce while the dark background falls off 1.5 to 2 stops into deep near-black shadow with no fill light and neutral white balance",
+      "colorDominante": "deep near-black shadow and neutral dark tones dominate the frame, with the warm golden-brown croquette crusts as the only rich bright colour against the neutral off-white ceramic and cream sauce"
+    },
+    "decisiones": [
+      "Fidelidad al inventario real: se han separado las croquetas de rebozado fino (3 piezas enteras a la izquierda) de las de rebozado grueso (2 enteras y 1 recortada en el borde a la derecha), además de las bases de salsa blanca, el cebollino picado, el plato cuadrado estampado y la botella de vino de la nota «croquetas con vino», sin añadir guarniciones ni cubiertos.",
+      "Evitar repetición con el post reciente 1 (croquetas con gamba): aquel usaba plano PRIMER_PLANO y vista RASANTE sin botella; aquí se cambia a distancia MEDIO, vista tres cuartos baja a 22° y giro de 70° hacia el lado derecho para integrar plato completo y botella sin cortes.",
+      "Estética Editorial oscuro e iluminación neutra (inspirada en las piezas low-key de Asador Etxebarri y la guía de iluminación de estudio): un único foco duro neutro de 5000 K lateral-trasero dibuja los contornos crujientes, mantiene neutros los blancos de la loza y la salsa sin dominante amarilla, y deja caer el fondo entre 1,5 y 2 pasos a negro profundo.",
+      "Reserva real de aire para el diseño posterior (TITULAR_DETRAS, TITULAR_CON_ACENTO y ANOTACIONES): al situar la botella atrás a la izquierda y el plato en la mitad inferior, el cuadrante arriba-derecha queda libre y oscuro, siguiendo los principios de jerarquía y contraste (§3 y §4).",
+      "Tomas de detalle del carrusel (§8): dos planos cerrados para los dos elementos comestibles protagonistas (croqueta de rebozado grueso en MACRO a 8° y croqueta de rebozado fino en PRIMER_PLANO a 45°), variando altura y escala respecto a la portada y dejando aire limpio arriba para el titular."
+    ],
+    "tomas": [
+      {
+        "elemento": "croqueta de rebozado grueso",
+        "huecos": {
+          "plato": "coarse-breaded croquette",
+          "origen": "at a restaurant",
+          "elementos": "oblong croquette with a coarse crunchy golden-brown breadcrumb crust on a dark matte surface",
+          "recuento": "Exactly one coarse-breaded croquette.",
+          "camara": {
+            "anguloGrados": 8,
+            "descripcion": "an extreme macro close-up at 8 degrees just above table level, focusing sharply on the jagged front crumbs of a single coarse-breaded croquette placed in the lower half of the frame",
+            "objetivoMm": 100,
+            "apertura": 4,
+            "giroGrados": 30,
+            "distancia": "MACRO"
+          },
+          "ideaGrafica": "the single coarse-breaded croquette fills the width of the lower third horizontally so its rough crispy breadcrumb texture reads large and tactile, leaving the upper half completely clean near-black space for the title",
+          "aire": "arriba",
+          "luz": "a single neutral 5000 K hard side-back light grazing across the rough breadcrumb peaks to create micro-shadows and crisp golden rim highlights while the background falls into deep near-black shadow with neutral white balance",
+          "colorDominante": "deep near-black shadow dominates the frame, with the warm golden-brown crunchy crust as the only bright colour"
+        }
+      },
+      {
+        "elemento": "croqueta de rebozado fino",
+        "huecos": {
+          "plato": "smooth-breaded croquettes",
+          "origen": "at a restaurant",
+          "elementos": "oblong croquettes with a smooth fine golden-brown breadcrumb crust on a dark matte surface",
+          "recuento": "Exactly two smooth-breaded croquettes.",
+          "camara": {
+            "anguloGrados": 45,
+            "descripcion": "a tight three-quarter high angle at 45 degrees looking down at two smooth-breaded croquettes positioned in the lower half, focus locked on the front croquette while the second softens behind it",
+            "objetivoMm": 90,
+            "apertura": 2.8,
+            "giroGrados": 110,
+            "distancia": "PRIMER_PLANO"
+          },
+          "ideaGrafica": "the two smooth-breaded croquettes sit diagonally in the lower half of the frame, creating depth from front to back while leaving the entire upper half dark and empty for the title",
+          "aire": "arriba",
+          "luz": "a single neutral 5000 K hard side-back light from the left-rear outlining the smooth golden crust and subtle sear marks while dropping the background into deep near-black shadow with no fill light",
+          "colorDominante": "deep near-black shadow dominates the frame, with the uniform warm golden-brown of the fine breadcrumb crust as the only bright colour"
+        }
+      }
+    ]
+  },
+  "prompt": "@image1 is a real photo of croquettes on white sauce with a bottle of wine at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: oblong croquette with a smooth fine golden-brown breadcrumb crust; oblong croquette with a coarse crunchy golden-brown breadcrumb crust; small mound of glossy creamy white sauce; finely chopped fresh green chives; square off-white ceramic plate with a speckled rim and a black floral stencil pattern in the center; dark glass wine bottle with a cream paper label. Exactly 3 × oblong croquette with a smooth fine golden-brown breadcrumb crust; 2 × oblong croquette with a coarse crunchy golden-brown breadcrumb crust; 5 × small mound of glossy creamy white sauce. Nothing else added. New composition by a professional food photographer: a low three-quarter view at 22 degrees above a dark matte surface, rotated 70 degrees to the right side of the plate, framing the entire square plate angled diagonally in the lower half while the wine bottle stands further back on the left, 85 mm lens at f/2.8, the square ceramic plate sits low in the lower-right and lower-center of the frame with the two parallel rows of croquettes leading the eye toward the dark wine bottle standing softly out of focus in the back-left shadow, keeping every element complete and leaving the upper-right quadrant completely dark and uncluttered for the title. A single neutral 5000 K hard studio side-back light from the left-rear, raking across the golden crusts and bottle edge to sculpt crisp texture and specular highlights on the white sauce while the dark background falls off 1.5 to 2 stops into deep near-black shadow with no fill light and neutral white balance, deep near-black shadow and neutral dark tones dominate the frame, with the warm golden-brown croquette crusts as the only rich bright colour against the neutral off-white ceramic and cream sauce. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep a coherent light direction and preserve the texture of the dish. Render no lettering or graphics.",
+  "problemas": [],
+  "intentos": [
+    {
+      "problemas": []
+    }
+  ],
+  "opcionesPrompt": {
+    "estetica": "EDITORIAL_OSCURO",
+    "desdeElInventario": true,
+    "modoDeLuz": "ESTUDIO"
+  }
+}

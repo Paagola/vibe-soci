@@ -129,20 +129,28 @@ export type GastoGemini = z.infer<typeof GastoGemini>;
 /**
  * Lo gastado, por envío (receta + activo; gana la última línea): el coste real si se conoce; si no, el estimado.
  * Cuentan 0 el tier gratuito y lo FALLIDO (rechazo HTTP, no cobra). Lo ENVIADO sin respuesta cuenta su estimado.
+ * Con `desde`, solo los envíos hechos desde ese momento (la fecha de su primera línea): el tope es mensual.
  */
-export function sumarGasto(lineas: string[]): number {
-  const porEnvio = new Map<string, GastoGemini>();
+export function sumarGasto(lineas: string[], desde?: Date): number {
+  const porEnvio = new Map<string, GastoGemini & { enviadoEn: string }>();
   for (const linea of lineas.filter((l) => l.trim())) {
     const gasto = GastoGemini.parse(JSON.parse(linea));
     const clave = `${gasto.receta}|${gasto.activo}`;
-    porEnvio.set(clave, { ...porEnvio.get(clave), ...gasto });
+    const previo = porEnvio.get(clave);
+    porEnvio.set(clave, { ...previo, ...gasto, enviadoEn: previo?.enviadoEn ?? gasto.fecha });
   }
   let suma = 0;
   for (const g of porEnvio.values()) {
     if (g.tier === 'GRATUITO' || g.estado === 'FALLIDO') continue;
+    if (desde && new Date(g.enviadoEn).getTime() < desde.getTime()) continue;
     suma += g.realUsd ?? g.estimadoUsd;
   }
   return suma;
+}
+
+/** El primer instante del mes natural (hora local) de `ahora`: desde ahí cuenta el tope de GEMINI_TOPE_USD. */
+export function inicioDelMes(ahora = new Date()): Date {
+  return new Date(ahora.getFullYear(), ahora.getMonth(), 1);
 }
 
 const Respuesta = z.object({

@@ -65,6 +65,8 @@ export class ClienteGemini {
   private primerModelo = 0;
   private readonly antesDeEnviar: OpcionesClienteGemini['antesDeEnviar'];
   private ultimoModelo?: string;
+  /** Por qué terminó la última respuesta (STOP, MAX_TOKENS…): sale en el error si el JSON no vale. */
+  private ultimoFin?: string;
 
   get modeloUtilizado(): string {
     return this.ultimoModelo ?? this.modelos[this.primerModelo] ?? 'Gemini';
@@ -91,7 +93,7 @@ export class ClienteGemini {
       const texto = await this.generar(instrucciones, conversacion);
       const resultado = interpretarJson(texto, esquema);
       if (resultado.ok) return resultado.datos;
-      if (intento >= 2) throw new ErrorDeServicio(SERVICIO, `la respuesta no tiene el formato pedido (${resultado.problema})`, true);
+      if (intento >= 2) throw new ErrorDeServicio(SERVICIO, `la respuesta no tiene el formato pedido (${resultado.problema}${this.ultimoFin ? `; fin: ${this.ultimoFin}` : ''})`, true);
 
       conversacion = [
         ...conversacion,
@@ -121,6 +123,7 @@ export class ClienteGemini {
       throw new ErrorDeServicio(SERVICIO, `ha bloqueado la petición (${datos.promptFeedback.blockReason})`, false);
     }
     const candidato = datos.candidates?.[0];
+    this.ultimoFin = candidato?.finishReason;
     const texto = (candidato?.content?.parts ?? [])
       .filter((parte) => !parte.thought)
       .map((parte) => parte.text ?? '')
@@ -192,8 +195,9 @@ export function interpretarJson<T>(texto: string, esquema: z.ZodType<T>): Interp
   let datos: unknown;
   try {
     datos = JSON.parse(limpio);
-  } catch {
-    return { ok: false, problema: 'no es JSON válido' };
+  } catch (error) {
+    // Con el motivo de JSON.parse y el final del texto se ve si la respuesta vino cortada o mal escapada.
+    return { ok: false, problema: `no es JSON válido: ${(error as Error).message.slice(0, 120)}; ${texto.length} caracteres, termina en «${texto.slice(-80).replace(/\s+/g, ' ')}»` };
   }
   const resultado = esquema.safeParse(datos);
   return resultado.success ? { ok: true, datos: resultado.data } : { ok: false, problema: describirProblemas(resultado.error).join('; ') };

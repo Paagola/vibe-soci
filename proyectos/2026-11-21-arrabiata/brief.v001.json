@@ -1,0 +1,135 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-21-arrabiata",
+  "local": "meson-lo-gueno",
+  "version": 1,
+  "creadoEn": "2026-11-22T23:49:32.862Z",
+  "actualizadoEn": "2026-11-22T23:49:32.862Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Mesón Lo Güeno",
+    "ciudad": "Málaga (calle Marín García, centro)",
+    "descripcion": "Mesón de tapas en el centro de Málaga: barra de madera, embutidos y montaditos.",
+    "tonos": [
+      "taberna",
+      "castizo",
+      "animado"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "arrabiata",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "Penne rigate",
+          "estado": "cocidos y cubiertos de salsa roja brillante",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Trozos de tomate y copos de chile",
+          "estado": "cocinados y repartidos entre la pasta",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Queso rallado",
+          "estado": "en hebras finas sobre la pasta y el borde del plato",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Bol cerámico oscuro",
+          "estado": "azul negro moteado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Plato bajo acanalado negro",
+          "estado": "mate con borde estriado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "c4703e468c9dfb42ab2bbab8663d5f6d8688f929e94de2fa31d4003984961346"
+    },
+    "datosPorConfirmar": [
+      "«Penne rigate»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Trozos de tomate y copos de chile»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Queso rallado»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Bol cerámico oscuro»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Plato bajo acanalado negro»: lo ve el director en la foto; la nota del dueño no lo dice."
+    ]
+  },
+  "idea": null,
+  "formato": "carrusel",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-17"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    },
+    {
+      "n": 2,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Penne rigate",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 3,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Trozos de tomate y copos de chile",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 4,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Queso rallado",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 5,
+      "papel": "cierre",
+      "foto": "FOTO_ELEGIDA",
+      "para": "firma, ciudad e Instagram"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

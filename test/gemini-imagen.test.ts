@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { describe, it } from 'node:test';
-import { construirPeticion, costeRealUsd, estimarUsd, leerRespuesta, RESERVA_RAZONAMIENTO_TOKENS, sumarGasto, Uso } from '../src/adaptadores/gemini/imagenGemini.js';
+import { construirPeticion, costeRealUsd, estimarUsd, leerRespuesta, inicioDelMes, RESERVA_RAZONAMIENTO_TOKENS, sumarGasto, Uso } from '../src/adaptadores/gemini/imagenGemini.js';
 
 const ref = (etiqueta: string) => ({ etiqueta, bytes: Buffer.from(etiqueta), mime: 'image/jpeg' });
 
@@ -30,6 +30,23 @@ describe('Nano Banana Pro (imagenGemini)', () => {
     assert.equal(sumarGasto([linea({ activo: 'b', estado: 'ENVIADO' }), linea({ activo: 'b', estado: 'FALLIDO' })]), 0);
     assert.equal(sumarGasto([linea({ activo: 'c', estado: 'ENVIADO' })]), 0.16);
     assert.equal(sumarGasto([linea({ activo: 'd', estado: 'ENVIADO' }), linea({ activo: 'd', estado: 'COMPLETADO', realUsd: 0.141 }), '']), 0.141);
+  });
+
+  it('el tope es mensual: solo cuenta lo enviado desde el día 1 del mes en curso (por la fecha del envío, no de la respuesta)', () => {
+    const linea = (o: Record<string, unknown>) => JSON.stringify({ receta: 'r', modelo: 'gemini-3-pro-image', estimadoUsd: 0.16, ...o });
+    const lineas = [
+      linea({ activo: 'octubre', fecha: '2026-10-30T10:00:00', estado: 'ENVIADO' }),
+      linea({ activo: 'octubre', fecha: '2026-10-30T10:01:00', estado: 'COMPLETADO', realUsd: 0.15 }),
+      // Enviado el 31 a última hora y contestado ya en noviembre: es de octubre.
+      linea({ activo: 'frontera', fecha: '2026-10-31T23:59:30', estado: 'ENVIADO' }),
+      linea({ activo: 'frontera', fecha: '2026-11-01T00:00:20', estado: 'COMPLETADO', realUsd: 0.14 }),
+      linea({ activo: 'noviembre', fecha: '2026-11-05T09:00:00', estado: 'ENVIADO' }),
+      linea({ activo: 'noviembre', fecha: '2026-11-05T09:01:00', estado: 'COMPLETADO', realUsd: 0.13 }),
+    ];
+    assert.equal(Math.round(sumarGasto(lineas) * 100) / 100, 0.42, 'sin «desde», todo');
+    assert.equal(sumarGasto(lineas, inicioDelMes(new Date(2026, 10, 22))), 0.13, 'en noviembre, solo noviembre');
+    assert.equal(sumarGasto(lineas, inicioDelMes(new Date(2026, 11, 1))), 0, 'el 1 de diciembre empieza de cero');
+    assert.equal(inicioDelMes(new Date(2026, 10, 22, 15)).getTime(), new Date(2026, 10, 1).getTime());
   });
 
   it('sin tarifa comprobada no hay estimación (no se puede vigilar el tope)', () => {
