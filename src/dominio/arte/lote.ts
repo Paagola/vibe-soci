@@ -3,7 +3,7 @@
  * para que haya variedad de tipos (no solo carteles: el plato, el ambiente, gente celebrando, el proceso, un dato…) y
  * continuidad de marca entre piezas.
  *
- * Cada visual dice qué foto usa (la real del local o una que se genera) y lleva su RECETA: la maquetación la hace siempre
+ * Cada visual dirige una toma nueva y lleva su RECETA: la maquetación la hace siempre
  * el código (textos con su cita, voces y colores de la marca, tensión garantizada). La foto generada nunca inventa el
  * plato: si sale el plato, va la foto real de referencia y el plato tiene que ser el mismo.
  */
@@ -19,18 +19,23 @@ export const GeneracionDeFoto = z.object({
   prompt: z
     .string()
     .min(60)
-    .max(900)
-    .describe('La foto, en inglés, como un fotógrafo de agencia: escena, encuadre, punto de vista, óptica, luz, color, gente (adultos anónimos), dónde queda aire para el texto. Sin texto, letras ni logos en la imagen.'),
+    .max(1600)
+    .describe('Encargo de cámara en inglés, normalmente 80–120 palabras. Describe escena, punto de vista, luz y zonas de aire para los textos. La foto se genera sin letras ni grafismos; el diseño se describe aparte en la receta.'),
   conPlato: z.boolean().describe('true si en la foto sale el plato del local: se adjunta la foto real y el plato tiene que ser el mismo.'),
+  luzDeEscena: z.string().trim().min(8).max(180).optional().describe('Solo para una fuente de color motivada por el encargo: en inglés, su posición y las superficies que alcanza. Omítelo en luz neutra.'),
 });
 export type GeneracionDeFoto = z.infer<typeof GeneracionDeFoto>;
 
 export const Visual = z.object({
-  foto: z.enum(['real', 'generada']).describe('real: la foto del plato del local. generada: una foto nueva (de «generar»).'),
+  foto: z.enum(['real', 'generada']).describe('Para planes nuevos: generada. «real» se conserva para poder leer planes históricos.'),
   generar: GeneracionDeFoto.optional(),
   receta: Receta.describe('La maquetación sobre esa foto. Para una foto que se sostiene sola, FOTO_A_SANGRE con un titular corto o solo la firma.'),
 });
 export type Visual = z.infer<typeof Visual>;
+
+// Los archivos de conversaciones históricas aún pueden contener «real». El contrato que
+// recibe el planificador y sus respuestas actuales solo admiten fotografías nuevas.
+export const VisualNuevo = Visual.extend({ foto: z.literal('generada'), generar: GeneracionDeFoto });
 
 export const TipoDePieza = z.enum(['cartel', 'plato', 'ambiente', 'evento', 'proceso', 'detalle', 'dato']);
 
@@ -38,13 +43,13 @@ export const PostDeLote = z.object({
   id: Clave,
   tipo: TipoDePieza,
   idea: z.string().min(12).max(240),
-  visual: Visual,
+  visual: VisualNuevo,
 });
 export type PostDeLote = z.infer<typeof PostDeLote>;
 
 export const DiapositivaDeLote = z.object({
   papel: z.enum(['portada', 'detalle', 'ambiente', 'proceso', 'dato', 'cierre']),
-  visual: Visual,
+  visual: VisualNuevo,
 });
 
 export const CarruselDeLote = z.object({
@@ -75,11 +80,9 @@ export function problemasDelPlan(plan: PlanDeLote): string[] {
   const problemas: string[] = [];
   for (const v of visualesDe(plan)) {
     if (v.visual.foto === 'generada' && !v.visual.generar) problemas.push(`«${v.id}»: foto «generada» sin «generar» (qué foto hay que hacer).`);
-    if (v.visual.foto === 'real' && v.visual.generar) problemas.push(`«${v.id}»: foto «real» con «generar»: o una o la otra.`);
+    if (v.visual.foto === 'real') problemas.push(`«${v.id}»: la foto subida solo sirve de referencia. Planifica una toma nueva con «foto: generada» y «generar».`);
   }
   const tipos = new Set(plan.posts.map((p) => p.tipo));
   if (tipos.size < Math.min(3, plan.posts.length)) problemas.push('Los posts repiten tipo: el lote tiene que mezclar (cartel, plato, ambiente, evento, proceso, detalle, dato).');
-  const generadas = visualesDe(plan).filter((v) => v.visual.foto === 'generada').length;
-  if (generadas > 5) problemas.push(`Hay ${generadas} fotos generadas: como mucho 5 por lote.`);
   return problemas;
 }

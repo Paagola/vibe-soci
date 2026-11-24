@@ -61,7 +61,7 @@ export const CATALOGO: DefinicionHerramienta[] = [
     id: 'pieza',
     grupo: 'Crear',
     nombre: 'Post o carrusel',
-    descripcion: 'El director planifica cada diapositiva (foto nueva o la tuya) y el estudio de arte la diseña. Ves el plan y el coste antes de producir.',
+    descripcion: 'El director planifica cada diapositiva con su propia foto nueva y el estudio de arte la diseña. Ves el plan y el coste antes de producir.',
     icono: 'Sparkles',
     conHechos: true,
     coste: 'Ves el coste en el plan',
@@ -89,7 +89,7 @@ export const CATALOGO: DefinicionHerramienta[] = [
     descripcion: 'Varias direcciones pintadas, criticadas y comparadas a ciegas. Con una referencia, hermanas que la mejoran. Con acabado, Nano Banana 2 le da el remate profesional (fondo, sello, luz).',
     icono: 'Palette',
     conHechos: true,
-    coste: '≈ 0,3–1,3 USD',
+    coste: '≈ 0,45–1,45 USD con la toma nueva',
     campos: [
       { tipo: 'numero', id: 'direcciones', etiqueta: 'Direcciones', valor: 2, min: 1, max: 3 },
       { tipo: 'numero', id: 'vueltas', etiqueta: 'Vueltas de crítica', valor: 1, min: 0, max: 2 },
@@ -104,7 +104,7 @@ export const CATALOGO: DefinicionHerramienta[] = [
     descripcion: 'Tres posts de tipos distintos y un carrusel (plato, ambiente, gente, proceso, cartel), con fotos nuevas y una auditoría estética al final.',
     icono: 'LayoutGrid',
     conHechos: true,
-    coste: '≈ 1–1,5 USD',
+    coste: '7 tomas nuevas más dirección y auditoría',
     campos: [{ tipo: 'casilla', id: 'evaluar', etiqueta: 'Auditar el lote al terminar', valor: true }],
   },
   {

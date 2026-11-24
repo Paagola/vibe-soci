@@ -1,9 +1,10 @@
 /**
  * Director, generador, revisor y segmentador SIMULADOS para la orden única (`npm run post -- … --simular`) y las pruebas.
- * No gastan ni llaman a nada. La «foto nueva» simulada es la foto real reencuadrada con un sello SIMULADA: nunca se
+ * No gastan ni llaman a nada. La «foto nueva» simulada es una lámina sintética con un sello SIMULADA: nunca se
  * confunde con una foto de verdad.
  */
 import sharp from 'sharp';
+import { createHash } from 'node:crypto';
 import type { ChecklistVisual, ComparacionToma, ConteoAnatomia } from '../../dominio/comprobacionSalida.js';
 import type { PropuestaFotoNueva } from '../../dominio/fotoNueva.js';
 import type { DirectorDeFoto, EncargoDeFoto, FotoGenerada, GeneradorFoto, PeticionFoto, Segmentador } from '../../puertos/Foto.js';
@@ -74,14 +75,18 @@ export class GeneradorFotoSimulado implements GeneradorFoto {
     const ruta = p.referencias[0]?.ruta;
     if (!ruta) throw new Error('El generador simulado necesita la foto real como @image1.');
     const w = 1536, h = p.aspectRatio === '1:1' ? w : p.aspectRatio === '4:5' ? 1920 : 2048;
-    const cierre = p.aspectRatio === '4:5' && p.id.endsWith('-cierre');
-    const sello = Buffer.from(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect x="40" y="40" width="560" height="110" fill="#000" opacity="0.6"/><text x="70" y="122" font-family="Helvetica" font-weight="bold" font-size="72" fill="#fff">SIMULADA</text></svg>`,
-    );
-    const toma = sharp(ruta).rotate().resize(w, h, { fit: 'cover' }).flop(!cierre);
-    if (p.id.includes('-apertura-')) toma.modulate({ brightness: .92 });
-    const bytes = await toma.composite([{ input: sello }]).png().toBuffer();
-    return { bytes, modelo: 'simulado', costeUsd: 0, tier: 'SIMULADO', detalle: 'simulado: la foto real reencuadrada, sin generar nada' };
+    const variacion = createHash('sha256').update(p.id).digest();
+    const cx = Math.round(w * (0.42 + variacion[0]! / 1600));
+    const cy = Math.round(h * (0.5 + variacion[1]! / 1800));
+    const color = `rgb(${150 + variacion[2]! % 80}, ${80 + variacion[3]! % 80}, 68)`;
+    const escena = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+      <defs><linearGradient id="mesa" x2="0.8" y2="1"><stop stop-color="#807064"/><stop offset="1" stop-color="#49382f"/></linearGradient></defs>
+      <rect width="100%" height="100%" fill="url(#mesa)"/>
+      <ellipse cx="${cx}" cy="${cy}" rx="${w * .34}" ry="${h * .20}" fill="#e9dfd3"/>
+      <ellipse cx="${cx}" cy="${cy}" rx="${w * .23}" ry="${h * .15}" fill="${color}"/>
+      <text x="70" y="122" font-family="Helvetica" font-weight="bold" font-size="72" fill="white">SIMULADA</text></svg>`;
+    const bytes = await sharp(Buffer.from(escena)).png().toBuffer();
+    return { bytes, modelo: 'simulado', costeUsd: 0, tier: 'SIMULADO', detalle: 'Lámina sintética para probar el diseño.' };
   }
 }
 

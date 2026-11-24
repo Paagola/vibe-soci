@@ -26,6 +26,7 @@ import { AlmacenDisenosFicheros } from '../adaptadores/ficheros/AlmacenDisenosFi
 import { ClienteGemini } from '../adaptadores/gemini/ClienteGemini.js';
 import { EstudioArteGemini } from '../adaptadores/gemini/EstudioArteGemini.js';
 import { registradorDeUso } from '../adaptadores/gemini/registroUso.js';
+import { exigirTomaNueva } from '../adaptadores/imagen/copiaDeReferencia.js';
 import { franjasPlanas } from '../adaptadores/imagen/franjas.js';
 import { fotoConMascaraPrincipal } from '../adaptadores/imagen/mascaraPrincipal.js';
 import { MedidorDeFotoSharp } from '../adaptadores/imagen/MedidorDeFotoSharp.js';
@@ -193,6 +194,7 @@ async function main() {
             if (!problemas.length) break;
             devolver = problemas;
           }
+          if (plan && problemasDelPlan(plan).length) throw new Error(problemasDelPlan(plan).join(' · '));
           await writeFile(join(salida, 'plan.json'), `${JSON.stringify(plan, null, 2)}\n`);
           const pedidos: Pedido[] = visualesDe(plan!)
             .filter((v) => v.visual.foto === 'generada' && v.visual.generar)
@@ -233,7 +235,7 @@ async function main() {
       const plan = PlanDeLote.parse(JSON.parse(await readFile(join(salida, 'plan.json'), 'utf8')));
       const pedidos = z.array(Pedido).parse(JSON.parse(await readFile(join(salida, 'pedidos.json'), 'utf8')));
       const banco = join(carpetaBanco, `${id}.json`);
-      const { e, foto, tokensMarca, entrada, marca } = await cargar(banco);
+      const { e, foto, tokensMarca, entrada, marca, referencia } = await cargar(banco);
       console.log(`\n══ ${id} · ${marca.nombre}`);
 
       // 1. Las fotos generadas, como activos del local (con máscara y procedencia). Una foto que se repite (otro
@@ -248,6 +250,7 @@ async function main() {
         }
         const ruta = join(salida, 'generadas', archivo);
         const bytes = await sharp(ruta).png().toBuffer();
+        await exigirTomaNueva(bytes, [foto.ruta, ...(referencia ? [referencia.ruta] : [])]);
         const sha = createHash('sha256').update(bytes).digest('hex');
         let idActivo = `${corrida}-${id}-${p.id}`.replace(/[^a-z0-9-]/g, '-').slice(0, 80);
         if ((await activos.existe(e.local, idActivo)) && (await activos.obtener(e.local, idActivo)).activo.sha256 !== sha) idActivo = `${idActivo}-${sha.slice(0, 8)}`;
@@ -353,7 +356,7 @@ async function main() {
           resultados.set(v.id, anterior);
           continue;
         }
-        const fotoDeEsta = v.visual.foto === 'real' ? foto : generadas.get(v.id);
+        const fotoDeEsta = generadas.get(v.id);
         if (!fotoDeEsta) {
           resultados.set(v.id, {
             problemas: ['sin foto generada'],

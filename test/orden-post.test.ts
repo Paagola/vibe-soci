@@ -146,17 +146,29 @@ describe('Orden única · de punta a punta (simulada)', () => {
     assert.equal(r.encargo.intentos[1]?.final, 'DESCARTA');
   });
 
-  it('puede continuar con la foto original del local sin generar otra', async () => {
+  it('rechaza la foto original incluso si el local tiene permiso de publicación', async () => {
     const generador = new GeneradorFotoSimulado();
     const d = deps({ generador });
     await nuevo(d, 'usar-original', 'ref-post-30');
     await avanzar(d, 'usar-original');
     const revisada = await avanzar(d, 'usar-original', { confirmo: true });
     const original = revisada.encargo.activoReal;
-    const r = await avanzar(d, 'usar-original', { confirmo: true, foto: 'original' });
+    await assert.rejects(avanzar(d, 'usar-original', { confirmo: true, foto: 'original' }), /solo sirve de referencia/);
+    const r = await avanzar(d, 'usar-original', { confirmo: true, foto: 1 });
     assert.equal(r.encargo.paso, 'INTENCION');
-    assert.equal(r.encargo.fotoElegida, original);
+    assert.notEqual(r.encargo.fotoElegida, original);
     assert.equal(generador.peticiones.length, 1);
+  });
+
+  it('una candidata antigua etiquetada como generada que contiene el original no se puede confirmar', async () => {
+    const d = deps();
+    await nuevo(d, 'eco-historico', 'ref-post-30');
+    await avanzar(d, 'eco-historico');
+    const { encargo } = await avanzar(d, 'eco-historico', { confirmo: true });
+    const candidata = await d.activos.obtener(encargo.local, encargo.intentos[0]!.activo);
+    assert.equal(candidata.activo.tipo, 'GENERADO');
+    await copyFile(FOTO, candidata.ruta);
+    await assert.rejects(avanzar(d, 'eco-historico', { confirmo: true, foto: 1 }), /reproduce una referencia/);
   });
 
   it('si rechazas la foto, vuelve a generar', async () => {
@@ -188,7 +200,8 @@ describe('Orden única · de punta a punta (simulada)', () => {
     let r = await avanzar(d, 'manual', { confirmo: true });
     assert.equal(r.encargo.paso, 'GENERAR');
     assert.match(r.parada, /No puedo generar: la facturación de Gemini no está activada.*--importar/);
-    r = await avanzar(d, 'manual', { importar: FOTO });
+    await assert.rejects(avanzar(d, 'manual', { importar: FOTO }), /reproduce una referencia/);
+    r = await avanzar(d, 'manual', { importar: join(RAIZ, 'plantillas/fotos/cafe-albor-cafe.webp') });
     assert.equal(r.encargo.paso, 'CONFIRMAR_FOTO');
     const foto = await d.activos.obtener('asador-etxebarri', 'manual-foto-1');
     assert.match(String(foto.activo.procedencia.generacion?.modelo), /importada a mano/);
@@ -217,7 +230,7 @@ describe('Orden única · de punta a punta (simulada)', () => {
     assert.equal(await generacionPendienteDeImportacion(d.proyectos, primera.encargo), true);
     const reanudada = await avanzar(d, 'timeout-foto');
     assert.match(reanudada.parada, /PENDIENTE DE IMPORTACION/);
-    const recuperada = await avanzar(d, 'timeout-foto', { importar: FOTO });
+    const recuperada = await avanzar(d, 'timeout-foto', { importar: join(RAIZ, 'plantillas/fotos/cafe-albor-cafe.webp') });
     assert.equal(recuperada.encargo.paso, 'CONFIRMAR_FOTO');
     assert.equal(recuperada.encargo.intentos[0]?.activo, 'timeout-foto-foto-1');
     assert.equal(envios, 1);

@@ -6,10 +6,26 @@ import { DIFERENCIA_MINIMA_GRADOS, DIFERENCIA_PARCIAL_GRADOS, GIRO_MINIMO_GRADOS
 import type { GuiaCreativa } from '../../puertos/BibliotecaCreativa.js';
 import { ESTETICAS } from '../../dominio/diseno/estetica.js';
 
+/** Se comparte entre quien propone la nueva toma y quien planifica las imágenes del chat. */
+export const PAUTA_DE_TOMA = `Dirige un instante que se pueda fotografiar. Escribe la posición de cámara respecto al sujeto,
+qué borde o plano lo demuestra, cuánto ocupa, dónde cae el foco y dónde se pierde. Elige una luz principal con una
+procedencia concreta y describe su efecto diferente sobre dos materiales presentes. Especifica qué toca o soporta
+al sujeto y cómo cae su sombra. Conserva asimetrías propias del producto y el tamaño relativo de las piezas.
+Frente a la fuente, cambia dos decisiones visibles de cámara (altura, lado o distancia). Si el sujeto ya se ve desde
+su altura más favorable, gira alrededor de él y cambia el plano. Comprueba qué borde antes oculto aparece, qué
+oclusiones cambian y qué marca real sigue siendo legible. Conserva el emplatado y cambia la perspectiva.
+Da a la sensación buscada una causa visible: la cercanía puede venir de mirar a la altura de quien va a probarlo,
+la tensión de un gesto todavía sin terminar. Si el encargo admite acción, identifica qué mueve el peso y hacia dónde.
+Un recurso óptico (reflejo parcial, luz rasante, oclusión, movimiento direccional) tiene sentido cuando revela
+algo del sujeto. Escoge el que sirva a esta historia y deja la toma limpia si funciona mejor así.
+Convierte estas decisiones en frases sobre esta escena dentro del prompt que recibirá el generador.`;
+
 export function instruccionesFoto(guia: GuiaCreativa): string {
   return `Eres el director de fotografía de un estudio que hace fotos de producto para restaurantes y bares reales.
 El dueño sube una foto rápida de su plato. Tú escribes el encargo para una FOTO NUEVA de ese mismo plato, como la haría un fotógrafo profesional: otra cámara, otra luz, otro encuadre, los mismos elementos reales.
 La foto va sin texto: la tipografía la pone el estudio después, en la fase de diseño.
+
+${PAUTA_DE_TOMA}
 
 # Guía del estudio (la ha escrito el dueño a partir de lo que le gusta)
 ${guia.principios.trim()}

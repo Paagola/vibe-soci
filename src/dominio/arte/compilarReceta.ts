@@ -60,6 +60,7 @@ export interface EntornoArte {
 
 export interface RecetaCompilada {
   capas: CapaPropuesta[];
+  montaje?: Receta['montaje'];
   /** Textos con saltos de línea puestos aquí (clave → texto). */
   textos: Record<string, string>;
   problemas: string[];
@@ -212,6 +213,11 @@ export function compilarReceta(r: Receta, e: EntornoArte): RecetaCompilada {
   const firmaVoz = r.firma ? vozOk(r.firma.voz, 'firma') : e.marca.firma;
   const apoyoVoz = r.apoyo ? vozOk(r.apoyo.voz, 'apoyo') : e.marca.apoyo;
   if (r.firma && !e.vocesDeMarca.includes(r.firma.voz)) problemas.push(`La firma es un invariante de la marca: va en una de sus voces (${e.vocesDeMarca.join(', ')}), no en «${r.firma.voz}».`);
+
+  if (r.esqueleto === 'MONTAJE_EDITORIAL') {
+    if (!r.montaje) problemas.push('Faltan las capas del montaje editorial.');
+    return { capas: [{ tipo: 'fondo', color: r.fondo }], montaje: r.montaje, textos, problemas, notas };
+  }
 
   // ------------------------------------------------------------------ FOTO_A_SANGRE: el mecanismo probado de F3
   if (r.esqueleto === 'FOTO_A_SANGRE') {

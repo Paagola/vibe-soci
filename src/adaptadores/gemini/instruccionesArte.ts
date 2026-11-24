@@ -7,9 +7,10 @@
  */
 import { z } from 'zod';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
-import { PlanDePieza, PropuestaDeConceptos, TurnoDelDirector } from '../../dominio/chat.js';
+import { PlanConFotosNuevas, propuestaDeConceptos, TurnoDelDirector } from '../../dominio/chat.js';
 import { ElementoGrafico, ESQUELETOS, OPERACIONES, PropuestaDeDirecciones, PropuestaInspirada, Receta } from '../../dominio/arte/receta.js';
 import { Critica, DIMENSION_REFERENCIA, DIMENSIONES } from '../../dominio/arte/rubrica.js';
+import { PAUTA_DE_TOMA } from './instruccionesFoto.js';
 
 const lista = (o: Record<string, string>) => Object.entries(o).map(([k, v]) => `- ${k}: ${v}`).join('\n');
 
@@ -18,11 +19,22 @@ const OFICIO = `OFICIO (lo que separa una pieza de agencia de una plantilla)
   su materia (crujiente, brillante, cremosa) o su gesto (se apila, se moja, se corta), o del local. Si la idea sirve
   igual para otro plato u otro local, no es una idea.
 - Tres lecturas ordenadas: lo que se ve en 1 segundo, en 3 y en 10. Escríbelas en «lecturas».
+- Cuando la idea depende del orden de impresión, elige MONTAJE_EDITORIAL. Traduce una relación de «relacionesGraficas»
+  o una decisión propia a «montaje.capas» en orden de fondo a frente. En un ambiente oscuro un filete puede alinear
+  el dato con el arranque de una letra. En una ficha de producto una ventana de foto irregular puede dejar a la vista
+  un eco tipográfico. También puedes construir una pieza sobria con un solo eje y mucho aire. Decide según el encargo.
+  Cada rótulo usa una clave de «textos», una voz, tinta y una caja {x,y,w,h} en fracciones del lienzo. Para un titular
+  con dos voces divide su literal con un salto de línea y asigna «linea» 0 y 1 a capas diferentes. Solo el eco de
+  un literal que ya se lee puede llevar «decorativo», desenfoque y sangrado. Pon los datos en el margen seguro del
+  post 3:4 (x entre .067 y .933, y entre .10 y .90). La foto ocupa una capa; sus vértices son relativos a su propia
+  caja. Dibuja filetes o marcos donde alineen información. Reserva un claro de la foto en el encargo de cámara.
+  Deja operaciones y elementos vacíos en este esqueleto. En composiciones de un solo gesto bastan los otros esqueletos.
 - Tensión de escala: algo muy grande junto a algo muy pequeño. Nada de tamaños medianos «por si acaso».
 - El texto y el producto se tocan con intención (el producto tapa letras, las letras rodean o señalan el producto, el
   producto cruza una frontera). Dos bloques apilados (titular arriba, foto abajo) es la plantilla que no queremos.
-- Densidad: titular + UNA voz secundaria (apoyo O acento manuscrito, rara vez los dos) + firma, y como mucho un dato
-  más (sello o anotaciones). Cada texto de más compite con el producto y se pisa con los otros a 360 px.
+- Ajusta la densidad al encargo. Un retrato del plato puede necesitar solo titular y firma. Una receta, una carta o un
+  anuncio con horarios necesita conservar sus datos confirmados. Agrúpalos por función, mantén alineaciones comunes y
+  deja pausas entre grupos. Las etiquetas que cumplen el mismo papel comparten voz y escala. Comprueba la lectura a 360 px.
 - Menos es más: como mucho 3 operaciones por pieza, y cada una con un papel. Un titular corto (1–3 palabras) se lee
   monumental; uno largo se lee como un párrafo.
 - La voz tipográfica es una decisión: la grotesca condensada grita, la didona susurra lujo, la serif blanda sonríe,
@@ -35,7 +47,7 @@ const VERDAD = `VERDAD DE LOS TEXTOS (lo comprueba el código y rechaza la direc
   que no consten.
 - «CREATIVO» (sin cita) solo si el encargo lo permite: como mucho 4 palabras, sin cifras y sin reclamos («casero»,
   «el mejor», «artesanal», «brasa»…). Es copy con idea («just one? …maybe two.»), nunca una afirmación del producto.
-- Las claves de «textos» son las que usan titular, apoyo, firma, acentoManuscrito y las operaciones (en minúsculas).
+- Las claves de «textos» son las que usan titular, apoyo, firma, acentoManuscrito, operaciones y montaje.capas.
 - La firma es el nombre del local o su Instagram, en una voz de la marca.`;
 
 export function instruccionesDirectorArte(): string {
@@ -44,7 +56,7 @@ Recibes la FOTO del producto (con su máscara: el código lo puede recortar), lo
 decir), los COLORES y las VOCES tipográficas disponibles y unas REFERENCIAS de diseño profesional (imágenes) con la
 decisión que enseña cada una. Propones DIRECCIONES: piezas que un diseñador no reconocería como variaciones de la misma
 plantilla. Tú decides QUÉ (la idea, el esqueleto, la escala, la relación con el producto, las operaciones, la voz y el
-color); el código decide DÓNDE y CUÁNTO (celdas, cuerpos, tintas que contrastan) con la tensión garantizada.
+color). El código resuelve la colocación de los esqueletos. Para MONTAJE_EDITORIAL compones las cajas y el orden de impresión.
 
 Devuelves SOLO un JSON con esta forma:
 ${JSON.stringify(z.toJSONSchema(PropuestaDeDirecciones))}
@@ -88,7 +100,8 @@ Después propones de CERO a TRES parches: cambios acotados de la receta, cada un
 parches, devuelves la receta ENTERA con ellos aplicados. Un parche cambia parámetros (escala, relación, lado, voz, color,
 giro, una operación que sobra o que falta, el esqueleto si la estructura no funciona); no reescribe la idea entera. No
 pidas lo que el código ya garantiza (contraste, márgenes): pide decisiones. Los textos solo se pueden acortar, quitar,
-partir o cambiar de papel: nunca inventar uno nuevo (si es CREATIVO, se puede reescribir dentro de sus límites).
+partir o cambiar de papel: conserva toda información solicitada (firma, ingredientes, horario, oferta). En un montaje
+ajusta el plano preciso que falla en el render. Mantén aparte las capas que ya funcionan.
 Si la pieza ya llega a 3 en todo, no la toques (parches vacíos).
 
 CON REFERENCIA (si el mensaje trae la imagen de la REFERENCIA que eligió el cliente): puntúa además «referencia»
@@ -145,8 +158,8 @@ ${JSON.stringify(z.toJSONSchema(RespuestaPlantilla))}`;
 /** Las operaciones que se le ofrecen al director (GARABATO no: los dibujos se añaden al final, en contexto). */
 const operacionesDelDirector = () => lista(Object.fromEntries(Object.entries(OPERACIONES).filter(([k]) => k !== 'GARABATO')));
 
-const SIN_DIBUJOS = `DIBUJOS: no pongas garabatos ni «elementos» en la receta (deja «elementos» vacío). Los elementos dibujados a mano
-(destellos, trazos, formas) se añaden al final, en contexto, sobre la pieza ya maquetada.`;
+const SIN_DIBUJOS = `Deja «elementos» vacío al proponer la receta. El montaje permite componer filetes, marcos, letras y
+texturas en sus propias capas editables. En los otros esqueletos el estudio puede proponer un dibujo al terminar.`;
 
 const ELEMENTOS = `ELEMENTOS DIBUJADOS («elementos» de la receta, opcionales, como mucho 3)
 Lo que el compositor no sabe pintar (trazos a mano, destellos, líneas de movimiento, vapor, una cinta, un sol, una
@@ -163,6 +176,8 @@ post MEJOR que la referencia para este local, con al menos una decisión creativ
 su mensaje o de su marca.
 
 Primero ESTUDIA la referencia (imagen y ficha) y escribe «analisis»:
+- En «producto» explica desde dónde se ve y cuánto ocupa. En «queLaHaceFuncionar» vincula la luz a una sombra o
+  reflejo y la sensación a una señal visible. Indica en cada dirección cómo trasladas esa relación al nuevo sujeto.
 - qué la hace funcionar (estructura, mecanismo, jerarquía, ritmo, tipografía, color, tratamiento del producto);
 - qué es mejorable, para este local o en sí misma (legibilidad, jerarquía, una idea más propia, un detalle de oficio).
 
@@ -220,8 +235,8 @@ export type RespuestaEnriquecer = z.infer<typeof RespuestaEnriquecer>;
 export function instruccionesEnriquecer(): string {
   return `Eres el director de arte que da el último repaso a una pieza ya maquetada (un post de Instagram para un
 restaurante) antes de publicarla. La maquetación está decidida (jerarquía, textos, producto); tu trabajo es el ACABADO:
-lo que la hace parecer mucho más profesional, de agencia, y menos de plantilla. NUNCA calientes ni amarillees la
-pieza (ni la foto ni el fondo): la dominante amarilla es lo que delata una imagen de IA; los blancos se quedan blancos.
+lo que daría más carácter a esta pieza. Conserva la iluminación aprobada de la foto y sus reflejos locales
+al incorporar cada elemento gráfico. Mantén el balance original del conjunto.
 Eliges de 2 a 4 mejoras que se notan,
 de estas categorías, y las escribes como instrucciones para un modelo de imagen que pinta sobre la pieza:
 
@@ -262,23 +277,24 @@ tipografía fuerte. Cada pieza tiene una idea propia y se reconoce de la misma m
 QUÉ DEVUELVES: SOLO un JSON con esta forma:
 ${JSON.stringify(z.toJSONSchema(PlanDeLote))}
 
+${PAUTA_DE_TOMA}
+
 CÓMO SE HACE CADA VISUAL
-- «foto: real»: la foto real del plato que te paso (el código la recorta con su máscara o la pone a sangre).
-- «foto: generada»: una foto nueva que hará un modelo de imagen (Nano Banana 2) a partir de tu «generar.prompt», en
+- Todas las láminas llevan «foto: generada» y su propia dirección «generar». La foto del local documenta la identidad del plato y la referencia editorial guía el diseño; ninguna de las dos se imprime, ni siquiera recortada.
+- «foto: generada»: una foto nueva que hará Nano Banana Pro a partir de tu «generar.prompt», en
   inglés, como lo escribiría un fotógrafo: escena, encuadre, punto de vista, óptica, luz, color, gente, y dónde queda
   aire para el texto de la receta. Gente: adultos anónimos y naturales (nunca famosos), comiendo, brindando,
   charlando, cocinando; el local como lo describe la marca (su ciudad, su tipo de sitio). Si sale el plato,
   «conPlato: true»: se adjunta la foto real y el plato tiene que ser el MISMO (mismos ingredientes, misma cantidad,
   mismo emplatado); entonces no describas el plato con otras palabras, di solo dónde está y cómo se ve la escena.
   Nunca texto, letras, carteles ni logos dentro de la foto (el texto lo pone el código).
-- «receta»: la maquetación sobre esa foto, en el dialecto de siempre (esqueletos, escalas, operaciones). Una foto de
-  ambiente o de gente casi nunca se recorta: va a sangre (FOTO_A_SANGRE) o en MARCO o PARTIDA, con poco texto (un
-  titular corto o solo la firma). El cartel tipográfico (CARTEL, PATRON, PRODUCTO_SOBRE_COLOR) es para el plato real.
+- «receta»: elige el esqueleto en función de la lectura. Una foto de ambiente puede ocupar todo el cuadro.
+  Para una composición con voces superpuestas o datos repartidos alrededor de una foto, coloca los planos con
+  MONTAJE_EDITORIAL. Conserva la información que el cliente haya pedido.
 
 EL LOTE
 - 3 posts de tipos distintos y 1 carrusel de 4 diapositivas. Al menos uno de gente o ambiente («evento» o «ambiente»),
-  al menos uno con el plato como foto protagonista, al menos una pieza de diseño gráfico con la foto real.
-- Como mucho 4 fotos generadas en todo el lote (cuestan).
+  al menos uno con el plato como foto protagonista, al menos una pieza de diseño gráfico con una toma nueva del plato.
 - El carrusel cuenta una historia que se desliza (una mañana en el local, del obrador a la mesa, la noche de los
   viernes, el plato por dentro…): portada fuerte, diapositivas centrales que aportan algo distinto cada una (otro
   punto de vista, un dato, la gente), cierre tranquilo con la firma. Mismas voces y colores en toda la serie.
@@ -325,11 +341,15 @@ export function instruccionesPieza(formato: 'post' | 'carrusel', n: number): str
 pieza: ${formato === 'post' ? 'un post (3:4, 1080 × 1440)' : `un carrusel de ${n} diapositivas (3:4, 1080 × 1440)`}.
 
 QUÉ DEVUELVES: SOLO un JSON con esta forma:
-${JSON.stringify(z.toJSONSchema(PlanDePieza))}
+${JSON.stringify(z.toJSONSchema(PlanConFotosNuevas))}
 ${formato === 'post' ? 'Una sola diapositiva (papel «post»).' : `Exactamente ${n} diapositivas.`}
 
+${PAUTA_DE_TOMA}
+Si la referencia tiene «lecturaFotografica», aplica su «traslado» al plato confirmado. Describe el efecto visible
+en «generar.prompt» y explica el parentesco en la receta. Si es una ilustración, traduce su ritmo o su escala.
+
 CÓMO SE HACE CADA VISUAL
-- «foto: real»: la foto real del plato que te paso (el código la recorta con su máscara o la pone a sangre).
+- Todas las láminas llevan «foto: generada» y su propia dirección «generar». La foto del local documenta la identidad del plato y la referencia editorial guía el diseño; ninguna de las dos se imprime, ni siquiera recortada.
 - «foto: generada»: una foto NUEVA que hará Nano Banana Pro a partir de tu «generar.prompt», en inglés, como lo
   escribiría un fotógrafo: escena, encuadre, punto de vista, óptica, luz, color, gente y dónde queda aire para el texto
   (que salga de la escena: una pared en sombra, el fondo desenfocado; nunca una franja vacía). Si sale el plato,
@@ -343,19 +363,18 @@ CÓMO SE HACE CADA VISUAL
   guiño al gesto o al local), sin cifras ni reclamos. Describir el ingrediente («Rojo jugoso», «Tiras doradas»,
   «Escamas de sal») NO es un titular: el código lo devuelve. Si te paso un CONCEPTO elegido, su titular es el de la
   portada (ajústalo solo si no cumple estas reglas) y su historia y su fotografía mandan sobre todo lo demás.
-- LUZ Y COLOR: nada de «warm», «golden», «amber», «sunset», «candlelight» ni «evening glow» para la luz: el modelo lo
-  convierte en una dominante amarilla o naranja que delata la imagen de IA (Torre de Vega, 23/11). Pide luz de día
-  neutra («neutral daylight around 5000–5500 K, whites read white»); la calidez la ponen la comida y la madera, no la
-  luz. El código quita esas palabras y mide los blancos de cada foto: si amarillean, la corrige o la repite.
+- LUZ Y COLOR: por defecto balance neutro, con el color real de cada material. Si la dirección elegida motiva una
+  fuente coloreada, rellena «generar.luzDeEscena» con su posición y alcance (por ejemplo, neón reflejado solo en
+  el canto de una copa). Describe la transición hacia las zonas fuera de esa luz. Mantén ese criterio en la serie.
 - ATREZO: el plato es el protagonista. NO metas objetos de la foto real (una botella, una copa, cubiertos, otra
   comida) salvo que el cliente lo pida o la toma sea de ambiente: un objeto alto llega al borde y se come el aire del
   titular. Dilo en el prompt: «no bottles, no glasses, no other food».
 - UNA SESIÓN: la primera toma generada es la referencia de luz, mesa, vajilla y paleta de las demás (el código se la
   pasa). Describe en todas la misma mesa, la misma luz y la misma vajilla; cambia la cámara (cenital, 45°, ras de
   mesa, macro), la distancia y el gesto.
-- «receta»: la maquetación sobre esa foto, en el dialecto de siempre (esqueletos, escalas, operaciones). Las fotos de
-  ambiente o de gente casi nunca se recortan: van a sangre (FOTO_A_SANGRE), en MARCO o PARTIDA, con poco texto. El
-  cartel tipográfico (CARTEL, PATRON, PRODUCTO_SOBRE_COLOR) es para el plato.
+- «receta»: para una pieza fotográfica, el aire de la toma puede sostener una firma o un titular. Para una ficha,
+  una oferta o una receta con varios datos confirmados, organiza las relaciones tipográficas y la fotografía con
+  MONTAJE_EDITORIAL cuando necesites control de cada plano.
 - «resumen»: una frase para el cliente que diga qué es la diapositiva (la foto y la idea de diseño).
 - «soloFoto»: true si esa lámina es mejor SIN texto (una toma que se sostiene sola: el macro, el gesto, el bocado). Su
   receta no se pinta. Nunca la portada ni el cierre de un carrusel (el cierre lleva al menos la firma), y como mucho
@@ -366,8 +385,7 @@ CÓMO SE HACE CADA VISUAL
   estrecho (un hueso, una botella), el titular va «aparte» o en una línea.
 
 ${formato === 'carrusel' ? `EL CARRUSEL (lo pidió el cliente: nada de cinco recortes de la misma foto)
-- Cada diapositiva es una FOTO DISTINTA: la foto real como mucho en UNA (normalmente la portada o el dato). Las demás
-  son tomas nuevas con otro punto de vista de verdad: cenital, a ras de mesa, un macro del corte o del relleno, el
+- Cada diapositiva es una FOTO NUEVA, incluida la portada. Dirige cada toma con otro punto de vista de verdad: cenital, a ras de mesa, un macro del corte o del relleno, el
   plato en la mesa con gente, las manos que lo sirven, el local, el proceso. Ningún prompt repite encuadre.
 - Cada diapositiva con su maquetación: no repitas el esqueleto en dos seguidas y usa al menos tres distintos (las de
   «soloFoto» cuentan con su receta, aunque no se pinte).
@@ -375,7 +393,7 @@ ${formato === 'carrusel' ? `EL CARRUSEL (lo pidió el cliente: nada de cinco rec
   distinto cada una, cierre tranquilo con la firma. Mismas voces y colores en toda la serie: se reconoce la marca, no
   la plantilla.` : `EL POST
 - Elige si la pieza es fotográfica (una toma nueva que mejora la real: otro ángulo, mejor luz, la escena) o de diseño
-  gráfico con la foto real. Pocas palabras y una idea clara.`}
+  gráfico con una fotografía nueva. El mensaje principal se lee primero y los datos solicitados tienen su propio espacio.`}
 
 ${OFICIO}
 
@@ -412,8 +430,13 @@ CÓMO TRABAJAS
    (p. ej. «croquetas instagram post typography», «tapas bar poster bold serif»): antes del plan, el cliente elige con
    ellas (y con los posts anteriores del local) la estética de referencia. El código planifica cada diapositiva y le
    enseña al cliente el plan y el coste para que lo apruebe.
-3. Si el cliente pide cambios sobre una pieza hecha («la tercera más oscura», «otra portada»), AJUSTAR_PIEZA con las
-   diapositivas a rehacer y las indicaciones.
+3. Una vez entregada una pieza, las peticiones sobre ella («más al centro», «otra tipografía», «quita el sello»,
+   «añade un chip») son AJUSTAR_PIEZA sobre su id. Usa la última pieza entregada salvo que el cliente señale otra.
+   Copia la instrucción literal y las posiciones indicadas (portada = 1; cierre = última; todas = []). El diseño se edita
+   directamente sobre las capas que está viendo. Los selectores de formato y los formularios son para creaciones nuevas.
+   El alcance normal es «diseno» (tipografía, composición, color, textos, formas y cambios de posición).
+   Usa «diseno-con-imagen-secundaria» cuando solicite crear una imagen secundaria, p. ej. chips con Nano Banana 2.
+   Solo «nueva-toma» si pide explícitamente sustituir o volver a fotografiar la imagen principal. Si hay duda, pregunta.
 4. Si solo hace falta hablar (una duda, una opinión), sin acción.
 
 REGLAS
@@ -432,15 +455,20 @@ Decide antes de que se maquete:
 - REPETIR si: el plato no es el mismo (otros ingredientes, otra cantidad, otro emplatado); hay algo raro (manos o
   dedos imposibles, cubiertos deformes, comida flotando, texto o letras, una franja vacía o un marco); aparecen objetos
   que la toma no pedía y estorban; la sesión no continúa (otra mesa, otra luz); no hay el aire que pedía la toma; o
-  tiene una dominante amarilla o naranja (los blancos no son blancos: el plato, el mantel o la pared tiran a crema o
-  a naranja). Esa dominante es lo que delata una foto de IA: no la aceptes. También REPETIR si repite el encuadre
+  hay un tinte global incompatible con el encargo. Cuando se indica una fuente de color prevista, comprueba su
+  posición y caída. Comprueba también apoyos, sombras de contacto, escala relativa, reflejos en materiales distintos,
+  zonas de foco y repeticiones de textura. Si se cuentan varias piezas, verifica que sus contornos y rasgos distintivos
+  se lean a pesar del solape: un elemento posterior puede estar presente pero oculto por el nuevo ángulo. Conserva marcas
+  de material verificables sin inventar inscripciones. Si el sujeto presenta las mismas oclusiones y tamaño aparente
+  que en la foto subida y solo cambió el fondo, pide una exposición desde otro lado. Señala la ubicación de la incoherencia visible. También REPETIR si repite el encuadre
   (mismo punto de vista y distancia) de la toma anterior de la sesión: cada lámina tiene que aportar otra mirada.
-  En «corregir», en inglés y en una o dos frases, lo que el fotógrafo tiene que cambiar.
+  En «corregir», en inglés, pide un cambio observable conservando el resto. Juzga la sensación por el instante
+  y la relación entre cámara y sujeto que pedía la toma. Un estilismo pulido es válido cuando responde al encargo.
 - USAR en cualquier otro caso. No pidas la perfección: una foto buena y creíble vale.
 - «sinTexto»: true si la foto ya es la pieza (un macro con textura, un gesto, un bocado) y cualquier texto encima la
   empeoraría. Nunca en la portada ni en el cierre de un carrusel (te lo digo cuando lo es).
 - Si te paso un INTENTO ANTERIOR de esta misma toma, di en «frenteAAnterior» si esta es MEJOR, PEOR o IGUAL que aquel
-  (fidelidad al plato, color neutro, encuadre pedido y aire). Si es PEOR, el código se queda con el anterior.
+  (fidelidad al plato, coherencia con la luz prevista, encuadre pedido y aire). Si es PEOR, el código se queda con el anterior.
 
 Responde SOLO este JSON: {"veredicto":"USAR|REPETIR","motivo":"…","corregir":"…","sinTexto":false,"frenteAAnterior":"MEJOR|PEOR|IGUAL (solo si hay intento anterior)"}`;
 }
@@ -451,22 +479,26 @@ export function instruccionesConceptos(formato: 'post' | 'carrusel', n: number):
 ${formato === 'post' ? 'un post' : `un carrusel de ${n} láminas`}, propones TRES CONCEPTOS para que el cliente elija.
 
 QUÉ DEVUELVES: SOLO un JSON con esta forma:
-${JSON.stringify(z.toJSONSchema(PropuestaDeConceptos))}
+${JSON.stringify(z.toJSONSchema(propuestaDeConceptos(n)))}
 ${formato === 'post' ? '«laminas»: una sola línea.' : `«laminas»: exactamente ${n} líneas, una por lámina, en orden.`}
 
 QUÉ ES UN CONCEPTO (y qué no)
 - Es una manera de contar el plato: un punto de vista, una historia y una forma de fotografiarla. NO es un titular
   distinto para la misma serie de siempre (portada, macro, guarnición, proceso, mesa en familia).
-- Los tres se distinguen en la HISTORIA y en la FOTOGRAFÍA. Por ejemplo, para un chuletón: el ritual del corte (manos,
-  cuchillo, tabla, gesto lento), del fuego a la mesa (brasa, leña, humo, la pieza entera antes de trinchar, el
-  comedor), o un cartel gráfico (el hueso como columna, tipografía protagonista, fondo liso). Inventa los tuyos.
-- Se vale fotografiar lo que no es el plato servido: el fuego, la leña, el cuchillo, la pieza cruda o entera, las
-  manos, el local, la gente. El plato del cliente tiene que salir tal cual cuando sale.
+- En «fotografia» da a cada propuesta una sensación concreta, el instante o la postura que la expresa y el lugar
+  de la cámara. Distingue las tres en al menos dos ejes entre distancia, altura, gesto, dirección de luz y relación
+  entre sujeto y tipografía. Piensa qué rasgo de ESTE producto se perdería si eligieses las otras dos tomas.
+- Cuando haya personas o movimiento, especifica dónde recae el peso, qué guía la mirada y qué parte sigue en foco.
+  Un reflejo, una sombra proyectada o un barrido pueden contar algo diferente a un macro. Evita convertir esos
+  ejemplos en una secuencia fija. El servicio, el espacio y la preparación específicos del local deben estar documentados.
 - «titular»: el de la portada, CREATIVO: hasta 4 palabras, con idea (un juego, una tensión, un guiño), sin cifras ni
   reclamos («casero», «el mejor», «artesanal», «brasa», «tradicional»…) y sin inventar nada del plato o del local.
   Describir el ingrediente no vale.
 - «idea» y «laminas», en castellano y para el cliente: qué se ve y por qué engancha. Sin jerga de maquetación.
 - Si hay una REFERENCIA, al menos uno de los tres conceptos es su hermano (su estructura, mejorada); los otros pueden
   alejarse.
-- Ten en cuenta lo que YA SE HA HECHO para el local: no repitas sus ideas.`;
+- Al proponer un post, cuenta al cliente el gesto gráfico que distingue cada idea: qué atraviesa la letra, dónde
+  se interrumpe una imagen o qué comparten dos rótulos. Ancla ese gesto en la foto o en el mensaje.
+- Compara con las últimas piezas del local: detecta una combinación reciente de cámara, gesto y estructura y
+  elige otra apertura o recorrido. Mantén la continuidad que el cliente haya pedido expresamente.`;
 }

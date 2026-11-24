@@ -34,14 +34,6 @@ function explorar(ctx, ed) {
   return detalle('Explorar otra dirección', formulario(ctx, () => ({ accion: 'EXPLORAR_RUTA', ruta: otra.value }),
     campo('Otra lectura del encargo', otra), accion('Preparar alternativa')));
 }
-function encuadrarOriginal(ctx) {
-  const previa = h('img', { class: 'encuadre-original', src: ctx.urls.subida(680), alt: 'Encuadre de la foto original en proporción 4:5' });
-  const posicion = h('input', { type: 'range', min: 0, max: 100, value: 50, name: 'posicionOriginal',
-    oninput: e => { previa.style.objectPosition = e.target.value + '% ' + e.target.value + '%'; } });
-  return detalle('Encuadrar la foto original', formulario(ctx, () => ({ accion: 'USAR_ORIGINAL', posicion: posicion.valueAsNumber / 100 }),
-    previa, campo('Posición del recorte', posicion), accion('Revisar este encuadre sin generar')),
-    ctx.d.encargo.taller.comanda?.tipografiaLocal ? formulario(ctx, () => ({ accion: 'USAR_ORIGINAL', completa: true }), accion('Conservar toda la foto con margen para el título')) : null);
-}
 function camaraDe(ctx, toma, preferencias = vistas, comanda) {
   const seleccion = toma?.seleccion;
   const vista = opciones('opcionToma', preferencias, seleccion?.opcion ?? 'AUTO');
@@ -353,7 +345,7 @@ export function fichaTaller(ctx) {
     const puedeGenerarFoto = ctx.d.serieGenerador && (limpia || c.tipografiaLocal) && c.puesta?.ambito === 'PRODUCTO' &&
       !c.muestras && c.toma?.seleccion.escenaFuente?.modo !== 'DOCUMENTAL' && !taller.envios.some(v => v.huella === c.huella);
     const maximo = h('input', { type: 'number', min: '.01', step: '.01', required: true });
-    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), (limpia || c.tipografiaLocal) && !c.muestras && c.toma?.seleccion.escenaFuente?.modo !== 'EDITORIAL' ? encuadrarOriginal(ctx) : null, h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
+    return [titulo(ed ? 'Producir el post' : 'Producir el cartel'), h('p', {}, c.muestras ? 'Descarga el paquete. Adjunta únicamente muestras.jpg al generador y utiliza direccion.txt. Usa producto.jpg para cotejar los alimentos del cartel terminado.' : 'Para una toma nueva, descarga el paquete y adjunta la fotografía a tu herramienta de imagen con la dirección aprobada. Importa aquí el resultado 4:5.'),
       enlace('Descargar paquete de producción', base + 'paquete'), formulario(ctx, async () => ({ accion: 'IMPORTAR', subidaId: (await subirArchivo(archivo.files[0])).id, usoCandidata: limitado ? 'SOLO_PRUEBA_COMPOSICION' : uso.value }),
         campo(c.tipografiaLocal ? 'Fotografía base 4:5 sin título. El taller compondrá el texto.' : 'Imagen 4:5', archivo), limitado ? h('p', {}, 'La foto de origen permite pruebas de composición.') : campo('Permiso de la imagen importada', uso), accion('Importar imagen')),
       puedeGenerarFoto ? detalle('Generar la foto base', formulario(ctx, () => ({

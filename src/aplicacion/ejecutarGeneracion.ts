@@ -3,6 +3,7 @@
  * Regla de oro (R8): el trabajo se guarda como ENVIADA *antes* de esperar.
  * Si el proceso se corta, la próxima vez se retoma la espera en lugar de pagar otra imagen.
  */
+import { exigirTomaNueva } from '../adaptadores/imagen/copiaDeReferencia.js';
 import { ErrorDeServicio, ErrorDeUsuario } from '../dominio/errores.js';
 import type { Generacion, Pieza } from '../dominio/modelos.js';
 import { imagenesPorApiDelDia, rutaGenerada, siguienteVersion } from '../dominio/reglas.js';
@@ -97,7 +98,7 @@ export async function esperarGeneraciones(
 ): Promise<{ pieza: Pieza; terminadas: Generacion[] }> {
   const terminadas = await Promise.all(
     generaciones.map(async (generacion) => {
-      const terminada = await esperarUna(deps, generador, pieza.id, generacion);
+      const terminada = await esperarUna(deps, generador, pieza, generacion);
       await deps.piezas.actualizar(pieza.id, (actual) => conGeneracion(actual, terminada));
       alTerminarUna(terminada);
       return terminada;
@@ -109,7 +110,7 @@ export async function esperarGeneraciones(
 async function esperarUna(
   deps: Pick<Dependencias, 'piezas' | 'reloj'>,
   generador: GeneradorImagen,
-  piezaId: string,
+  pieza: Pieza,
   generacion: Generacion,
 ): Promise<Generacion> {
   if (!generacion.requestId || generacion.urlEstado === undefined) {
@@ -118,7 +119,8 @@ async function esperarUna(
   try {
     const imagen = await generador.esperarResultado({ requestId: generacion.requestId, urlEstado: generacion.urlEstado });
     const archivo = rutaGenerada(generacion.diapositiva, generacion.version, imagen.extension);
-    await deps.piezas.escribirArchivo(piezaId, archivo, imagen.bytes);
+    await comprobarFotoDePieza(deps, pieza, imagen.bytes);
+    await deps.piezas.escribirArchivo(pieza.id, archivo, imagen.bytes);
     return { ...generacion, estado: 'COMPLETADA', archivo, error: undefined, terminadaEn: deps.reloj().toISOString() };
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : String(error);
@@ -126,6 +128,11 @@ async function esperarUna(
     if (error instanceof ErrorDeServicio && error.reintentable) return { ...generacion, estado: 'ENVIADA', error: mensaje };
     return { ...generacion, estado: 'FALLIDA', error: mensaje, terminadaEn: deps.reloj().toISOString() };
   }
+}
+
+export function comprobarFotoDePieza(deps: Pick<Dependencias, 'piezas'>, pieza: Pieza, candidata: Buffer | string) {
+  const fuentes = [...pieza.fotos.map(f => f.archivo), ...(pieza.referenciaEstilo ? [pieza.referenciaEstilo.archivo] : [])];
+  return exigirTomaNueva(candidata, fuentes.map(f => deps.piezas.rutaArchivo(pieza.id, f)));
 }
 
 /** Devuelve la pieza con la generación añadida o sustituida (misma diapositiva y versión). */

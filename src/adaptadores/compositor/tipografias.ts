@@ -30,6 +30,10 @@ export class CatalogoTipografico {
     this.entradas = new Map(catalogo.fuentes.map((entrada) => [entrada.id, entrada]));
   }
 
+  familias(): string[] {
+    return Array.from(this.entradas.values(), (f) => `${f.id} (${f.familia})`);
+  }
+
   familia(id: string): string {
     return this.entrada(id).familia;
   }

@@ -80,13 +80,13 @@ export function crearOrquestador(deps: DepsOrquestador): Orquestador {
   };
 
   const tomasDe = (e: Readonly<EncargoPost>, propuesta: Propuesta): TomaEntrada[] => {
-    if (e.productorEditorial) return []; // Los detalles editoriales se resuelven con recortes o fotos del dueño.
+    if (e.productorEditorial) return []; // Los detalles editoriales se resuelven con recortes de la foto generada.
     if (e.tomas.length) {
       return e.tomas.map((t) => ({ elemento: t.elemento, ...(t.real ? { real: true } : {}), ...(t.intento ? { yaGenerada: true } : {}) }));
     }
     if (e.formato === 'carrusel') {
       return [
-        ...e.fotosExtra.map((x) => ({ elemento: x.elemento, real: true })),
+        ...e.fotosExtra.map((x) => ({ elemento: x.elemento })),
         ...(propuesta.tomas ?? []).map((t) => ({ elemento: t.elemento })),
       ].slice(0, 3);
     }

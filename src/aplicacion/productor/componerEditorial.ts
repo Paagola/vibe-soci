@@ -8,6 +8,7 @@ import type { DiapositivaEditorial } from '../../dominio/editorial.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
 import type { MapaDeFoto } from '../../dominio/diseno/mapaDeFoto.js';
+import { comprobarActivosDeSalida } from '../post/fuentesDeLaPieza.js';
 import { componerCartel } from './componerCartel.js';
 import { cartelDePortada, fichaDeCartel, esquemaDelPlanEditorial, textoConfirmado } from './editorial.js';
 
@@ -16,10 +17,8 @@ const lienzo = { x: 0, y: 0, w: 1, h: 1 };
 function intencionDePagina(
   id: string, e: EncargoPost, brief: BriefDelEncargo, pagina: DiapositivaEditorial, marca: Tokens, mapa?: MapaDeFoto,
 ): Intencion {
-  const propia = e.tomas.find(t => t.real && t.elemento === brief.plan[pagina.n - 1]?.elemento)?.elegida;
-  // Los puntos del recorte se midieron en la foto original. Otras tomas pueden tener un encuadre distinto.
   const arco = pagina.tratamiento === 'FOTO_TEXTO_AL_BORDE' ? pagina.arco : undefined;
-  const activo = pagina.tratamiento === 'RECORTE_DETALLE' || arco ? e.activoReal : propia ?? e.fotoElegida;
+  const activo = e.fotoElegida;
   if (!activo) throw new ErrorDeUsuario('Falta la fotografía aprobada para componer.');
   if (pagina.tratamiento === 'CARTEL') return componerCartel(pagina, brief, marca, activo, mapa);
   const colores = Object.values(marca.colores);
@@ -100,7 +99,8 @@ export async function materializarEditorial(carpeta: string, tokens: string, e: 
 
 /** Las correcciones de maquetación pueden reutilizar hechos confirmados y materiales de este encargo. */
 export function comprobarEdicionEditorial(intencion: Intencion, e: EncargoPost, brief: BriefDelEncargo): void {
-  const permitidos = new Set([e.fotoElegida, e.activoReal, ...e.tomas.map(t => t.elegida)].filter(Boolean));
+  comprobarActivosDeSalida(e, Object.values(intencion.activos));
+  const permitidos = new Set([e.fotoElegida, ...e.tomas.filter(t => !t.real).map(t => t.elegida)].filter(Boolean));
   if (Object.values(intencion.activos).some(id => !permitidos.has(id))) {
     throw new ErrorDeUsuario('La composición debe usar una de las fotografías aprobadas de la comanda.');
   }

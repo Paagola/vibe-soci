@@ -4,7 +4,7 @@ import { ErrorDeUsuario } from '../dominio/errores.js';
 import type { Generacion } from '../dominio/modelos.js';
 import { generacionesDe, problemaDeFoto, rutaGenerada, siguienteVersion } from '../dominio/reglas.js';
 import type { Dependencias } from './dependencias.js';
-import { conGeneracion } from './ejecutarGeneracion.js';
+import { comprobarFotoDePieza, conGeneracion } from './ejecutarGeneracion.js';
 import { trabajoDelPlan } from './trabajoDeDiapositiva.js';
 
 export const MODELO_MANUAL = 'manual (web de Higgsfield)';
@@ -30,6 +30,7 @@ export async function importarImagen(
   let generacion!: Generacion;
   await deps.piezas.actualizar(piezaId, async (pieza) => {
     const trabajo = trabajoDelPlan(pieza, posicion);
+    await comprobarFotoDePieza(deps, pieza, rutaOrigen);
     const pendiente = generacionesDe(pieza, posicion).findLast((g) => g.estado === 'PENDIENTE_MANUAL');
     const version = pendiente?.version ?? siguienteVersion(pieza, posicion);
     const archivo = rutaGenerada(posicion, version, extname(rutaOrigen).slice(1).toLowerCase());

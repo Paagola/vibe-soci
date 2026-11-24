@@ -27,6 +27,15 @@ export const Caja = z.union([CajaReticula, CajaFraccion]);
 export type Caja = z.infer<typeof Caja>;
 
 export const Punto = z.object({ x: z.number(), y: z.number() });
+const Fraccion = z.number().min(0).max(1);
+/** Vértices relativos al marco fotográfico, que pueden formar también un polígono cóncavo. */
+const PuntosDeVentana = z.array(z.object({ x: Fraccion, y: Fraccion })).min(3).max(32).refine(puntos => {
+  const areaDoble = puntos.reduce((area, p, i) => {
+    const siguiente = puntos[(i + 1) % puntos.length]!;
+    return area + p.x * siguiente.y - p.y * siguiente.x;
+  }, 0);
+  return Math.abs(areaDoble) > 1e-8;
+}, 'La ventana fotográfica debe encerrar una superficie.');
 
 export const Fusion = z.enum(['normal', 'multiply', 'screen', 'overlay', 'soft-light', 'darken', 'lighten']);
 export type Fusion = z.infer<typeof Fusion>;
@@ -130,6 +139,7 @@ export const CapaImagen = z.object({
   ventana: z.discriminatedUnion('forma', [
     z.object({ forma: z.literal('arco') }),
     z.object({ forma: z.literal('redondeada'), radio: z.number().min(0).max(600) }),
+    z.object({ forma: z.literal('poligono'), puntos: PuntosDeVentana }),
   ]).optional(),
   retoque: Retoque.optional(),
 });
@@ -312,6 +322,10 @@ export const CapaTexto = z.object({
   giro: Giro.default(0),
   /** Puede salirse de la zona segura (titulares monumentales que sangran). */
   sangrado: z.boolean().default(false),
+  /** Lettering ambiental que puede quedar cortado u oculto. Los textos informativos se maquetan en sus propias capas. */
+  decorativo: z.boolean().optional(),
+  /** Desviación gaussiana en píxeles del lienzo para dar profundidad al texto. */
+  desenfoque: z.number().min(0).max(32).optional(),
   /** Solo el contorno de las letras, con este grosor en px. */
   contorno: z.number().positive().optional(),
   color: Color.optional(),

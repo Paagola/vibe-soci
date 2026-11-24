@@ -50,7 +50,7 @@ export default function App() {
   const fin = useRef<HTMLDivElement>(null);
   /** Los mensajes que ya estaban al abrir la conversación: solo los nuevos entran como una hoja que cae. */
   const iniciales = useRef<Set<string>>(new Set());
-  const abierta = useRef<string>();
+  const abierta = useRef<string | undefined>(undefined);
   if (conversacion && abierta.current !== conversacion.id) {
     abierta.current = conversacion.id;
     iniciales.current = new Set(conversacion.mensajes.map((m) => m.id));
@@ -311,7 +311,7 @@ function BloqueDelMensaje({ b, c, locales, herramientas }: { b: Bloque; c: Conve
     case 'progreso':
       return <TarjetaProgreso conversacion={c} {...(pieza ? { pieza } : {})} />;
     case 'pieza':
-      return pieza ? <VisorPieza conversacion={c} pieza={pieza} /> : null;
+      return pieza ? <VisorPieza conversacion={c} pieza={pieza} mostrar={b.mostrar} /> : null;
     case 'herramienta': {
       const h = herramientas.find((x) => x.id === b.herramienta);
       return <TarjetaHerramienta conversacion={c} bloque={b} locales={locales} {...(h ? { herramienta: h } : {})} />;

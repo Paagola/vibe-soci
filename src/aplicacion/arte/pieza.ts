@@ -12,7 +12,7 @@ import sharp from 'sharp';
 import { Activo } from '../../dominio/activos.js';
 import type { Receta } from '../../dominio/arte/receta.js';
 import type { Visual } from '../../dominio/arte/lote.js';
-import type { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
+import { Intencion, type Tokens } from '../../dominio/diseno/intencion.js';
 import type { ActivoDisponible, Compositor } from '../../puertos/Compositor.js';
 import type { AlmacenActivos } from '../../puertos/AlmacenActivos.js';
 import type { ProcesadorImagen } from '../../puertos/ProcesadorImagen.js';
@@ -40,15 +40,17 @@ export function sinLuzCalida(prompt: string): string {
     .trim();
 }
 
-/** El prompt final para el modelo de imagen: el del director más las reglas de fidelidad, color neutro e imagen sin texto. */
+/** Completa el encargo de cámara con las reglas de fidelidad, luz y fotografía sin texto. */
 export function promptFinal(v: NonNullable<Visual['generar']>, local: { nombre: string; ciudad: string; descripcion: string }): string {
   return [
     v.conPlato
-      ? '@image1 is the real dish from this restaurant. Keep the dish exactly as it is: the same food, the same ingredients and quantities, the same plate and garnish; do not add, remove or restyle anything on the plate. Change the camera angle, the distance, the surroundings, the props and the light as the direction below says: this must be a NEW photograph, not a copy of @image1.'
+      ? '@image1 documents the real dish. Keep the ingredients, portions, relative sizes, tableware and garnish. Make a NEW photograph from the directed viewpoint: reveal a different side or overlap and change the distance or height. Preserve the plating as an arrangement in three-dimensional space. Build the scene and its lighting afresh.'
       : '',
-    sinLuzCalida(v.prompt),
-    // Lo que delata una foto de IA: la dominante amarilla. Los mejores carruseles del estudio (la ensalada) la pidieron neutra.
-    'Neutral daylight white balance (about 5000–5500 K): the plate, tablecloth and any white read truly white; wood and food keep their natural colours. No yellow, orange, amber or golden colour cast, no warm filter, no sepia, no orange highlights.',
+    v.luzDeEscena ? v.prompt : sinLuzCalida(v.prompt),
+    v.luzDeEscena
+      ? `Motivated scene light: ${v.luzDeEscena}. Let its colour fall off across surfaces according to distance and orientation. Keep the food recognisable.`
+      : 'Neutral daylight white balance (about 5000–5500 K): the plate, tablecloth and any white read truly white; wood and food keep their natural colours. No yellow, orange, amber or golden colour cast, no warm filter, no sepia, no orange highlights.',
+    'Keep real differences in size, wear and surface finish. Give each object weight at its contact points. Reflections follow the light source and the material; focus falls away with real scene depth.',
     `The place: ${local.descripcion} (${local.ciudad}).`,
     'Photorealistic professional editorial photograph, vertical 3:4. People, if any, are anonymous adults, natural and candid. Absolutely no text, letters, numbers, signs, menus, logos or watermarks anywhere in the image.',
     // Nano Banana Pro tomó «clean dark shadow space in the upper area» al pie de la letra y pintó una franja negra
@@ -171,7 +173,7 @@ async function anchoDelProducto(png: string): Promise<number | undefined> {
 }
 
 /** Esqueletos que viven de la foto entera (su escena, su luz, su aire). */
-const DE_FOTO = new Set(['FOTO_A_SANGRE', 'PARTIDA']);
+const DE_FOTO = new Set(['FOTO_A_SANGRE', 'PARTIDA', 'MONTAJE_EDITORIAL']);
 /** Esqueletos que recortan el producto y tiran la escena. */
 const DE_RECORTE = new Set(['PRODUCTO_SOBRE_COLOR', 'CARTEL', 'COLUMNA', 'MARCO', 'PATRON', 'EDITORIAL']);
 
@@ -245,7 +247,18 @@ export async function componerVisual(
   // ancho; a sangre, con la misma foto, era otra cosa). Se mide en la intención pintada y cuenta como problema.
   if (mejor?.png && DE_RECORTE.has(mejor.receta.esqueleto)) {
     const ancho = await anchoDelProducto(mejor.png);
-    if (ancho !== undefined && ancho < ANCHO_MINIMO_PRODUCTO) mejor = { ...mejor, problemas: [...mejor.problemas, `PRODUCTO_PEQUEÑO: en ${mejor.receta.esqueleto} el producto ocupa el ${Math.round(ancho * 100)} % del ancho (mínimo ${Math.round(ANCHO_MINIMO_PRODUCTO * 100)} %).`] };
+    if (ancho !== undefined && ancho < ANCHO_MINIMO_PRODUCTO) {
+      const intencion = Intencion.parse(JSON.parse(await readFile(join(dirname(mejor.png), 'intencion.json'), 'utf8')));
+      const recorte = intencion.capas.find(c => c.tipo === 'recorte' && c.escala?.anchoSujeto === ancho);
+      if (recorte?.tipo === 'recorte' && recorte.escala) recorte.escala.anchoSujeto = ANCHO_MINIMO_PRODUCTO + .035;
+      const ampliada = await deps.pintar(intencion, join(entrada.salida, 'producto-ampliado'));
+      if (recorte && !ampliada.errores.length) {
+        mejor = { ...mejor, png: ampliada.png, movil: ampliada.movil, problemas: mejor.problemas.filter(p => p.startsWith('LEGIBILIDAD')), reparada: true };
+        decisiones.push('Amplié el producto en la misma maqueta conservando la fotografía y las capas de texto.');
+      } else {
+        mejor = { ...mejor, problemas: [...mejor.problemas, `PRODUCTO_PEQUEÑO: en ${mejor.receta.esqueleto} el producto ocupa el ${Math.round(ancho * 100)} % del ancho (mínimo ${Math.round(ANCHO_MINIMO_PRODUCTO * 100)} %).`] };
+      }
+    }
   }
 
   // Un titular que sigue sin leerse tras las reparaciones (el producto lo tapa) lo arregla el código sin preguntar al
@@ -268,7 +281,7 @@ export async function componerVisual(
   // El acabado de Nano Banana 2 sobre la versión final: Hydrogen propone las mejoras (fondo, luz, sello, marco,
   // acabado de impresión), Nano Banana 2 las pinta, el código restaura producto y textos, y se queda la versión que
   // gane a ciegas a tamaño móvil (con la referencia como listón).
-  if (entrada.enriquecer && reparador?.enriquecer && deps.insertar && encargo && mejor?.png && mejor.movil && !mejor.problemas.length) {
+  if (entrada.enriquecer && reparador?.enriquecer && deps.insertar && encargo && mejor?.png && mejor.movil && mejor.receta.esqueleto !== 'MONTAJE_EDITORIAL' && !mejor.problemas.length) {
     try {
       const prop = await reparador.enriquecer(encargo, { png: mejor.png, receta: mejor.receta });
       const ins = await deps.insertar({ png: mejor.png }, prop.insercion, { id: `${entrada.id}-acabado`, ...(encargo.referencia ? { referencia: encargo.referencia.ruta } : {}), carpeta: join(entrada.salida, 'acabado'), reestilizar: prop.reestilizar });

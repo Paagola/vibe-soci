@@ -87,6 +87,10 @@ export function medirOficio(capas: CapaResuelta[], lienzo: Lienzo, medir: Medido
     if (capa.opacidad <= 0 && capa.tipo !== 'recorte') continue;
     switch (capa.tipo) {
       case 'texto': {
+        if (capa.decorativo) {
+          recursos++;
+          break;
+        }
         for (const linea of capa.lineas) alturas.push(medir.alturaMayusculas(capa.estilo, linea.tamano));
         familias.add(medir.familia(capa.estilo.fuente));
         palabras += contarPalabras(capa.texto);

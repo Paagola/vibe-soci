@@ -14,6 +14,7 @@ type BloqueReferencias = Extract<Bloque, { tipo: 'referencias' }>;
 type Candidata = BloqueReferencias['candidatas'][number];
 
 const SECCIONES: Array<{ id: string; nombre: string; detalle: string; de: Array<Candidata['origen']> }> = [
+  { id: 'propia', nombre: 'Tu referencia', detalle: 'Aportada en esta conversación', de: ['propia'] },
   { id: 'pinterest', nombre: 'Pinterest', detalle: 'Elegidas por el director entre la búsqueda', de: ['pinterest'] },
   { id: 'local', nombre: 'Del local', detalle: 'Piezas ya hechas y referencias suyas', de: ['local'] },
   { id: 'estudio', nombre: 'Del estudio', detalle: 'Biblioteca y corpus anotado', de: ['biblioteca', 'estudio'] },
@@ -74,6 +75,12 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
         <div className="min-w-0 text-sm">
           <div className="font-medium">{elegida ? 'Estética de referencia elegida' : b.estado === 'DESCARTADO' ? 'Sin referencia' : 'Sin candidatas'}</div>
           {elegida && <div className="line-clamp-2 text-xs text-muted-foreground">{elegida.titulo}{elegida.motivo ? ` — ${elegida.motivo}` : ''}</div>}
+          {b.lectura && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs font-medium">Ver análisis de la referencia</summary>
+              <dl className="mt-2 space-y-2 text-sm">{b.lectura.map(x => <div key={x.titulo}><dt className="font-medium">{x.titulo}</dt><dd className="text-muted-foreground">{x.detalle}</dd></div>)}</dl>
+            </details>
+          )}
         </div>
         <Check className="ml-auto size-4 shrink-0 text-exito" />
       </div>

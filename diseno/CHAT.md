@@ -11,21 +11,24 @@ aparece como tarjetas dentro de la conversación: formularios rápidos, progreso
 - **Con la foto:** el director propone la ficha del plato (local, plato, lo que se ve, el mensaje). La corriges y la
   confirmas: los textos de las piezas solo dirán lo que pone ahí.
 - **Estética de referencia (antes de cada post o carrusel nuevo):** el estudio junta candidatas y eliges una con
-  «Usar esta», «Decide tú» (la mejor de Pinterest) o «Sin referencia»:
+  «Usar esta», «Decide tú» (la primera candidata) o «Sin referencia». Una referencia propia identificada en la ficha aparece primero.
   - **Pinterest:** 2–3 búsquedas que propone el director (o unas por defecto). Hydrogen mira las ~30 miniaturas y se
     queda con hasta 6 posts *diseñados*, con una frase de qué oficio enseña cada uno; descarta fotos sueltas, mockups
     y marcas de agua.
   - **Del local:** sus piezas ya hechas en el chat, los encargos exportados y sus referencias registradas.
   - **Del estudio:** la biblioteca (por palabras del plato) y el corpus anotado del tipo de local.
 
-  La elegida pasa a ser la referencia de la conversación: el planificador toma su oficio, no su contenido. Además, el
-  planificador recibe siempre las piezas ya hechas para ese local («YA HECHAS PARA ESTE LOCAL») para no repetirse.
+  La tarjeta de la referencia elegida permite desplegar la lectura de cámara, luz, materiales, gesto y sensación. El
+  planificador recibe también la fotografía y la secuencia de las piezas recientes del local.
   Las imágenes de Pinterest se guardan en `datos/chat/<id>/referencias/` y nunca se publican. Si la búsqueda falla, la
   pieza se planifica igual. `CHAT_SIN_REFERENCIAS=1` desactiva el paso. Coste: una llamada de visión a Hydrogen
   (céntimos).
 - **Piezas:** pide un post o un carrusel con tus palabras o desde la bandeja. Ves el plan (cada diapositiva con su foto
-  nueva y su diseño, o «foto sola, sin texto») y el coste antes de producir. Los cambios se piden en el chat («la
-  tercera más oscura»). Cómo se producen, en «Producción con criterio», más abajo.
+  nueva y su diseño, o «foto sola, sin texto») y el coste antes de producir. Cada opción creativa indica su número de
+  láminas. La aprobación conserva el formato y las fuentes de esa pieza.
+- **Edición por chat.** «Centra el titular de la lámina 2» modifica sus capas sobre la foto entregada. Puedes cambiar la
+  fuente, añadir o quitar elementos y solicitar una imagen secundaria a Nano Banana 2. Para cambiar la fotografía
+  principal, pide expresamente otra toma.
 - **El director abre herramientas solo:** «quítale el fondo a esta foto» abre «Recortar el plato» con la foto puesta.
 - **La rueda:** los carruseles y los resultados con varias imágenes se ven en la rueda (pulsa «Ver en rueda» o una
   imagen). Las referencias de la biblioteca se eligen también en la rueda.
@@ -55,9 +58,8 @@ aparece como tarjetas dentro de la conversación: formularios rápidos, progreso
 | Local | Dar de alta un local | Marca, tokens y fuentes | panel antiguo (`index.html`) |
 | Local | Gasto | Imágenes de Gemini del mes frente al tope, y texto de Hydrogen | — |
 
-Además, al crear un encargo se pueden marcar tres opciones que la orden tenía y la web no enseñaba: la referencia como
-estilo para el generador (@image2), el titular creativo y las fotos de más del dueño para los detalles de un carrusel
-F3.
+Al crear un encargo, la web permite aportar una referencia de estilo para el generador (@image2), pedir un titular
+creativo y aportar fotos adicionales del local que documenten los detalles para las nuevas tomas del carrusel F3.
 
 ## Producción con criterio (23/11)
 
@@ -82,18 +84,15 @@ acababa convertida en un plato pequeño recortado sobre un color liso.
 5. **Revisión de cada foto.** El director la mira junto a la foto real y la toma anterior: si el plato no es el mismo,
    sale algo que no se pidió o no hay aire, la repite una vez con su corrección. Si la foto ya es la pieza, decide que
    vaya sin texto (nunca la portada de un carrusel).
-6. **Maquetación sobre la foto real.** El titular va en el aire de verdad de la foto, buscado celda a celda (también al
+6. **Maquetación sobre la toma nueva.** El titular va en el aire de la foto, buscado celda a celda (también al
    lado o en una esquina, no solo encima o debajo del plato). Una reparación que pase de foto a sangre a plato
-   recortado sobre color se rechaza; si el texto no cabe sin tapar una foto nueva, va la foto sola.
+   recortado sobre color se rechaza. La portada, los posts con titular solicitado y el cierre conservan el texto que les corresponde.
 7. **Crítica y acabado.** Salvo en «rápido», cada lámina con texto pasa por el crítico (y su parche solo se queda si
    gana a ciegas). El acabado de Nano Banana 2 (fondo, luz, sello, marco, impresión; el código restaura producto y
    textos) va en la portada en «normal» y en todas en «máximo», y solo se queda si gana a ciegas a la versión limpia.
-8. **Nada de dominante amarilla.** Es lo que delata una foto de IA (Torre de Vega, 23/11: blancos con R−B de 107 y
-   135; la foto real, 11; el carrusel de la ensalada, 6–11). Los prompts piden luz de día neutra y el código quita
-   «warm», «golden» o «amber» de la luz (respeta el «golden-brown» de la comida). Cada foto se mide en sus blancos
-   (`adaptadores/imagen/dominante.ts`): hasta 30, neutra; hasta 90, la neutraliza el código antes de que la mire el
-   director; por encima, se repite con la corrección en el prompt. El acabado de Nano Banana 2 tiene prohibido
-   calentar la pieza.
+8. **Color de escena.** El balance de día es el punto de partida. Para luz neutra se miden las altas luces
+   (`adaptadores/imagen/dominante.ts`). Si el encargo justifica una fuente coloreada, `luzDeEscena` describe su
+   posición y alcance. La imagen conserva ese color y el revisor visual comprueba su caída cuando está activo.
 9. **El carrusel como serie** (Torre de Vega, 23/11: el despiece acabó siendo una segunda portada y el cierre se quedó
    sin firma):
    - portada y cierre siempre con texto, y como mucho N−2 láminas solo foto (lo comprueba el plan y lo respeta el

@@ -24,6 +24,7 @@ import { EstudioArteGemini } from '../adaptadores/gemini/EstudioArteGemini.js';
 import { gastoAcumuladoGemini } from '../adaptadores/gemini/GeneradorFotoGemini.js';
 import { registradorDeUso } from '../adaptadores/gemini/registroUso.js';
 import { TipografiaGemini } from '../adaptadores/gemini/TipografiaGemini.js';
+import { exigirTomaNueva } from '../adaptadores/imagen/copiaDeReferencia.js';
 import { LectorAppleVision } from '../adaptadores/imagen/LectorAppleVision.js';
 import { SegmentadorVision } from '../adaptadores/imagen/SegmentadorVision.js';
 import { promptFinal, registrarFotoGenerada } from '../aplicacion/arte/pieza.js';
@@ -40,6 +41,7 @@ import { RAIZ, type Config } from '../config.js';
 import { Tokens } from '../dominio/diseno/intencion.js';
 import { ErrorDeUsuario } from '../dominio/errores.js';
 import { Marca } from '../dominio/modelos.js';
+import { detallesFotograficos, detallesGraficos } from '../dominio/referencia.js';
 import { idDesdeBrief } from '../dominio/tipografia/creacion.js';
 import { ejemplosDelManual, manualDelLenguaje } from '../dominio/tipografia/manual.js';
 import type { Estudio } from './estudio.js';
@@ -117,7 +119,7 @@ export function crearHerramientasChat(d: DepsHerramientasChat) {
   const tokensDe = async (local: string) => Tokens.parse(JSON.parse(await readFile(join(RAIZ, 'marcas', local, 'tokens.json'), 'utf8')));
 
   /** El encargo del banco (para `arte` y `lote`) a partir de los hechos confirmados de la conversación. */
-  const encargoDelBanco = async (ctx: ContextoDeHerramienta, conReferencia: boolean) => {
+  const encargoDelBanco = async (ctx: ContextoDeHerramienta, conReferencia: boolean, fotografiar = false) => {
     const h = ctx.conversacion.hechos;
     if (!h) throw new ErrorDeUsuario('Confirma antes la ficha del plato.');
     const id = `chat-${slug(ctx.trabajo.split('/').pop() ?? 'x')}`;
@@ -131,7 +133,20 @@ export function crearHerramientasChat(d: DepsHerramientasChat) {
         if (deps.analista) await analizarReferencia({ ...deps.referencias, analista: deps.analista }, { local: h.local, id: referencia }).catch(() => undefined);
       }
     }
-    const banco = { id, local: h.local, activo: h.activoReal, plato: h.plato, elementos: h.elementos, mensaje: h.mensaje, creativo: true, ...(referencia ? { referencia } : {}) };
+    let activo = h.activoReal;
+    if (fotografiar) {
+      const fuente = await activos.obtener(h.local, h.activoReal);
+      const marca = await marcaDe(h.local);
+      const prompt = promptFinal({ tipo: 'plato', conPlato: true, prompt: 'Photograph the dish from a new three-quarter camera position with tactile local detail and clear separation around its silhouette.' }, marca);
+      await ctx.progreso('Se fotografía el plato para las direcciones de arte.');
+      const toma = await d.generarFoto({ id: id + '-toma', prompt, referencias: [{ ruta: fuente.ruta, etiqueta: 'Product identity reference' }], tamano: '2K' });
+      await exigirTomaNueva(toma.bytes, [fuente.ruta, ...(imagenRef ? [ctx.rutaImagen(imagenRef)] : [])]);
+      const archivo = await ctx.guardar('toma.png', await sharp(toma.bytes).png().toBuffer());
+      const nueva = await registrarFotoGenerada(activos, segmentador, { local: h.local, id: id + '-toma', ruta: join(ctx.carpeta, archivo),
+        descripcion: 'Toma nueva para las direcciones de arte', modelo: toma.modelo, prompt, referencias: [{ activo: h.activoReal, sha256: fuente.activo.sha256 }] });
+      activo = nueva.activo.id;
+    }
+    const banco = { id, local: h.local, activo, plato: h.plato, elementos: h.elementos, mensaje: h.mensaje, creativo: true, ...(referencia ? { referencia } : {}) };
     const carpeta = join(ctx.carpeta, ctx.trabajo, 'banco');
     await mkdir(carpeta, { recursive: true });
     await writeFile(join(carpeta, `${id}.json`), `${JSON.stringify(banco, null, 2)}\n`);
@@ -141,7 +156,7 @@ export function crearHerramientasChat(d: DepsHerramientasChat) {
   const ejecutores: Record<string, (ctx: ContextoDeHerramienta, v: Valores) => Promise<Res>> = {
     // ---------------------------------------------------------------- Crear
     async direcciones(ctx, v) {
-      const b = await encargoDelBanco(ctx, v.referencia !== false);
+      const b = await encargoDelBanco(ctx, v.referencia !== false, true);
       const corrida = `chat-${ctx.conversacion.id}`;
       await ctx.progreso('El director propone las direcciones; el código las pinta y el crítico las puntúa…');
       const args = [b.archivo, '--corrida', corrida, '--direcciones', String(numero(v, 'direcciones', 2)), '--vueltas', String(numero(v, 'vueltas', 1))];
@@ -223,6 +238,7 @@ export function crearHerramientasChat(d: DepsHerramientasChat) {
       const final = promptFinal({ tipo: 'plato', prompt, conPlato: Boolean(imagen) }, marca ? { nombre: marca.nombre, ciudad: marca.ciudad, descripcion: marca.descripcion } : { nombre: 'el restaurante', ciudad: '', descripcion: 'Un restaurante' });
       await ctx.progreso('Nano Banana Pro hace la foto…');
       const r = await d.generarFoto({ id: `chat-${slug(ctx.trabajo.split('/').pop() ?? 'f')}`, prompt: final, referencias: imagen ? [{ ruta: ctx.rutaImagen(imagen), etiqueta: 'image1: the real dish' }] : [], tamano: '2K' });
+      if (imagen) await exigirTomaNueva(r.bytes, [ctx.rutaImagen(imagen)]);
       const archivo = await ctx.guardar('foto.png', await sharp(r.bytes).png().toBuffer());
       await ctx.anadirImagen(join(ctx.carpeta, archivo), 'foto-nueva.png');
       return { ...vacio(), imagenes: [{ archivo, pie: `Nano Banana Pro · ${r.costeUsd.toFixed(3)} USD` }], texto: 'Queda en la conversación para usarla en otras herramientas o piezas.' };
@@ -401,6 +417,8 @@ export function crearHerramientasChat(d: DepsHerramientasChat) {
         lista: f
           ? [
               { titulo: 'Capas (del fondo al frente)', detalle: f.capas.join(' → ') },
+              ...detallesGraficos(f.relacionesGraficas ?? []),
+              ...(f.lecturaFotografica ? detallesFotograficos(f.lecturaFotografica) : [{ titulo: 'Fotografía', detalle: f.foto }]),
               ...(f.mecanismos.length ? [{ titulo: 'Recursos', detalle: f.mecanismos.join(', ') }] : []),
               ...f.tipografia.map((t) => ({ titulo: `Letra · ${t.rol.toLowerCase()}`, detalle: t.clasificacion })),
               { titulo: 'Guardada como', detalle: `${local} · ${id}` },

@@ -4,33 +4,38 @@
  * Flujo:
  *   1. El cliente escribe y sube fotos. El director mira y, si toca, propone los HECHOS del plato (tarjeta).
  *   2. El cliente corrige y confirma la tarjeta: la foto real se registra como activo del local (con su máscara).
- *   3. El director propone una pieza; el código la PLANIFICA (cada diapositiva con su foto, real o nueva, y su receta),
+ *   3. El director propone una pieza; el código la PLANIFICA (cada diapositiva con su toma nueva y su receta),
  *      comprueba el plan y los textos, y enseña el plan con su coste (tarjeta). Nada se gasta en imágenes todavía.
  *   4. El cliente aprueba: se generan las tomas nuevas (Nano Banana Pro con el plato real de referencia) y el estudio
  *      de arte maqueta cada diapositiva, reparando con el director lo que no cabe en la foto de verdad.
- *   5. Ajustes: «rehaz la 3 más oscura» → plan nuevo solo de esas diapositivas, que se aprueba igual.
+ *   5. El diseño se ajusta en las capas de la entrega. Una nueva toma sí se planifica y se aprueba.
  *
  * Todo cambio de la conversación se guarda y se avisa a quien la esté mirando (la web la recibe por SSE).
  */
 import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, readFile, rename, stat, writeFile, copyFile } from 'node:fs/promises';
-import { relative } from 'node:path';
+import { dirname, relative } from 'node:path';
 import { extname, join } from 'node:path';
 import sharp from 'sharp';
+import { exigirTomaNueva } from '../../adaptadores/imagen/copiaDeReferencia.js';
 import type { EncargoDeArte } from '../../puertos/EstudioDeArte.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
 import type { Tokens } from '../../dominio/diseno/intencion.js';
 import { problemasDeTextos, type HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
 import type { Marca } from '../../dominio/modelos.js';
+import { LecturaFotografica, RelacionesGraficas, detallesFotograficos, detallesGraficos } from '../../dominio/referencia.js';
 import type { Receta } from '../../dominio/arte/receta.js';
 import {
   Conversacion, costeEstimado, type CandidataDeReferencia, HechosDelPlato, llevaAcabado, problemasDePieza,
   type AccionDelDirector, type ConceptoDeSerie, type DiapositivaDePieza, type RevisionDeFoto, type Bloque, type Esfuerzo, type Formato, type Mensaje, type Pieza, type PlanDePieza, type TurnoDelDirector,
 } from '../../dominio/chat.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
-import type { EntradaEstudioDeArte } from '../arte/estudioDeArte.js';
+import { seLee, type EntradaEstudioDeArte } from '../arte/estudioDeArte.js';
 import { catalogoEnTexto, ResultadoHerramienta, type DefinicionHerramienta } from './herramientas.js';
+import type { EditorDeDiseno } from './editarDiseno.js';
 import type { VisualCompuesto } from '../arte/pieza.js';
+import { fuentesDePieza } from './fuentesDePieza.js';
+import type { FuentesDePieza, PedidoDePieza } from '../../dominio/chat.js';
 
 export interface LocalDelChat {
   slug: string;
@@ -56,7 +61,7 @@ export interface DepsChat {
   /** Genera una toma nueva. Devuelve los bytes (PNG o JPEG) y lo que costó. */
   generarFoto(o: { id: string; prompt: string; referencias: Array<{ ruta: string; etiqueta: string }>; tamano: '1K' | '2K' }): Promise<{ bytes: Buffer; costeUsd: number; modelo: string }>;
   /** Comprueba una foto generada; devuelve el defecto si hay que repetirla (franjas planas, dominante amarilla excesiva). */
-  defectoDeFoto?(ruta: string): Promise<string | undefined>;
+  defectoDeFoto?(ruta: string, luzDeEscena?: string): Promise<string | undefined>;
   /** Corrige en el sitio lo que el código sabe corregir de una foto (una dominante amarilla moderada); devuelve qué hizo. */
   corregirFoto?(ruta: string): Promise<string | undefined>;
   /**
@@ -68,6 +73,10 @@ export interface DepsChat {
   analizarReferencia?(ruta: string): Promise<{ ficha: unknown; apta: boolean; problemas: string[] }>;
   /** Maqueta un visual con su receta (y repara si hace falta, según el esfuerzo). */
   componer(entrada: EntradaEstudioDeArte, receta: Receta, esfuerzo: Esfuerzo): Promise<VisualCompuesto>;
+  leerTextoMovil?(png: string): Promise<string[]>;
+  componerFotografiaConTexto?(entrada: EntradaEstudioDeArte, receta: Receta, cabecera: boolean): Promise<VisualCompuesto>;
+  editarDiseno?: EditorDeDiseno;
+  comprobarFotosEdicion?(local: string, laminas: Pieza['diapositivas'], referencias: string[]): Promise<void>;
   usdPorFoto: number;
   /**
    * Busca candidatas a estética de referencia para una pieza (Pinterest curado, corpus del estudio, biblioteca y los posts
@@ -112,6 +121,7 @@ const ID_CONVERSACION = /^[a-z0-9][a-z0-9-]{0,80}$/;
 
 export class ServicioChat {
   private readonly oyentes = new Map<string, Set<Oyente>>();
+  private readonly ediciones = new Set<string>();
   private readonly colas = new Map<string, Promise<unknown>>();
 
   constructor(private readonly d: DepsChat) {}
@@ -274,14 +284,17 @@ export class ServicioChat {
     const real = await this.d.registrarFoto({ local: hechos.local, id: `chat-${conversacion}-${foto.id}`, ruta: this.rutaArchivo(conversacion, foto.archivo), tipo: 'REAL', descripcion: `Foto real de «${hechos.plato}» subida en el chat (${conversacion}).` });
     await this.cambiar(conversacion, (c) => {
       const t = this.tarjeta(c, bloque, 'hechos');
+      if (t.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa tarjeta ya está respondida.');
       t.estado = 'HECHO';
       t.propuesta = hechos;
       c.hechos = { ...hechos, ...(!hechos.referencia && c.referencia ? { referencia: c.referencia } : {}), activoReal: real.activo.id };
       if (hechos.referencia) c.referencia = hechos.referencia;
-      c.mensajes.push(this.mensaje('usuario', `✓ Confirmo los datos del plato: ${hechos.plato}.`));
+      t.formato = r.formato ?? t.formato ?? 'auto';
+      t.esfuerzo = r.esfuerzo ?? t.esfuerzo ?? 'normal';
+      c.mensajes.push(this.mensaje('usuario', `✓ Confirmo los datos del plato: ${hechos.plato}.${t.formato === 'auto' ? '' : ` Quiero un ${t.formato}.`}`));
       c.pensando = true;
     });
-    void this.responder(conversacion, { formato: r.formato ?? 'auto', esfuerzo: r.esfuerzo ?? 'normal', nota: 'El cliente acaba de confirmar los hechos del plato. Si ya pidió una pieza, propónla ahora.' });
+    void this.responder(conversacion, { formato: r.formato ?? tarjeta.formato ?? 'auto', esfuerzo: r.esfuerzo ?? tarjeta.esfuerzo ?? 'normal', nota: 'El cliente acaba de confirmar los hechos del plato. Si ya pidió una pieza, propónla ahora.' });
   }
 
   /** La tarjeta del plan: el cliente lo aprueba (se produce) o lo descarta. */
@@ -290,9 +303,15 @@ export class ServicioChat {
     await this.cambiar(conversacion, (c) => {
       const t = this.tarjeta(c, bloque, 'plan');
       if (t.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Ese plan ya está respondido.');
-      t.estado = aprobar ? 'HECHO' : 'DESCARTADO';
       pieza = c.piezas.find((p) => p.id === t.pieza);
       if (!pieza) throw new ErrorDeUsuario('Esa pieza no existe.');
+      if (aprobar && (!pieza.plan || (pieza.formato === 'post') !== (pieza.plan.diapositivas.length === 1))) {
+        throw new ErrorDeUsuario('El número de láminas del plan no coincide con su formato. Revisa el plan antes de producir.');
+      }
+      t.estado = aprobar ? 'HECHO' : 'DESCARTADO';
+      if (aprobar && pieza.plan?.diapositivas.some(d => d.visual.foto !== 'generada' || !d.visual.generar)) {
+        throw new ErrorDeUsuario('Este plan antiguo incluye una foto subida. Descártalo y pide un plan con todas las tomas nuevas para revisar su coste.');
+      }
       pieza.estado = aprobar ? 'PRODUCIENDO' : 'DESCARTADA';
       if (aprobar) {
         pieza.progreso = [];
@@ -476,13 +495,28 @@ export class ServicioChat {
       const ultimo = [...c.mensajes].reverse().find((m) => m.rol === 'usuario');
       const ids = new Set([...(ultimo?.imagenes ?? []), ...(c.hechos ? [c.hechos.foto] : [])]);
       const imagenes = c.imagenes.filter((i) => ids.has(i.id)).slice(0, 4).map((i) => ({ id: i.id, ruta: this.rutaArchivo(conversacion, i.archivo) }));
-      const turno = await this.d.director.turnoDelChat(await this.contexto(c, o), imagenes);
-      await this.ejecutar(conversacion, turno, o);
+      const contexto = await this.contexto(c, o);
+      let turno = await this.d.director.turnoDelChat(contexto, imagenes);
+      const pedido = ultimo?.texto ?? '';
+      const lista = c.piezas.findLast((p) => p.estado === 'LISTA');
+      // Recupera una clasificación equivocada antes de que pueda abrir otro formulario o presupuestar fotografías.
+      if (lista && !o.nota && esRetoqueDeDiseno(pedido) && turno.accion && (turno.accion.tipo !== 'AJUSTAR_PIEZA' || turno.accion.alcance === 'nueva-toma')) {
+        if (lista.formato === 'post' && c.piezas.filter((p) => p.estado === 'LISTA').length === 1) {
+          turno = { mensaje: 'Edito el diseño entregado.', accion: {
+            tipo: 'AJUSTAR_PIEZA', pieza: lista.id, diapositivas: [1], indicaciones: pedido,
+            alcance: /(?:nano banana|imagen(?:es)? secundaria|foto secundaria|chip.*(?:imagen|foto))/i.test(pedido) ? 'diseno-con-imagen-secundaria' : 'diseno',
+          } };
+        } else {
+          turno = await this.d.director.turnoDelChat(`${contexto}\nEs una edición de diseño. Identifica la pieza y las posiciones pedidas mediante AJUSTAR_PIEZA. Pregunta si son ambiguas.`, imagenes);
+          if (turno.accion && (turno.accion.tipo !== 'AJUSTAR_PIEZA' || turno.accion.alcance === 'nueva-toma')) throw new ErrorDeUsuario('Indica qué pieza y qué láminas quieres editar.');
+        }
+      }
+      await this.ejecutar(conversacion, turno, o, pedido);
     } catch (error) {
       await this.fallo(conversacion, error);
     } finally {
       await this.cambiar(conversacion, (c) => {
-        c.pensando = false;
+        c.pensando = c.piezas.some((p) => this.ediciones.has(`${conversacion}/${p.id}`));
       }).catch(() => {});
     }
   }
@@ -493,11 +527,11 @@ export class ServicioChat {
     // El aviso y el fin del «pensando» van en el mismo cambio: la web nunca ve el error con el orbe aún girando.
     await this.cambiar(conversacion, (c) => {
       c.mensajes.push(this.mensaje('asistente', 'No he podido terminar eso.', { bloques: [{ tipo: 'error', id: `err-${id()}`, texto: texto.slice(0, 600) }] }));
-      c.pensando = false;
+      c.pensando = c.piezas.some((p) => this.ediciones.has(`${conversacion}/${p.id}`));
     }).catch(() => {});
   }
 
-  private async ejecutar(conversacion: string, turno: TurnoDelDirector, o: { formato: Formato | 'auto'; esfuerzo: Esfuerzo }) {
+  private async ejecutar(conversacion: string, turno: TurnoDelDirector, o: { formato: Formato | 'auto'; esfuerzo: Esfuerzo }, pedido: string) {
     const a: AccionDelDirector | undefined = turno.accion;
     if (!a) {
       await this.decir(conversacion, turno.mensaje);
@@ -509,7 +543,7 @@ export class ServicioChat {
       if (!locales.some((l) => l.slug === a.hechos.local)) a.hechos.local = locales[0]?.slug ?? a.hechos.local;
       if (!c.imagenes.some((i) => i.id === a.hechos.foto)) throw new Error(`El director señaló una foto que no existe («${a.hechos.foto}»).`);
       if (a.hechos.referencia && !c.imagenes.some((i) => i.id === a.hechos.referencia)) delete a.hechos.referencia;
-      await this.decir(conversacion, turno.mensaje, [{ tipo: 'hechos', id: `hechos-${id()}`, estado: 'PENDIENTE', propuesta: a.hechos }]);
+      await this.decir(conversacion, turno.mensaje, [{ tipo: 'hechos', id: `hechos-${id()}`, estado: 'PENDIENTE', propuesta: a.hechos, formato: o.formato, esfuerzo: o.esfuerzo }]);
       return;
     }
     if (a.tipo === 'ABRIR_HERRAMIENTA') {
@@ -520,19 +554,76 @@ export class ServicioChat {
       await this.decir(conversacion, turno.mensaje, [{ tipo: 'encargo', id: `enc-${id()}`, modo: a.modo }]);
       return;
     }
+    if (a.tipo === 'AJUSTAR_PIEZA' && a.alcance !== 'nueva-toma') {
+      await this.editarDiseno(conversacion, a, pedido);
+      return;
+    }
+    // El comentario libre del director puede anunciar el formato contrario al elegido en el formulario.
+    const mensaje = a.tipo === 'PROPONER_PIEZA' && o.formato !== 'auto' && o.formato !== a.formato
+      ? `Preparo el ${o.formato} que has seleccionado.`
+      : turno.mensaje;
     await this.planificarPiezaNueva(
       conversacion,
       a.tipo === 'AJUSTAR_PIEZA'
         ? { ajustar: a.pieza, rehacer: a.diapositivas, indicaciones: a.indicaciones, esfuerzo: o.esfuerzo }
         : { formato: o.formato !== 'auto' ? o.formato : a.formato, diapositivas: a.diapositivas, indicaciones: a.indicaciones, esfuerzo: o.esfuerzo, busqueda: a.busqueda },
-      turno.mensaje,
+      mensaje,
     );
+  }
+
+  private async editarDiseno(conversacion: string, a: Extract<AccionDelDirector, { tipo: 'AJUSTAR_PIEZA' }>, pedido: string) {
+    const editar = this.d.editarDiseno;
+    if (!editar) throw new ErrorDeUsuario('El editor de capas no está disponible.');
+    const c = await this.leer(conversacion);
+    const pieza = c.piezas.find((p) => p.id === a.pieza && p.estado === 'LISTA');
+    if (!pieza?.plan) throw new ErrorDeUsuario('Elige una pieza terminada de esta conversación.');
+    const fuentes = fuentesDePieza(c, pieza);
+    if (pieza.plan.diapositivas.some((d, i) => d.visual.foto === 'real' || pieza.diapositivas.find((l) => l.n === i + 1)?.foto === fuentes.hechos.activoReal)) {
+      throw new ErrorDeUsuario('Esta pieza antigua incluye una referencia del usuario. Pide una toma nueva para esa lámina antes de entregar la revisión.');
+    }
+    const posiciones = new Set(a.diapositivas.length ? a.diapositivas : pieza.diapositivas.map((l) => l.n));
+    const laminas = pieza.diapositivas.filter((l) => posiciones.has(l.n) && l.png);
+    if (!laminas.length || laminas.length !== posiciones.size) throw new ErrorDeUsuario('Alguna de las láminas solicitadas no está disponible.');
+    const local = (await this.d.locales()).find((l) => l.slug === fuentes.hechos.local);
+    if (!local) throw new ErrorDeUsuario('No encuentro la marca de la pieza.');
+    if (this.d.comprobarFotosEdicion) {
+      const foto = c.imagenes.find(i => i.id === fuentes.hechos.foto);
+      if (!foto) throw new ErrorDeUsuario('La foto de referencia del plan ya no está disponible.');
+      const referencias = [foto.archivo, ...(fuentes.referencia ? [fuentes.referencia.archivo] : [])];
+      await this.d.comprobarFotosEdicion(local.slug, pieza.diapositivas, referencias.map(archivo => this.rutaArchivo(c.id, archivo)));
+    }
+    const clave = `${conversacion}/${pieza.id}`;
+    if (this.ediciones.has(clave)) throw new ErrorDeUsuario('Ya hay una edición en curso para esta pieza.');
+    this.ediciones.add(clave);
+    try {
+      const revision = id();
+      const cambios: Awaited<ReturnType<EditorDeDiseno>>[] = [];
+      for (const lamina of laminas) {
+        cambios.push(await editar({
+          lamina, local: local.slug, tokens: local.tokens, pedido: `Petición del cliente: ${pedido}\nIndicaciones para la lámina ${lamina.n}: ${a.indicaciones}`,
+          conChips: a.alcance === 'diseno-con-imagen-secundaria', carpeta: `piezas/${pieza.id}/ediciones/${revision}/${lamina.n}`,
+          ruta: (archivo) => this.rutaArchivo(conversacion, archivo),
+        }));
+      }
+      // Todos los archivos de la revisión ya existen. Publica las láminas en un único cambio de la conversación.
+      await this.cambiar(conversacion, (cc) => {
+        const actual = cc.piezas.find((p) => p.id === pieza.id)!;
+        const editadas = new Map(cambios.map((r) => [r.lamina.n, r.lamina]));
+        actual.diapositivas = actual.diapositivas.map((l) => editadas.get(l.n) ?? l);
+        actual.costeRealUsd = Math.round(((actual.costeRealUsd ?? 0) + cambios.reduce((s, r) => s + r.costeUsd, 0)) * 1000) / 1000;
+        const destino = pieza.formato === 'post' ? 'del post'
+          : `de ${posiciones.size === 1 ? 'la lámina' : 'las láminas'} ${[...posiciones].join(', ')}`;
+        cc.mensajes.push(this.mensaje('asistente', `He actualizado el diseño ${destino}.`, { bloques: [{ tipo: 'pieza', id: `res-${id()}`, pieza: pieza.id, mostrar: laminas[0]!.n }] }));
+      });
+    } finally {
+      this.ediciones.delete(clave);
+    }
   }
 
   /** Planifica una pieza (o el ajuste de una hecha) y deja el plan con su coste para aprobarlo. */
   async planificarPiezaNueva(
     conversacion: string,
-    p: { formato?: Formato; diapositivas?: number; ajustar?: string; rehacer?: number[]; indicaciones: string; esfuerzo: Esfuerzo; busqueda?: string[]; conReferenciaElegida?: boolean; concepto?: ConceptoDeSerie | null },
+    p: { formato?: Formato; diapositivas?: number; ajustar?: string; rehacer?: number[]; indicaciones: string; esfuerzo: Esfuerzo; busqueda?: string[]; conReferenciaElegida?: boolean; concepto?: ConceptoDeSerie | null; fuentes?: FuentesDePieza },
     mensaje: string,
   ): Promise<void> {
     const c0 = await this.leer(conversacion);
@@ -540,27 +631,42 @@ export class ServicioChat {
       await this.decir(conversacion, `${mensaje}\n\nAntes necesito que confirmes los datos del plato (sube la foto si aún no está).`);
       return;
     }
-    // Una pieza nueva empieza eligiendo su estética de referencia (un ajuste conserva la que tenía).
-    if (!p.ajustar && !p.conReferenciaElegida && this.d.buscarReferencias) {
-      await this.buscarEsteticaDeReferencia(conversacion, { formato: p.formato ?? 'carrusel', diapositivas: p.formato === 'post' ? 1 : Math.min(6, Math.max(3, p.diapositivas ?? 5)), indicaciones: p.indicaciones, esfuerzo: p.esfuerzo }, p.busqueda ?? [], mensaje);
-      return;
-    }
-    // Con referencia, su ficha antes de planificar: el plan parte de ella (una hermana), no solo de su imagen.
-    await this.asegurarFicha(conversacion);
-    // Y antes del plan, el concepto: tres maneras distintas de contar el plato para que el cliente elija.
-    if (!p.ajustar && p.concepto === undefined && this.d.director?.proponerConceptos) {
-      await this.proponerConceptosDeSerie(conversacion, { formato: p.formato ?? 'carrusel', diapositivas: p.formato === 'post' ? 1 : Math.min(6, Math.max(3, p.diapositivas ?? 5)), indicaciones: p.indicaciones, esfuerzo: p.esfuerzo }, mensaje);
-      return;
-    }
-    const c = await this.leer(conversacion);
-    const base = p.ajustar ? c.piezas.find((x) => x.id === p.ajustar && x.estado === 'LISTA') : undefined;
+    // Un concepto ya presentado puede venir de una conversación antigua donde el guion y el selector diferían.
+    // Al elegirlo, el cliente acepta las láminas que ha visto en esa tarjeta.
+    const laminasElegidas = p.concepto?.laminas.length;
+    const formatoPedido: Formato = laminasElegidas ? (laminasElegidas === 1 ? 'post' : 'carrusel') : p.formato ?? 'carrusel';
+    const numeroPedido = laminasElegidas ?? (formatoPedido === 'post' ? 1 : Math.min(6, Math.max(3, p.diapositivas ?? 5)));
+    const base = p.ajustar ? c0.piezas.find((x) => x.id === p.ajustar && x.estado === 'LISTA') : undefined;
     if (p.ajustar && !base) {
       await this.decir(conversacion, `${mensaje}\n\nNo encuentro esa pieza terminada para ajustarla.`);
       return;
     }
-    const formato: Formato = base ? base.formato : p.formato ?? 'carrusel';
-    const n = base?.plan ? base.plan.diapositivas.length : formato === 'post' ? 1 : Math.min(6, Math.max(3, p.diapositivas ?? 5));
-    const rehacer = base ? (p.rehacer ?? []).filter((x) => x >= 1 && x <= n) : [];
+    const fuentes = p.fuentes ?? fuentesDePieza(c0, base);
+    const pedido = { formato: formatoPedido, diapositivas: numeroPedido, indicaciones: p.indicaciones, esfuerzo: p.esfuerzo, fuentes };
+    // Una pieza nueva empieza eligiendo su estética de referencia (un ajuste conserva la que tenía).
+    if (!p.ajustar && !p.conReferenciaElegida && this.d.buscarReferencias) {
+      await this.buscarEsteticaDeReferencia(conversacion, pedido, p.busqueda ?? [], mensaje);
+      return;
+    }
+    // Con referencia, su ficha antes de planificar: el plan parte de ella (una hermana), no solo de su imagen.
+    if (!p.ajustar && fuentes.referencia && fuentes.referencia.revision !== 2) {
+      fuentes.referencia = await this.asegurarFicha(conversacion, fuentes.referencia);
+    }
+    // Y antes del plan, el concepto: tres maneras distintas de contar el plato para que el cliente elija.
+    if (!p.ajustar && p.concepto === undefined && this.d.director?.proponerConceptos) {
+      await this.proponerConceptosDeSerie(conversacion, pedido, mensaje);
+      return;
+    }
+    const c = await this.leer(conversacion);
+    const formato: Formato = base?.formato ?? formatoPedido;
+    const n = base?.plan?.diapositivas.length ?? numeroPedido;
+    const rehacer = base ? [...new Set(p.rehacer ?? [])] : [];
+    if (rehacer.some(x => x < 1 || x > n)) throw new ErrorDeUsuario(`La pieza tiene ${n} láminas. Indica cuáles quieres rehacer.`);
+    const originales = base?.plan?.diapositivas.flatMap((d, i) => d.visual.foto === 'real' && !rehacer.includes(i + 1) ? [i + 1] : []) ?? [];
+    if (rehacer.length && originales.length) {
+      rehacer.push(...originales);
+      mensaje += `\n\nEl plan incluye una toma nueva para las láminas ${originales.join(', ')} que usaban una foto subida. Podrás revisar el coste antes de producir.`;
+    }
     const a = { indicaciones: p.indicaciones };
     const o = { esfuerzo: p.esfuerzo };
     const piezaId = `pieza-${id()}`;
@@ -570,24 +676,26 @@ export class ServicioChat {
       cc.piezas.push({ id: piezaId, formato, esfuerzo: o.esfuerzo, indicaciones: a.indicaciones, estado: 'PROPUESTA', costeEstimadoUsd: 0, fotos: [], ...(base ? { base: base.id } : {}), rehacer, progreso: [{ texto: base ? 'Replanteando las diapositivas' : 'Planificando cada diapositiva', estado: 'en-curso' }], diapositivas: [] });
     });
     try {
-      const encargo = await this.encargo(c, piezaId);
+      const encargo = await this.encargo(c, piezaId, fuentes);
       let plan: PlanDePieza | undefined;
       let devolver: string[] = [];
       for (let intento = 1; intento <= 2; intento++) {
         plan = await this.planificarConReintentos(encargo, { formato, diapositivas: n, indicaciones: a.indicaciones, ...(base?.plan ? { base: { plan: base.plan, rehacer } } : {}), ...(p.concepto ? { concepto: p.concepto } : {}) }, devolver);
+        // Valida exactamente la secuencia que podrá aprobar el cliente, con las láminas conservadas ya en su sitio.
+        if (base?.plan && rehacer.length) plan.diapositivas = plan.diapositivas.map((d, i) => rehacer.includes(i + 1) ? d : base.plan!.diapositivas[i] ?? d);
         const problemas = problemasDePieza(plan, formato, n);
-        const hechos = await this.hechosDeLaPieza(c);
+        const hechos = await this.hechosDeLaPieza(fuentes.hechos);
         for (const [i, d] of plan.diapositivas.entries()) problemas.push(...problemasDeTextos(d.visual.receta.textos, hechos, { titularCreativo: true, creativo: { maxPalabras: 4, maxTextos: 2 } }).map((x) => `Diapositiva ${i + 1}: ${x}`));
         if (!problemas.length) break;
         devolver = problemas;
         if (intento === 2) throw new Error(`El plan no pasa las comprobaciones: ${problemas.slice(0, 3).join(' · ')}`);
       }
-      // En un ajuste, lo que no se rehace se queda exactamente como estaba.
-      if (base?.plan && rehacer.length) plan!.diapositivas = plan!.diapositivas.map((d, i) => (rehacer.includes(i + 1) ? d : base.plan!.diapositivas[i] ?? d));
       const coste = costeEstimado(plan!, { usdPorFoto: this.d.usdPorFoto, esfuerzo: o.esfuerzo, ...(rehacer.length ? { soloDiapositivas: rehacer } : {}) });
+      const datosDelEncargo = { local: fuentes.hechos.local, plato: fuentes.hechos.plato, fotografia: p.concepto?.fotografia ?? base?.encargo?.fotografia, fuentes };
       await this.cambiar(conversacion, (cc) => {
         const p = cc.piezas.find((x) => x.id === piezaId)!;
         p.plan = plan!;
+        p.encargo = datosDelEncargo;
         p.costeEstimadoUsd = coste;
         p.progreso = [{ texto: 'Plan listo', estado: 'hecho' }];
         for (const m of cc.mensajes) m.bloques = m.bloques.map((b) => (b.id === progreso ? { tipo: 'plan' as const, id: `plan-${id()}`, estado: 'PENDIENTE' as const, pieza: piezaId } : b));
@@ -621,14 +729,17 @@ export class ServicioChat {
 
   // ------------------------------------------------------------------ Concepto de la serie
 
-  private async proponerConceptosDeSerie(conversacion: string, pedido: { formato: Formato; diapositivas: number; indicaciones: string; esfuerzo: Esfuerzo }, mensaje: string) {
+  private async proponerConceptosDeSerie(conversacion: string, pedido: PedidoDePieza, mensaje: string) {
     const bloque = `conc-${id()}`;
     await this.decir(conversacion, mensaje ? `${mensaje}\n\nAntes del plan, te propongo tres maneras de contarlo.` : 'Antes del plan, te propongo tres maneras de contarlo.', [{ tipo: 'conceptos', id: bloque, estado: 'BUSCANDO', pedido, conceptos: [] }]);
     void (async () => {
       try {
         const c = await this.leer(conversacion);
-        const encargo = await this.encargo(c, bloque);
+        const encargo = await this.encargo(c, bloque, pedido.fuentes);
         const conceptos = await this.d.director!.proponerConceptos!(encargo, { formato: pedido.formato, diapositivas: pedido.diapositivas, indicaciones: pedido.indicaciones });
+        if (conceptos.length !== 3 || conceptos.some((c) => c.laminas.length !== pedido.diapositivas)) {
+          throw new Error(`Cada uno de los tres conceptos debe contener las ${pedido.diapositivas} láminas del pedido.`);
+        }
         await this.cambiar(conversacion, (cc) => {
           const b = this.bloqueConceptos(cc, bloque);
           b.estado = 'PENDIENTE';
@@ -661,10 +772,11 @@ export class ServicioChat {
     if (!concepto) throw new ErrorDeUsuario('Ese concepto no está entre los propuestos.');
     await this.cambiar(conversacion, (c) => {
       const b = this.bloqueConceptos(c, bloque);
+      if (b.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa elección ya está hecha.');
       b.estado = 'HECHO';
       b.elegido = i;
     });
-    await this.planificarPiezaNueva(conversacion, { ...b0.pedido, conReferenciaElegida: true, concepto }, `Vamos con «${concepto.nombre}». Planifico cada lámina.`);
+    await this.planificarPiezaNueva(conversacion, { ...b0.pedido, fuentes: fuentesDePieza(c0, b0), conReferenciaElegida: true, concepto }, `Vamos con «${concepto.nombre}». Planifico cada lámina.`);
   }
 
   // ------------------------------------------------------------------ Estética de referencia
@@ -675,23 +787,30 @@ export class ServicioChat {
     for (const otra of await this.listar()) {
       if (otra.id === excepto) continue;
       const c = await this.leer(otra.id).catch(() => undefined);
-      if (!c || c.hechos?.local !== local) continue;
-      for (const p of c.piezas) {
+      if (!c) continue;
+      for (const p of [...c.piezas].reverse()) {
+        const encargo = p.encargo ?? (c.hechos && fuentesDePieza(c, p).hechos);
+        if (!encargo || encargo.local !== local || p.base) continue;
         const portada = p.diapositivas.find((d) => d.png);
         if (p.estado !== 'LISTA' || !portada?.png || !p.plan) continue;
-        fuera.push({ ruta: this.rutaArchivo(c.id, portada.png), titulo: `${p.formato === 'carrusel' ? 'Carrusel' : 'Post'} · ${c.hechos.plato}`, idea: p.plan.idea, fecha: c.actualizada });
+        const primera = p.plan.diapositivas[0]!.visual;
+        const fotografia = p.encargo?.fotografia ?? primera.generar?.prompt;
+        const secuencia = p.plan.diapositivas.map(d => d.papel + '/' + d.visual.receta.esqueleto).join(' → ');
+        const idea = [p.plan.idea.slice(0, 160), fotografia?.slice(0, 280), secuencia].filter(Boolean).join(' · ');
+        fuera.push({ ruta: this.rutaArchivo(c.id, portada.png), titulo: `${p.formato === 'carrusel' ? 'Carrusel' : 'Post'} · ${encargo.plato}`, idea, fecha: c.actualizada });
       }
     }
-    return fuera.sort((a, b) => (a.fecha < b.fecha ? 1 : -1)).slice(0, 8);
+    return fuera.sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 8);
   }
 
-  private async buscarEsteticaDeReferencia(conversacion: string, pedido: { formato: Formato; diapositivas: number; indicaciones: string; esfuerzo: Esfuerzo }, consultas: string[], mensaje: string) {
+  private async buscarEsteticaDeReferencia(conversacion: string, pedido: PedidoDePieza, consultas: string[], mensaje: string) {
     const bloque = `refs-${id()}`;
     await this.decir(conversacion, mensaje ? `${mensaje}\n\nAntes, busco referencias para elegir la estética.` : 'Busco referencias para elegir la estética.', [{ tipo: 'referencias', id: bloque, estado: 'BUSCANDO', pedido, consultas, candidatas: [], progreso: [] }]);
     void (async () => {
       try {
         const c = await this.leer(conversacion);
-        const h = c.hechos!;
+        const h = pedido.fuentes?.hechos ?? c.hechos!;
+        const propia = c.imagenes.find(i => i.id === h.referencia && i.id !== h.foto && c.mensajes.some(m => m.rol === 'usuario' && m.imagenes.includes(i.id)));
         const anteriores = await this.piezasDelLocal(h.local, conversacion);
         const destino = this.rutaArchivo(conversacion, `referencias/${bloque}`);
         await mkdir(destino, { recursive: true });
@@ -702,6 +821,7 @@ export class ServicioChat {
             b.progreso = [...b.progreso, linea.slice(0, 200)].slice(-6);
           }).catch(() => {}),
         );
+        if (propia) r.candidatas.unshift({ id: propia.id, origen: 'propia', archivo: propia.archivo, titulo: 'Tu referencia' });
         await this.cambiar(conversacion, (cc) => {
           const b = this.bloqueReferencias(cc, bloque);
           b.estado = r.candidatas.length ? 'PENDIENTE' : 'HECHO';
@@ -733,10 +853,11 @@ export class ServicioChat {
     const c0 = await this.leer(conversacion);
     const b0 = this.bloqueReferencias(c0, bloque);
     if (b0.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa elección ya está hecha.');
+    const fuentes = fuentesDePieza(c0, b0);
     const candidata = eleccion === 'auto' ? b0.candidatas[0] : b0.candidatas.find((x) => x.id === eleccion);
     if (eleccion !== 'ninguna' && !candidata) throw new ErrorDeUsuario('Esa referencia no está entre las candidatas.');
-    let imagen: string | undefined;
-    if (candidata) {
+    let imagen = candidata?.origen === 'propia' ? candidata.id : undefined;
+    if (candidata && !imagen) {
       const ruta = this.rutaArchivo(conversacion, candidata.archivo);
       const meta = await sharp(ruta).metadata();
       imagen = `img-${id()}`;
@@ -749,69 +870,88 @@ export class ServicioChat {
     }
     await this.cambiar(conversacion, (c) => {
       const b = this.bloqueReferencias(c, bloque);
+      if (b.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa elección ya está hecha.');
       b.estado = eleccion === 'ninguna' ? 'DESCARTADO' : 'HECHO';
       if (candidata) b.elegida = candidata.id;
+      if (imagen) b.imagenElegida = imagen;
+      const elegida = c.imagenes.find(i => i.id === imagen);
+      fuentes.referencia = elegida && { id: elegida.id, archivo: elegida.archivo };
+      if (c.hechos?.foto !== fuentes.hechos.foto || c.hechos.local !== fuentes.hechos.local) return;
       if (imagen) {
         c.referencia = imagen;
         if (c.hechos) c.hechos.referencia = imagen;
+      } else {
+        delete c.referencia;
+        delete c.fichaReferencia;
+        if (c.hechos) delete c.hechos.referencia;
       }
     });
-    const texto = candidata ? `Tomo como listón ${candidata.origen === 'local' ? 'un post anterior del local' : candidata.origen === 'pinterest' ? 'esa referencia de Pinterest' : 'esa referencia del estudio'}: me quedo con su oficio, no con su contenido. Planifico la pieza.` : 'Sin referencia: planifico con el criterio del estudio.';
-    await this.planificarPiezaNueva(conversacion, { ...b0.pedido, conReferenciaElegida: true }, texto);
+    const texto = candidata ? `Planifico la pieza a partir de «${candidata.titulo || 'Referencia elegida'}».` : 'Planifico la pieza sin referencia.';
+    await this.planificarPiezaNueva(conversacion, { ...b0.pedido, fuentes, conReferenciaElegida: true }, texto);
   }
 
-  private async hechosDeLaPieza(c: Conversacion): Promise<HechosDeLaPieza> {
-    const local = (await this.d.locales()).find((l) => l.slug === c.hechos!.local)!;
+  private async hechosDeLaPieza(hechos: FuentesDePieza['hechos']): Promise<HechosDeLaPieza> {
+    const local = (await this.d.locales()).find((l) => l.slug === hechos.local)!;
     const m = local.marca;
     return {
-      plato: c.hechos!.plato,
-      elementos: c.hechos!.elementos,
+      plato: hechos.plato,
+      elementos: hechos.elementos,
       local: { nombre: m.nombre, ciudad: m.ciudad, descripcion: m.descripcion, tonos: m.tonos, ...(m.instagram ? { instagram: m.instagram } : {}), ...(m.web ? { web: m.web } : {}) },
     };
   }
 
-  private async entrada(c: Conversacion, pieza: string, foto?: ActivoDisponible): Promise<EntradaEstudioDeArte> {
-    const local = (await this.d.locales()).find((l) => l.slug === c.hechos!.local);
-    if (!local) throw new ErrorDeUsuario(`El local «${c.hechos!.local}» ya no existe.`);
-    const real = foto ?? (await this.d.registrarFoto({ local: local.slug, id: `chat-${c.id}-${c.hechos!.foto}`, ruta: this.rutaArchivo(c.id, c.imagenes.find((i) => i.id === c.hechos!.foto)!.archivo), tipo: 'REAL', descripcion: `Foto real de «${c.hechos!.plato}» subida en el chat (${c.id}).` }));
-    const idRef = c.hechos!.referencia ?? c.referencia;
-    const ref = idRef ? c.imagenes.find((i) => i.id === idRef) : undefined;
-    const anteriores = (await this.piezasDelLocal(local.slug)).map((a) => `${a.titulo}: ${a.idea}`.slice(0, 240));
+  private async entrada(c: Conversacion, pieza: string, fuentes: FuentesDePieza): Promise<EntradaEstudioDeArte> {
+    const { hechos, referencia: ref } = fuentes;
+    const local = (await this.d.locales()).find((l) => l.slug === hechos.local);
+    if (!local) throw new ErrorDeUsuario(`El local «${hechos.local}» ya no existe.`);
+    const imagen = c.imagenes.find(i => i.id === hechos.foto);
+    if (!imagen) throw new ErrorDeUsuario('La foto de referencia del plan ya no está disponible.');
+    const real = await this.d.registrarFoto({ local: local.slug, id: hechos.activoReal, ruta: this.rutaArchivo(c.id, imagen.archivo), tipo: 'REAL', descripcion: `Foto real de «${hechos.plato}» subida en el chat (${c.id}).` });
+    const anteriores = (await this.piezasDelLocal(local.slug)).map(a => a.titulo + ' · ' + a.idea);
     return {
       id: pieza,
       local: local.slug,
       ...(anteriores.length ? { anteriores } : {}),
       foto: real,
-      hechos: await this.hechosDeLaPieza(c),
+      hechos: await this.hechosDeLaPieza(hechos),
       tokensMarca: local.tokens,
-      mensaje: c.hechos!.mensaje,
+      mensaje: hechos.mensaje,
       creativo: true,
       direcciones: 1,
       vueltas: 0,
       salida: this.rutaArchivo(c.id, `piezas/${pieza}`),
-      ...(ref ? { referencia: { id: ref.id, ruta: this.rutaArchivo(c.id, ref.archivo), ...(c.fichaReferencia?.imagen === ref.id ? { ficha: c.fichaReferencia.ficha } : {}) } } : {}),
+      ...(ref ? { referencia: { id: ref.id, ruta: this.rutaArchivo(c.id, ref.archivo), ficha: ref.ficha } } : {}),
     };
   }
 
   /** La ficha de la referencia de la conversación, si aún no la tiene: el director parte de ella para hacer hermanas. */
-  private async asegurarFicha(conversacion: string): Promise<void> {
-    if (!this.d.analizarReferencia) return;
+  private async asegurarFicha(conversacion: string, ref: NonNullable<FuentesDePieza['referencia']>): Promise<NonNullable<FuentesDePieza['referencia']>> {
+    if (!this.d.analizarReferencia) return ref;
     const c = await this.leer(conversacion);
-    const idRef = c.hechos?.referencia ?? c.referencia;
-    const ref = idRef ? c.imagenes.find((i) => i.id === idRef) : undefined;
-    if (!ref || c.fichaReferencia?.imagen === ref.id) return;
     try {
-      const a = await this.d.analizarReferencia(this.rutaArchivo(conversacion, ref.archivo));
+      const previa = c.fichaReferencia;
+      const a = previa?.imagen === ref.id && previa.revision === 2 ? previa : await this.d.analizarReferencia(this.rutaArchivo(conversacion, ref.archivo));
+      const ficha = a.ficha as { lecturaFotografica?: unknown; relacionesGraficas?: unknown } | null;
+      const foto = LecturaFotografica.safeParse(ficha?.lecturaFotografica);
+      const grafica = RelacionesGraficas.safeParse(ficha?.relacionesGraficas);
+      const lectura = [...(grafica.success ? detallesGraficos(grafica.data) : []), ...(foto.success ? detallesFotograficos(foto.data) : [])];
       await this.cambiar(conversacion, (cc) => {
-        cc.fichaReferencia = { imagen: ref.id, ficha: a.ficha, apta: a.apta, problemas: a.problemas.slice(0, 6) };
+        if ((cc.hechos?.referencia ?? cc.referencia) === ref.id) {
+          cc.fichaReferencia = { imagen: ref.id, ficha: a.ficha, apta: a.apta, problemas: a.problemas.slice(0, 6), revision: 2 };
+        }
+        if (lectura.length) for (const m of cc.mensajes) for (const b of m.bloques) {
+          if (b.tipo === 'referencias' && b.imagenElegida === ref.id) b.lectura = lectura;
+        }
       });
+      return { ...ref, ficha: a.ficha, revision: 2 };
     } catch (error) {
       this.d.avisar?.(`No se pudo analizar la referencia de ${conversacion}: ${error instanceof Error ? error.message : String(error)}`);
+      return ref;
     }
   }
 
-  private async encargo(c: Conversacion, pieza: string): Promise<EncargoDeArte> {
-    return this.d.prepararEncargo(await this.entrada(c, pieza));
+  private async encargo(c: Conversacion, pieza: string, fuentes = fuentesDePieza(c)): Promise<EncargoDeArte> {
+    return this.d.prepararEncargo(await this.entrada(c, pieza, fuentes));
   }
 
   // ------------------------------------------------------------------ Producción
@@ -833,7 +973,12 @@ export class ServicioChat {
       const plan = pieza.plan;
       const base = pieza.base ? c.piezas.find((p) => p.id === pieza.base) : undefined;
       const rehacer = (n: number) => !base || !pieza.rehacer.length || pieza.rehacer.includes(n);
-      const entradaBase = await this.entrada(c, piezaId);
+      const fuentes = fuentesDePieza(c, pieza);
+      const entradaBase = await this.entrada(c, piezaId, fuentes);
+      if (base && pieza.rehacer.length && this.d.comprobarFotosEdicion) {
+        const conservadas = base.diapositivas.filter(l => !rehacer(l.n));
+        await this.d.comprobarFotosEdicion(fuentes.hechos.local, conservadas, [entradaBase.foto.ruta, ...(entradaBase.referencia ? [entradaBase.referencia.ruta] : [])]);
+      }
       const carpeta = `piezas/${piezaId}`;
       await mkdir(this.rutaArchivo(conversacion, `${carpeta}/fotos`), { recursive: true });
       let coste = 0;
@@ -848,7 +993,7 @@ export class ServicioChat {
       //    Cada foto la mira el director antes de maquetarla: si no vale, se repite una vez con su corrección.
       const fotos = new Map<number, ActivoDisponible>();
       const pendientes = plan.diapositivas.map((d, i) => ({ d, n: i + 1 })).filter(({ d, n }) => d.visual.foto === 'generada' && rehacer(n));
-      const local = (await this.d.locales()).find((l) => l.slug === c.hechos!.local)!;
+      const local = (await this.d.locales()).find((l) => l.slug === fuentes.hechos.local)!;
       const { promptFinal } = await import('../arte/pieza.js');
       const revisar = esfuerzo !== 'rapido' && this.d.revisarFoto ? this.d.revisarFoto.bind(this.d) : undefined;
       const tomar = async ({ d, n }: { d: DiapositivaDePieza; n: number }, continuidad?: string): Promise<string> => {
@@ -868,31 +1013,45 @@ export class ServicioChat {
         let archivo = '';
         let rutaAnterior: string | undefined;
         for (let intento = 1; intento <= 2; intento++) {
-          if (intento === 2) rutaAnterior = ruta;
+
           const referencias = [...(generar.conPlato ? [{ ruta: entradaBase.foto.ruta, etiqueta: 'image1: the real dish' }] : []), ...(continuidad ? [{ ruta: continuidad, etiqueta: `${etiquetaContinuidad.slice(1)}: session continuity` }] : [])];
           const r = await this.d.generarFoto({ id: `${piezaId}-${n}${intento > 1 ? `-${intento}` : ''}`, prompt, referencias, tamano: esfuerzo === 'rapido' ? '1K' : '2K' });
           coste += r.costeUsd;
           archivo = `${carpeta}/fotos/${String(n).padStart(2, '0')}${intento > 1 ? `-${intento}` : ''}.png`;
           ruta = this.rutaArchivo(conversacion, archivo);
+          try {
+            await exigirTomaNueva(r.bytes, [entradaBase.foto.ruta, ...(entradaBase.referencia ? [entradaBase.referencia.ruta] : []), ...(continuidad ? [continuidad] : [])]);
+          } catch (error) {
+            if (!(error instanceof ErrorDeUsuario) || intento === 2) throw error;
+            decidir(n, 'Repetí la foto porque reproducía una imagen de referencia.');
+            prompt += ' Make a new exposure from the directed camera position. Change visible perspective and scene relationships.';
+            continue;
+          }
           await sharp(r.bytes).png().toFile(ruta);
-          const defecto = await this.d.defectoDeFoto?.(ruta);
+          const defecto = await this.d.defectoDeFoto?.(ruta, generar.luzDeEscena);
           if (defecto) {
             this.d.avisar?.(`${piezaId} diapositiva ${n}: ${defecto}${intento === 1 ? ' (se repite)' : ''}`);
             if (intento === 1) {
+              rutaAnterior = ruta;
               decidir(n, `Repetí la foto: salió con ${defecto}.`);
-              prompt = `${prompt} CORRECTION after a first attempt that came out with «${defecto}»: avoid it. If it was a colour cast, use neutral daylight white balance: whites must read truly white, no yellow or orange tint.`;
+              const luz = generar.luzDeEscena
+                ? `Keep the directed light source and falloff: ${generar.luzDeEscena}.`
+                : 'If it was a colour cast, use neutral daylight white balance: whites must read truly white, no yellow or orange tint.';
+              prompt = `${prompt} CORRECTION after a first attempt that came out with «${defecto}»: avoid it. ${luz}`;
               continue;
             }
           }
           // Lo que el código sabe arreglar (una dominante amarilla), antes de que el director la mire.
-          const corregida = await this.d.corregirFoto?.(ruta).catch(() => undefined);
+          const corregida = generar.luzDeEscena ? undefined : await this.d.corregirFoto?.(ruta).catch(() => undefined);
           if (corregida) decidir(n, corregida);
           if (revisar) {
             try {
               // La portada y el cierre de un carrusel llevan texto; como mucho N−2 láminas solas en total.
               const protegida = pieza.formato === 'carrusel' && (n === 1 || n === plan.diapositivas.length);
-              const v = await revisar({ foto: ruta, ...(generar.conPlato ? { real: entradaBase.foto.ruta } : {}), ...(continuidad ? { continuidad } : {}), ...(rutaAnterior ? { anterior: rutaAnterior } : {}), toma: `${d.resumen} — ${generar.prompt}`, papel: d.papel, portada: protegida });
+              const toma = [d.resumen, generar.prompt, generar.luzDeEscena && 'Fuente de color prevista: ' + generar.luzDeEscena].filter(Boolean).join(' — ');
+              const v = await revisar({ foto: ruta, ...(generar.conPlato ? { real: entradaBase.foto.ruta } : {}), ...(continuidad ? { continuidad } : {}), ...(rutaAnterior ? { anterior: rutaAnterior } : {}), toma, papel: d.papel, portada: protegida });
               if (v.veredicto === 'REPETIR' && intento === 1) {
+                rutaAnterior = ruta;
                 decidir(n, `Repetí la foto: ${v.motivo}`);
                 prompt = `${prompt} CORRECTION after reviewing a first attempt: ${v.corregir ?? v.motivo}`;
                 continue;
@@ -955,7 +1114,7 @@ export class ServicioChat {
           await copyFile(join(carpetaCapas!, f), this.rutaArchivo(conversacion, destino));
           capas.push(destino);
         }
-        return { png, movil, capas };
+        return { png, movil, capas, ...(carpetaCapas ? { intencion: relative(this.carpetaDe(conversacion), join(dirname(carpetaCapas), 'intencion.json')) } : {}) };
       };
       // De tres en tres (cada lámina con su crítica y su acabado tarda minutos); el orden se mantiene.
       const resultado: Array<Pieza['diapositivas'][number] | undefined> = plan.diapositivas.map(() => undefined);
@@ -965,7 +1124,7 @@ export class ServicioChat {
         if (!rehacer(n) && anterior?.png) return anterior;
         const texto = `Diseño de la diapositiva ${n}`;
         await this.paso(conversacion, piezaId, texto);
-        const foto = d.visual.foto === 'real' ? entradaBase.foto : fotos.get(n);
+        const foto = fotos.get(n);
         if (!foto) {
           await this.paso(conversacion, piezaId, texto, 'error');
           return { n, problemas: ['sin foto'], decisiones: decisiones.get(n) ?? [], capas: [] };
@@ -995,6 +1154,34 @@ export class ServicioChat {
             decidir(n, pequeno ? `En ${r.esqueleto} el producto quedaba diminuto (${pequeno.replace(/^PRODUCTO_PEQUEÑO: /, '')}): la hice a sangre, con la misma foto y el titular en su aire.` : `${r.esqueleto} no cabía en la foto (${hecho.problemas.slice(0, 1).join('').slice(0, 160)}): la hice a sangre, con el titular y la firma en el aire de la foto.`);
             for (const x of otra.decisiones ?? []) decidir(n, x);
             hecho = otra;
+          }
+        }
+        const cierre = pieza.formato === 'carrusel' && n === plan.diapositivas.length;
+        const textoObligatorio = pieza.formato === 'post' || n === 1 || cierre;
+        const textoIlegible = async (visual: VisualCompuesto, zonaPropia = false) => {
+          const receta = d.visual.receta;
+          const titulo = receta.textos.find(t => t.clave === receta.titular.texto)?.texto;
+          const firma = receta.textos.find(t => t.clave === receta.firma?.texto)?.texto ?? local.marca.nombre;
+          if (cierre && !zonaPropia && !visual.receta.firma && !seLee(firma, [titulo ?? ''])) return true;
+          if (!visual.movil || !this.d.leerTextoMovil) return false;
+          const lineas = await this.d.leerTextoMovil(visual.movil);
+          if (!lineas.length) return false;
+          return Boolean(titulo && (zonaPropia || visual.receta.esqueleto !== 'COLUMNA') && !seLee(titulo, lineas)) ||
+            (cierre && !seLee(firma, lineas));
+        };
+        if (textoObligatorio && (!hecho.png || hecho.problemas.some(p => /^(PRODUCTO_PEQUEÑO|LEGIBILIDAD)/.test(p)) || await textoIlegible(hecho))) {
+          if (this.d.componerFotografiaConTexto) {
+            hecho = await this.d.componerFotografiaConTexto({ ...entradaBase, foto, salida: this.rutaArchivo(conversacion, `${carpeta}/d${n}-texto`) }, d.visual.receta, n === 1);
+            if (hecho.png && await textoIlegible(hecho, true)) {
+              hecho = { ...hecho, png: undefined, problemas: [...hecho.problemas, 'El texto aprobado no se lee a tamaño móvil.'] };
+            }
+            if (hecho.png) decidir(n, 'La fotografía conserva el texto aprobado en una zona propia de la maqueta.');
+          } else {
+            hecho = { ...hecho, png: undefined };
+          }
+          if (!hecho.png) {
+            await this.paso(conversacion, piezaId, texto, 'error');
+            return { n, foto: foto.activo.id, problemas: ['No se pudo componer el texto obligatorio.', ...hecho.problemas], decisiones: decisiones.get(n) ?? [], capas: [] };
           }
         }
         if (!hecho.png && d.visual.foto === 'generada') {
@@ -1030,16 +1217,21 @@ export class ServicioChat {
         const p = cc.piezas.find((x) => x.id === piezaId)!;
         p.diapositivas = producidas;
         p.costeRealUsd = Math.round(coste * 1000) / 1000;
-        p.estado = listas ? 'LISTA' : 'ERROR';
-        if (!listas) p.error = 'Ninguna diapositiva se pudo maquetar.';
+        const total = plan.diapositivas.length;
+        const completa = listas === total;
+        p.estado = completa ? 'LISTA' : 'ERROR';
+        if (!completa) {
+          const detalle = producidas.filter(x => !x.png && x.problemas[0]).map(x => `Lámina ${x.n}. ${x.problemas[0]}`);
+          p.error = [`Entrega incompleta. Se han terminado ${listas} de ${total} láminas.`, ...detalle].join(' ');
+        }
         const conErrores = producidas.filter((x) => x.png && x.problemas.length).map((x) => x.n);
         const decididas = producidas.flatMap((x) => x.decisiones.slice(0, 1).map((t) => `**${x.n}:** ${t}`)).slice(0, 4);
         cc.mensajes.push(
           this.mensaje(
             'asistente',
-            listas
-              ? `Aquí está${pieza.formato === 'carrusel' ? ` el carrusel (${listas} de ${producidas.length} diapositivas)` : ' el post'}.${conErrores.length ? ` La${conErrores.length > 1 ? 's' : ''} ${conErrores.join(', ')} tiene${conErrores.length > 1 ? 'n' : ''} detalles que el código midió (contraste o solape): dime si la rehago.` : ''}${decididas.length ? `\n\nLo que decidí por el camino:\n${decididas.map((t) => `- ${t}`).join('\n')}` : ''}\n\nPídeme cualquier cambio.`
-              : 'No he conseguido maquetar ninguna diapositiva.',
+            completa
+              ? `Aquí está${pieza.formato === 'carrusel' ? ` el carrusel (${listas} de ${total} diapositivas)` : ' el post'}.${conErrores.length ? ` La${conErrores.length > 1 ? 's' : ''} ${conErrores.join(', ')} tiene${conErrores.length > 1 ? 'n' : ''} detalles que el código midió (contraste o solape): dime si la rehago.` : ''}${decididas.length ? `\n\nLo que decidí por el camino:\n${decididas.map((t) => `- ${t}`).join('\n')}` : ''}\n\nPídeme cualquier cambio.`
+              : p.error!,
             { bloques: [{ tipo: 'pieza', id: `res-${id()}`, pieza: piezaId }] },
           ),
         );
@@ -1055,4 +1247,12 @@ export class ServicioChat {
       await this.fallo(conversacion, error);
     }
   }
+}
+
+/** Respaldo para imperativos inequívocos si el director propone producir otra pieza. */
+function esRetoqueDeDiseno(pedido: string): boolean {
+  const t = pedido.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+  if (/\b(?:nuevo|otro) (?:post|carrusel)|\b(?:post|carrusel|foto|toma) nuev[oa]|\botra (?:foto|toma)\b/.test(t)) return false;
+  return /\b(?:mueve|centra|alinea|cambia|cambiar|pon|quita|anade|agrega|ajusta|desplaza|sube|baja|acerca|mas al centro|otra tipografia|otra fuente)\b/.test(t)
+    && /\b(?:diseno|texto|titulo|titular|letras?|tipografia|fuente|chips?|sello|alineacion|margen|color|logo|composicion)\b/.test(t);
 }

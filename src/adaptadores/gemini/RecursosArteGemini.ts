@@ -103,29 +103,38 @@ export class RecursosArteGemini {
   async escena(describe: string, c: { local: string; luz: string }): Promise<ActivoDisponible> {
     const prompt = promptDeEscena(describe, c.luz);
     const id = this.idDe('escena', prompt);
-    if (await this.activos.existe(c.local, id)) return this.activos.obtener(c.local, id);
-    const foto = await this.generador.generar({ id, prompt, referencias: [], aspectRatio: '3:4', tamano: '1K' });
+    return (await this.placa(c.local, id, prompt, '3:4', `Escena de fondo sin comida. «${describe}»`)).activo;
+  }
+
+  async chip(local: string, clave: string, descripcion: string) {
+    const prompt = `Create one original square insert image for a small editorial inset. ${descripcion}. Fill the frame with the requested detail. No poster layout, typography or lettering.`;
+    return this.placa(local, this.idDe('chip', clave, prompt), prompt, '1:1', descripcion);
+  }
+
+  private async placa(local: string, id: string, prompt: string, aspectRatio: string, descripcion: string) {
+    if (await this.activos.existe(local, id)) return { activo: await this.activos.obtener(local, id), costeUsd: 0 };
+    const foto = await this.generador.generar({ id, prompt, referencias: [], aspectRatio, tamano: '1K' });
     const png = await sharp(foto.bytes).png().toBuffer();
     const meta = await sharp(png).metadata();
     const sha = createHash('sha256').update(png).digest('hex');
-    const { generacion, ahora } = this.generacion(c.local, id, prompt, foto, { aspectRatio: '3:4', tamano: '1K' });
+    const { generacion, ahora } = this.generacion(local, id, prompt, foto, { aspectRatio, tamano: '1K' });
     await this.activos.crear(
       Activo.parse({
         id,
-        localSlug: c.local,
+        localSlug: local,
         tipo: 'GENERADO',
         uso: 'SOLO_PRUEBA_COMPOSICION',
-        descripcion: `Recurso gráfico generado por el estudio de arte: escena de fondo SIN comida (no es producto). «${describe}»`,
+        descripcion,
         archivo: 'original.png',
         ancho: meta.width!,
         alto: meta.height!,
         sha256: sha,
-        procedencia: { ruta: `datos/locales/${c.local}/activos/${id}/original.png`, sha256: sha, copiadoEn: ahora, generacion },
+        procedencia: { ruta: `datos/locales/${local}/activos/${id}/original.png`, sha256: sha, copiadoEn: ahora, generacion },
       }),
       { 'original.png': png, 'prompt.txt': Buffer.from(`${prompt}\n`) },
     );
-    this.informar(`  escena ${id}: ${foto.costeUsd.toFixed(3)} USD`);
-    return this.activos.obtener(c.local, id);
+    this.informar(`  recurso ${id}: ${foto.costeUsd.toFixed(3)} USD`);
+    return { activo: await this.activos.obtener(local, id), costeUsd: foto.costeUsd };
   }
 
   /** Un elemento gráfico del director: dibujo o forma en negro sobre blanco → recurso recortable del color pedido. */

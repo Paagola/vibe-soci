@@ -8,7 +8,7 @@
  * - PROGRESO y PIEZA: la producción y el resultado.
  */
 import { z } from 'zod';
-import { Visual } from './arte/lote.js';
+import { Visual, VisualNuevo } from './arte/lote.js';
 import { explicacion } from './arte/receta.js';
 
 const Id = z.string().regex(/^[a-z0-9][a-z0-9-]{0,80}$/);
@@ -68,13 +68,20 @@ export const ConceptoDeSerie = z.object({
 });
 export type ConceptoDeSerie = z.infer<typeof ConceptoDeSerie>;
 
-export const PropuestaDeConceptos = z.object({ conceptos: z.array(ConceptoDeSerie).length(3) });
+/** La tarjeta de elección debe ofrecer exactamente las láminas que luego se planifican. */
+export function propuestaDeConceptos(diapositivas: number) {
+  const concepto = ConceptoDeSerie.extend({ laminas: ConceptoDeSerie.shape.laminas.length(diapositivas) });
+  return z.object({ conceptos: z.array(concepto).length(3) });
+}
 
 export const PlanDePieza = z.object({
   idea: explicacion(12, 320).describe('La idea de la pieza y por qué funciona, para el cliente.'),
   diapositivas: z.array(DiapositivaDePieza).min(1).max(6),
 });
 export type PlanDePieza = z.infer<typeof PlanDePieza>;
+export const PlanConFotosNuevas = PlanDePieza.extend({
+  diapositivas: z.array(DiapositivaDePieza.extend({ visual: VisualNuevo })).min(1).max(6),
+});
 
 export const Formato = z.enum(['post', 'carrusel']);
 export type Formato = z.infer<typeof Formato>;
@@ -97,12 +104,10 @@ export function problemasDePieza(plan: PlanDePieza, formato: Formato, n: number)
   }
   for (const [i, x] of d.entries()) {
     if (x.visual.foto === 'generada' && !x.visual.generar) p.push(`Diapositiva ${i + 1}: foto «generada» sin «generar».`);
-    if (x.visual.foto === 'real' && x.visual.generar) p.push(`Diapositiva ${i + 1}: foto «real» con «generar»: o una o la otra.`);
+    if (x.visual.foto === 'real') p.push(`Diapositiva ${i + 1}: la foto subida solo sirve de referencia. Planifica una toma nueva con «foto: generada» y «generar».`);
   }
   if (formato === 'carrusel') {
     // Lo que el cliente pidió: cada diapositiva aporta una foto distinta, no recortes de la misma.
-    const reales = d.filter((x) => x.visual.foto === 'real').length;
-    if (reales > 1) p.push(`La foto real sale en ${reales} diapositivas: como mucho en una; las demás son tomas nuevas (otro ángulo, otra luz, otra distancia, el ambiente, el proceso).`);
     for (let i = 1; i < d.length; i++) {
       if (d[i]!.visual.receta.esqueleto === d[i - 1]!.visual.receta.esqueleto) p.push(`Las diapositivas ${i} y ${i + 1} repiten el esqueleto ${d[i]!.visual.receta.esqueleto}: cada una con otra maquetación.`);
     }
@@ -156,7 +161,7 @@ export const EstadoDeTarjeta = z.enum(['PENDIENTE', 'HECHO', 'DESCARTADO']);
 /** Una candidata a estética de referencia. `archivo`, relativo a la carpeta de la conversación. */
 export const CandidataDeReferencia = z.object({
   id: Id,
-  origen: z.enum(['pinterest', 'estudio', 'biblioteca', 'local']),
+  origen: z.enum(['pinterest', 'estudio', 'biblioteca', 'local', 'propia']),
   archivo: z.string(),
   titulo: z.string().max(200).default(''),
   motivo: z.string().max(400).optional(),
@@ -164,11 +169,23 @@ export const CandidataDeReferencia = z.object({
 });
 export type CandidataDeReferencia = z.infer<typeof CandidataDeReferencia>;
 
+const HechosConfirmados = HechosDelPlato.extend({ activoReal: z.string() });
+export const FuentesDePieza = z.object({
+  hechos: HechosConfirmados,
+  referencia: z.object({ id: Id, archivo: z.string(), ficha: z.unknown().optional(), revision: z.literal(2).optional() }).optional(),
+});
+export type FuentesDePieza = z.infer<typeof FuentesDePieza>;
+const PedidoDePieza = z.object({ formato: Formato, diapositivas: z.number().int().min(1).max(6), indicaciones: z.string(), esfuerzo: Esfuerzo, fuentes: FuentesDePieza.optional() });
+export type PedidoDePieza = z.infer<typeof PedidoDePieza>;
+
 export const Bloque = z.discriminatedUnion('tipo', [
-  z.object({ tipo: z.literal('hechos'), id: Id, estado: EstadoDeTarjeta, propuesta: HechosDelPlato }),
+  z.object({
+    tipo: z.literal('hechos'), id: Id, estado: EstadoDeTarjeta, propuesta: HechosDelPlato,
+    formato: z.union([Formato, z.literal('auto')]).optional(), esfuerzo: Esfuerzo.optional(),
+  }),
   z.object({ tipo: z.literal('plan'), id: Id, estado: EstadoDeTarjeta, pieza: Id }),
   z.object({ tipo: z.literal('progreso'), id: Id, pieza: Id }),
-  z.object({ tipo: z.literal('pieza'), id: Id, pieza: Id }),
+  z.object({ tipo: z.literal('pieza'), id: Id, pieza: Id, mostrar: z.int().positive().optional() }),
   z.object({ tipo: z.literal('error'), id: Id, texto: z.string() }),
   /** Una herramienta del catálogo: su formulario, mientras corre y su resultado. */
   z.object({
@@ -189,11 +206,13 @@ export const Bloque = z.discriminatedUnion('tipo', [
     tipo: z.literal('referencias'),
     id: Id,
     estado: z.enum(['BUSCANDO', 'PENDIENTE', 'HECHO', 'DESCARTADO', 'ERROR']),
-    pedido: z.object({ formato: Formato, diapositivas: z.number().int().min(1).max(6), indicaciones: z.string(), esfuerzo: Esfuerzo }),
+    pedido: PedidoDePieza,
     consultas: z.array(z.string()).default([]),
     candidatas: z.array(CandidataDeReferencia).default([]),
     progreso: z.array(z.string()).default([]),
     elegida: z.string().optional(),
+    imagenElegida: Id.optional(),
+    lectura: z.array(z.object({ titulo: z.string(), detalle: z.string() })).optional(),
     error: z.string().optional(),
   }),
   /** Tres conceptos de serie para elegir antes del plan (o «decide tú»). */
@@ -201,7 +220,7 @@ export const Bloque = z.discriminatedUnion('tipo', [
     tipo: z.literal('conceptos'),
     id: Id,
     estado: z.enum(['BUSCANDO', 'PENDIENTE', 'HECHO', 'ERROR']),
-    pedido: z.object({ formato: Formato, diapositivas: z.number().int().min(1).max(6), indicaciones: z.string(), esfuerzo: Esfuerzo }),
+    pedido: PedidoDePieza,
     conceptos: z.array(ConceptoDeSerie).default([]),
     elegido: z.number().int().min(0).max(2).optional(),
     error: z.string().optional(),
@@ -228,6 +247,10 @@ export const DiapositivaProducida = z.object({
   /** Rutas relativas a la carpeta de la conversación. */
   png: z.string().optional(),
   movil: z.string().optional(),
+  /** Documento de capas exacto de la versión entregada, relativo a la conversación. */
+  intencion: z.string().optional(),
+  /** Recorte publicado que sirve de fondo al añadir capas a una lámina que solo tenía foto. */
+  fondoPlano: z.string().optional(),
   problemas: z.array(z.string()).default([]),
   foto: z.string().optional(),
   /** La lámina es la foto sola (lo planificó el director, lo decidió al ver la foto o no cabía el texto sin taparla). */
@@ -243,6 +266,7 @@ export const Pieza = z.object({
   formato: Formato,
   esfuerzo: Esfuerzo,
   indicaciones: z.string().default(''),
+  encargo: z.object({ local: z.string(), plato: z.string(), fotografia: z.string().optional(), fuentes: FuentesDePieza.optional() }).optional(),
   /** Falta mientras se planifica. */
   plan: PlanDePieza.optional(),
   estado: z.enum(['PROPUESTA', 'PRODUCIENDO', 'LISTA', 'ERROR', 'DESCARTADA']),
@@ -266,12 +290,12 @@ export const Conversacion = z.object({
   actualizada: z.string(),
   imagenes: z.array(ImagenDelChat).default([]),
   /** Los hechos confirmados por el usuario (con la foto real ya registrada como activo del local). */
-  hechos: HechosDelPlato.extend({ activoReal: z.string() }).optional(),
+  hechos: HechosConfirmados.optional(),
   piezas: z.array(Pieza).default([]),
   /** La referencia de la conversación (id de una imagen): la de la ficha o la que se eligió de la biblioteca. */
   referencia: Id.optional(),
   /** La ficha de la referencia (la analiza el director al elegirla): las piezas parten de ella como hermanas. */
-  fichaReferencia: z.object({ imagen: Id, ficha: z.unknown(), apta: z.boolean(), problemas: z.array(z.string()).default([]) }).optional(),
+  fichaReferencia: z.object({ imagen: Id, ficha: z.unknown(), apta: z.boolean(), problemas: z.array(z.string()).default([]), revision: z.literal(2).optional() }).optional(),
   mensajes: z.array(Mensaje).default([]),
   /** Hay una respuesta del director en marcha. */
   pensando: z.boolean().default(false),
@@ -294,6 +318,7 @@ export const AccionDelDirector = z.discriminatedUnion('tipo', [
   }),
   z.object({
     tipo: z.literal('AJUSTAR_PIEZA'),
+    alcance: z.enum(['diseno', 'diseno-con-imagen-secundaria', 'nueva-toma']).optional().describe('Por defecto diseno: edición directa de capas. Una foto de sustitución exige nueva-toma explícita.'),
     pieza: Id,
     diapositivas: z.array(z.number().int().positive()).describe('Las que se rehacen (1 = la primera); vacío = todas.'),
     indicaciones: z.string().min(4).max(600),

@@ -5,6 +5,8 @@
  * comparación por encargo. Las imágenes van reducidas (la foto y las referencias a 640 px; la pieza a 900 px y a 360 px).
  */
 import sharp from 'sharp';
+import { EdicionDeCapas } from '../../dominio/diseno/edicionChat.js';
+import type { Intencion } from '../../dominio/diseno/intencion.js';
 import { z } from 'zod';
 import { PropuestaDeDirecciones, PropuestaInspirada, Receta } from '../../dominio/arte/receta.js';
 import { Critica } from '../../dominio/arte/rubrica.js';
@@ -12,7 +14,7 @@ import { mapaEnTexto } from '../../dominio/diseno/mapaDeFoto.js';
 import type { ComparadorDeArte, CriticoDeArte, DirectorDeArte, EncargoDeArte, PiezaPintada } from '../../puertos/EstudioDeArte.js';
 import type { ClienteGemini, ParteGemini } from './ClienteGemini.js';
 import { PlanDeLote } from '../../dominio/arte/lote.js';
-import { PlanDePieza, PropuestaDeConceptos, RevisionDeFoto, TurnoDelDirector, type ConceptoDeSerie } from '../../dominio/chat.js';
+import { type PlanDePieza, PlanConFotosNuevas, propuestaDeConceptos, RevisionDeFoto, TurnoDelDirector, type ConceptoDeSerie } from '../../dominio/chat.js';
 import {
   EvaluacionDeLote, instruccionesChat, instruccionesEvaluacionLote, instruccionesLote, instruccionesPieza,
   instruccionesComparador, instruccionesComparadorConReferencia, instruccionesCriticoArte, instruccionesDirectorArte, instruccionesEnriquecer, instruccionesInspiradas, instruccionesPlantilla, instruccionesRevisionFoto, instruccionesConceptos,
@@ -82,11 +84,11 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
     return this.cliente.generarJson(instruccionesInspiradas(), partes, PropuestaInspirada);
   }
 
-  /** Planifica un lote de posts y carruseles para el local (tipos variados, fotos reales y generadas). */
+  /** Planifica un lote de posts y carruseles para el local (tipos variados, fotos nuevas). */
   async planificarLote(e: EncargoDeArte, devolver: string[]): Promise<PlanDeLote> {
     const partes: ParteGemini[] = [
       { text: `${hechosEnTexto(e)}\n\n${materialEnTexto(e)}` },
-      { text: 'La FOTO REAL del plato del local («foto: real»):' },
+      { text: 'Referencia de identidad del plato. Dirige una fotografía nueva para cada lámina:' },
       await imagen(e.foto, 640),
     ];
     if (e.referencia) partes.push({ text: `Un post de REFERENCIA que le gusta al local («${e.referencia.id}»): tómalo como listón de oficio para la pieza de diseño gráfico, no lo copies.` }, await imagen(e.referencia.ruta, 640));
@@ -105,7 +107,7 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
   ): Promise<PlanDePieza> {
     const partes: ParteGemini[] = [
       { text: `${hechosEnTexto(e)}\n\n${materialEnTexto(e)}\n\nLO QUE PIDE EL CLIENTE: ${o.indicaciones || 'sin indicaciones: decide tú.'}` },
-      { text: 'La FOTO REAL del plato del local («foto: real»):' },
+      { text: 'Referencia de identidad del plato. Dirige una fotografía nueva para cada lámina:' },
       await imagen(e.foto, 640),
     ];
     if (e.referencia) {
@@ -128,7 +130,7 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
       partes.push({ text: `AJUSTE DE UNA PIEZA HECHA. El plan anterior:\n${JSON.stringify(o.base.plan)}\nRehaz SOLO las diapositivas ${rehacer.join(', ')} según lo que pide el cliente; las demás devuélvelas IGUALES (mismo visual y receta). Devuelve el plan entero.` });
     }
     if (devolver.length) partes.push({ text: `TU PLAN ANTERIOR TENÍA ESTOS PROBLEMAS (corrígelos todos y devuelve el plan entero):\n${devolver.map((p) => `- ${p}`).join('\n')}` });
-    return this.cliente.generarJson(instruccionesPieza(o.formato, o.diapositivas), partes, PlanDePieza);
+    return this.cliente.generarJson(instruccionesPieza(o.formato, o.diapositivas), partes, PlanConFotosNuevas);
   }
 
   /** Chat · antes del plan, tres conceptos de serie que se distinguen en la historia y en la fotografía. */
@@ -139,7 +141,7 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
       await imagen(e.foto, 640),
     ];
     if (e.referencia) partes.push({ text: `La REFERENCIA que eligió el cliente («${e.referencia.id}»)${e.referencia.ficha ? `, con su ficha: ${JSON.stringify(e.referencia.ficha)}` : ''}:` }, await imagen(e.referencia.ruta, 700));
-    return (await this.cliente.generarJson(instruccionesConceptos(o.formato, o.diapositivas), partes, PropuestaDeConceptos)).conceptos;
+    return (await this.cliente.generarJson(instruccionesConceptos(o.formato, o.diapositivas), partes, propuestaDeConceptos(o.diapositivas))).conceptos;
   }
 
   /** Chat · mira una foto generada antes de maquetarla: si se repite (y qué corregir) y si va sin texto. */
@@ -149,6 +151,20 @@ export class EstudioArteGemini implements DirectorDeArte, CriticoDeArte, Compara
     if (o.real) partes.push({ text: 'La foto REAL del plato (tiene que ser el mismo):' }, await imagen(o.real, 640));
     if (o.continuidad) partes.push({ text: 'Una toma anterior de la MISMA sesión (mesa, luz y vajilla tienen que continuar):' }, await imagen(o.continuidad, 640));
     return this.cliente.generarJson(instruccionesRevisionFoto(), partes, RevisionDeFoto);
+  }
+
+  async editarCapas(o: { pedido: string; intencion: Intencion; png: string; fuentes: string[]; conChips: boolean }): Promise<EdicionDeCapas> {
+    const instrucciones = `Eres el maquetador que modifica el diseño YA entregado. Ves exactamente su imagen final y su documento editable.
+Devuelve solo este JSON: ${JSON.stringify(z.toJSONSchema(EdicionDeCapas))}.
+Realiza el cambio solicitado con el mínimo de propiedades. Identifica las capas por id. Para mover texto ajusta «caja» (x,y,w,h en fracciones del lienzo, o col/fila en la retícula), «alinear» y/o «vertical» según haga falta. Considera el espacio que se ve en la imagen.
+Para cambiar de fuente a una capa pon su id del catálogo en «fuente» al lado de «campos», que puede ser {}. El compositor conserva el estilo de las demás capas. Para cambios adicionales crea un estilo propio y asígnalo con campos.estilo. Conserva las capas relacionadas que forman parte de la misma letra (contorno, sombra).
+Para superponer o llevar algo detrás usa «despuesDe» o «antesDe» con el id de otra capa. En texto puedes ajustar «desenfoque» (0–32 px). Un eco ambiental puede tener «decorativo»: true y sangrar si las palabras imprescindibles siguen legibles en otra capa. Para perfilar la fotografía existente con tijera cambia solo su «ventana» a {forma:"poligono",puntos:[{x,y},…]} con 3–32 vértices de 0 a 1 relativos a su caja. Conserva la fotografía y usa sus contornos visibles para situar los cortes. Para quitar la máscara, envía campos.ventana=null.
+Para retirar una capa incluye su id en «quitar» (también las capas de su sombra o contorno si las tiene). Puedes añadir texto, trazo o forma con propiedades del compositor. No reemplaces activos ni vuelvas a diseñar el cartel. Mantén las palabras, productos, marca y hechos salvo corrección explícita del cliente.
+${o.conChips ? 'Crea únicamente los chips secundarios que ha encargado y sitúalos en fracciones del lienzo. Un chip equivale a una nueva imagen aislada. Describe al generador exactamente su contenido.' : 'chips debe ser []. El cliente está editando las capas existentes con el compositor.'}`;
+    return this.cliente.generarJson(instrucciones, [
+      { text: `FUENTES: ${o.fuentes.join(', ')}\nDOCUMENTO: ${JSON.stringify(o.intencion)}\nPETICIÓN: ${o.pedido}` },
+      await imagen(o.png, 900),
+    ], EdicionDeCapas);
   }
 
   /** Chat · un turno del director: lee la conversación (y las imágenes que toque) y responde con un mensaje y, quizá, una acción. */

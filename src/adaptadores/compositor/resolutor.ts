@@ -416,6 +416,8 @@ export class ResolutorDiseno {
       rotacion: capa.rotacion,
       contorno: capa.contorno,
       sangrado: capa.sangrado,
+      ...(capa.decorativo ? { decorativo: true } : {}),
+      ...(capa.desenfoque ? { desenfoque: capa.desenfoque } : {}),
       ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
       ...(capa.corte
         ? {
@@ -753,7 +755,7 @@ export class ResolutorDiseno {
       if (marcador) {
         problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'MARCADOR', mensaje: `«${capa.id}» lleva «${marcador}», un hueco de plantilla sin rellenar: no puede publicarse. Pon el dato real o quita el texto.` });
       }
-      if (capa.tipo === 'texto') {
+      if (capa.tipo === 'texto' && !capa.decorativo) {
         // 4 px de tolerancia: las letras redondas sobresalen un poco de la línea base y eso es normal en tipografía.
         if (!capa.sangrado && !dentroDe(capa.caja, zona, 4)) {
           problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'ZONA_SEGURA', mensaje: `«${capa.id}» se sale de la zona segura (se cortaría en 4:5 o quedaría pegado al borde).` });
@@ -795,7 +797,7 @@ export class ResolutorDiseno {
   private async comprobarLetras(resueltas: Map<string, CapaResuelta>, activos: Record<string, ActivoDisponible>, lienzo: Lienzo, problemas: Problema[]): Promise<void> {
     const W = Math.round(lienzo.ancho * ESCALA_MEDIDA);
     const H = Math.round(lienzo.alto * ESCALA_MEDIDA);
-    const textos = [...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.opacidad > 0);
+    const textos = [...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && !c.decorativo && c.opacidad > 0);
     const recortes = [...resueltas.values()].filter((c): c is CapaRecorteResuelta => c.tipo === 'recorte');
     const alfas = new Map<string, Uint8Array>();
     const alfaDe = async (r: { activo: string; origen: Rect; destino: Rect; giro?: number }) => {
@@ -904,7 +906,7 @@ export class ResolutorDiseno {
   /** Dos textos apilados (uno encima del otro, compartiendo columna) necesitan aire entre ellos. Se mide la tinta. */
   private comprobarSeparacion(resueltas: Map<string, CapaResuelta>, problemas: Problema[]): void {
     const textos = [...resueltas.values()]
-      .filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.rotacion === 0 && !c.giro && c.opacidad > 0)
+      .filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && !c.decorativo && c.rotacion === 0 && !c.giro && c.opacidad > 0)
       .map((c) => ({ c, cuerpo: Math.min(...c.lineas.map((l) => l.tamano)) }))
       .sort((a, b) => a.c.caja.y - b.c.caja.y);
     for (let i = 0; i < textos.length; i++) {

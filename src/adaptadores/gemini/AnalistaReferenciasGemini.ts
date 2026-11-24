@@ -5,13 +5,13 @@
  */
 import sharp from 'sharp';
 import { z } from 'zod';
-import { Aptitud, FichaReferencia, type FamiliaBiblioteca } from '../../dominio/referencia.js';
+import { Aptitud, FichaReferencia, LecturaFotografica, RelacionesGraficas, type FamiliaBiblioteca } from '../../dominio/referencia.js';
 import type { AnalistaDeReferencias, FichaAnalizada } from '../../puertos/AnalistaDeReferencias.js';
 import type { ClienteGemini } from './ClienteGemini.js';
 
 export const RespuestaDeAnalisis = z.object({
   aptitud: Aptitud,
-  ficha: FichaReferencia.omit({ esquema: true, analizadaPor: true, analizadaEn: true }),
+  ficha: FichaReferencia.omit({ esquema: true, analizadaPor: true, analizadaEn: true }).extend({ lecturaFotografica: LecturaFotografica, relacionesGraficas: RelacionesGraficas }),
 });
 
 export function instruccionesAnalista(familias: FamiliaBiblioteca[], ejemplo?: FichaAnalizada): string {
@@ -36,10 +36,22 @@ REGLAS DE LA FICHA
   altura de las mayúsculas en % del alto del lienzo (un titular gigante, 10–15; un apoyo, 2–3).
 - «paleta»: de 2 a 5 HEX medidos a ojo con su papel.
 - «lectura»: qué se lee primero, segundo y tercero en el móvil.
+- En «relacionesGraficas» elige hasta tres decisiones que distinguen ESTE diseño. En «gesto» localiza qué elementos
+  se cruzan o se alinean, cuál está delante, su escala relativa o la diferencia de nitidez. En «construccion» explica
+  cómo reproducir esa relación con la fotografía nueva y las palabras del encargo. Por ejemplo, una inicial caligráfica
+  cruza solo el pie de una mayúscula de palo fino; cada palabra sigue siendo editable. Un campo vacío o una única
+  voz tipográfica también pueden ser la relación principal. Descarta los efectos que no se ven.
 - «tratamiento»: lo que hace que parezca dibujada, impresa o pegada: ILUSTRADO (dibujos), TINTA (trazos a tinta o pincel),
   PINCEL (letra de pincel), PEGATINA (producto recortado con un filo blanco), PAPEL (textura de papel), ICONOS_DE_LINEA
   (iconos finos de fondo), TRAMA (semitonos), COLLAGE; o FOTOGRAFICO_LIMPIO si no hay nada de eso.
 - No inventes lo que no se ve.
+- En «lecturaFotografica» justifica cada observación con una señal localizable. El borde elíptico de una taza permite
+  estimar la altura de la mirada. La sombra de la base y el reflejo en el esmalte permiten proponer el lado de la luz.
+  Describe el plano que queda legible y dónde empieza a caer el foco. Distingue luz y color del material. La emoción
+  es una interpretación: explica qué gesto, distancia o contraste podría sugerirla al espectador.
+- Para «traslado», convierte una relación visible en una instrucción ejecutable para una toma de otro sujeto. Conserva
+  la relación entre masas, luz o gesto y modifica la puesta en escena. No atribuyas focal, apertura o Kelvin exactos
+  a partir de la imagen. Si es una ilustración o algo queda oculto, dilo. Puedes describir su equivalente gráfico.
 ${ejemplo ? `\nEJEMPLO de ficha hecha a mano (de otro post):\n${JSON.stringify(ejemplo)}\n` : ''}
 Responde SOLO con JSON: {"aptitud":{"tipo":"POST","problemas":[]},"ficha":{…}} con este esquema:
 ${JSON.stringify(z.toJSONSchema(RespuestaDeAnalisis))}`;

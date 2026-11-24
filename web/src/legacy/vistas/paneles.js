@@ -93,7 +93,7 @@ function chipVeredicto(final) {
 }
 
 /** La ficha de la referencia, en lo que sirve para diseñar: capas, retícula, lectura y por qué funciona. */
-function fichaDeReferencia(ficha) {
+export function fichaDeReferencia(ficha) {
   if (!ficha) return null;
   return h(
     'div',
@@ -103,9 +103,19 @@ function fichaDeReferencia(ficha) {
     datos([
       ['Capas', ficha.capas?.join(' → ')],
       ['Retícula', ficha.reticula],
+      ...(ficha.relacionesGraficas ?? []).map(r => [r.gesto, r.construccion]),
       ['Lectura', ficha.lectura?.join(' → ')],
       ['Tipografía', ficha.tipografia?.map((t) => `${t.rol.toLowerCase()}: ${t.clasificacion}`).join(' · ')],
       ['Foto', ficha.foto],
+      ...(ficha.lecturaFotografica ? [
+        ['Punto de vista', ficha.lecturaFotografica.camara],
+        ['Distancia y foco', ficha.lecturaFotografica.distancia],
+        ['Iluminación', ficha.lecturaFotografica.luz],
+        ['Gesto y apoyos', ficha.lecturaFotografica.gesto],
+        ['Materiales', ficha.lecturaFotografica.materiales],
+        ['Sensación', ficha.lecturaFotografica.sensacion],
+        ['Aplicación a la nueva toma', ficha.lecturaFotografica.traslado],
+      ] : []),
     ]),
     ficha.porQueFunciona ? h('p', { class: 'nota' }, ficha.porQueFunciona) : null,
   );
@@ -673,8 +683,6 @@ function panelFoto(ctx) {
       'div',
       { class: 'barra-acciones' },
       h('button', { class: 'primario lanza-trabajo', onclick: (e) => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO' }) }, 'Confirmar esta foto'),
-      d.fotoSubida.registrada && d.fotoSubida.uso === 'PUBLICABLE'
-        ? h('button', { class: 'secundario lanza-trabajo', onclick: e => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO', foto: 'original' }) }, 'Usar foto original') : null,
       h('a', { href: `/pase.html?proyecto=${encodeURIComponent(d.encargo.proyecto)}` }, 'Comparar todas las candidatas'),
       h('button', { class: 'secundario', onclick: () => ((zonaRechazo.hidden = false), motivo.focus()) }, 'Rechazarla…'),
       h('span', { class: 'nota empuja' }, `Intento ${ultimo.n} · ${usd(ultimo.costeUsd)}`),

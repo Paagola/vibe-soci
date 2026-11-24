@@ -1,7 +1,7 @@
 import { api, subirArchivo } from '../api.js';
 import { urlDeBiblioteca, usd } from '../orden.js';
 import { avisar, bloqueError, h, reemplazar } from '../ui.js';
-import { editorDePropuesta, editorJsonDePropuesta, panelDeEspera, panelIntencion } from '../vistas/paneles.js';
+import { editorDePropuesta, editorJsonDePropuesta, fichaDeReferencia, panelDeEspera, panelIntencion } from '../vistas/paneles.js';
 
 const FOTOS = 'image/jpeg,image/png,image/webp';
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -123,7 +123,7 @@ function fichaReferencia(ctx) {
   });
   return [titulo(cambiar ? 'Elige la referencia' : 'Referencia'),
     foto(referencia.conImagen ? ctx.urls.referencia(480) : null, ctx.urls.referencia(), ficha?.titulo ?? 'Referencia elegida', ficha?.titulo),
-    ficha ? par([['Familia', ficha.familia], ['Retícula', ficha.reticula], ['Lectura', ficha.lectura?.join(' → ')]]) : null,
+    ficha ? detalles('Análisis de la referencia', fichaDeReferencia(ficha)) : null,
     cambiar ? nota(encargo.taller?.seleccionEditorial ? 'Elige una referencia del local o continúa con el estudio del encargo.' : espera.motivo) : !encargo.referencia ? nota('Aquí se colocará la referencia visual del encargo.') : !ficha ? nota(encargo.referencia) : null,
     aviso(referencia.error),
     cambiar && referencia.registradas.length ? [h('h3', {}, 'Del local'), h('ul', { class: 'referencias' }, referencia.registradas.map((r) => tarjeta(r.id, r.titulo ?? r.id, r.conImagen ? ctx.urls.referenciaDelLocal(r.id, 200) : null, { referencia: r.id }, !r.usable)))] : null,
@@ -190,7 +190,6 @@ function fichaCandidata(ctx) {
   const candidata = ctx.candidata;
   const fotoActual = d.espera.tipo === 'CONFIRMAR_FOTO';
   const elegible = candidata && candidata.final !== 'PENDIENTE';
-  const puedeUsarOriginal = d.fotoSubida.registrada && d.fotoSubida.uso === 'PUBLICABLE';
   const originalElegida = d.encargo.fotoElegida && d.encargo.fotoElegida === d.encargo.activoReal;
   const rechazo = h('textarea', { required: true, minlength: '3', maxlength: '300', rows: '3' });
   const coste = d.encargo.autorizacion?.estimadoPorIntentoUsd;
@@ -208,9 +207,7 @@ function fichaCandidata(ctx) {
     intentos.length > 1 ? h('div', { class: 'selector-candidatas', role: 'group', 'aria-label': 'Candidatas disponibles' }, intentos.map(i =>
       h('button', { type: 'button', 'data-intento': i.n, 'aria-pressed': String(i === candidata), onclick: () => ctx.elegirCandidata(i.n) },
         h('img', { src: ctx.urls.activo(i.activo, 160), alt: '', loading: 'lazy' }), h('span', {}, `Candidata ${i.n}`)))) : null,
-    fotoActual ? accion(
-      elegible ? avanzar(ctx, `Usar candidata ${candidata.n}`, { confirmo: 'CONFIRMAR_FOTO', foto: candidata.n }) : null,
-      puedeUsarOriginal ? boton('Usar foto original', (e) => ctx.avanzar(e.currentTarget, { confirmo: 'CONFIRMAR_FOTO', foto: 'original' }), !elegible, ctx.ocupada) : null) : null,
+    fotoActual && elegible ? accion(avanzar(ctx, `Usar candidata ${candidata.n}`, { confirmo: 'CONFIRMAR_FOTO', foto: candidata.n })) : null,
     candidata?.motivos?.length ? detalles(`Avisos de la comprobación (${candidata.motivos.length})`, lista(candidata.motivos)) : null,
     originalElegida ? nota('Elegiste la foto original para el post.') : null,
     fotoActual ? nota('La decisión sobre la foto es tuya. Puedes ampliarlas para comparar los ingredientes y la toma.') : !candidata ? nota('La candidata llegará después de revisar el inventario.') : null,

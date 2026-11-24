@@ -1,0 +1,65 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "happy",
+  "titulo": "Happy Hour",
+  "notas": "La cortina verde y la copa roja forman el escenario. Una didona blanca y una caligrafía dorada se cruzan en el tercio superior. La retícula alinea los dos reclamos y el pie. Monograma dibujado para el ensayo.",
+  "marca": "marta-lounge",
+  "lienzo": {"formato": "FEED_4_5"},
+  "reticula": {"columnas": 12, "filas": 16, "margen": 23, "medianil": 12},
+  "activos": {"foto": "happy"},
+  "tokens": {
+    "colores": {"crema": "#FFFBEF", "oro": "#F9CA47", "verde": "#73AA80", "negro": "#070D0A"},
+    "estilos": {
+      "alta": {"fuente": "noto-serif-display", "color": "@crema", "tracking": -0.055, "interlineado": 1, "ejes": {"wght": 370, "wdth": 100}},
+      "cursiva": {"fuente": "ballet", "color": "@oro", "tracking": -0.018, "interlineado": 1, "ejes": {"opsz": 32}},
+      "reclamo": {"fuente": "archivo", "color": "@oro", "tracking": -0.038, "interlineado": 1, "ejes": {"wght": 425, "wdth": 95}},
+      "datos": {"fuente": "archivo", "color": "@crema", "tracking": -0.012, "interlineado": 0.98, "ejes": {"wght": 420, "wdth": 101}},
+      "hashtag": {"fuente": "archivo", "color": "@crema", "tracking": -0.035, "interlineado": 1, "ejes": {"wght": 450, "wdth": 86}},
+      "monograma": {"fuente": "noto-serif-display", "color": "@verde", "tracking": -0.065, "interlineado": 1, "ejes": {"wght": 580, "wdth": 92}},
+      "insignia": {"fuente": "archivo", "color": "@crema", "tracking": 0.08, "interlineado": 1, "ejes": {"wght": 480}}
+    }
+  },
+  "textos": {
+    "titulo": "HAPPY",
+    "firma": "Hour",
+    "dias": "EVERYDAY",
+    "horario": "FROM\n17:00 TO 20:00",
+    "oferta": "50% OFF",
+    "seleccion": "SELECTED\nDRINKS",
+    "monograma": "M",
+    "insignia": "MARTA",
+    "telefono": "HOTLINE\n055 922 7766",
+    "direccion": "G-FLOOR @\nLE MERIDIEN SAIGON",
+    "etiqueta": "#RAISETHEBAR"
+  },
+  "capas": [
+    {"id": "fotografia", "tipo": "imagen", "activo": "foto", "caja": {"x": 0, "y": 0, "w": 1, "h": 1}, "enfoque": {"x": 0.5, "y": 0.6}, "zoom": 1.06},
+    {"id": "base-pie", "tipo": "degradado", "forma": "lineal", "angulo": 90, "caja": {"x": 0, "y": 0.86, "w": 1, "h": 0.14}, "paradas": [{"en": 0, "color": "@negro", "opacidad": 0}, {"en": 1, "color": "@negro", "opacidad": 0.74}]},
+    {"id": "eje-1", "tipo": "forma", "figura": "linea", "desde": {"x": 0.038, "y": 0}, "hasta": {"x": 0.038, "y": 1}, "color": "@crema", "grosor": 0.88, "opacidad": 0.33},
+    {"id": "eje-2", "tipo": "forma", "figura": "linea", "desde": {"x": 0.128, "y": 0}, "hasta": {"x": 0.128, "y": 1}, "color": "@crema", "grosor": 0.88, "opacidad": 0.33},
+    {"id": "eje-3", "tipo": "forma", "figura": "linea", "desde": {"x": 0.777, "y": 0}, "hasta": {"x": 0.777, "y": 1}, "color": "@crema", "grosor": 0.88, "opacidad": 0.33},
+    {"id": "eje-4", "tipo": "forma", "figura": "linea", "desde": {"x": 0.964, "y": 0}, "hasta": {"x": 0.964, "y": 1}, "color": "@crema", "grosor": 0.88, "opacidad": 0.33},
+    {"id": "guia-1", "tipo": "forma", "figura": "linea", "desde": {"x": 0, "y": 0.032}, "hasta": {"x": 1, "y": 0.032}, "color": "@crema", "grosor": 0.9, "opacidad": 0.35},
+    {"id": "guia-2", "tipo": "forma", "figura": "linea", "desde": {"x": 0, "y": 0.267}, "hasta": {"x": 1, "y": 0.267}, "color": "@crema", "grosor": 0.9, "opacidad": 0.35},
+    {"id": "guia-3", "tipo": "forma", "figura": "linea", "desde": {"x": 0, "y": 0.922}, "hasta": {"x": 1, "y": 0.922}, "color": "@crema", "grosor": 0.9, "opacidad": 0.35},
+    {"id": "guia-4", "tipo": "forma", "figura": "linea", "desde": {"x": 0, "y": 0.973}, "hasta": {"x": 1, "y": 0.973}, "color": "@crema", "grosor": 0.9, "opacidad": 0.35},
+    {"id": "titulo", "tipo": "texto", "texto": "@titulo", "estilo": "alta", "caja": {"x": 0.038, "y": 0.031, "w": 0.924, "h": 0.154}, "ajuste": "ancho", "alinear": "centro", "vertical": "centro"},
+    {"id": "firma", "tipo": "texto", "texto": "@firma", "estilo": "cursiva", "caja": {"x": 0.176, "y": 0.067, "w": 0.625, "h": 0.216}, "ajuste": "ancho", "alinear": "centro", "vertical": "centro"},
+    {"id": "oferta", "tipo": "texto", "texto": "@oferta", "estilo": "reclamo", "caja": {"x": 0.782, "y": 0.377, "w": 0.174, "h": 0.041}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "seleccion", "tipo": "texto", "texto": "@seleccion", "estilo": "datos", "caja": {"x": 0.782, "y": 0.429, "w": 0.175, "h": 0.052}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "dias", "tipo": "texto", "texto": "@dias", "estilo": "reclamo", "caja": {"x": 0.039, "y": 0.56, "w": 0.232, "h": 0.041}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "horario", "tipo": "texto", "texto": "@horario", "estilo": "datos", "caja": {"x": 0.04, "y": 0.607, "w": 0.208, "h": 0.051}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "sello-externo", "tipo": "forma", "figura": "elipse", "caja": {"x": 0.05, "y": 0.879, "w": 0.052, "h": 0.042}, "color": "@verde", "grosor": 1.45},
+    {"id": "sello-interno", "tipo": "forma", "figura": "elipse", "caja": {"x": 0.056, "y": 0.883, "w": 0.04, "h": 0.034}, "color": "@verde", "grosor": 0.95},
+    {"id": "monograma", "tipo": "texto", "texto": "@monograma", "estilo": "monograma", "caja": {"x": 0.053, "y": 0.883, "w": 0.045, "h": 0.032}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "insignia", "tipo": "texto", "texto": "@insignia", "estilo": "insignia", "caja": {"x": 0.025, "y": 0.936, "w": 0.117, "h": 0.029}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "telefono", "tipo": "texto", "texto": "@telefono", "estilo": "datos", "caja": {"x": 0.17, "y": 0.926, "w": 0.22, "h": 0.044}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "direccion", "tipo": "texto", "texto": "@direccion", "estilo": "datos", "caja": {"x": 0.414, "y": 0.926, "w": 0.325, "h": 0.044}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "etiqueta", "tipo": "texto", "texto": "@etiqueta", "estilo": "hashtag", "caja": {"x": 0.758, "y": 0.943, "w": 0.217, "h": 0.028}, "ajuste": "caja", "alinear": "derecha", "vertical": "centro"}
+  ],
+  "relaciones": [
+    {"tipo": "contrasteMinimo", "texto": "dias", "ratio": 4.5},
+    {"tipo": "contrasteMinimo", "texto": "oferta", "ratio": 4.5},
+    {"tipo": "contrasteMinimo", "texto": "direccion", "ratio": 4.5}
+  ]
+}

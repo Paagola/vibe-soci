@@ -1,7 +1,7 @@
 /** Las tarjetas que el director pone dentro de sus mensajes: hechos del plato, plan de la pieza, progreso y resultado. */
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Camera, Check, ChevronLeft, ChevronRight, Download, GalleryHorizontal, ImageIcon, Loader2, Minus, Plus, RotateCcw, Sparkles, X } from 'lucide-react';
-import { api, type Conversacion, type Elemento, type Hechos, type Local, type Pieza } from '@/lib/api';
+import { api, type Bloque, type Conversacion, type Elemento, type Formato, type Hechos, type Local, type Pieza } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Rueda } from './rueda';
 import { Composicion } from './composicion';
@@ -39,8 +39,9 @@ function useEnvio() {
 
 // ------------------------------------------------------------------ Hechos del plato
 
-export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: string; estado: string; propuesta: Hechos }; locales: Local[] }) {
+export function TarjetaHechos(p: { conversacion: Conversacion; bloque: Extract<Bloque, { tipo: 'hechos' }>; locales: Local[] }) {
   const [h, setH] = useState<Hechos>(p.bloque.propuesta);
+  const [formato, setFormato] = useState<Formato | 'auto'>(p.bloque.formato ?? 'auto');
   const { ocupado, error, enviar } = useEnvio();
   const pendiente = p.bloque.estado === 'PENDIENTE';
   const img = (id?: string) => p.conversacion.imagenes.find((i) => i.id === id);
@@ -100,6 +101,14 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: str
             <Etiqueta>Plato</Etiqueta>
             <input className={campo} value={h.plato} onChange={(e) => setH({ ...h, plato: e.target.value })} />
           </div>
+          <label className="grid gap-1 text-sm font-medium text-muted-foreground">
+            Formato de la pieza
+            <select className={campo} value={formato} onChange={(e) => setFormato(e.target.value as Formato | 'auto')}>
+              <option value="auto">Automático</option>
+              <option value="post">Post</option>
+              <option value="carrusel">Carrusel</option>
+            </select>
+          </label>
         </div>
       </div>
       <div className="grid gap-2 border-t border-border px-4 py-3">
@@ -130,7 +139,7 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: str
         <button type="button" className={secundario} disabled={ocupado} onClick={() => enviar(() => api.hechos(p.conversacion.id, p.bloque.id, { confirmar: false }))}>
           Descartar
         </button>
-        <button type="button" className={principal} disabled={ocupado || !h.plato.trim() || !h.elementos.some((e) => e.nombre.trim())} onClick={() => enviar(() => api.hechos(p.conversacion.id, p.bloque.id, { confirmar: true, hechos: { ...h, elementos: h.elementos.filter((e) => e.nombre.trim()) } }))}>
+        <button type="button" className={principal} disabled={ocupado || !h.plato.trim() || !h.elementos.some((e) => e.nombre.trim())} onClick={() => enviar(() => api.hechos(p.conversacion.id, p.bloque.id, { confirmar: true, formato, hechos: { ...h, elementos: h.elementos.filter((e) => e.nombre.trim()) } }))}>
           {ocupado ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Confirmar
         </button>
       </div>
@@ -148,7 +157,6 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
   if (!plan) return null;
   const pendiente = p.bloque.estado === 'PENDIENTE';
   const nuevas = plan.diapositivas.filter((d, i) => d.visual.foto === 'generada' && (!p.pieza.rehacer.length || p.pieza.rehacer.includes(i + 1))).length;
-  const real = p.conversacion.imagenes.find((i) => i.id === p.conversacion.hechos?.foto);
   return (
     <div className={cn(marco, 'overflow-hidden', p.bloque.estado === 'DESCARTADO' && 'opacity-60')}>
       <div className="p-4">
@@ -162,17 +170,13 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
           return (
             <li key={i} className={cn('flex items-center gap-3 bg-card px-4 py-2.5', !rehace && 'opacity-45')}>
               <span className="w-5 text-right text-xs tabular-nums text-muted-foreground">{i + 1}</span>
-              {d.visual.foto === 'real' && real ? (
-                <img src={api.archivo(p.conversacion.id, real.archivo)} alt="" className="size-9 rounded-md object-cover" />
-              ) : (
-                <span className="flex size-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                  <Camera className="size-4" />
-                </span>
-              )}
+              <span className="flex size-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                <Camera className="size-4" />
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="text-sm">{d.resumen}</div>
                 <div className="text-xs text-muted-foreground">
-                  {`${PAPEL[d.papel] ?? d.papel}, ${d.visual.foto === 'real' ? 'con tu foto' : 'con una foto nueva'}${d.soloFoto ? ', sin texto' : ''}${!rehace ? '. Se queda igual' : ''}`}
+                  {`${PAPEL[d.papel] ?? d.papel}, ${d.visual.foto === 'real' ? 'requiere un plan nuevo' : 'con una foto nueva'}${d.soloFoto ? ', sin texto' : ''}${!rehace ? '. Se queda igual' : ''}`}
                 </div>
               </div>
             </li>
@@ -225,7 +229,6 @@ export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }
     );
   }
   const url = (r: string) => api.archivo(p.conversacion.id, r);
-  const real = p.conversacion.imagenes.find((i) => i.id === p.conversacion.hechos?.foto);
   const estadoDe = (t: string) => pasos.find((x) => x.texto === t)?.estado;
   const total = plan.diapositivas.length;
   const listas = pieza.diapositivas.filter((d) => d.png).length;
@@ -243,7 +246,7 @@ export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }
         {plan.diapositivas.map((d, i) => {
           const n = i + 1;
           const lista = pieza.diapositivas.find((x) => x.n === n && x.png);
-          const foto = d.visual.foto === 'real' ? (real ? real.archivo : undefined) : pieza.fotos?.find((f) => f.n === n)?.archivo;
+          const foto = pieza.fotos?.find((f) => f.n === n)?.archivo;
           const disenando = estadoDe(`Diseño de la diapositiva ${n}`) === 'en-curso';
           const tomando = estadoDe(`Foto nueva de la diapositiva ${n}`) === 'en-curso';
           const estado = lista ? 'Lista' : disenando ? 'Componiendo' : tomando ? 'Fotografiando' : foto ? 'Foto lista' : 'En cola';
@@ -275,9 +278,9 @@ export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }
 
 // ------------------------------------------------------------------ La pieza terminada
 
-export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
+export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza; mostrar?: number }) {
   const listas = useMemo(() => p.pieza.diapositivas.filter((d) => d.png), [p.pieza.diapositivas]);
-  const [i, setI] = useState(0);
+  const [i, setI] = useState(() => Math.max(0, listas.findIndex((d) => d.n === p.mostrar)));
   const [grande, setGrande] = useState(false);
   const [rueda, setRueda] = useState(false);
   // La composición se ve una vez por pieza en este navegador (y cuando se pide de nuevo).
@@ -332,7 +335,8 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
         <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
           <div>
             <Titular grande="Así" cursiva="queda" />
-            {p.pieza.formato === 'carrusel' && <p className="mt-1 text-sm font-semibold">{`Lámina ${actual.n} de ${listas.length}`}</p>}
+            {p.pieza.formato === 'carrusel' && <p className="mt-1 text-sm font-semibold">{`Lámina ${actual.n} de ${p.pieza.plan?.diapositivas.length ?? listas.length}`}</p>}
+            {p.pieza.plan && listas.length < p.pieza.plan.diapositivas.length && <p className="mt-1 text-sm text-destructive">{`Entrega incompleta. Hay ${listas.length} láminas disponibles.`}</p>}
             {resumen && <p className="mt-1 text-sm text-muted-foreground">{resumen}</p>}
             {actual.problemas.length > 0 && (
               <p className="mt-2 flex items-start gap-1.5 text-sm text-destructive">

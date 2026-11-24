@@ -16,6 +16,7 @@ import type { EncargoPost } from '../../dominio/post.js';
 import { validar } from '../../dominio/validacion.js';
 import type { PiezaCompuesta } from '../../puertos/ComponedorDePiezas.js';
 import type { GaleriaDeDisenos, VersionDeDiseno } from '../../puertos/GaleriaDeDisenos.js';
+import { comprobarFotosDeSalida, comprobarFuentesDelPlan } from './fuentesDeLaPieza.js';
 import { leerPlan, rutasDeIntencion, type DepsConsultasPost } from './consultasPost.js';
 import { guardarEncargo, leerEncargo } from './ordenPost.js';
 
@@ -66,6 +67,7 @@ async function comprobarIntencion(deps: DepsDisenoPost, e: EncargoPost, entrada:
     if (!(await deps.activos.existe(e.local, id))) faltan.push(`«${papel}» apunta al activo «${id}», que no existe en el local.`);
   }
   if (faltan.length) throw new ErrorDeUsuario('La intención usa activos que no existen.', faltan);
+  await comprobarFotosDeSalida(deps, e, Object.values(intencion.activos));
   return intencion;
 }
 
@@ -161,6 +163,7 @@ export interface PostRecompuesto {
 export async function recomponerPost(deps: DepsDisenoPost, proyecto: string): Promise<PostRecompuesto> {
   const e = await leerEncargo(deps, proyecto);
   if (e.paso !== 'HECHO') throw new ErrorDeUsuario('Solo se recompone un encargo terminado: hasta entonces, la orden compone al seguir.');
+  await comprobarFuentesDelPlan(deps, join(deps.proyectos, e.proyecto), e);
   const pieza: PiezaCompuesta = await componer(() => deps.componedor.componer(join(deps.proyectos, e.proyecto), { etiqueta: 'orden-post' }));
   const errores = pieza.diapositivas.flatMap((d) => d.problemas.filter((p) => p.gravedad === 'ERROR').map((p) => `${d.id} v${d.version}: ${p.tipo}: ${p.mensaje}`));
   const ahora = deps.ahora();

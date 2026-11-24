@@ -19,8 +19,10 @@ import { fotoConMascaraPrincipal } from '../adaptadores/imagen/mascaraPrincipal.
 import { MedidorDeFotoSharp } from '../adaptadores/imagen/MedidorDeFotoSharp.js';
 import { ProcesadorSharp } from '../adaptadores/imagen/ProcesadorSharp.js';
 import { SegmentadorVision } from '../adaptadores/imagen/SegmentadorVision.js';
+import { componerFotografiaConTexto } from '../aplicacion/arte/fotografiaConTexto.js';
 import { prepararEncargo } from '../aplicacion/arte/estudioDeArte.js';
 import { componerVisual, crearPintor, registrarFotoGenerada } from '../aplicacion/arte/pieza.js';
+import { comprobarFotosEdicion, crearEditorDeDiseno } from '../aplicacion/chat/editarDiseno.js';
 import { ServicioChat, type LocalDelChat } from '../aplicacion/chat/servicioChat.js';
 import { RAIZ, type Config } from '../config.js';
 import { CATALOGO } from '../aplicacion/chat/herramientas.js';
@@ -107,6 +109,11 @@ export async function crearServicioChat(config: Config, estudio?: Estudio, avisa
   const herramientas = estudio ? crearHerramientasChat({ config, estudio, generarFoto }) : undefined;
 
   const chat = new ServicioChat({
+    comprobarFotosEdicion: (local, laminas, referencias) => comprobarFotosEdicion(activos, local, laminas, referencias),
+    ...(director && recursos ? { editarDiseno: crearEditorDeDiseno({
+      compositor, activos, fuentes: catalogo.familias(), dirigir: (o) => director.editarCapas(o),
+      chip: (local, clave, descripcion) => recursos.chip(local, clave, descripcion),
+    }) } : {}),
     ...(herramientas ? { herramientas: { catalogo: CATALOGO, ejecutar: herramientas.ejecutar } } : {}),
     carpeta: join(datos, 'chat'),
     usdPorFoto: USD_POR_FOTO,
@@ -130,17 +137,20 @@ export async function crearServicioChat(config: Config, estudio?: Estudio, avisa
     },
     prepararEncargo: async (entrada) => (await prepararEncargo({ medidor, silueta: (f) => medidor.silueta(f), corpus }, entrada)).encargo,
     generarFoto,
-    defectoDeFoto: async (ruta) => {
+    defectoDeFoto: async (ruta, luzDeEscena) => {
       const f = await franjasPlanas(ruta);
       if (Math.max(f.arriba, f.abajo) >= 0.15) return `franja plana del ${Math.round(Math.max(f.arriba, f.abajo) * 100)} %`;
-      // La dominante amarilla excesiva delata la IA: no se corrige, se repite.
+      if (luzDeEscena) return undefined; // El revisor visual compara la distribución del color con la fuente prevista.
       const d = await medirDominante(ruta);
-      return juzgarDominante(d) === 'EXCESIVA' ? `una dominante amarilla de IA (blancos R−B ${d.blancosRB})` : undefined;
+      return juzgarDominante(d) === 'EXCESIVA' ? `una dominante amarilla fuera del balance solicitado (luces R−B ${d.blancosRB})` : undefined;
     },
     corregirFoto: async (ruta) => {
       const r = await neutralizarDominante(ruta);
       return r ? `Neutralicé la dominante amarilla de la foto (blancos R−B ${r.antes} → ${r.despues}): los blancos tiraban a crema.` : undefined;
     },
+    leerTextoMovil: async png => (await leerCartel(png, [])).lineas,
+    componerFotografiaConTexto: (entrada, receta, cabecera) => componerFotografiaConTexto(
+      crearPintor({ compositor, activos, procesador, tokensMarca: entrada.tokensMarca }), entrada, receta, cabecera),
     componer: (entrada, receta, esfuerzo) =>
       componerVisual(
         {

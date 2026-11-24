@@ -14,6 +14,7 @@
  */
 import { z } from 'zod';
 import { rectDeCaja } from './reticula.js';
+import { compilarPlanos, type MontajeEditorial } from './montajeEditorial.js';
 import { RECORTE_4_5_PX, TAMANO_PROPORCION } from '../reglas.js';
 
 const Id = z.string().regex(/^[a-z][a-z0-9-]*$/);
@@ -275,7 +276,7 @@ export const PropuestaDeDiseno = BasePropuesta.extend({
 export type PropuestaDeDiseno = z.infer<typeof PropuestaDeDiseno>;
 
 /** La propuesta ya colocada, capa a capa: lo que compila compilarIntencion. */
-export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas' | 'carrusel'> & { capas: CapaPropuesta[] };
+export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas' | 'carrusel'> & { capas: CapaPropuesta[]; montaje?: MontajeEditorial };
 
 // ------------------------------------------------------------------ Hechos y comprobación de los textos
 
@@ -545,7 +546,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
   const fotos = p.capas.filter((x) => x.tipo === 'foto' && (x.tratamiento ?? 'natural') === 'natural');
   const platos = p.capas.filter((x) => x.tipo === 'plato' && !x.recurso);
   if (platos.length > 1) problemas.push('Hay más de una capa «plato»: el plato va una vez.');
-  if (fotos.length === 0 && platos.length === 0) problemas.push('La pieza no enseña el plato: hace falta una capa «plato» (recortado) o una «foto» al natural.');
+  if (!p.montaje && fotos.length === 0 && platos.length === 0) problemas.push('La pieza no enseña el plato: hace falta una capa «plato» (recortado) o una «foto» al natural.');
   if (platos.length && !c.tieneMascara) problemas.push('La foto no tiene máscara: no se puede recortar el plato. Usa la foto a sangre o en un marco.');
   const aSangre = p.capas.find((x) => x.tipo === 'foto' && x.encuadre === 'sangre' && (x.tratamiento ?? 'natural') === 'natural');
   // El sujeto con el que se relacionan los textos: el plato recortado o, en una foto a sangre con máscara, su silueta.
@@ -828,6 +829,11 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
   if (noSolapar.length) relaciones.push({ tipo: 'noSolapar', textos: noSolapar, sujeto: 'plato', maximo: 0.03 });
   // Se pinta por planos; dentro de cada uno, en el orden en que lo escribió el director.
   const ordenadas = capas.map((x, i) => ({ ...x, i })).sort((a, b) => a.plano - b.plano || a.i - b.i).map((x) => x.capa);
+  if (p.montaje) {
+    const planos = compilarPlanos(p.montaje, { color, voz, texto });
+    ordenadas.push(...planos.capas);
+    relaciones.push(...planos.relaciones);
+  }
 
   return {
     problemas,

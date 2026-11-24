@@ -48,6 +48,42 @@ const Hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 export const Tratamiento = z.enum(['FOTOGRAFICO_LIMPIO', 'ILUSTRADO', 'TINTA', 'PINCEL', 'PEGATINA', 'PAPEL', 'ICONOS_DE_LINEA', 'TRAMA', 'COLLAGE']);
 export type Tratamiento = z.infer<typeof Tratamiento>;
 
+const observacion = z.string().trim().min(3).max(320);
+export const LecturaFotografica = z.object({
+  camara: observacion.describe('Altura y orientación aproximadas, apoyadas en algo visible.'),
+  distancia: observacion.describe('Tamaño del sujeto, cortes, planos y qué queda enfocado.'),
+  luz: observacion.describe('Dirección, tamaño aparente y caída, con evidencia en sombras o reflejos.'),
+  gesto: observacion.describe('Peso, apoyo, orientación o gesto del sujeto y su relación con el entorno.'),
+  materiales: observacion.describe('Respuesta a la luz de dos superficies concretas, si se ven.'),
+  sensacion: observacion.describe('Lectura emocional posible y detalle visual que la provoca.'),
+  traslado: observacion.describe('Una decisión aplicable a otra escena y qué tendrá que cambiar.'),
+});
+export type LecturaFotografica = z.infer<typeof LecturaFotografica>;
+
+export const RelacionesGraficas = z.array(z.object({
+  gesto: observacion.describe('Relación visible entre dos elementos y su posición en el cartel.'),
+  construccion: observacion.describe('Cómo trasladarla con capas editables y qué tiene que seguir siendo legible.'),
+})).max(3);
+
+export function detallesGraficos(relaciones: z.infer<typeof RelacionesGraficas>) {
+  return relaciones.map(r => ({ titulo: r.gesto, detalle: r.construccion }));
+}
+
+export function detallesFotograficos(f: LecturaFotografica) {
+  return [
+    { titulo: 'Punto de vista', detalle: f.camara }, { titulo: 'Distancia y foco', detalle: f.distancia },
+    { titulo: 'Iluminación', detalle: f.luz }, { titulo: 'Gesto y apoyos', detalle: f.gesto },
+    { titulo: 'Materiales', detalle: f.materiales }, { titulo: 'Sensación', detalle: f.sensacion },
+    { titulo: 'Aplicación a la nueva toma', detalle: f.traslado },
+  ];
+}
+
+export function direccionFotografica(ficha: Pick<FichaReferencia, 'foto' | 'lecturaFotografica'>): string {
+  return ficha.lecturaFotografica
+    ? detallesFotograficos(ficha.lecturaFotografica).map(x => x.titulo + ' · ' + x.detalle).join('\n')
+    : ficha.foto;
+}
+
 /** La ficha de análisis de una referencia: lo que un diseñador anotaría para poder reutilizar el oficio. */
 export const FichaReferencia = z.object({
   esquema: z.literal('referencia/ficha@1'),
@@ -70,6 +106,8 @@ export const FichaReferencia = z.object({
   /** HEX medidos sobre la imagen (k-means); el rol lo pone quien analiza. */
   paleta: z.array(z.object({ hex: Hex, rol: z.string().min(2) })).min(1),
   foto: z.string().min(3),
+  lecturaFotografica: LecturaFotografica.optional(), // Las fichas de biblioteca anteriores conservan su descripción libre.
+  relacionesGraficas: RelacionesGraficas.optional(),
   recursos: z.array(z.object({ recurso: z.string().min(2), funcion: z.string().min(3) })).default([]),
   /** Qué se lee primero, segundo y tercero en el móvil. */
   lectura: z.tuple([z.string().min(2), z.string().min(2), z.string().min(2)]),

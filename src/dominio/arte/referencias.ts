@@ -28,7 +28,7 @@ export const EJECUTABLES: Record<string, string> = {
   SALE_DEL_MARCO: 'esqueleto MARCO',
   RETICULA_ASIMETRICA: 'esqueleto PARTIDA',
   CRUCE_DE_ZONAS: 'esqueleto PARTIDA',
-  RETICULA_EDITORIAL: 'esqueleto EDITORIAL (+ FILETES)',
+  RETICULA_EDITORIAL: 'EDITORIAL (+ FILETES), o MONTAJE_EDITORIAL para alinear rótulos y filetes en ejes propios',
   VACIO: 'esqueleto EDITORIAL, producto «contenida»',
   RECORTE_PEGATINA: 'producto con «filo»',
   RECORTE: 'producto recortado (PRODUCTO_SOBRE_COLOR)',
@@ -40,7 +40,7 @@ export const EJECUTABLES: Record<string, string> = {
   TIPOGRAFIA_MANUSCRITA: 'acentoManuscrito',
   LETTERING: 'acentoManuscrito en voz de pincel',
   ACENTO_UNICO: 'un solo acento: SELLO o FORMA_DETRAS',
-  TIPOGRAFIA_DE_FONDO: 'REPETICION o CARTEL',
+  TIPOGRAFIA_DE_FONDO: 'REPETICION, CARTEL o un eco decorativo en MONTAJE_EDITORIAL',
 };
 
 export const OPERACION_DE_ETIQUETA: Partial<Record<string, TipoDeOperacion>> = {

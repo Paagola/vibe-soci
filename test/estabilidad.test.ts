@@ -189,7 +189,9 @@ describe('F0 · escrituras a la vez sobre la misma pieza', () => {
 
     const trabajo = generarDiapositivas(conLento, id, { confirmar: siempreSi });
     await hastaQue(async () => lento.enviados > 0);
-    await importarImagen(conLento, id, 1, foto);
+    const toma = join(conLento.piezas.rutaArchivo(id, 'generadas'), '..', 'otra.jpg');
+    await sharp({ create: { width: 360, height: 450, channels: 3, background: '#305624' } }).jpeg().toFile(toma);
+    await importarImagen(conLento, id, 1, toma);
     await trabajo;
 
     const generaciones = (await deps.piezas.obtener(id)).generaciones;

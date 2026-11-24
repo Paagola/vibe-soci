@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost } from '../../dominio/post.js';
 import type { Marca } from '../../dominio/modelos.js';
-import type { FichaReferencia } from '../../dominio/referencia.js';
+import { direccionFotografica, type FichaReferencia } from '../../dominio/referencia.js';
 import type { ComandaDeArte, DireccionDeArte, Gesto, SeleccionDeToma } from '../../dominio/taller.js';
 import type { DireccionPortada } from '../../dominio/secuenciaTaller.js';
 import { luzSolicitada, pautaDeLuz } from '../../dominio/luzFotografica.js';
@@ -85,7 +85,7 @@ export function dirigir(e: EncargoPost, marca: Marca, fotoSha256: string, fotogr
   if (!e.plato.includes(nombrePlato)) throw new ErrorDeUsuario('El nombre impreso debe ser un fragmento literal de la nota del plato.');
   const referencia = ficha && e.referencia ? { id: e.referencia, familia: ficha.familia, mecanismos: ficha.mecanismos,
     voces: ficha.tipografia.map(v => v.rol + ' · ' + v.clasificacion + (v.escala ? ' · altura aproximada ' + v.escala + '%' : '')),
-    reticula: ficha.reticula, encuadre: ficha.foto, recursos: ficha.recursos.map(r => r.recurso + ' · ' + r.funcion), lectura: recorrido(ficha) } : undefined;
+    reticula: ficha.reticula, encuadre: direccionFotografica(ficha), recursos: ficha.recursos.map(r => r.recurso + ' · ' + r.funcion), lectura: recorrido(ficha) } : undefined;
   const devolucion = e.taller?.candidatas.at(-1)?.devolucion;
   if (e.taller?.seleccionEditorial) {
     const { editorial, pauta, espacio, sugerencia } = seleccionarEditorial(e, fotografia, ruta ?? e.taller.comanda?.editorial?.ruta, ficha);

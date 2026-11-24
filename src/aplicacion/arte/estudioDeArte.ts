@@ -260,6 +260,7 @@ export async function estudioDeArte(deps: DepsEstudioDeArte, entrada: EntradaEst
       noSeCopia: [],
       textos: r.textos.map((t) => (c.textos[t.clave] ? { ...t, texto: c.textos[t.clave]! } : t)),
       capas: ajustes ? aplicarAjustes(c.capas, ajustes) : c.capas,
+      montaje: c.montaje,
     };
     const extra: Record<string, string> = { ...(escena ? { escena: escena.activo } : {}), ...(garabato ? { garabato } : {}) };
     for (const [i, a] of (elementos ?? []).entries()) if (a) extra[`elemento${i + 1}`] = a;
@@ -505,7 +506,7 @@ export async function estudioDeArte(deps: DepsEstudioDeArte, entrada: EntradaEst
   const ganadora = comparacion ? direcciones.find((d) => d.nombre === comparacion!.letras[comparacion!.orden[0] ?? '']) : [...direcciones].sort((a, b) => (b.mejor?.nota ?? 0) - (a.mejor?.nota ?? 0))[0];
   const aEnriquecer = entrada.enriquecer === 'todas' ? direcciones.filter((d) => d.mejor?.png) : entrada.enriquecer && ganadora ? [ganadora] : [];
   for (const [k, dir] of aEnriquecer.entries()) {
-    if (!deps.director.enriquecer || !dir.mejor?.png || !dir.mejor.movil) continue;
+    if (!deps.director.enriquecer || !dir.mejor?.png || !dir.mejor.movil || dir.mejor.receta.esqueleto === 'MONTAJE_EDITORIAL') continue;
     const ganadora = dir;
     const base = ganadora.mejor!;
     log(`· Enriquecer «${ganadora.nombre}» con elementos gráficos…`);

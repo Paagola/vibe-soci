@@ -12,6 +12,7 @@ import { Titular } from './society';
 type BloqueConceptos = Extract<Bloque, { tipo: 'conceptos' }>;
 
 const boton = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 h-9 text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
+const formatoDelConcepto = (n: number) => n === 1 ? 'Post' : `Carrusel de ${n} láminas`;
 
 export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: BloqueConceptos }) {
   const b = p.bloque;
@@ -45,7 +46,7 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
         <Lightbulb className="mt-0.5 size-4 shrink-0 text-acento" />
         <div className="min-w-0 text-sm">
           <div className="font-medium">Concepto: {c?.nombre}</div>
-          {c && <div className="text-xs text-muted-foreground">Portada: «{c.titular}»</div>}
+          {c && <div className="text-xs text-muted-foreground">{formatoDelConcepto(c.laminas.length)} · «{c.titular}»</div>}
         </div>
         <Check className="ml-auto size-4 shrink-0 text-exito" />
       </div>
@@ -78,7 +79,7 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
               ))}
             </ol>
             <button type="button" className={cn(boton, 'mt-auto h-10 rounded-full border-2 border-cobalto font-semibold text-cobalto hover:bg-cobalto hover:text-white')} disabled={ocupado !== undefined} onClick={() => void elegir(i)}>
-              {ocupado === i ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Elegir este
+              {ocupado === i ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Elegir {formatoDelConcepto(c.laminas.length).toLowerCase()}
             </button>
           </div>
         ))}

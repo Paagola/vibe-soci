@@ -214,7 +214,7 @@ function resumirPieza(estudio: Estudio, pieza: Pieza) {
   const total = pieza.plan?.diapositivas.length ?? pieza.numDiapositivas;
   const conImagen = new Set(pieza.generaciones.filter((g) => g.estado === 'COMPLETADA').map((g) => g.diapositiva)).size;
   const fase = pieza.conceptos.length === 0 ? 'IDEA' : !pieza.plan ? 'CONCEPTOS' : conImagen < total ? 'IMAGENES' : 'LISTA';
-  const portada = versionElegida(pieza, 1)?.archivo ?? ultimaCompletada(pieza, 1)?.archivo ?? pieza.fotos[0]?.archivo;
+  const portada = versionElegida(pieza, 1)?.archivo ?? ultimaCompletada(pieza, 1)?.archivo;
   return {
     id: pieza.id,
     localSlug: pieza.localSlug,

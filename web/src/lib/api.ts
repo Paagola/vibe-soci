@@ -20,10 +20,10 @@ export interface Hechos {
 }
 
 export type Bloque =
-  | { tipo: 'hechos'; id: string; estado: EstadoTarjeta; propuesta: Hechos }
+  | { tipo: 'hechos'; id: string; estado: EstadoTarjeta; propuesta: Hechos; formato?: Formato | 'auto'; esfuerzo?: Esfuerzo }
   | { tipo: 'plan'; id: string; estado: EstadoTarjeta; pieza: string }
   | { tipo: 'progreso'; id: string; pieza: string }
-  | { tipo: 'pieza'; id: string; pieza: string }
+  | { tipo: 'pieza'; id: string; pieza: string; mostrar?: number }
   | { tipo: 'error'; id: string; texto: string }
   | { tipo: 'herramienta'; id: string; herramienta: string; estado: 'FORMULARIO' | 'EN_CURSO' | 'HECHO' | 'ERROR' | 'DESCARTADO'; valores: Record<string, unknown>; progreso: string[]; resultado?: Resultado; error?: string }
   | { tipo: 'encargo'; id: string; proyecto?: string; modo?: string }
@@ -42,9 +42,10 @@ export type Bloque =
       estado: 'BUSCANDO' | 'PENDIENTE' | 'HECHO' | 'DESCARTADO' | 'ERROR';
       pedido: { formato: Formato; diapositivas: number; indicaciones: string; esfuerzo: Esfuerzo };
       consultas: string[];
-      candidatas: Array<{ id: string; origen: 'pinterest' | 'estudio' | 'biblioteca' | 'local'; archivo: string; titulo: string; motivo?: string; enlace?: string }>;
+      candidatas: Array<{ id: string; origen: 'pinterest' | 'estudio' | 'biblioteca' | 'local' | 'propia'; archivo: string; titulo: string; motivo?: string; enlace?: string }>;
       progreso: string[];
       elegida?: string;
+      lectura?: Array<{ titulo: string; detalle: string }>;
       error?: string;
     };
 

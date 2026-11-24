@@ -120,7 +120,8 @@ describe('API web (simulado)', () => {
     const manual = await esperarTrabajo(await pedir('POST', `/api/piezas/${id}/diapositivas/2/corregir`, { comentario: 'Texto más grande', manual: true }));
     assert.equal(manual.estado, 'TERMINADO');
     assert.equal(manual.resultado.generacion.estado, 'PENDIENTE_MANUAL');
-    const importada = await pedir('POST', `/api/piezas/${id}/diapositivas/2/importar`, { subidaId: (await subir('a-mano.jpg', jpeg)).subida.id });
+    const nueva = await sharp({ create: { width: 1080, height: 1440, channels: 3, background: '#b4b191' } }).jpeg().toBuffer();
+    const importada = await pedir('POST', `/api/piezas/${id}/diapositivas/2/importar`, { subidaId: (await subir('a-mano.jpg', nueva)).subida.id });
     assert.equal(importada.status, 201);
 
     const voto = await pedir('POST', `/api/piezas/${id}/diapositivas/1/valorar`, { veredicto: 'GUSTA', motivo: 'La palabra detrás del plato funciona' });

@@ -13,6 +13,7 @@
 import { z } from 'zod';
 import { TextoPropuesto } from '../diseno/propuesta.js';
 import type { EstiloTexto } from '../diseno/intencion.js';
+import { MontajeEditorial } from '../diseno/montajeEditorial.js';
 
 const Clave = z.string().regex(/^[a-z][a-z0-9-]*$/);
 const Token = z.string().regex(/^@[a-z][a-zA-Z0-9-]*$/);
@@ -25,10 +26,11 @@ export const explicacion = (min: number, max: number) => z.preprocess((v) => (ty
 const Fraccion = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) });
 
 /** La estructura de la pieza: dónde vive el producto y dónde vive el texto. Cambiarla es cambiar de pieza. */
-export const Esqueleto = z.enum(['PRODUCTO_SOBRE_COLOR', 'FOTO_A_SANGRE', 'PARTIDA', 'MARCO', 'COLUMNA', 'CARTEL', 'EDITORIAL', 'PATRON']);
+export const Esqueleto = z.enum(['PRODUCTO_SOBRE_COLOR', 'FOTO_A_SANGRE', 'PARTIDA', 'MARCO', 'COLUMNA', 'CARTEL', 'EDITORIAL', 'PATRON', 'MONTAJE_EDITORIAL']);
 export type Esqueleto = z.infer<typeof Esqueleto>;
 
 export const ESQUELETOS: Record<Esqueleto, string> = {
+  MONTAJE_EDITORIAL: 'Composición dirigida en montaje.capas, de fondo a frente. Coloca la foto nueva, tipografías con papeles distintos, filetes, marcos o textura con cajas y ejes propios. Para relaciones visuales que exigen colocación precisa.',
   PRODUCTO_SOBRE_COLOR: 'El producto recortado con su máscara, grande, sobre un campo de color plano; el titular grande en el otro extremo. Directo, de cartel de producto.',
   FOTO_A_SANGRE: 'La foto llena el lienzo; el titular vive en el aire de la foto, medido, y puede ir detrás del producto. Para fotos con atmósfera y aire.',
   PARTIDA: 'El lienzo partido en dos zonas: una de foto y otra de campo (color o papel) con el texto; el producto recortado cruza la frontera entre las dos. Editorial, de carta.',
@@ -153,7 +155,7 @@ export const Receta = z.object({
   lado: z.enum(['izquierda', 'derecha', 'arriba', 'abajo']).optional().describe('PARTIDA y COLUMNA: dónde va la zona de texto. CARTEL y FOTO_A_SANGRE: dónde va el titular.'),
   fondo: Token.describe('Color del campo (de la lista).'),
   acento: Token.optional().describe('Segundo color, con carácter (de la lista).'),
-  textos: z.array(TextoPropuesto).min(1).max(8),
+  textos: z.array(TextoPropuesto).min(1).max(16),
   producto: Producto,
   titular: Titular,
   acentoManuscrito: TextoSecundario.optional().describe('Una o dos palabras en voz manuscrita o de florituras que se apoyan en el titular.'),
@@ -162,8 +164,37 @@ export const Receta = z.object({
   firma: TextoSecundario.optional(),
   operaciones: z.array(Operacion).max(4).default([]),
   elementos: z.array(ElementoGrafico).max(3).default([]).describe('Elementos dibujados por un modelo de imagen secundario (opcional).'),
+  montaje: MontajeEditorial.optional().describe('Solo con MONTAJE_EDITORIAL. Planos en orden de impresión, cajas y puntos en fracciones del lienzo. Una foto nueva con id reservado «foto».'),
   parentesco: explicacion(8, 240).optional().describe('Con referencia: qué se toma de ella (estructura, mecanismo, ritmo, tratamiento).'),
   mejora: explicacion(8, 240).optional().describe('Con referencia: la decisión propia que hace esta pieza mejor que la referencia.'),
+}).superRefine((r, ctx) => {
+  const problema = (message: string) => ctx.addIssue({ code: 'custom', path: ['montaje'], message });
+  if (r.esqueleto !== 'MONTAJE_EDITORIAL') {
+    if (r.montaje) problema('El montaje necesita el esqueleto MONTAJE_EDITORIAL.');
+    if (r.textos.length > 8) problema('Este esqueleto admite hasta ocho textos.');
+    return;
+  }
+  if (!r.montaje) return problema('Indica las capas del montaje editorial.');
+  if (r.operaciones.length || r.elementos.length) problema('Declara los efectos en montaje.capas y deja operaciones y elementos vacíos.');
+  const ids = new Set(['foto', 'fondo']);
+  const textos = r.montaje.capas.filter(c => c.tipo === 'texto');
+  if (r.montaje.capas.filter(c => c.tipo === 'foto').length !== 1) problema('El montaje lleva exactamente una fotografía nueva.');
+  for (const c of r.montaje.capas) {
+    if (c.tipo === 'foto') continue;
+    if (ids.has(c.id)) problema(`La capa «${c.id}» necesita un identificador propio.`);
+    ids.add(c.id);
+    if (c.tipo === 'texto' && c.desenfoque && !c.decorativo) problema(`Reserva el desenfoque para un eco decorativo del texto «${c.texto}».`);
+  }
+  for (const t of r.textos) {
+    const visibles = textos.filter(c => c.texto === t.clave && !c.decorativo && (c.opacidad ?? 1) > 0);
+    const lineas = t.texto.split('\n');
+    if (!visibles.some(c => c.linea === undefined) && !lineas.every((_, i) => visibles.some(c => c.linea === i))) {
+      problema(`El texto aprobado «${t.clave}» necesita todas sus palabras en capas legibles.`);
+    }
+  }
+  for (const t of [r.titular, r.firma, r.apoyo, r.acentoManuscrito, r.remate]) {
+    if (t && !textos.some(c => !c.decorativo && c.texto === t.texto && c.voz === t.voz)) problema(`Falta una capa legible para «${t.texto}» con la voz aprobada «${t.voz}».`);
+  }
 });
 export type Receta = z.infer<typeof Receta>;
 export type RecetaEntrada = z.input<typeof Receta>;

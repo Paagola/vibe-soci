@@ -14,7 +14,13 @@ export const FICHA_SIMULADA: FichaAnalizada = {
   tipografia: [{ rol: 'TITULAR', clasificacion: 'serif (simulado)', escala: 10 }],
   paleta: [{ hex: '#111111', rol: 'fondo (simulado)' }],
   foto: 'clave baja (simulado)',
+  lecturaFotografica: {
+    camara: 'Vista oblicua simulada', distancia: 'Plano medio simulado', luz: 'Luz lateral simulada',
+    gesto: 'Sujeto apoyado en mesa simulada', materiales: 'Cerámica mate simulada',
+    sensacion: 'Calma simulada', traslado: 'Reservar aire sobre el sujeto simulado',
+  },
   recursos: [],
+  relacionesGraficas: [{ gesto: 'El titular sigue el borde del plato simulado', construccion: 'Alinear la base del titular con el inicio de la silueta simulada.' }],
   lectura: ['el plato', 'el titular', 'la marca'],
   porQueFunciona: 'Ficha simulada: no se ha mirado la imagen.',
 };

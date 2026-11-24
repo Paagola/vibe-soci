@@ -129,6 +129,8 @@ export type CapaResuelta = BaseResuelta &
         rotacion: 0 | 90 | -90;
         contorno?: number;
         sangrado: boolean;
+        decorativo?: boolean;
+        desenfoque?: number;
         /** Giro libre (grados), ya incluido en la matriz. */
         giro?: number;
         corte?: CorteResuelto;

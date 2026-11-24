@@ -1,6 +1,7 @@
 import { ErrorDeUsuario } from '../dominio/errores.js';
 import { EXPORTACIONES_POR_FORMATO, versionElegida, type Proporcion } from '../dominio/reglas.js';
 import type { Dependencias } from './dependencias.js';
+import { comprobarFotoDePieza } from './ejecutarGeneracion.js';
 import { exigirPlan } from './trabajoDeDiapositiva.js';
 
 export interface ResultadoExportar {
@@ -27,6 +28,8 @@ export async function exportarPieza(deps: Pick<Dependencias, 'piezas' | 'procesa
 
   const sinImagen = elegidas.filter((e) => !e.archivo).map((e) => e.posicion);
   if (sinImagen.length > 0) throw new ErrorDeUsuario(`Faltan imágenes de las diapositivas: ${sinImagen.join(', ')}.`);
+
+  for (const e of elegidas) await comprobarFotoDePieza(deps, pieza, deps.piezas.rutaArchivo(pieza.id, e.archivo!));
 
   const archivos: string[] = [];
   for (const proporcion of EXPORTACIONES_POR_FORMATO[pieza.formato]) {
