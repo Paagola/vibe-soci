@@ -14,6 +14,7 @@
  */
 import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, readFile, rename, stat, writeFile, copyFile } from 'node:fs/promises';
+import { relative } from 'node:path';
 import { extname, join } from 'node:path';
 import sharp from 'sharp';
 import type { EncargoDeArte } from '../../puertos/EstudioDeArte.js';
@@ -566,7 +567,7 @@ export class ServicioChat {
     const progreso = `prog-${id()}`;
     await this.decir(conversacion, mensaje, [{ tipo: 'progreso', id: progreso, pieza: piezaId }]);
     await this.cambiar(conversacion, (cc) => {
-      cc.piezas.push({ id: piezaId, formato, esfuerzo: o.esfuerzo, indicaciones: a.indicaciones, estado: 'PROPUESTA', costeEstimadoUsd: 0, ...(base ? { base: base.id } : {}), rehacer, progreso: [{ texto: base ? 'Replanteando las diapositivas' : 'Planificando cada diapositiva', estado: 'en-curso' }], diapositivas: [] });
+      cc.piezas.push({ id: piezaId, formato, esfuerzo: o.esfuerzo, indicaciones: a.indicaciones, estado: 'PROPUESTA', costeEstimadoUsd: 0, fotos: [], ...(base ? { base: base.id } : {}), rehacer, progreso: [{ texto: base ? 'Replanteando las diapositivas' : 'Planificando cada diapositiva', estado: 'en-curso' }], diapositivas: [] });
     });
     try {
       const encargo = await this.encargo(c, piezaId);
@@ -914,6 +915,11 @@ export class ServicioChat {
           break;
         }
         fotos.set(n, await this.d.registrarFoto({ local: local.slug, id: `chat-${piezaId}-${n}`, ruta, tipo: 'GENERADO', descripcion: `Toma nueva de la diapositiva ${n} (${d.resumen}).`, prompt }));
+        // La foto, a la vista en cuanto está (la web la enseña mientras se compone la pieza).
+        await this.cambiar(conversacion, (cc) => {
+          const p = cc.piezas.find((x) => x.id === piezaId)!;
+          p.fotos = [...p.fotos.filter((x) => x.n !== n), { n, archivo: relative(this.carpetaDe(conversacion), ruta) }];
+        });
         await this.paso(conversacion, piezaId, texto, 'hecho');
         return ruta;
       };
@@ -934,13 +940,22 @@ export class ServicioChat {
       // 2. Cada diapositiva: la foto sola (si lo pidió el plan o lo decidió el director al verla) o maquetada con su
       //    receta, ya viendo la foto real, con crítica y, donde toque, el acabado de Nano Banana 2.
       const producidas: Pieza['diapositivas'] = [];
-      const guardar = async (n: number, origen: string, deFoto: boolean) => {
-        const png = `${carpeta}/${String(n).padStart(2, '0')}.png`;
-        const movil = `${carpeta}/${String(n).padStart(2, '0')}-movil.jpg`;
+      const guardar = async (n: number, origen: string, deFoto: boolean, carpetaCapas?: string) => {
+        const nn = String(n).padStart(2, '0');
+        const png = `${carpeta}/${nn}.png`;
+        const movil = `${carpeta}/${nn}-movil.jpg`;
         if (deFoto) await sharp(origen).rotate().resize(1080, 1440, { fit: 'cover', position: 'attention' }).png().toFile(this.rutaArchivo(conversacion, png));
         else await copyFile(origen, this.rutaArchivo(conversacion, png));
         await sharp(this.rutaArchivo(conversacion, png)).resize(540).jpeg({ quality: 84 }).toFile(this.rutaArchivo(conversacion, movil));
-        return { png, movil };
+        // Las capas, de fondo a frente, en una carpeta propia de la lámina: la web las monta una a una.
+        const capas: string[] = [];
+        for (const f of carpetaCapas ? (await readdir(carpetaCapas).catch(() => [] as string[])).filter((x) => x.endsWith('.png')).sort() : []) {
+          const destino = `${carpeta}/capas/${nn}/${f}`;
+          await mkdir(this.rutaArchivo(conversacion, `${carpeta}/capas/${nn}`), { recursive: true });
+          await copyFile(join(carpetaCapas!, f), this.rutaArchivo(conversacion, destino));
+          capas.push(destino);
+        }
+        return { png, movil, capas };
       };
       // De tres en tres (cada lámina con su crítica y su acabado tarda minutos); el orden se mantiene.
       const resultado: Array<Pieza['diapositivas'][number] | undefined> = plan.diapositivas.map(() => undefined);
@@ -953,7 +968,7 @@ export class ServicioChat {
         const foto = d.visual.foto === 'real' ? entradaBase.foto : fotos.get(n);
         if (!foto) {
           await this.paso(conversacion, piezaId, texto, 'error');
-          return { n, problemas: ['sin foto'], decisiones: decisiones.get(n) ?? [] };
+          return { n, problemas: ['sin foto'], decisiones: decisiones.get(n) ?? [], capas: [] };
         }
         if (d.soloFoto || sinTexto.has(n)) {
           if (d.soloFoto) decidir(n, 'Foto sola, como pedía el plan.');
@@ -989,13 +1004,23 @@ export class ServicioChat {
           await this.paso(conversacion, piezaId, texto, 'hecho');
           return sola;
         }
-        const guardada = hecho.png ? await guardar(n, hecho.png, false) : undefined;
+        const guardada = hecho.png ? await guardar(n, hecho.png, false, hecho.capas) : undefined;
         await this.paso(conversacion, piezaId, texto, guardada ? 'hecho' : 'error');
-        return { n, ...(guardada ?? {}), problemas: hecho.problemas, foto: foto.activo.id, decisiones: decisiones.get(n) ?? [] };
+        return { n, ...(guardada ?? {}), capas: guardada?.capas ?? [], problemas: hecho.problemas, foto: foto.activo.id, decisiones: decisiones.get(n) ?? [] };
       };
       let siguienteLamina = 0;
       const maquetador = async () => {
-        for (let k = siguienteLamina++; k < plan.diapositivas.length; k = siguienteLamina++) resultado[k] = await maquetar(k, plan.diapositivas[k]!);
+        for (let k = siguienteLamina++; k < plan.diapositivas.length; k = siguienteLamina++) {
+          const hecha = await maquetar(k, plan.diapositivas[k]!);
+          resultado[k] = hecha;
+          // Cada lámina, a la vista en cuanto está (la web la compone delante del cliente).
+          if (hecha.png) {
+            await this.cambiar(conversacion, (cc) => {
+              const p = cc.piezas.find((x) => x.id === piezaId)!;
+              p.diapositivas = [...p.diapositivas.filter((x) => x.n !== hecha.n), hecha].sort((a, b) => a.n - b.n);
+            });
+          }
+        }
       };
       await Promise.all(Array.from({ length: Math.min(3, plan.diapositivas.length) }, maquetador));
       producidas.push(...resultado.filter((x): x is Pieza['diapositivas'][number] => Boolean(x)));

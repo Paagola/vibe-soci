@@ -234,6 +234,8 @@ export const DiapositivaProducida = z.object({
   soloFoto: z.boolean().optional(),
   /** Lo que decidieron los agentes por el camino (foto repetida, sin texto, acabado elegido a ciegas…), para el cliente. */
   decisiones: z.array(z.string()).default([]),
+  /** Las capas de la composición, de fondo a frente (PNG a lienzo completo), para enseñar cómo se compuso. */
+  capas: z.array(z.string()).default([]),
 });
 
 export const Pieza = z.object({
@@ -250,6 +252,8 @@ export const Pieza = z.object({
   base: Id.optional(),
   rehacer: z.array(z.number().int().positive()).default([]),
   progreso: z.array(PasoDeProgreso).default([]),
+  /** Las fotos nuevas según van llegando (para verlas mientras se produce la pieza). */
+  fotos: z.array(z.object({ n: z.number().int().positive(), archivo: z.string() })).default([]),
   diapositivas: z.array(DiapositivaProducida).default([]),
   error: z.string().optional(),
 });

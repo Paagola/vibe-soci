@@ -45,7 +45,7 @@ export function TarjetaHerramienta(p: { conversacion: Conversacion; bloque: Bloq
   };
 
   return (
-    <div className={cn(marco, 'overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300', b.estado === 'DESCARTADO' && 'opacity-60')}>
+    <div className={cn(marco, 'overflow-hidden', b.estado === 'DESCARTADO' && 'opacity-60')}>
       <div className="flex items-start gap-3 p-4 pb-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Icono className="size-4" />
@@ -103,7 +103,7 @@ export function TarjetaHerramienta(p: { conversacion: Conversacion; bloque: Bloq
 function CampoDeHerramienta(p: { campo: Campo; valor: unknown; poner: (v: unknown) => void; conversacion: Conversacion; locales: Local[] }) {
   const { campo, valor, poner, conversacion: c } = p;
   const etiqueta = (
-    <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <span className="text-sm font-medium text-muted-foreground">
       {campo.etiqueta}
       {'opcional' in campo && campo.opcional ? <span className="font-normal normal-case tracking-normal"> · opcional</span> : null}
     </span>

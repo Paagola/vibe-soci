@@ -7,6 +7,7 @@ import { Check, Lightbulb, Loader2, Sparkles } from 'lucide-react';
 import { api, type Bloque, type Conversacion } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { ThinkingOrb } from '@/components/ui/ai-thiking-orb-and-input';
+import { Titular } from './society';
 
 type BloqueConceptos = Extract<Bloque, { tipo: 'conceptos' }>;
 
@@ -51,21 +52,21 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
     );
   }
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-start gap-3 p-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Lightbulb className="size-4" />
         </div>
         <div>
-          <div className="text-sm font-semibold">Elige el concepto</div>
+          <Titular grande="Elige" cursiva="el concepto" />
           <p className="mt-0.5 text-sm text-muted-foreground">Tres maneras distintas de contar el plato: la historia, cómo se fotografía y el titular de portada.</p>
         </div>
       </div>
       <div className="grid gap-px border-t border-border bg-border md:grid-cols-3">
         {b.conceptos.map((c, i) => (
           <div key={i} className="flex flex-col gap-2 bg-card p-4">
-            <div className="text-sm font-semibold">{c.nombre}</div>
-            <div className="rounded-md bg-secondary px-2.5 py-1.5 text-sm font-medium">«{c.titular}»</div>
+            <div className="text-sm font-semibold uppercase tracking-wide text-cobalto">{c.nombre}</div>
+            <div className="rounded-xl bg-cobalto px-3 py-3 font-display text-[28px] text-white">{c.titular}</div>
             <p className="text-sm text-muted-foreground">{c.idea}</p>
             <p className="text-xs text-tenue">
               <span className="font-medium text-muted-foreground">Fotografía: </span>
@@ -76,7 +77,7 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
                 <li key={k}>{l}</li>
               ))}
             </ol>
-            <button type="button" className={cn(boton, 'mt-auto bg-primary text-primary-foreground hover:opacity-90')} disabled={ocupado !== undefined} onClick={() => void elegir(i)}>
+            <button type="button" className={cn(boton, 'mt-auto h-10 rounded-full border-2 border-cobalto font-semibold text-cobalto hover:bg-cobalto hover:text-white')} disabled={ocupado !== undefined} onClick={() => void elegir(i)}>
               {ocupado === i ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Elegir este
             </button>
           </div>
@@ -84,7 +85,7 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
       </div>
       <div className="flex items-center gap-2 border-t border-border bg-muted/40 px-4 py-3">
         <span className="mr-auto text-xs text-destructive">{error}</span>
-        <button type="button" className={cn(boton, 'border border-border hover:bg-accent')} disabled={ocupado !== undefined} onClick={() => void elegir('auto')}>
+        <button type="button" className={cn(boton, 'h-11 rounded-full bg-primary px-6 font-display text-[17px] tracking-wide text-primary-foreground hover:brightness-95')} disabled={ocupado !== undefined} onClick={() => void elegir('auto')}>
           {ocupado === 'auto' ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />} Decide tú
         </button>
       </div>

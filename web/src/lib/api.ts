@@ -105,7 +105,8 @@ export interface Pieza {
   base?: string;
   rehacer: number[];
   progreso: Array<{ texto: string; estado: 'en-curso' | 'hecho' | 'error' }>;
-  diapositivas: Array<{ n: number; png?: string; movil?: string; problemas: string[]; soloFoto?: boolean; decisiones?: string[] }>;
+  fotos?: Array<{ n: number; archivo: string }>;
+  diapositivas: Array<{ n: number; png?: string; movil?: string; problemas: string[]; soloFoto?: boolean; decisiones?: string[]; capas?: string[] }>;
   error?: string;
 }
 

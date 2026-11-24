@@ -18,8 +18,12 @@ export function Lateral(p: {
   return (
     <aside className={cn('flex h-full w-64 shrink-0 flex-col border-r border-border bg-lateral', p.className)}>
       <div className="flex h-14 items-center gap-2 px-4">
-        <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">E</span>
-        <span className="text-sm font-semibold tracking-tight">Estudio</span>
+        <span className="relative font-[family-name:var(--font-serif)] text-[26px] font-extrabold italic leading-none">
+          Estudio
+          <svg aria-hidden="true" viewBox="0 0 120 12" preserveAspectRatio="none" className="absolute -bottom-2 left-0 h-2.5 w-full text-cobalto">
+            <path d="M2 8 C 30 2, 70 2, 118 6" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" />
+          </svg>
+        </span>
         {p.cerrar && (
           <button type="button" onClick={p.cerrar} aria-label="Ocultar la barra" className="ml-auto rounded-lg p-1.5 text-tenue hover:bg-accent hover:text-foreground">
             <PanelLeftClose className="size-4" />
@@ -27,7 +31,7 @@ export function Lateral(p: {
         )}
       </div>
       <div className="px-3 pb-3">
-        <button type="button" onClick={() => p.abrir(undefined)} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-medium text-primary-foreground transition hover:opacity-90">
+        <button type="button" onClick={() => p.abrir(undefined)} className="flex h-10 w-full items-center justify-center gap-2 rounded-full border-2 border-papel/80 text-sm font-semibold text-papel transition hover:bg-papel hover:text-tinta">
           <Plus className="size-4" /> Nueva conversación
         </button>
       </div>
@@ -35,7 +39,7 @@ export function Lateral(p: {
         {grupos.map(([nombre, lista]) =>
           lista.length ? (
             <div key={nombre} className="mb-3">
-              <div className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-tenue">{nombre}</div>
+              <div className="px-2 pb-1 text-xs font-medium text-tenue">{nombre}</div>
               {lista.slice(0, 40).map((c) => (
                 <button
                   type="button"
@@ -78,15 +82,15 @@ export function Recorrido({ c }: { c: Conversacion }) {
         const esActual = i === actual;
         return (
           <li key={paso} className="flex items-center gap-1">
-            {i > 0 && <span className={cn('h-px w-4', hechos[i - 1] ? 'bg-exito/60' : 'bg-border')} />}
+            {i > 0 && <span className={cn('h-px w-4', hechos[i - 1] ? 'bg-papel/40' : 'bg-border')} />}
             <span
               aria-current={esActual ? 'step' : undefined}
               className={cn(
                 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1',
-                hecho ? 'text-exito' : esActual ? 'bg-acento/15 font-medium text-acento' : 'text-tenue',
+                hecho ? 'text-papel/80' : esActual ? 'bg-cobalto font-semibold text-white' : 'text-tenue',
               )}
             >
-              {hecho ? <Check className="size-3" /> : <span className={cn('size-1.5 rounded-full', esActual ? 'bg-acento' : 'bg-tenue/60')} />}
+              {hecho ? <Check className="size-3" /> : <span className={cn('size-1.5 rounded-full', esActual ? 'bg-mostaza' : 'bg-tenue/60')} />}
               {paso}
             </span>
           </li>

@@ -1,19 +1,23 @@
 /** Las tarjetas que el director pone dentro de sus mensajes: hechos del plato, plan de la pieza, progreso y resultado. */
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Camera, Check, ChevronLeft, ChevronRight, Download, GalleryHorizontal, ImageIcon, Loader2, Minus, Plus, Sparkles, X } from 'lucide-react';
+import { AlertTriangle, Camera, Check, ChevronLeft, ChevronRight, Download, GalleryHorizontal, ImageIcon, Loader2, Minus, Plus, RotateCcw, Sparkles, X } from 'lucide-react';
 import { api, type Conversacion, type Elemento, type Hechos, type Local, type Pieza } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Rueda } from './rueda';
+import { Composicion } from './composicion';
+import { Titular } from './society';
 
 const marco = 'rounded-xl border border-border bg-card text-card-foreground';
 const boton = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 h-9 text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
-const principal = cn(boton, 'bg-primary text-primary-foreground hover:opacity-90');
-const secundario = cn(boton, 'border border-border hover:bg-accent');
+const principal = cn(boton, 'h-11 rounded-full px-6 bg-primary text-primary-foreground font-display text-[17px] tracking-wide hover:brightness-95');
+const secundario = cn(boton, 'h-11 rounded-full px-5 border-2 border-cobalto text-cobalto font-semibold hover:bg-cobalto/10');
+/** Acciones de apoyo: sin borde, para no competir con la principal. */
+const discreto = 'inline-flex items-center gap-1.5 rounded-md px-2.5 h-8 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground';
 const campo = 'w-full rounded-lg border border-input bg-background/60 px-3 py-2 text-sm outline-none focus:border-ring focus:ring-1 focus:ring-ring/30';
 const usd = (n: number) => `${n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
 
 function Etiqueta({ children }: { children: React.ReactNode }) {
-  return <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</span>;
+  return <span className="text-sm font-medium text-muted-foreground">{children}</span>;
 }
 
 function useEnvio() {
@@ -55,7 +59,7 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: str
             {h.plato}
           </div>
           <div className="truncate text-muted-foreground">
-            {local?.nombre ?? h.local} · {h.elementos.map((e) => `${e.recuento ? `${e.recuento} ` : ''}${e.nombre}`).join(', ')}
+            {local?.nombre ?? h.local}: {h.elementos.map((e) => `${e.recuento ? `${e.recuento} ` : ''}${e.nombre}`).join(', ')}
           </div>
         </div>
       </div>
@@ -63,7 +67,11 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: str
   }
 
   return (
-    <div className={cn(marco, 'overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300')}>
+    <div className={cn(marco, 'overflow-hidden')}>
+      <div className="px-4 pt-5">
+        <Titular grande="La ficha" cursiva="del plato" />
+        <p className="mt-2 text-sm text-muted-foreground">Lo que he visto en la foto. Corrige lo que no sea exacto: los textos solo dirán esto.</p>
+      </div>
       <div className="flex gap-4 p-4">
         {foto && (
           <div className="flex shrink-0 flex-col gap-2">
@@ -83,7 +91,7 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: { id: str
               {!local && <option value={h.local}>{h.local}</option>}
               {p.locales.map((l) => (
                 <option key={l.slug} value={l.slug}>
-                  {l.nombre} · {l.ciudad}
+                  {l.nombre}, {l.ciudad}
                 </option>
               ))}
             </select>
@@ -142,18 +150,11 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
   const nuevas = plan.diapositivas.filter((d, i) => d.visual.foto === 'generada' && (!p.pieza.rehacer.length || p.pieza.rehacer.includes(i + 1))).length;
   const real = p.conversacion.imagenes.find((i) => i.id === p.conversacion.hechos?.foto);
   return (
-    <div className={cn(marco, 'overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300', p.bloque.estado === 'DESCARTADO' && 'opacity-60')}>
-      <div className="flex items-start gap-3 p-4">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-          <Sparkles className="size-4" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold">
-            {p.pieza.formato === 'carrusel' ? `Carrusel de ${plan.diapositivas.length}` : 'Post'}
-            {p.pieza.base && <span className="font-normal text-muted-foreground"> · ajuste{p.pieza.rehacer.length ? ` de la ${p.pieza.rehacer.join(', ')}` : ''}</span>}
-          </div>
-          <p className="mt-0.5 text-sm text-muted-foreground">{plan.idea}</p>
-        </div>
+    <div className={cn(marco, 'overflow-hidden', p.bloque.estado === 'DESCARTADO' && 'opacity-60')}>
+      <div className="p-4">
+        <Titular grande="Tu" cursiva={p.pieza.formato === 'carrusel' ? `carrusel de ${plan.diapositivas.length}` : 'post'} />
+        {p.pieza.base && <p className="mt-1 text-sm text-muted-foreground">{`Ajuste${p.pieza.rehacer.length ? ` de la ${p.pieza.rehacer.join(', ')}` : ''}`}</p>}
+        <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">{plan.idea}</p>
       </div>
       <ol className="grid gap-px border-t border-border bg-border">
         {plan.diapositivas.map((d, i) => {
@@ -171,8 +172,7 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
               <div className="min-w-0 flex-1">
                 <div className="text-sm">{d.resumen}</div>
                 <div className="text-xs text-muted-foreground">
-                  {PAPEL[d.papel] ?? d.papel} · {d.visual.foto === 'real' ? 'tu foto' : 'foto nueva'} · {d.soloFoto ? 'foto sola, sin texto' : d.visual.receta.esqueleto.toLowerCase().replace(/_/g, ' ')}
-                  {!rehace && ' · se queda igual'}
+                  {`${PAPEL[d.papel] ?? d.papel}, ${d.visual.foto === 'real' ? 'con tu foto' : 'con una foto nueva'}${d.soloFoto ? ', sin texto' : ''}${!rehace ? '. Se queda igual' : ''}`}
                 </div>
               </div>
             </li>
@@ -181,7 +181,7 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
       </ol>
       <div className="flex items-center gap-2 border-t border-border bg-muted/40 px-4 py-3">
         <span className="mr-auto text-xs text-muted-foreground">
-          {nuevas} foto{nuevas === 1 ? '' : 's'} nueva{nuevas === 1 ? '' : 's'} · ≈ {usd(p.pieza.costeEstimadoUsd)}
+          {`${nuevas} foto${nuevas === 1 ? '' : 's'} nueva${nuevas === 1 ? '' : 's'}, unos ${usd(p.pieza.costeEstimadoUsd)}`}
           {error && <span className="ml-2 text-destructive">{error}</span>}
         </span>
         {pendiente ? (
@@ -201,28 +201,75 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
   );
 }
 
-// ------------------------------------------------------------------ Progreso
+// ------------------------------------------------------------------ Progreso: el estudio en directo
 
-export function TarjetaProgreso(p: { pieza?: Pieza }) {
-  const pasos = p.pieza?.progreso ?? [];
-  // Solo mientras se planifica o se produce (y si algo falla): lo terminado ya lo enseñan el plan y el visor.
-  const visible = !p.pieza || p.pieza.estado === 'PRODUCIENDO' || p.pieza.estado === 'ERROR' || (p.pieza.estado === 'PROPUESTA' && !p.pieza.plan);
+/**
+ * Mientras se planifica, una línea. Mientras se produce, la mesa de luz con un marco por lámina: en cola, fotografiando
+ * (una luz que pasa), la foto que llega y se enfoca, componiendo (escaneo y retícula) y, al terminar, la lámina que se
+ * monta capa a capa.
+ */
+export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }) {
+  const pieza = p.pieza;
+  const pasos = pieza?.progreso ?? [];
+  const visible = !pieza || pieza.estado === 'PRODUCIENDO' || pieza.estado === 'ERROR' || (pieza.estado === 'PROPUESTA' && !pieza.plan);
   if (!visible) return null;
+  const plan = pieza?.plan;
+  if (!pieza || !plan || pieza.estado === 'PROPUESTA') {
+    const actual = [...pasos].reverse().find((x) => x.estado === 'en-curso') ?? pasos.at(-1);
+    return (
+      <div className={cn(marco, 'flex items-center gap-2.5 px-4 py-3 text-sm text-muted-foreground')}>
+        <Loader2 className="size-4 animate-spin text-acento" />
+        {actual?.texto ?? 'Preparando'}
+        {pieza?.error && <span className="text-destructive">{pieza.error}</span>}
+      </div>
+    );
+  }
+  const url = (r: string) => api.archivo(p.conversacion.id, r);
+  const real = p.conversacion.imagenes.find((i) => i.id === p.conversacion.hechos?.foto);
+  const estadoDe = (t: string) => pasos.find((x) => x.texto === t)?.estado;
+  const total = plan.diapositivas.length;
+  const listas = pieza.diapositivas.filter((d) => d.png).length;
+  const fotografiando = plan.diapositivas.findIndex((_, i) => estadoDe(`Foto nueva de la diapositiva ${i + 1}`) === 'en-curso') + 1;
+  const resumen = listas === total ? 'Terminando' : fotografiando ? `Fotografiando la ${fotografiando} de ${total}` : listas ? `${listas} de ${total} listas` : 'Componiendo';
   return (
-    <div className={cn(marco, 'grid gap-1.5 p-4 text-sm')}>
-      {pasos.length === 0 && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Preparando…
-        </div>
-      )}
-      {pasos.map((x, i) => (
-        <div key={i} className={cn('flex items-center gap-2', x.estado === 'hecho' && 'text-muted-foreground')}>
-          {x.estado === 'en-curso' ? <Loader2 className="size-4 animate-spin text-acento" /> : x.estado === 'hecho' ? <Check className="size-4 text-exito" /> : <AlertTriangle className="size-4 text-destructive" />}
-          {x.texto}
-        </div>
-      ))}
-      {p.pieza?.error && <div className="text-destructive">{p.pieza.error}</div>}
-    </div>
+    <section aria-label="La pieza, componiéndose" className="mesa-de-luz -mx-1 rounded-2xl p-4 sm:-mx-10 sm:p-5">
+      <div className="mb-4 flex items-baseline justify-between gap-3">
+        <Titular grande="Manos" cursiva="a la obra" />
+        <span className="text-sm text-mesa-tenue" aria-live="polite">
+          {resumen}
+        </span>
+      </div>
+      <div className={cn('grid gap-3', total === 1 ? 'mx-auto max-w-[280px]' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}>
+        {plan.diapositivas.map((d, i) => {
+          const n = i + 1;
+          const lista = pieza.diapositivas.find((x) => x.n === n && x.png);
+          const foto = d.visual.foto === 'real' ? (real ? real.archivo : undefined) : pieza.fotos?.find((f) => f.n === n)?.archivo;
+          const disenando = estadoDe(`Diseño de la diapositiva ${n}`) === 'en-curso';
+          const tomando = estadoDe(`Foto nueva de la diapositiva ${n}`) === 'en-curso';
+          const estado = lista ? 'Lista' : disenando ? 'Componiendo' : tomando ? 'Fotografiando' : foto ? 'Foto lista' : 'En cola';
+          return (
+            <figure key={n} className="grid gap-1.5">
+              {lista ? (
+                <Composicion capas={(lista.capas ?? []).map(url)} final={url(lista.movil ?? lista.png!)} alt={d.resumen} />
+              ) : foto ? (
+                <div className={cn('relative aspect-[3/4] overflow-hidden rounded-md', disenando && 'componiendo')}>
+                  <img src={url(foto)} alt="" className="foto-llega h-full w-full object-cover" />
+                </div>
+              ) : tomando ? (
+                <div className="fotografiando aspect-[3/4] rounded-md" />
+              ) : (
+                <div className="flex aspect-[3/4] items-center justify-center rounded-md border border-dashed border-mesa-tenue/40 font-display text-2xl text-mesa-tenue/60">{n}</div>
+              )}
+              <figcaption className="flex items-baseline justify-between gap-2 text-xs">
+                <span className="truncate">{PAPEL[d.papel] ?? d.papel}</span>
+                <span className={cn(lista ? 'text-mesa-foreground' : 'text-mesa-tenue')}>{estado}</span>
+              </figcaption>
+            </figure>
+          );
+        })}
+      </div>
+      {pieza.error && <p className="mt-3 text-sm text-red-700">{pieza.error}</p>}
+    </section>
   );
 }
 
@@ -233,6 +280,12 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
   const [i, setI] = useState(0);
   const [grande, setGrande] = useState(false);
   const [rueda, setRueda] = useState(false);
+  // La composición se ve una vez por pieza en este navegador (y cuando se pide de nuevo).
+  const clave = `compuesta-${p.pieza.id}`;
+  const [repeticion, setRepeticion] = useState(() => (sessionStorage.getItem(clave) ? 0 : 1));
+  useEffect(() => {
+    sessionStorage.setItem(clave, '1');
+  }, [clave]);
   useEffect(() => {
     if (!grande) return;
     const tecla = (e: KeyboardEvent) => {
@@ -247,16 +300,20 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
   const actual = listas[Math.min(i, listas.length - 1)]!;
   const url = (r?: string) => (r ? api.archivo(p.conversacion.id, r) : '');
   const resumen = p.pieza.plan?.diapositivas[actual.n - 1]?.resumen;
+  const ir = (k: number) => {
+    setI(k);
+    setRepeticion(0);
+  };
 
   const flechas = (clase = '') => (
     <>
       {i > 0 && (
-        <button type="button" aria-label="Anterior" onClick={(e) => (e.stopPropagation(), setI(i - 1))} className={cn('absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white backdrop-blur hover:bg-black/60', clase)}>
+        <button type="button" aria-label="Anterior" onClick={(e) => (e.stopPropagation(), ir(i - 1))} className={cn('absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white backdrop-blur hover:bg-black/60', clase)}>
           <ChevronLeft className="size-5" />
         </button>
       )}
       {i < listas.length - 1 && (
-        <button type="button" aria-label="Siguiente" onClick={(e) => (e.stopPropagation(), setI(i + 1))} className={cn('absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white backdrop-blur hover:bg-black/60', clase)}>
+        <button type="button" aria-label="Siguiente" onClick={(e) => (e.stopPropagation(), ir(i + 1))} className={cn('absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/45 p-1.5 text-white backdrop-blur hover:bg-black/60', clase)}>
           <ChevronRight className="size-5" />
         </button>
       )}
@@ -264,55 +321,68 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
   );
 
   return (
-    <div className={cn(marco, 'overflow-hidden animate-in fade-in zoom-in-95 duration-300')}>
-      <div className="flex flex-col gap-3 p-3 sm:flex-row">
-        <div className="relative mx-auto w-full max-w-[320px] shrink-0 cursor-zoom-in" onClick={() => setGrande(true)}>
-          <img key={actual.n} src={url(actual.movil ?? actual.png)} alt={resumen ?? `Diapositiva ${actual.n}`} className="aspect-[3/4] w-full rounded-xl object-cover animate-in fade-in duration-200" />
-          {flechas()}
-          {listas.length > 1 && <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-xs text-white">{i + 1}/{listas.length}</span>}
+    <div className={cn(marco, 'overflow-hidden')}>
+      <div className="flex flex-col sm:flex-row">
+        <div className="flex shrink-0 justify-center p-4 sm:w-[348px] sm:items-start sm:pr-0">
+          <div className="mesa-de-luz relative w-full max-w-[316px] cursor-zoom-in rounded-xl p-2" onClick={() => setGrande(true)}>
+            <Composicion key={`${actual.n}-${repeticion}`} capas={(actual.capas ?? []).map(url)} final={url(actual.movil ?? actual.png)} alt={resumen ?? `Lámina ${actual.n}`} animar={repeticion > 0} />
+            {flechas()}
+          </div>
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4">
           <div>
-            <div className="text-sm font-semibold">{p.pieza.formato === 'carrusel' ? 'Carrusel' : 'Post'} · diapositiva {actual.n}</div>
-            {resumen && <p className="text-sm text-muted-foreground">{resumen}</p>}
+            <Titular grande="Así" cursiva="queda" />
+            {p.pieza.formato === 'carrusel' && <p className="mt-1 text-sm font-semibold">{`Lámina ${actual.n} de ${listas.length}`}</p>}
+            {resumen && <p className="mt-1 text-sm text-muted-foreground">{resumen}</p>}
             {actual.problemas.length > 0 && (
-              <p className="mt-1 flex items-start gap-1.5 text-xs text-amber-500">
-                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" /> El código midió: {actual.problemas[0]}
+              <p className="mt-2 flex items-start gap-1.5 text-sm text-destructive">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" /> {actual.problemas[0]}
               </p>
             )}
-            {(actual.decisiones?.length ?? 0) > 0 && (
-              <ul className="mt-2 space-y-1 border-l-2 border-acento/40 pl-2.5 text-xs text-muted-foreground" aria-label="Decisiones del director">
+          </div>
+          {(actual.decisiones?.length ?? 0) > 0 && (
+            <div>
+              <h4 className="text-sm font-medium">Lo que decidió el director</h4>
+              <ul className="mt-1.5 space-y-1.5 text-sm text-muted-foreground">
                 {actual.decisiones!.map((t, k) => (
-                  <li key={k}>{t}</li>
+                  <li key={k} className="flex gap-2">
+                    <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-acento" />
+                    <span>{t}</span>
+                  </li>
                 ))}
               </ul>
-            )}
-          </div>
+            </div>
+          )}
           {listas.length > 1 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Láminas">
               {listas.map((d, k) => (
-                <button type="button" key={d.n} onClick={() => setI(k)} className={cn('overflow-hidden rounded-md ring-2 ring-transparent transition', k === i ? 'ring-acento' : 'opacity-60 hover:opacity-100')}>
-                  <img src={url(d.movil ?? d.png)} alt="" className="h-16 w-12 object-cover" />
+                <button type="button" role="tab" aria-selected={k === i} aria-label={`Lámina ${d.n}`} key={d.n} onClick={() => ir(k)} className={cn('overflow-hidden rounded-[6px] ring-2 ring-offset-2 ring-offset-card transition', k === i ? 'ring-acento' : 'ring-transparent opacity-55 hover:opacity-100')}>
+                  <img src={url(d.movil ?? d.png)} alt="" className="h-[72px] w-[54px] object-cover" />
                 </button>
               ))}
             </div>
           )}
-          <div className="mt-auto flex flex-wrap items-center gap-2">
-            <a className={secundario} href={url(actual.png)} download={`${p.pieza.id}-${String(actual.n).padStart(2, '0')}.png`}>
-              <Download className="size-4" /> Esta
-            </a>
-            {listas.length > 1 && (
-              <button type="button" className={secundario} onClick={() => listas.forEach((d, k) => setTimeout(() => descargar(url(d.png), `${p.pieza.id}-${String(d.n).padStart(2, '0')}.png`), k * 250))}>
-                <ImageIcon className="size-4" /> Todas
-              </button>
-            )}
-            {listas.length > 1 && (
-              <button type="button" className={secundario} onClick={() => setRueda(true)}>
-                <GalleryHorizontal className="size-4" /> Ver en rueda
-              </button>
-            )}
-            {p.pieza.costeRealUsd !== undefined && <span className="text-xs text-muted-foreground">Fotos: {usd(p.pieza.costeRealUsd)}</span>}
+          <div className="mt-auto grid gap-2">
+            <button type="button" className={cn(principal, 'justify-self-start')} onClick={() => setRepeticion((x) => x + 1)}>
+              <RotateCcw className="size-4" /> Ver cómo se compuso
+            </button>
+            <div className="flex flex-wrap items-center gap-1">
+              <a className={discreto} href={url(actual.png)} download={`${p.pieza.id}-${String(actual.n).padStart(2, '0')}.png`}>
+                <Download className="size-4" /> Descargar esta
+              </a>
+              {listas.length > 1 && (
+                <button type="button" className={discreto} onClick={() => listas.forEach((d, k) => setTimeout(() => descargar(url(d.png), `${p.pieza.id}-${String(d.n).padStart(2, '0')}.png`), k * 250))}>
+                  <ImageIcon className="size-4" /> Todas
+                </button>
+              )}
+              {listas.length > 1 && (
+                <button type="button" className={discreto} onClick={() => setRueda(true)}>
+                  <GalleryHorizontal className="size-4" /> En rueda
+                </button>
+              )}
+            </div>
           </div>
+          {p.pieza.costeRealUsd !== undefined && <p className="text-xs text-tenue">Fotos de esta pieza: {usd(p.pieza.costeRealUsd)}</p>}
         </div>
       </div>
       {rueda && (
@@ -325,7 +395,7 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
       {grande && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setGrande(false)}>
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <img src={url(actual.png)} alt="" className="max-h-[90vh] max-w-[92vw] rounded-xl object-contain" />
+            <img src={url(actual.png)} alt="" className="max-h-[90vh] max-w-[92vw] rounded-md object-contain" />
             {flechas('p-2')}
           </div>
           <button type="button" aria-label="Cerrar" className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" onClick={() => setGrande(false)}>

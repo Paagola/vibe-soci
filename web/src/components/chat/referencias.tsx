@@ -8,6 +8,7 @@ import { api, type Bloque, type Conversacion } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { ThinkingOrb } from '@/components/ui/ai-thiking-orb-and-input';
 import { Rueda } from './rueda';
+import { Titular } from './society';
 
 type BloqueReferencias = Extract<Bloque, { tipo: 'referencias' }>;
 type Candidata = BloqueReferencias['candidatas'][number];
@@ -80,13 +81,13 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-start gap-3 p-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Images className="size-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold">Elige la estética de referencia</div>
+          <Titular grande="Elige" cursiva="la estética" />
           <p className="mt-0.5 text-sm text-muted-foreground">
             Se toma su oficio (composición, tipografía, color), nunca su contenido. {b.pedido.formato === 'carrusel' ? `Carrusel de ${b.pedido.diapositivas}` : 'Post'}.
           </p>
@@ -101,7 +102,7 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
         return (
           <section key={s.id} className="border-t border-border px-4 py-3">
             <div className="mb-2 flex items-baseline gap-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.nombre}</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">{s.nombre}</h4>
               <span className="text-xs text-tenue">{s.detalle}</span>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -112,7 +113,7 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
                   onClick={() => setMarcada(c.id === marcada ? undefined : c.id)}
                   aria-pressed={c.id === marcada}
                   title={c.motivo ?? c.titulo}
-                  className={cn('group relative aspect-[4/5] overflow-hidden rounded-lg border-2 bg-muted transition', c.id === marcada ? 'border-acento' : 'border-transparent hover:border-border')}
+                  className={cn('group relative aspect-[4/5] overflow-hidden rounded-lg border-2 bg-muted transition', c.id === marcada ? 'border-cobalto' : 'border-transparent hover:border-border')}
                 >
                   <img src={src(c)} alt={c.titulo} loading="lazy" className="size-full object-cover" />
                   {c.id === marcada && (
@@ -143,10 +144,10 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
         <button type="button" className={cn(boton, 'text-muted-foreground hover:bg-accent hover:text-foreground')} disabled={Boolean(ocupado)} onClick={() => void elegir('ninguna')}>
           Sin referencia
         </button>
-        <button type="button" className={cn(boton, 'border border-border hover:bg-accent')} disabled={Boolean(ocupado)} onClick={() => void elegir('auto')}>
+        <button type="button" className={cn(boton, 'h-11 rounded-full border-2 border-cobalto px-5 font-semibold text-cobalto hover:bg-cobalto/10')} disabled={Boolean(ocupado)} onClick={() => void elegir('auto')}>
           {ocupado === 'auto' ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />} Decide tú
         </button>
-        <button type="button" className={cn(boton, 'bg-primary text-primary-foreground hover:opacity-90')} disabled={!marcada || Boolean(ocupado)} onClick={() => marcada && void elegir(marcada)}>
+        <button type="button" className={cn(boton, 'h-11 rounded-full bg-primary px-6 font-display text-[17px] tracking-wide text-primary-foreground hover:brightness-95')} disabled={!marcada || Boolean(ocupado)} onClick={() => marcada && void elegir(marcada)}>
           {ocupado && ocupado === marcada ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Usar esta
         </button>
       </div>

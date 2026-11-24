@@ -145,6 +145,8 @@ export interface VisualCompuesto {
   receta: Receta;
   /** Lo que se decidió por el camino (reparación rechazada, acabado elegido a ciegas…), en castellano. */
   decisiones?: string[];
+  /** La carpeta de capas (PNG a lienzo completo) de la composición final, antes del acabado. */
+  capas?: string;
 }
 
 const NEUTRA = { nivel: 2, motivo: 'sin crítica' };
@@ -259,6 +261,9 @@ export async function componerVisual(
       decisiones.push('El titular no se leía en el móvil (el producto lo tapaba): lo saqué de detrás del producto, al aire libre de la foto.');
     }
   }
+
+  // Las capas de la composición (para enseñar cómo se compuso), antes de que el acabado cambie el PNG.
+  if (mejor?.png) mejor = { ...mejor, capas: join(dirname(mejor.png), 'capas') };
 
   // El acabado de Nano Banana 2 sobre la versión final: Hydrogen propone las mejoras (fondo, luz, sello, marco,
   // acabado de impresión), Nano Banana 2 las pinta, el código restaura producto y textos, y se queda la versión que

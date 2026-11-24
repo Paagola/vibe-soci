@@ -14,11 +14,12 @@ import { Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, PanelLeftOpen,
 import { PromptInput } from '@/components/ui/ai-chat-input';
 import { TarjetaReferencias } from '@/components/chat/referencias';
 import { TarjetaConceptos } from '@/components/chat/conceptos';
-import MorphOrb, { ThinkingOrb } from '@/components/ui/ai-thiking-orb-and-input';
+import MorphOrb from '@/components/ui/ai-thiking-orb-and-input';
 import { Bandeja, PanelDeHerramientas } from '@/components/chat/bandeja';
 import { TarjetaEncargo } from '@/components/chat/encargo';
 import { TarjetaHerramienta } from '@/components/chat/herramienta';
 import { Lateral, Recorrido } from '@/components/chat/lateral';
+import { AgenteTrabajando } from '@/components/chat/society';
 import { TarjetaHechos, TarjetaPlan, TarjetaProgreso, VisorPieza } from '@/components/chat/tarjetas';
 import { aBase64, api, type Bloque, type Conversacion, type Esfuerzo, type Formato, type Herramienta, type Local, type Mensaje } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -30,7 +31,6 @@ const ICONOS = {
   Post: <Square className="size-3.5" />,
   Carrusel: <GalleryHorizontalEnd className="size-3.5" />,
 };
-const PENSANDO = ['Pensando', 'Mirando la foto', 'Decidiendo', 'Escribiendo'];
 
 const idDeLaRuta = () => /^\/c\/([a-z0-9-]+)/.exec(location.pathname)?.[1];
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -48,6 +48,13 @@ export default function App() {
   const [texto, setTexto] = useState('');
   const [portada, setPortada] = useState(!idDeLaRuta());
   const fin = useRef<HTMLDivElement>(null);
+  /** Los mensajes que ya estaban al abrir la conversación: solo los nuevos entran como una hoja que cae. */
+  const iniciales = useRef<Set<string>>(new Set());
+  const abierta = useRef<string>();
+  if (conversacion && abierta.current !== conversacion.id) {
+    abierta.current = conversacion.id;
+    iniciales.current = new Set(conversacion.mensajes.map((m) => m.id));
+  }
   const foto = useRef<HTMLInputElement>(null);
 
   const refrescarLista = useCallback(() => api.conversaciones().then(setConversaciones, () => {}), []);
@@ -168,17 +175,17 @@ export default function App() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
+        <header className="cristal z-20 m-3 mb-0 flex h-14 shrink-0 items-center gap-3 rounded-2xl px-4">
           {!lateral && (
             <button type="button" onClick={() => setLateral(true)} aria-label="Mostrar las conversaciones" className="rounded-lg p-1.5 text-tenue hover:bg-accent hover:text-foreground">
               <PanelLeftOpen className="size-4" />
             </button>
           )}
           {portada || !conversacion ? (
-            <span className="text-sm font-medium text-muted-foreground">Nueva conversación</span>
+            <span className="text-sm font-semibold">Nueva conversación</span>
           ) : (
             <>
-              <span className="max-w-[16rem] truncate text-sm font-medium">{conversacion.titulo}</span>
+              <span className="max-w-[20rem] truncate text-sm font-semibold">{conversacion.titulo}</span>
               <div className="ml-auto hidden md:block">
                 <Recorrido c={conversacion} />
               </div>
@@ -217,13 +224,13 @@ export default function App() {
               )}
               <div className="mx-auto grid max-w-3xl gap-6 px-4 pb-10 pt-6">
                 {conversacion?.mensajes.map((m) => (
-                  <BurbujaMensaje key={m.id} m={m} c={conversacion} locales={locales} herramientas={herramientas} />
+                  <BurbujaMensaje key={m.id} m={m} c={conversacion} locales={locales} herramientas={herramientas} nuevo={!iniciales.current.has(m.id)} />
                 ))}
-                {conversacion?.pensando && <ThinkingOrb labels={PENSANDO} className="animate-in fade-in" />}
                 <div ref={fin} />
               </div>
             </main>
-            <footer className="shrink-0 space-y-3 border-t border-border bg-background px-4 pb-4 pt-3">
+            <footer className="shrink-0 space-y-3 px-4 pb-4 pt-2">
+              <AgenteTrabajando {...(conversacion ? { c: conversacion } : {})} />
               <PromptInput
                 onSubmit={enviar}
                 value={texto}
@@ -259,11 +266,11 @@ function Inicio(p: { icono: React.ReactNode; titulo: string; texto: string; onCl
   );
 }
 
-function BurbujaMensaje({ m, c, locales, herramientas }: { m: Mensaje; c: Conversacion; locales: Local[]; herramientas: Herramienta[] }) {
+function BurbujaMensaje({ m, c, locales, herramientas, nuevo }: { m: Mensaje; c: Conversacion; locales: Local[]; herramientas: Herramienta[]; nuevo: boolean }) {
   const imagenes = m.imagenes.map((id) => c.imagenes.find((i) => i.id === id)).filter((i): i is Conversacion['imagenes'][number] => Boolean(i));
   if (m.rol === 'usuario') {
     return (
-      <div className="flex flex-col items-end gap-2 animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <div className={cn('flex flex-col items-end gap-2', nuevo && 'hoja-entra')}>
         {imagenes.length > 0 && (
           <div className="flex flex-wrap justify-end gap-2">
             {imagenes.map((i) => (
@@ -271,18 +278,18 @@ function BurbujaMensaje({ m, c, locales, herramientas }: { m: Mensaje; c: Conver
             ))}
           </div>
         )}
-        {m.texto && <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-secondary px-4 py-2.5 text-sm">{m.texto}</div>}
+        {m.texto && <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-cobalto px-4 py-2.5 text-sm font-medium text-white">{m.texto}</div>}
       </div>
     );
   }
   return (
-    <div className="flex gap-3 animate-in fade-in slide-in-from-bottom-1 duration-200">
-      <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-[11px] font-bold text-primary-foreground" aria-hidden="true">
-        D
+    <div className={cn('flex gap-3', nuevo && 'hoja-entra')}>
+      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-papel font-[family-name:var(--font-serif)] text-base font-extrabold italic text-tinta" aria-hidden="true">
+        s
       </span>
       <div className="grid min-w-0 flex-1 gap-3">
         {m.texto && (
-          <div className="text-[15px] leading-relaxed text-foreground [&_p]:my-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5">
+          <div className="max-w-[68ch] text-[15px] leading-relaxed text-foreground [&_p]:my-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5">
             <Markdown>{m.texto}</Markdown>
           </div>
         )}
@@ -302,7 +309,7 @@ function BloqueDelMensaje({ b, c, locales, herramientas }: { b: Bloque; c: Conve
     case 'plan':
       return pieza ? <TarjetaPlan conversacion={c} bloque={b} pieza={pieza} /> : null;
     case 'progreso':
-      return <TarjetaProgreso {...(pieza ? { pieza } : {})} />;
+      return <TarjetaProgreso conversacion={c} {...(pieza ? { pieza } : {})} />;
     case 'pieza':
       return pieza ? <VisorPieza conversacion={c} pieza={pieza} /> : null;
     case 'herramienta': {

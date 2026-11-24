@@ -38,7 +38,7 @@ const ESTETICAS = [
 export function TarjetaEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, { tipo: 'encargo' }>; locales: Local[] }) {
   const { conversacion: c, bloque: b } = p;
   return (
-    <div className={cn(marco, 'overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300')}>
+    <div className={cn(marco, 'overflow-hidden')}>
       <div className="flex items-center gap-3 px-4 pt-4">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <ClipboardList className="size-4" />
@@ -165,7 +165,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
       </div>
 
       <div className="grid gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Foto</span>
+        <span className="text-sm font-medium text-muted-foreground">Foto</span>
         <div className="flex flex-wrap gap-2">
           {c.imagenes.map((i) => (
             <button type="button" key={i.id} onClick={() => setFoto(i.id)} className={cn('overflow-hidden rounded-lg ring-2 transition', foto === i.id ? 'ring-acento' : 'ring-transparent opacity-60 hover:opacity-100')}>
@@ -181,7 +181,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Local</span>
+          <span className="text-sm font-medium text-muted-foreground">Local</span>
           <select className={campo} value={local} onChange={(e) => setLocal(e.target.value)}>
             {p.locales.map((l) => (
               <option key={l.slug} value={l.slug}>
@@ -191,7 +191,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
           </select>
         </label>
         <label className="grid gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Estética</span>
+          <span className="text-sm font-medium text-muted-foreground">Estética</span>
           <select className={campo} value={estetica} onChange={(e) => setEstetica(e.target.value)}>
             {ESTETICAS.map(([v, n]) => (
               <option key={v} value={v}>
@@ -202,7 +202,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
         </label>
       </div>
       <label className="grid gap-1">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Qué quieres mostrar</span>
+        <span className="text-sm font-medium text-muted-foreground">Qué quieres mostrar</span>
         <input className={campo} value={plato} onChange={(e) => setPlato(e.target.value)} placeholder="Ej. Croquetas de jamón con un tinto" />
       </label>
 
@@ -210,7 +210,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
         <summary className="cursor-pointer font-medium">Opciones</summary>
         <div className="mt-2 grid gap-2">
           <label className="grid gap-1">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Uso de la foto</span>
+            <span className="text-sm font-medium text-muted-foreground">Uso de la foto</span>
             <select className={campo} value={uso} onChange={(e) => setUso(e.target.value)}>
               <option value="PUBLICABLE">Foto del local (publicable)</option>
               <option value="SOLO_PRUEBA_COMPOSICION">Solo para una prueba</option>
@@ -229,7 +229,7 @@ function AltaDeEncargo(p: { conversacion: Conversacion; bloque: Extract<Bloque, 
           </label>
           {conExtras && (
             <div className="grid gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tus fotos de más para los detalles (hasta 3)</span>
+              <span className="text-sm font-medium text-muted-foreground">Tus fotos de más para los detalles (hasta 3)</span>
               {extras.map((x, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <select className={cn(campo, 'max-w-40')} value={x.imagen} onChange={(e) => setExtras(extras.map((y, k) => (k === i ? { ...y, imagen: e.target.value } : y)))}>
