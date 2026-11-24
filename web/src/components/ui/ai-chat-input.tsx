@@ -278,11 +278,11 @@ function AttachmentGalleryModal({
       </div>
 
       <button
-        type="button" onClick={handleClose}
+        type="button" onClick={handleClose} aria-label="Cerrar vista previa"
         style={{ opacity: isOpen ? 1 : 0, transform: isOpen ? "scale(1)" : "scale(0.7)" }}
         className={cn(
-          "fixed right-4 top-4 flex size-9 items-center justify-center rounded-full bg-card/90 text-foreground/70 shadow-md backdrop-blur-sm",
-          "transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:bg-card hover:text-foreground",
+          "fixed right-4 top-4 flex size-9 items-center justify-center rounded-full bg-popover text-popover-foreground shadow-md",
+          "transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] hover:bg-secondary",
           !isOpen && "pointer-events-none"
         )}
       >
@@ -786,7 +786,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
               overflow: expanded ? "visible" : "hidden",
             }}
             className={cn(
-              "relative w-full border border-border bg-card shadow-sm focus-within:border-ring/40 focus-within:ring-1 focus-within:ring-ring/20 hover:border-border/80 z-10",
+              "hoja relative z-10 w-full border border-border shadow-sm focus-within:border-ring focus-within:ring-1 focus-within:ring-ring/30",
               expanded ? "cursor-text" : "cursor-default"
             )}
           >
@@ -822,7 +822,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
                   : "opacity 0.3s ease-out, transform 0.3s ease-out, height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
               }}
               className={cn(
-                "prompt-scrollbar absolute top-0 inset-x-0 z-[1] w-full resize-none bg-transparent pl-4 pr-12 py-3.5 text-sm leading-[22px] text-foreground outline-none placeholder:font-medium placeholder:text-muted-foreground/80 cursor-text",
+                "prompt-scrollbar absolute top-0 inset-x-0 z-[1] w-full resize-none bg-transparent pl-4 pr-12 py-3.5 text-sm leading-[22px] text-foreground outline-none placeholder:font-medium placeholder:text-muted-foreground cursor-text",
                 expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1 pointer-events-none",
                 isScrolling ? "overflow-y-auto" : "overflow-y-hidden",
                 isRecording && "pointer-events-none"
@@ -848,7 +848,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
               onClick={expand}
               style={{ transition: isSmoothResize ? "none" : "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)" }}
               className={cn(
-                "absolute inset-x-0 top-0 z-[1] cursor-text pl-4 pr-12 py-[15px] text-left text-sm font-medium leading-[17px] text-muted-foreground/80 outline-none",
+                "absolute inset-x-0 top-0 z-[1] cursor-text pl-4 pr-12 py-[15px] text-left text-sm font-medium leading-[17px] text-muted-foreground outline-none",
                 !expanded ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-105 translate-y-1 pointer-events-none"
               )}
               aria-label="Escribir"
@@ -872,7 +872,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
                     setIsModelSelectOpen((prev) => !prev);
                   }}
                   className={cn(
-                    "group flex items-center gap-1 rounded-full px-2 py-1 text-foreground/50 transition-all duration-200 outline-none hover:bg-accent/60 hover:text-foreground cursor-default",
+                    "group flex items-center gap-1 rounded-full px-2 py-1 text-muted-foreground transition-all duration-200 hover:bg-accent/60 hover:text-foreground cursor-default",
                     isModelSelectOpen ? "bg-accent/60 text-foreground" : ""
                   )}
                   aria-label={`Formato: ${selectedModel}`}
@@ -911,7 +911,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
                           }));
                         }}
                         onClick={(e) => { e.stopPropagation(); setSelectedModel(model); setIsModelSelectOpen(false); }}
-                        className="group relative flex h-8 w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs font-medium text-foreground/80 outline-none active:scale-[0.98] cursor-default"
+                        className="group relative flex h-8 w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xs font-medium text-foreground active:scale-[0.98] cursor-default"
                       >
                         <span className="flex items-center gap-2">
                           <ModelIcon model={model} icons={modelIcons} className="size-3.5 opacity-85 group-hover:opacity-100 transition-opacity" />
@@ -925,7 +925,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
 
               <button
                 type="button" onMouseDown={(e) => e.preventDefault()} onClick={cycleEffort}
-                className="group flex items-center gap-1 rounded-full px-2 py-1 text-foreground/50 transition-all duration-200 hover:bg-accent/60 hover:text-foreground outline-none cursor-default"
+                className="group flex items-center gap-1 rounded-full px-2 py-1 text-muted-foreground transition-all duration-200 hover:bg-accent/60 hover:text-foreground cursor-default"
               >
                 <DynamicBarsIcon level={effortIndex} />
                 <span className="text-xs font-semibold select-none transition-colors"><MorphingText text={efforts[effortIndex]} /></span>
@@ -933,7 +933,7 @@ export const PromptInput = React.forwardRef<HTMLDivElement, PromptInputProps>(
 
               <button
                 type="button" onMouseDown={(e) => e.preventDefault()} onClick={openFileChooser} disabled={attachments.length >= maxAttachments}
-                className="ml-auto flex size-7 items-center justify-center rounded-full text-foreground/50 transition-all duration-200 hover:bg-accent/60 hover:text-foreground outline-none cursor-default disabled:opacity-40 disabled:pointer-events-none"
+                className="ml-auto flex size-7 items-center justify-center rounded-full text-muted-foreground transition-all duration-200 hover:bg-accent/60 hover:text-foreground cursor-default disabled:opacity-40 disabled:pointer-events-none"
               >
                 <PlusIcon />
               </button>

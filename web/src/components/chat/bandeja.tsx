@@ -59,7 +59,7 @@ function Accion(p: { icono: React.ReactNode; children: React.ReactNode; onClick:
       disabled={p.disabled}
       className={cn(
         'inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition disabled:opacity-60',
-        p.destacada ? 'border-transparent bg-secondary text-foreground hover:bg-accent' : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground',
+        p.destacada ? 'border-transparent bg-secondary text-foreground hover:bg-accent' : 'hoja border-border text-muted-foreground hover:bg-accent hover:text-foreground',
       )}
     >
       <span className={p.destacada ? 'text-foreground' : 'text-tenue'}>{p.icono}</span>
@@ -121,7 +121,7 @@ export function PanelDeHerramientas(p: { herramientas: Herramienta[]; abrir: (h:
                   {del.map((h) => {
                     const Icono = iconoDe(h.icono);
                     return (
-                      <button type="button" key={h.id} onClick={() => void usar(h)} disabled={Boolean(abriendo)} className="group flex items-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition hover:border-acento/60 hover:bg-accent disabled:opacity-60">
+                      <button type="button" key={h.id} onClick={() => void usar(h)} disabled={Boolean(abriendo)} className="hoja group flex items-start gap-3 rounded-xl border border-border p-3 text-left transition hover:border-acento/60 hover:bg-accent disabled:opacity-60">
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition group-hover:text-acento">
                           {abriendo === h.id ? <Loader2 className="size-4 animate-spin" /> : <Icono className="size-4" />}
                         </span>

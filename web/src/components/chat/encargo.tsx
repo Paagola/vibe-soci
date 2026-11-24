@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { montarEncargo } from '@/legacy/encargo.js';
 import '@/legacy/legado.css';
 
-const marco = 'rounded-xl border border-border bg-card text-card-foreground';
+const marco = 'hoja rounded-xl border border-border';
 const boton = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 h-9 text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
 const principal = cn(boton, 'bg-primary text-primary-foreground hover:opacity-90');
 const secundario = cn(boton, 'border border-border hover:bg-accent');

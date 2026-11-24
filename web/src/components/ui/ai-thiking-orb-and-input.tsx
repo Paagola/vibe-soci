@@ -32,11 +32,6 @@ export interface MorphOrbProps {
 const PILL_H = 60, BALL_SMALL = 60, ORB_D = 132, ORB_R = 66, CANVAS = 220;
 const CARD_H = 108;
 const FLY_D = 138;
-const pillW = () => Math.min(560, window.innerWidth - 32);
-const cardW = () => Math.min(320, window.innerWidth - 32);
-// Estudio: el campo queda más arriba (deja sitio debajo a la bandeja de herramientas y a la subida de la foto) y se mide
-// sobre el alto de la portada, sin la cabecera de 56 px.
-const homeDy = () => (window.innerHeight - 56) * 0.54 - 340; // pill centre is 96px above the viewport bottom; stage centre is at top:46%
 
 /* ───────────────────────── math + easing ───────────────────────── */
 type Ease = (t: number) => number;
@@ -468,7 +463,13 @@ function sampleAt(h: Sample[], t: number, out: Sample) {
 function createRuntime(env: Env): Runtime {
   const { actor, mover, root, status, pulse, ghosts, form } = env;
   const life = new AbortController();
-  const geo: Geo = { pw: pillW(), cw: cardW(), H: homeDy(), dir: -1 };
+  // Estudio: el campo queda en el 58 % del espacio del orbe. El centro de la animación está en el 46 %.
+  const medir = () => ({
+    pw: Math.min(560, env.root.clientWidth - 32),
+    cw: Math.min(320, env.root.clientWidth - 32),
+    H: env.root.clientHeight * 0.12,
+  });
+  const geo: Geo = { ...medir(), dir: -1 };
   const orb = createOrb(env.canvas, env.getSpeed, env.isReduced);
   const vals: Record<string, number> = {};
   const dirty = new Set<string>();
@@ -723,7 +724,7 @@ function createRuntime(env: Env): Runtime {
     env.ui.clearInput();
     orb.reset();
     hist.length = 0;
-    geo.pw = pillW(); geo.cw = cardW(); geo.H = homeDy();
+    Object.assign(geo, medir());
     resetChannels();
     const pillCh = ["oPill", "oInput", "oGlow", "oAur", "oRing"];
     pillCh.forEach((ch) => setNow(ch, 0));
@@ -748,7 +749,7 @@ function createRuntime(env: Env): Runtime {
     hist.length = 0;
     env.ui.setAnswer("");
     env.ui.resetLabel();
-    geo.pw = pillW(); geo.cw = cardW(); geo.H = homeDy();
+    Object.assign(geo, medir());
     resetChannels();
     setNow("pulse", -1);
     busy = false; idling = false;
@@ -763,7 +764,7 @@ function createRuntime(env: Env): Runtime {
     start(text, cfg) {
       if (busy) return false;
       busy = true;
-      geo.pw = pillW(); geo.cw = cardW(); geo.H = homeDy(); // snapshot once, never read layout in frames
+      Object.assign(geo, medir()); // snapshot once, never read layout in frames
       geo.dir = -geo.dir;
       orb.reset();
       setNow("u", 0);
@@ -785,7 +786,7 @@ function createRuntime(env: Env): Runtime {
     hard,
     home() {
       if (busy) return;
-      geo.pw = pillW(); geo.cw = cardW(); geo.H = homeDy();
+      Object.assign(geo, medir());
       setNow("w", geo.pw);
       setNow("u", 0);
     },
@@ -866,7 +867,7 @@ export default function MorphOrb(props: MorphOrbProps) {
     rtRef.current = rt;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && phaseRef.current !== "idle" && phaseRef.current !== "reset") {
+      if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("dialog[open]") && phaseRef.current !== "idle" && phaseRef.current !== "reset") {
         e.preventDefault();
         rt.escape();
       }
@@ -874,13 +875,14 @@ export default function MorphOrb(props: MorphOrbProps) {
     const onResize = () => {
       if (phaseRef.current === "idle" && !rt.busy()) rt.home();
     };
+    const resize = new ResizeObserver(onResize);
+    resize.observe(root);
     window.addEventListener("keydown", onKey);
-    window.addEventListener("resize", onResize);
     inputRef.current?.focus({ preventScroll: true });
 
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("resize", onResize);
+      resize.disconnect();
       mq.removeEventListener("change", onMq);
       window.clearTimeout(timers.current.typing);
       window.clearTimeout(timers.current.shake);
@@ -1036,7 +1038,7 @@ export default function MorphOrb(props: MorphOrbProps) {
         <span key={"c" + lbl.n} className="mo-lab mo-in">{labelInner(lbl.cur)}</span>
       </div>
 
-      <button type="button" className="mo-reset" onClick={onReset}>{COPY.reset}</button>
+      <button type="button" className="mo-reset" tabIndex={phase === "answered" ? 0 : -1} onClick={onReset}>{COPY.reset}</button>
 
       <div className="mo-live" ref={liveRef} role="status" aria-live="polite" />
 
