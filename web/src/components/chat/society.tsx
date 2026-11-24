@@ -38,6 +38,11 @@ export function actividadDe(c?: Conversacion): { texto: string; detalle?: string
     const texto = paso ? paso.texto.replace(/^Foto nueva de la diapositiva/, 'Fotografiando la lámina').replace(/^Diseño de la diapositiva/, 'Componiendo la lámina') : 'Montando la pieza';
     return { texto, ...(total ? { detalle: `${listas} de ${total} listas` } : {}) };
   }
+  const editando = c.piezas.find((p) => p.edicion);
+  if (editando) {
+    const a = editando.agentes?.at(-1);
+    return { texto: a ? a.accion : 'Retocando las capas', detalle: `${editando.edicion!.laminas.length === 1 ? 'lámina' : 'láminas'} ${editando.edicion!.laminas.join(', ')}` };
+  }
   const planificando = c.piezas.find((p) => p.estado === 'PROPUESTA' && !p.plan);
   if (planificando) return { texto: [...planificando.progreso].reverse().find((x) => x.estado === 'en-curso')?.texto ?? 'Planificando cada lámina' };
   const refs = bloques.find((b) => b.tipo === 'referencias' && b.estado === 'BUSCANDO');

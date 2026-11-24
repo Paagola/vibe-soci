@@ -94,6 +94,23 @@ export interface Diapositiva {
   soloFoto?: boolean;
 }
 
+export type RolDeAgente = 'director' | 'fotografo' | 'maquetador' | 'revisor';
+/** Una zona de la lámina en fracciones del lienzo (0–1). */
+export interface Zona {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface AgenteEnLaMesa {
+  id: string;
+  rol: RolDeAgente;
+  n?: number;
+  zona?: Zona;
+  accion: string;
+  desde: string;
+}
+
 export interface Pieza {
   id: string;
   formato: Formato;
@@ -107,6 +124,11 @@ export interface Pieza {
   rehacer: number[];
   progreso: Array<{ texto: string; estado: 'en-curso' | 'hecho' | 'error' }>;
   fotos?: Array<{ n: number; archivo: string }>;
+  /** Quién trabaja ahora mismo en la pieza (sus cursores en la mesa). */
+  agentes?: AgenteEnLaMesa[];
+  bitacora?: Array<{ id: string; rol: RolDeAgente; n?: number; texto: string; fecha: string }>;
+  /** Una edición de capas en marcha. */
+  edicion?: { laminas: number[]; pedido: string; desde: string };
   diapositivas: Array<{ n: number; png?: string; movil?: string; problemas: string[]; soloFoto?: boolean; decisiones?: string[]; capas?: string[] }>;
   error?: string;
 }

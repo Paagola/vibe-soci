@@ -20,6 +20,7 @@ import { TarjetaEncargo } from '@/components/chat/encargo';
 import { TarjetaHerramienta } from '@/components/chat/herramienta';
 import { Lateral, Recorrido } from '@/components/chat/lateral';
 import { AgenteTrabajando } from '@/components/chat/society';
+import { MesaDeEdicion } from '@/components/chat/mesa';
 import { TarjetaHechos, TarjetaPlan, TarjetaProgreso, VisorPieza } from '@/components/chat/tarjetas';
 import { aBase64, api, type Bloque, type Conversacion, type Esfuerzo, type Formato, type Herramienta, type Local, type Mensaje } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -114,7 +115,7 @@ export default function App() {
   useEffect(() => {
     const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!portada) fin.current?.scrollIntoView({ behavior: reducirMovimiento ? 'instant' : 'smooth', block: 'end' });
-  }, [portada, conversacion?.id, conversacion?.mensajes.length, conversacion?.pensando, conversacion?.piezas.map((p) => `${p.estado}${p.progreso.length}`).join()]);
+  }, [portada, conversacion?.id, conversacion?.mensajes.length, conversacion?.pensando, conversacion?.piezas.map((p) => `${p.estado}${p.progreso.length}${p.edicion ? 'e' : ''}`).join()]);
 
   const asegurar = async (): Promise<Conversacion> => {
     if (conversacion) return conversacion;
@@ -245,10 +246,15 @@ export default function App() {
                   <Recorrido c={conversacion} />
                 </div>
               )}
-              <div className="mx-auto grid max-w-3xl gap-6 px-4 pb-10 pt-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 motion-safe:duration-300">
+              <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-6 px-4 pb-10 pt-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 motion-safe:duration-300">
                 {conversacion?.mensajes.map((m) => (
                   <BurbujaMensaje key={m.id} m={m} c={conversacion} locales={locales} herramientas={herramientas} nuevo={!iniciales.current.has(m.id)} />
                 ))}
+                {conversacion?.piezas
+                  .filter((p) => p.edicion)
+                  .map((p) => (
+                    <MesaDeEdicion key={`edicion-${p.id}`} conversacion={conversacion} pieza={p} />
+                  ))}
                 <div ref={fin} />
               </div>
             </main>

@@ -315,9 +315,63 @@
 }
 @keyframes escaneo { from { background-position: 0 -20%, 0 0, 0 0; } to { background-position: 0 120%, 0 0, 0 0; } }
 
+/* ───────── La mesa en vivo: los cursores de los agentes (components/chat/mesa.tsx) ─────────
+   Cada agente trae su color en --c. La selección es la de un editor de diseño: un borde y cuatro tiradores. */
+.seleccion {
+  border: 1.5px solid var(--c);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5);
+  animation: seleccion-entra 380ms cubic-bezier(0.2, 0.7, 0.1, 1) both;
+}
+.tirador {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #fff;
+  border: 1.5px solid var(--c);
+  border-radius: 1px;
+}
+@keyframes seleccion-entra { from { opacity: 0; transform-origin: center; scale: 0.94; } to { opacity: 1; scale: 1; } }
+/* El fotógrafo dispara: un destello blanco sobre el marco, cada pocos segundos. */
+.disparo {
+  background: radial-gradient(circle at 50% 45%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.35) 45%, transparent 75%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: disparo 2.8s ease-out infinite;
+}
+@keyframes disparo { 0%, 70% { opacity: 0; } 73% { opacity: 1; } 100% { opacity: 0; } }
+/* Cada vez que un agente cambia de tarea, «hace clic»: una onda de su color en la punta del cursor. */
+.clic {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 999px;
+  border: 2px solid var(--c);
+  animation: clic 650ms ease-out both;
+}
+@keyframes clic { from { opacity: 0.9; transform: scale(0.2); } to { opacity: 0; transform: scale(1.6); } }
+/* Quien entra en la mesa aparece en la fila de caras. */
+.presencia { animation: presencia 420ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+@keyframes presencia { from { opacity: 0; transform: scale(0.4) translateY(4px); } to { opacity: 1; transform: none; } }
+/* La lámina que se retoca: la retícula del maquetador encima, muy suave. */
+.retocando::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(to right, rgb(36 64 224 / 0.12) 0 1px, transparent 1px calc(100% / 12)),
+    repeating-linear-gradient(to bottom, rgb(36 64 224 / 0.08) 0 1px, transparent 1px calc(100% / 16));
+  pointer-events: none;
+  animation: capa-fundido 600ms ease both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .capa, .barrido, .foto-llega, .fotografiando, .componiendo::after, .liquido, .relevo, .hoja-entra, .destello { animation: none !important; }
-  .barrido { display: none; }
+  .capa, .barrido, .foto-llega, .fotografiando, .componiendo::after, .liquido, .relevo, .hoja-entra, .destello, .seleccion, .disparo, .clic, .presencia { animation: none !important; }
+  .barrido, .disparo, .clic { display: none; }
 }
 
 /* ───────── El orbe pensante (components/ui/ai-thiking-orb-and-input.tsx) ─────────

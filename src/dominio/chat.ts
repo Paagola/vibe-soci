@@ -242,6 +242,25 @@ export type Mensaje = z.infer<typeof Mensaje>;
 
 export const PasoDeProgreso = z.object({ texto: z.string(), estado: z.enum(['en-curso', 'hecho', 'error']) });
 
+/** Quién trabaja en una pieza. Cada uno tiene su cursor en la mesa de la web. */
+export const RolDeAgente = z.enum(['director', 'fotografo', 'maquetador', 'revisor']);
+export type RolDeAgente = z.infer<typeof RolDeAgente>;
+/** Una zona de la lámina, en fracciones del lienzo (0–1): la capa que toca el agente. */
+export const ZonaDeLamina = z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() });
+export type ZonaDeLamina = z.infer<typeof ZonaDeLamina>;
+/** Lo que hace un agente ahora mismo: en qué lámina (y en qué zona de ella) y con qué. */
+export const AgenteEnLaMesa = z.object({
+  /** Un id por puesto de trabajo («fotografo-2»): dos fotógrafos en paralelo son dos cursores. */
+  id: z.string(),
+  rol: RolDeAgente,
+  n: z.number().int().positive().optional(),
+  zona: ZonaDeLamina.optional(),
+  accion: z.string(),
+  desde: z.string(),
+});
+export type AgenteEnLaMesa = z.infer<typeof AgenteEnLaMesa>;
+export const ApunteDeBitacora = z.object({ id: z.string(), rol: RolDeAgente, n: z.number().int().positive().optional(), texto: z.string(), fecha: z.string() });
+
 export const DiapositivaProducida = z.object({
   n: z.number().int().positive(),
   /** Rutas relativas a la carpeta de la conversación. */
@@ -278,6 +297,12 @@ export const Pieza = z.object({
   progreso: z.array(PasoDeProgreso).default([]),
   /** Las fotos nuevas según van llegando (para verlas mientras se produce la pieza). */
   fotos: z.array(z.object({ n: z.number().int().positive(), archivo: z.string() })).default([]),
+  /** Los agentes que trabajan ahora mismo en la pieza (vacío cuando nadie la toca). */
+  agentes: z.array(AgenteEnLaMesa).default([]),
+  /** Lo último que han hecho, para la bitácora de la mesa. */
+  bitacora: z.array(ApunteDeBitacora).default([]),
+  /** Una edición de capas en marcha sobre la pieza terminada. */
+  edicion: z.object({ laminas: z.array(z.number().int().positive()), pedido: z.string(), desde: z.string() }).optional(),
   diapositivas: z.array(DiapositivaProducida).default([]),
   error: z.string().optional(),
 });

@@ -705,7 +705,7 @@ describe('edición de diseño en el chat', () => {
     // El original y los activos entregados tienen identificadores distintos.
     c.hechos = { local: 'asador-etxebarri', plato: 'Croquetas', elementos: [{ nombre: 'croqueta', estado: 'frita', recuento: null }], mensaje: 'En la barra', foto: 'original', activoReal: 'foto-real' };
     c.piezas = [{
-      id: 'pieza-base', estado: 'LISTA', formato, plan: p, esfuerzo: 'normal', indicaciones: '', costeEstimadoUsd: 1, costeRealUsd: 1, rehacer: [], progreso: [], fotos: [],
+      id: 'pieza-base', estado: 'LISTA', formato, plan: p, esfuerzo: 'normal', indicaciones: '', costeEstimadoUsd: 1, costeRealUsd: 1, rehacer: [], progreso: [], fotos: [], agentes: [], bitacora: [],
       diapositivas: p.diapositivas.map((_, i) => ({ n: i + 1, png: `piezas/base/${i}.png`, foto: `toma-${i + 1}`, capas: [], problemas: [], decisiones: [] })),
     }];
     await writeFile(chat.rutaArchivo(c.id, 'conversacion.json'), JSON.stringify(c));

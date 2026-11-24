@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { Rueda } from './rueda';
 import { Composicion } from './composicion';
 import { Titular } from './society';
+import { AGENTES, MesaEnVivo } from './mesa';
 
 const marco = 'hoja rounded-xl border border-border';
 const boton = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 h-9 text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
@@ -209,9 +210,8 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
 // ------------------------------------------------------------------ Progreso: el estudio en directo
 
 /**
- * Mientras se planifica, una línea. Mientras se produce, la mesa de luz con un marco por lámina: en cola, fotografiando
- * (una luz que pasa), la foto que llega y se enfoca, componiendo (escaneo y retícula) y, al terminar, la lámina que se
- * monta capa a capa.
+ * Mientras se planifica, una línea con el director. Mientras se produce, la mesa en vivo (./mesa.tsx): un marco por
+ * lámina y los cursores de los agentes trabajando encima.
  */
 export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }) {
   const pieza = p.pieza;
@@ -223,58 +223,17 @@ export function TarjetaProgreso(p: { conversacion: Conversacion; pieza?: Pieza }
     const actual = [...pasos].reverse().find((x) => x.estado === 'en-curso') ?? pasos.at(-1);
     return (
       <div className={cn(marco, 'flex items-center gap-2.5 px-4 py-3 text-sm text-muted-foreground')}>
-        <Loader2 className="size-4 animate-spin text-acento" />
+        <span className="relative flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold" style={{ background: AGENTES.director.color, color: AGENTES.director.tinta }} title="Director">
+          D
+          <span className="absolute -right-0.5 -bottom-0.5 size-2.5 animate-pulse rounded-full bg-exito ring-2 ring-card" />
+        </span>
+        <span className="font-semibold text-foreground">Director</span>
         {actual?.texto ?? 'Preparando'}
         {pieza?.error && <span className="text-destructive">{pieza.error}</span>}
       </div>
     );
   }
-  const url = (r: string) => api.archivo(p.conversacion.id, r);
-  const estadoDe = (t: string) => pasos.find((x) => x.texto === t)?.estado;
-  const total = plan.diapositivas.length;
-  const listas = pieza.diapositivas.filter((d) => d.png).length;
-  const fotografiando = plan.diapositivas.findIndex((_, i) => estadoDe(`Foto nueva de la diapositiva ${i + 1}`) === 'en-curso') + 1;
-  const resumen = listas === total ? 'Terminando' : fotografiando ? `Fotografiando la ${fotografiando} de ${total}` : listas ? `${listas} de ${total} listas` : 'Componiendo';
-  return (
-    <section aria-label="La pieza, componiéndose" className="mesa-de-luz -mx-1 rounded-2xl p-4 sm:-mx-10 sm:p-5">
-      <div className="mb-4 flex items-baseline justify-between gap-3">
-        <Titular grande="Manos" cursiva="a la obra" />
-        <span className="text-sm text-mesa-tenue" aria-live="polite">
-          {resumen}
-        </span>
-      </div>
-      <div className={cn('grid gap-3', total === 1 ? 'mx-auto max-w-[280px]' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}>
-        {plan.diapositivas.map((d, i) => {
-          const n = i + 1;
-          const lista = pieza.diapositivas.find((x) => x.n === n && x.png);
-          const foto = pieza.fotos?.find((f) => f.n === n)?.archivo;
-          const disenando = estadoDe(`Diseño de la diapositiva ${n}`) === 'en-curso';
-          const tomando = estadoDe(`Foto nueva de la diapositiva ${n}`) === 'en-curso';
-          const estado = lista ? 'Lista' : disenando ? 'Componiendo' : tomando ? 'Fotografiando' : foto ? 'Foto lista' : 'En cola';
-          return (
-            <figure key={n} className="grid gap-1.5">
-              {lista ? (
-                <Composicion capas={(lista.capas ?? []).map(url)} final={url(lista.movil ?? lista.png!)} alt={d.resumen} />
-              ) : foto ? (
-                <div className={cn('relative aspect-[3/4] overflow-hidden rounded-md', disenando && 'componiendo')}>
-                  <img src={url(foto)} alt="" className="foto-llega h-full w-full object-cover" />
-                </div>
-              ) : tomando ? (
-                <div className="fotografiando aspect-[3/4] rounded-md" />
-              ) : (
-                <div className="flex aspect-[3/4] items-center justify-center rounded-md border border-dashed border-mesa-tenue/40 font-display text-2xl text-mesa-tenue/60">{n}</div>
-              )}
-              <figcaption className="flex items-baseline justify-between gap-2 text-xs">
-                <span className="truncate">{PAPEL[d.papel] ?? d.papel}</span>
-                <span className={cn(lista ? 'text-mesa-foreground' : 'text-mesa-tenue')}>{estado}</span>
-              </figcaption>
-            </figure>
-          );
-        })}
-      </div>
-      {pieza.error && <p className="mt-3 text-sm text-red-700">{pieza.error}</p>}
-    </section>
-  );
+  return <MesaEnVivo conversacion={p.conversacion} pieza={pieza} />;
 }
 
 // ------------------------------------------------------------------ La pieza terminada

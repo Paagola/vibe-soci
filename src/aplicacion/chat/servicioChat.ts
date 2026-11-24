@@ -35,7 +35,7 @@ import { catalogoEnTexto, ResultadoHerramienta, type DefinicionHerramienta } fro
 import type { EditorDeDiseno } from './editarDiseno.js';
 import type { VisualCompuesto } from '../arte/pieza.js';
 import { fuentesDePieza } from './fuentesDePieza.js';
-import type { FuentesDePieza, PedidoDePieza } from '../../dominio/chat.js';
+import type { FuentesDePieza, PedidoDePieza, RolDeAgente, ZonaDeLamina } from '../../dominio/chat.js';
 
 export interface LocalDelChat {
   slug: string;
@@ -595,6 +595,13 @@ export class ServicioChat {
     const clave = `${conversacion}/${pieza.id}`;
     if (this.ediciones.has(clave)) throw new ErrorDeUsuario('Ya hay una edición en curso para esta pieza.');
     this.ediciones.add(clave);
+    // La mesa de edición: la pieza enseña qué láminas se tocan y los cursores de quien las toca.
+    await this.cambiar(conversacion, (cc) => {
+      const p = cc.piezas.find((x) => x.id === pieza.id)!;
+      p.edicion = { laminas: laminas.map((l) => l.n), pedido: pedido.slice(0, 300), desde: this.ahora() };
+      p.agentes = [];
+      p.bitacora = [];
+    });
     try {
       const revision = id();
       const cambios: Awaited<ReturnType<EditorDeDiseno>>[] = [];
@@ -603,6 +610,7 @@ export class ServicioChat {
           lamina, local: local.slug, tokens: local.tokens, pedido: `Petición del cliente: ${pedido}\nIndicaciones para la lámina ${lamina.n}: ${a.indicaciones}`,
           conChips: a.alcance === 'diseno-con-imagen-secundaria', carpeta: `piezas/${pieza.id}/ediciones/${revision}/${lamina.n}`,
           ruta: (archivo) => this.rutaArchivo(conversacion, archivo),
+          avisar: ({ rol, accion, zona }) => this.agente(conversacion, pieza.id, { id: `${rol}-1`, rol, n: lamina.n, ...(accion ? { accion } : {}), ...(zona ? { zona } : {}) }),
         }));
       }
       // Todos los archivos de la revisión ya existen. Publica las láminas en un único cambio de la conversación.
@@ -617,6 +625,13 @@ export class ServicioChat {
       });
     } finally {
       this.ediciones.delete(clave);
+      await this.cambiar(conversacion, (cc) => {
+        const p = cc.piezas.find((x) => x.id === pieza.id);
+        if (p) {
+          delete p.edicion;
+          p.agentes = [];
+        }
+      }).catch(() => {});
     }
   }
 
@@ -673,7 +688,7 @@ export class ServicioChat {
     const progreso = `prog-${id()}`;
     await this.decir(conversacion, mensaje, [{ tipo: 'progreso', id: progreso, pieza: piezaId }]);
     await this.cambiar(conversacion, (cc) => {
-      cc.piezas.push({ id: piezaId, formato, esfuerzo: o.esfuerzo, indicaciones: a.indicaciones, estado: 'PROPUESTA', costeEstimadoUsd: 0, fotos: [], ...(base ? { base: base.id } : {}), rehacer, progreso: [{ texto: base ? 'Replanteando las diapositivas' : 'Planificando cada diapositiva', estado: 'en-curso' }], diapositivas: [] });
+      cc.piezas.push({ id: piezaId, formato, esfuerzo: o.esfuerzo, indicaciones: a.indicaciones, estado: 'PROPUESTA', costeEstimadoUsd: 0, fotos: [], agentes: [], bitacora: [], ...(base ? { base: base.id } : {}), rehacer, progreso: [{ texto: base ? 'Replanteando las diapositivas' : 'Planificando cada diapositiva', estado: 'en-curso' }], diapositivas: [] });
     });
     try {
       const encargo = await this.encargo(c, piezaId, fuentes);
@@ -965,7 +980,32 @@ export class ServicioChat {
     });
   }
 
+  /**
+   * Un agente se pone a trabajar en la mesa (o cambia de tarea): la web mueve su cursor a la lámina y a la zona.
+   * Con `accion: undefined` se levanta de la mesa. Nunca para la producción si falla.
+   */
+  private async agente(conversacion: string, pieza: string, a: { id: string; rol: RolDeAgente; n?: number; zona?: ZonaDeLamina; accion?: string; apuntar?: boolean }) {
+    await this.cambiar(conversacion, (c) => {
+      const p = c.piezas.find((x) => x.id === pieza);
+      if (!p) return;
+      p.agentes = p.agentes.filter((x) => x.id !== a.id);
+      if (!a.accion) return;
+      const ahora = this.ahora();
+      p.agentes.push({ id: a.id, rol: a.rol, accion: a.accion.slice(0, 160), desde: ahora, ...(a.n ? { n: a.n } : {}), ...(a.zona ? { zona: a.zona } : {}) });
+      if (a.apuntar !== false) p.bitacora = [...p.bitacora, { id: a.id, rol: a.rol, texto: a.accion.slice(0, 160), fecha: ahora, ...(a.n ? { n: a.n } : {}) }].slice(-14);
+    }).catch(() => {});
+  }
+
+  /** Todos se levantan de la mesa (al terminar, bien o mal). */
+  private async despejarMesa(conversacion: string, pieza: string) {
+    await this.cambiar(conversacion, (c) => {
+      const p = c.piezas.find((x) => x.id === pieza);
+      if (p) p.agentes = [];
+    }).catch(() => {});
+  }
+
   private async producir(conversacion: string, piezaId: string): Promise<void> {
+    const mesa = (a: Parameters<ServicioChat['agente']>[2]) => this.agente(conversacion, piezaId, a);
     try {
       const c = await this.leer(conversacion);
       const pieza = c.piezas.find((p) => p.id === piezaId)!;
@@ -996,8 +1036,9 @@ export class ServicioChat {
       const local = (await this.d.locales()).find((l) => l.slug === fuentes.hechos.local)!;
       const { promptFinal } = await import('../arte/pieza.js');
       const revisar = esfuerzo !== 'rapido' && this.d.revisarFoto ? this.d.revisarFoto.bind(this.d) : undefined;
-      const tomar = async ({ d, n }: { d: DiapositivaDePieza; n: number }, continuidad?: string): Promise<string> => {
+      const tomar = async ({ d, n }: { d: DiapositivaDePieza; n: number }, continuidad?: string, puesto = 1): Promise<string> => {
         const texto = `Foto nueva de la diapositiva ${n}`;
+        const fotografo = `fotografo-${puesto}`;
         await this.paso(conversacion, piezaId, texto);
         const generar = d.visual.generar!;
         const etiquetaContinuidad = generar.conPlato ? '@image2' : '@image1';
@@ -1015,6 +1056,7 @@ export class ServicioChat {
         for (let intento = 1; intento <= 2; intento++) {
 
           const referencias = [...(generar.conPlato ? [{ ruta: entradaBase.foto.ruta, etiqueta: 'image1: the real dish' }] : []), ...(continuidad ? [{ ruta: continuidad, etiqueta: `${etiquetaContinuidad.slice(1)}: session continuity` }] : [])];
+          await mesa({ id: fotografo, rol: 'fotografo', n, accion: intento > 1 ? `Repite la toma de la ${n}` : `Dispara la toma de la ${n}${continuidad ? ', con la luz de la sesión' : ''}` });
           const r = await this.d.generarFoto({ id: `${piezaId}-${n}${intento > 1 ? `-${intento}` : ''}`, prompt, referencias, tamano: esfuerzo === 'rapido' ? '1K' : '2K' });
           coste += r.costeUsd;
           archivo = `${carpeta}/fotos/${String(n).padStart(2, '0')}${intento > 1 ? `-${intento}` : ''}.png`;
@@ -1028,12 +1070,21 @@ export class ServicioChat {
             continue;
           }
           await sharp(r.bytes).png().toFile(ruta);
+          // La foto ya se ve en su marco mientras se revisa.
+          await this.cambiar(conversacion, (cc) => {
+            const p = cc.piezas.find((x) => x.id === piezaId)!;
+            p.fotos = [...p.fotos.filter((x) => x.n !== n), { n, archivo: relative(this.carpetaDe(conversacion), ruta) }];
+          });
+          await mesa({ id: fotografo, rol: 'fotografo', n, accion: `Revela la toma de la ${n}`, apuntar: false });
+          await mesa({ id: `revisor-${puesto}`, rol: 'revisor', n, accion: `Mide la luz y el color de la ${n}`, zona: { x: 0.15, y: 0.2, w: 0.7, h: 0.6 } });
           const defecto = await this.d.defectoDeFoto?.(ruta, generar.luzDeEscena);
+          await mesa({ id: `revisor-${puesto}`, rol: 'revisor' });
           if (defecto) {
             this.d.avisar?.(`${piezaId} diapositiva ${n}: ${defecto}${intento === 1 ? ' (se repite)' : ''}`);
             if (intento === 1) {
               rutaAnterior = ruta;
               decidir(n, `Repetí la foto: salió con ${defecto}.`);
+              await mesa({ id: 'director', rol: 'director', n, accion: `Pide repetir la ${n}: ${defecto}` });
               const luz = generar.luzDeEscena
                 ? `Keep the directed light source and falloff: ${generar.luzDeEscena}.`
                 : 'If it was a colour cast, use neutral daylight white balance: whites must read truly white, no yellow or orange tint.';
@@ -1049,10 +1100,12 @@ export class ServicioChat {
               // La portada y el cierre de un carrusel llevan texto; como mucho N−2 láminas solas en total.
               const protegida = pieza.formato === 'carrusel' && (n === 1 || n === plan.diapositivas.length);
               const toma = [d.resumen, generar.prompt, generar.luzDeEscena && 'Fuente de color prevista: ' + generar.luzDeEscena].filter(Boolean).join(' — ');
+              await mesa({ id: 'director', rol: 'director', n, accion: rutaAnterior ? `Compara los dos intentos de la ${n}` : `Mira la foto de la ${n}${generar.conPlato ? ' frente al plato real' : ''}` });
               const v = await revisar({ foto: ruta, ...(generar.conPlato ? { real: entradaBase.foto.ruta } : {}), ...(continuidad ? { continuidad } : {}), ...(rutaAnterior ? { anterior: rutaAnterior } : {}), toma, papel: d.papel, portada: protegida });
               if (v.veredicto === 'REPETIR' && intento === 1) {
                 rutaAnterior = ruta;
                 decidir(n, `Repetí la foto: ${v.motivo}`);
+                await mesa({ id: 'director', rol: 'director', n, accion: `Pide repetir la ${n}: ${v.motivo}` });
                 prompt = `${prompt} CORRECTION after reviewing a first attempt: ${v.corregir ?? v.motivo}`;
                 continue;
               }
@@ -1066,7 +1119,8 @@ export class ServicioChat {
               if (v.sinTexto && !protegida && !d.soloFoto && solas < tope) {
                 sinTexto.add(n);
                 decidir(n, `Va sin texto: la foto se sostiene sola. ${v.motivo}`);
-              }
+                await mesa({ id: 'director', rol: 'director', n, accion: `La ${n} va sin texto: la foto se sostiene sola` });
+              } else await mesa({ id: 'director', rol: 'director', n, accion: `Aprueba la foto de la ${n}` });
             } catch (error) {
               this.d.avisar?.(`${piezaId} diapositiva ${n}: no se pudo revisar la foto (${error instanceof Error ? error.message : String(error)})`);
             }
@@ -1080,6 +1134,7 @@ export class ServicioChat {
           p.fotos = [...p.fotos.filter((x) => x.n !== n), { n, archivo: relative(this.carpetaDe(conversacion), ruta) }];
         });
         await this.paso(conversacion, piezaId, texto, 'hecho');
+        await mesa({ id: fotografo, rol: 'fotografo' });
         return ruta;
       };
       // En un ajuste, la continuidad es la primera foto de la pieza de la que parte.
@@ -1091,10 +1146,11 @@ export class ServicioChat {
         continuidad ??= ruta;
       }
       let siguiente = 0;
-      const trabajar = async () => {
-        for (let k = siguiente++; k < resto.length; k = siguiente++) await tomar(resto[k]!, continuidad);
+      const trabajar = async (puesto: number) => {
+        for (let k = siguiente++; k < resto.length; k = siguiente++) await tomar(resto[k]!, continuidad, puesto);
       };
-      await Promise.all(Array.from({ length: Math.min(3, resto.length) }, trabajar));
+      await Promise.all(Array.from({ length: Math.min(3, resto.length) }, (_, w) => trabajar(w + 1)));
+      await mesa({ id: 'director', rol: 'director' });
 
       // 2. Cada diapositiva: la foto sola (si lo pidió el plan o lo decidió el director al verla) o maquetada con su
       //    receta, ya viendo la foto real, con crítica y, donde toque, el acabado de Nano Banana 2.
@@ -1118,12 +1174,15 @@ export class ServicioChat {
       };
       // De tres en tres (cada lámina con su crítica y su acabado tarda minutos); el orden se mantiene.
       const resultado: Array<Pieza['diapositivas'][number] | undefined> = plan.diapositivas.map(() => undefined);
-      const maquetar = async (i: number, d: DiapositivaDePieza): Promise<Pieza['diapositivas'][number]> => {
+      const maquetar = async (i: number, d: DiapositivaDePieza, puesto = 1): Promise<Pieza['diapositivas'][number]> => {
         const n = i + 1;
         const anterior = base?.diapositivas.find((x) => x.n === n);
         if (!rehacer(n) && anterior?.png) return anterior;
         const texto = `Diseño de la diapositiva ${n}`;
+        const maquetador = `maquetador-${puesto}`;
+        const revisor = `revisor-${puesto}`;
         await this.paso(conversacion, piezaId, texto);
+        await mesa({ id: maquetador, rol: 'maquetador', n, accion: `Traza la retícula de la ${n}` });
         const foto = fotos.get(n);
         if (!foto) {
           await this.paso(conversacion, piezaId, texto, 'error');
@@ -1131,6 +1190,7 @@ export class ServicioChat {
         }
         if (d.soloFoto || sinTexto.has(n)) {
           if (d.soloFoto) decidir(n, 'Foto sola, como pedía el plan.');
+          await mesa({ id: maquetador, rol: 'maquetador', n, accion: `Encuadra la ${n} a sangre, sin texto` });
           const sola = { n, ...(await guardar(n, foto.ruta, true)), problemas: [], foto: foto.activo.id, soloFoto: true, decisiones: decisiones.get(n) ?? [] };
           await this.paso(conversacion, piezaId, texto, 'hecho');
           return sola;
@@ -1139,6 +1199,7 @@ export class ServicioChat {
         // La foto a sangre no cuenta: cada lámina a sangre es distinta por su foto (Torre de Vega, 23/11: la regla bloqueó
         // la reparación buena de una portada que no cabía como cartel).
         const evitarEsqueletos = [...new Set(plan.diapositivas.filter((x, k) => k !== i && !x.soloFoto && !sinTexto.has(k + 1) && x.visual.receta.esqueleto !== d.visual.receta.esqueleto).map((x) => x.visual.receta.esqueleto))].filter((e) => e !== 'FOTO_A_SANGRE');
+        await mesa({ id: maquetador, rol: 'maquetador', n, accion: `Compone la ${n}: ${d.visual.receta.nombre || d.visual.receta.esqueleto.toLowerCase().replace(/_/g, ' ')}`, zona: { x: 0.08, y: 0.06, w: 0.84, h: 0.3 } });
         let hecho = await this.d.componer({ ...entradaBase, foto, salida: this.rutaArchivo(conversacion, `${carpeta}/d${n}`), evitarEsqueletos, ...(llevaAcabado(n, esfuerzo) ? { enriquecer: true } : {}) }, d.visual.receta, esfuerzo);
         for (const x of hecho.decisiones ?? []) decidir(n, x);
         const pequeno = hecho.problemas.find((x) => x.startsWith('PRODUCTO_PEQUEÑO'));
@@ -1149,6 +1210,7 @@ export class ServicioChat {
           const claves = new Set([r.titular.texto, ...(r.firma ? [r.firma.texto] : [])]);
           const { apoyo: _apoyo, acentoManuscrito: _acento, ...base } = r;
           const sencilla = { ...base, esqueleto: 'FOTO_A_SANGRE' as const, operaciones: [], elementos: [], textos: r.textos.filter((t) => claves.has(t.clave)) };
+          await mesa({ id: maquetador, rol: 'maquetador', n, accion: pequeno ? `El plato queda pequeño: prueba la ${n} a sangre` : `No cabe: prueba la ${n} a sangre` });
           const otra = await this.d.componer({ ...entradaBase, foto, salida: this.rutaArchivo(conversacion, `${carpeta}/d${n}-sangre`), evitarEsqueletos: [] }, sencilla, esfuerzo);
           if (otra.png && (!pequeno || !otra.problemas.length)) {
             decidir(n, pequeno ? `En ${r.esqueleto} el producto quedaba diminuto (${pequeno.replace(/^PRODUCTO_PEQUEÑO: /, '')}): la hice a sangre, con la misma foto y el titular en su aire.` : `${r.esqueleto} no cabía en la foto (${hecho.problemas.slice(0, 1).join('').slice(0, 160)}): la hice a sangre, con el titular y la firma en el aire de la foto.`);
@@ -1164,13 +1226,15 @@ export class ServicioChat {
           const firma = receta.textos.find(t => t.clave === receta.firma?.texto)?.texto ?? local.marca.nombre;
           if (cierre && !zonaPropia && !visual.receta.firma && !seLee(firma, [titulo ?? ''])) return true;
           if (!visual.movil || !this.d.leerTextoMovil) return false;
-          const lineas = await this.d.leerTextoMovil(visual.movil);
+          await mesa({ id: revisor, rol: 'revisor', n, accion: `Lee el texto de la ${n} a tamaño de móvil`, zona: { x: 0.05, y: 0.04, w: 0.9, h: 0.36 } });
+          const lineas = await this.d.leerTextoMovil(visual.movil).finally(() => mesa({ id: revisor, rol: 'revisor' }));
           if (!lineas.length) return false;
           return Boolean(titulo && (zonaPropia || visual.receta.esqueleto !== 'COLUMNA') && !seLee(titulo, lineas)) ||
             (cierre && !seLee(firma, lineas));
         };
         if (textoObligatorio && (!hecho.png || hecho.problemas.some(p => /^(PRODUCTO_PEQUEÑO|LEGIBILIDAD)/.test(p)) || await textoIlegible(hecho))) {
           if (this.d.componerFotografiaConTexto) {
+            await mesa({ id: maquetador, rol: 'maquetador', n, accion: `Busca una zona propia para el texto de la ${n}`, zona: { x: 0.06, y: 0.62, w: 0.88, h: 0.32 } });
             hecho = await this.d.componerFotografiaConTexto({ ...entradaBase, foto, salida: this.rutaArchivo(conversacion, `${carpeta}/d${n}-texto`) }, d.visual.receta, n === 1);
             if (hecho.png && await textoIlegible(hecho, true)) {
               hecho = { ...hecho, png: undefined, problemas: [...hecho.problemas, 'El texto aprobado no se lee a tamaño móvil.'] };
@@ -1191,14 +1255,17 @@ export class ServicioChat {
           await this.paso(conversacion, piezaId, texto, 'hecho');
           return sola;
         }
+        await mesa({ id: maquetador, rol: 'maquetador', n, accion: `Exporta las capas de la ${n}`, apuntar: false });
         const guardada = hecho.png ? await guardar(n, hecho.png, false, hecho.capas) : undefined;
         await this.paso(conversacion, piezaId, texto, guardada ? 'hecho' : 'error');
+        await mesa({ id: maquetador, rol: 'maquetador' });
         return { n, ...(guardada ?? {}), capas: guardada?.capas ?? [], problemas: hecho.problemas, foto: foto.activo.id, decisiones: decisiones.get(n) ?? [] };
       };
       let siguienteLamina = 0;
-      const maquetador = async () => {
+      const maquetador = async (puesto: number) => {
         for (let k = siguienteLamina++; k < plan.diapositivas.length; k = siguienteLamina++) {
-          const hecha = await maquetar(k, plan.diapositivas[k]!);
+          const hecha = await maquetar(k, plan.diapositivas[k]!, puesto);
+          await mesa({ id: `maquetador-${puesto}`, rol: 'maquetador' });
           resultado[k] = hecha;
           // Cada lámina, a la vista en cuanto está (la web la compone delante del cliente).
           if (hecha.png) {
@@ -1209,7 +1276,7 @@ export class ServicioChat {
           }
         }
       };
-      await Promise.all(Array.from({ length: Math.min(3, plan.diapositivas.length) }, maquetador));
+      await Promise.all(Array.from({ length: Math.min(3, plan.diapositivas.length) }, (_, w) => maquetador(w + 1)));
       producidas.push(...resultado.filter((x): x is Pieza['diapositivas'][number] => Boolean(x)));
 
       const listas = producidas.filter((x) => x.png).length;
@@ -1245,6 +1312,8 @@ export class ServicioChat {
         }
       }).catch(() => {});
       await this.fallo(conversacion, error);
+    } finally {
+      await this.despejarMesa(conversacion, piezaId);
     }
   }
 }

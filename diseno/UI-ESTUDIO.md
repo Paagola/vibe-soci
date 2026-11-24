@@ -71,3 +71,30 @@ menos de 75 caracteres.
 **Cambios tras la revisión:** había previsto mantener la aparición deslizada de los mensajes y las etiquetas en
 mayúsculas de las fichas. Se quitan las dos porque son exactamente esos clichés. El acento azul de antes se sustituye
 por el laurel, porque el azul era el de cualquier SaaS.
+
+## La mesa en vivo: los agentes con su cursor (25/11/2026)
+
+La producción y la edición eran una espera muda: una cuadrícula de marcos y, al editar capas, nada. Ahora la mesa de luz
+funciona como un lienzo multijugador (`web/src/components/chat/mesa.tsx`):
+
+- **Cada agente tiene su cursor**, con su nombre y su color: Director (cobalto), Fotógrafo (mostaza), Maquetador (coral)
+  y Revisor (verde). Si trabajan dos a la vez, se numeran («Fotógrafo 2»): son puestos reales del servidor, que hace
+  hasta tres fotos y tres maquetas en paralelo.
+- El cursor **va a la lámina en la que trabaja** y deambula por su zona. Un bocadillo dice lo que hace; al cambiar de
+  tarea «hace clic» (una onda) y el bocadillo se lee entero unos segundos antes de encogerse a una línea.
+- **El Maquetador selecciona** la zona que compone, con los tiradores de un editor de diseño. En una edición de capas,
+  la selección es la caja real de la capa que cambia («Mueve «titular»»), calculada a partir de su intención.
+- **El Fotógrafo dispara**: un destello sobre el marco mientras se hace la toma.
+- Arriba, las caras de quién está en la mesa; abajo, la bitácora con lo último que han hecho.
+- **Mesa de edición**: mientras se retocan las capas de una pieza terminada aparece «Retocando la N» con la lámina
+  grande, la petición del cliente y los cursores encima.
+
+**De dónde salen los datos.** El servidor publica `pieza.agentes` (quién, en qué lámina, en qué zona y haciendo qué),
+`pieza.bitacora` (los últimos 14 apuntes) y `pieza.edicion` (las láminas que se retocan). Lo emiten
+`ServicioChat.agente()` en la producción y el callback `avisar` del editor de capas. No es teatro: cada mensaje
+corresponde a un paso real (la toma, la revisión del director, la medida de luz, la lectura del texto a tamaño móvil, el
+paso a sangre…). La única pausa añadida son 650 ms en cada capa que toca una edición, para que se vea dónde trabaja. Las
+piezas antiguas, sin estos datos, deducen los cursores de su progreso.
+
+**Cambia el principio 2.** Ya no se mueve solo la composición: mientras trabajan, también se mueven los cursores. Con
+«reducir movimiento», los cursores aparecen en su sitio sin desplazarse ni deambular, y no hay destellos ni ondas.
