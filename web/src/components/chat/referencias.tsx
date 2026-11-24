@@ -45,7 +45,7 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
 
   if (b.estado === 'BUSCANDO') {
     return (
-      <div className="rounded-xl border border-border bg-card p-4 animate-in fade-in">
+      <div className="hoja rounded-xl border border-border p-4 animate-in fade-in">
         <div className="flex items-center gap-3">
           <ThinkingOrb labels={['Buscando en Pinterest', 'Mirando posts del local', 'Eligiendo referencias']} size={36} />
           <div className="min-w-0">
@@ -65,11 +65,11 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
       </div>
     );
   }
-  if (b.estado === 'ERROR') return <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">No se pudieron buscar referencias: {b.error}. Sigo sin ellas.</div>;
+  if (b.estado === 'ERROR') return <div className="hoja rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">No se pudieron buscar referencias: {b.error}. Sigo sin ellas.</div>;
 
   if (!pendiente) {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 animate-in fade-in">
+      <div className="hoja flex items-center gap-3 rounded-xl border border-border p-3 animate-in fade-in">
         {elegida ? <img src={src(elegida)} alt="" className="h-16 w-13 rounded-md object-cover" /> : <span className="flex h-16 w-13 items-center justify-center rounded-md bg-muted text-muted-foreground"><Images className="size-4" /></span>}
         <div className="min-w-0 text-sm">
           <div className="font-medium">{elegida ? 'Estética de referencia elegida' : b.estado === 'DESCARTADO' ? 'Sin referencia' : 'Sin candidatas'}</div>
@@ -81,7 +81,7 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="hoja overflow-hidden rounded-xl border border-border">
       <div className="flex items-start gap-3 p-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Images className="size-4" />

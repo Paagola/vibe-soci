@@ -1,6 +1,6 @@
 /**
  * El estudio, entero, es este chat.
- * - A la izquierda, las conversaciones.
+ * - El historial queda a la izquierda en escritorio y se abre desde el borde derecho en móvil.
  * - Arriba, el recorrido de la conversación (foto → ficha → plan → producción → listo): siempre sabes en qué paso estás.
  * - Portada: el orbe (escribes, piensa mientras responde el director y la respuesta se despliega) y tres maneras de
  *   empezar.
@@ -10,7 +10,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
-import { Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, PanelLeftOpen, Sparkles, Square, Wand2 } from 'lucide-react';
+import { Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, PanelLeftOpen, PanelRightOpen, Sparkles, Square, Wand2 } from 'lucide-react';
 import { PromptInput } from '@/components/ui/ai-chat-input';
 import { TarjetaReferencias } from '@/components/chat/referencias';
 import { TarjetaConceptos } from '@/components/chat/conceptos';
@@ -34,23 +34,24 @@ const ICONOS = {
 
 const idDeLaRuta = () => /^\/c\/([a-z0-9-]+)/.exec(location.pathname)?.[1];
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const anchoGrande = () => window.matchMedia('(min-width: 1024px)').matches;
+const consultaEscritorio = '(min-width: 64rem)';
 
 export default function App() {
   const [conversacion, setConversacion] = useState<Conversacion>();
   const [locales, setLocales] = useState<Local[]>([]);
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
   const [conversaciones, setConversaciones] = useState<Array<{ id: string; titulo: string; actualizada: string }>>([]);
-  const [lateral, setLateral] = useState(anchoGrande);
+  const [lateral, setLateral] = useState(true);
   const [panel, setPanel] = useState(false);
   const [error, setError] = useState<string>();
   const [enviando, setEnviando] = useState(false);
   const [texto, setTexto] = useState('');
   const [portada, setPortada] = useState(!idDeLaRuta());
+  const historialMovil = useRef<HTMLDialogElement>(null);
   const fin = useRef<HTMLDivElement>(null);
   /** Los mensajes que ya estaban al abrir la conversación: solo los nuevos entran como una hoja que cae. */
   const iniciales = useRef<Set<string>>(new Set());
-  const abierta = useRef<string>();
+  const abierta = useRef<string | undefined>(undefined);
   if (conversacion && abierta.current !== conversacion.id) {
     abierta.current = conversacion.id;
     iniciales.current = new Set(conversacion.mensajes.map((m) => m.id));
@@ -61,7 +62,7 @@ export default function App() {
 
   const abrir = useCallback(
     async (id?: string) => {
-      if (!anchoGrande()) setLateral(false);
+      historialMovil.current?.close();
       if (!id) {
         setConversacion(undefined);
         setPortada(true);
@@ -92,6 +93,15 @@ export default function App() {
   }, [abrir, refrescarLista]);
 
   useEffect(() => {
+    const escritorio = window.matchMedia(consultaEscritorio);
+    const ajustarHistorial = () => {
+      if (escritorio.matches) historialMovil.current?.close();
+    };
+    escritorio.addEventListener('change', ajustarHistorial);
+    return () => escritorio.removeEventListener('change', ajustarHistorial);
+  }, []);
+
+  useEffect(() => {
     if (!conversacion?.id) return;
     return api.escuchar(conversacion.id, setConversacion);
   }, [conversacion?.id]);
@@ -102,8 +112,9 @@ export default function App() {
   }, [conversacion?.id, conversacion?.titulo, refrescarLista]);
 
   useEffect(() => {
-    if (!portada) fin.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [portada, conversacion?.mensajes.length, conversacion?.pensando, conversacion?.piezas.map((p) => `${p.estado}${p.progreso.length}`).join()]);
+    const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!portada) fin.current?.scrollIntoView({ behavior: reducirMovimiento ? 'instant' : 'smooth', block: 'end' });
+  }, [portada, conversacion?.id, conversacion?.mensajes.length, conversacion?.pensando, conversacion?.piezas.map((p) => `${p.estado}${p.progreso.length}`).join()]);
 
   const asegurar = async (): Promise<Conversacion> => {
     if (conversacion) return conversacion;
@@ -164,20 +175,29 @@ export default function App() {
   };
 
   const ocupado = enviando || Boolean(conversacion?.pensando);
+  const historial = { conversaciones, actual: portada ? undefined : conversacion?.id, abrir: (id?: string) => void abrir(id) };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-dvh overflow-x-clip">
       {lateral && (
-        <>
-          <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setLateral(false)} />
-          <Lateral conversaciones={conversaciones} actual={portada ? undefined : conversacion?.id} abrir={(id) => void abrir(id)} cerrar={() => setLateral(false)} className="fixed inset-y-0 left-0 z-40 lg:static" />
-        </>
+        <Lateral {...historial} cerrar={() => setLateral(false)} className="hidden border-r lg:flex" />
       )}
+      <dialog
+        ref={historialMovil}
+        id="historial-movil"
+        aria-label="Conversaciones"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
+        className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-72 max-w-[calc(100%-2rem)] bg-lateral text-foreground backdrop:bg-black/60 motion-safe:open:animate-in motion-safe:open:slide-in-from-right motion-safe:open:duration-200"
+      >
+        <Lateral {...historial} cerrar={() => historialMovil.current?.close()} desdeLaDerecha className="flex w-full border-l" />
+      </dialog>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="cristal z-20 m-3 mb-0 flex h-14 shrink-0 items-center gap-3 rounded-2xl px-4">
           {!lateral && (
-            <button type="button" onClick={() => setLateral(true)} aria-label="Mostrar las conversaciones" className="rounded-lg p-1.5 text-tenue hover:bg-accent hover:text-foreground">
+            <button type="button" onClick={() => setLateral(true)} aria-label="Mostrar las conversaciones" className="hidden shrink-0 rounded-lg p-2 text-tenue hover:bg-accent hover:text-foreground lg:inline-flex">
               <PanelLeftOpen className="size-4" />
             </button>
           )}
@@ -185,22 +205,25 @@ export default function App() {
             <span className="text-sm font-semibold">Nueva conversación</span>
           ) : (
             <>
-              <span className="max-w-[20rem] truncate text-sm font-semibold">{conversacion.titulo}</span>
-              <div className="ml-auto hidden md:block">
+              <span className="min-w-0 max-w-[20rem] truncate text-sm font-semibold">{conversacion.titulo}</span>
+              <div className="ml-auto hidden min-w-0 md:block">
                 <Recorrido c={conversacion} />
               </div>
             </>
           )}
+          <button type="button" onClick={() => historialMovil.current?.showModal()} aria-label="Mostrar las conversaciones" aria-haspopup="dialog" aria-controls="historial-movil" className="ml-auto shrink-0 rounded-lg p-2 text-tenue hover:bg-accent hover:text-foreground lg:hidden">
+            <PanelRightOpen className="size-5" />
+          </button>
         </header>
 
         <input ref={foto} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => void subirFotos(e.target.files)} />
 
         {portada ? (
-          <main className="relative flex min-h-0 flex-1 flex-col">
-            <div className="relative min-h-0 flex-1">
+          <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <div className="min-h-60 flex-1">
               <MorphOrb onSubmit={preguntarDesdeElOrbe} minThinkMs={1800} onAnswered={() => setTimeout(() => setPortada(false), 2200)} onContinue={() => setPortada(false)} />
             </div>
-            <div className="absolute inset-x-0 bottom-8 z-10 px-4">
+            <div className="shrink-0 px-4 pb-6 sm:pb-8">
               <div className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-3">
                 <Inicio icono={<Camera className="size-5" />} titulo="Empieza con una foto" texto="Sube la foto del plato: el director la mira y te propone su ficha." onClick={() => foto.current?.click()} />
                 <Inicio icono={<Sparkles className="size-5" />} titulo="Post o carrusel" texto="Cada diapositiva con su foto y su diseño. Ves el plan y el coste antes." onClick={() => abrirPorId('pieza')} />
@@ -216,20 +239,20 @@ export default function App() {
           </main>
         ) : (
           <>
-            <main className="min-h-0 flex-1 overflow-y-auto">
+            <main key={conversacion?.id} className="min-h-0 flex-1 overflow-y-auto">
               {conversacion && (
                 <div className="border-b border-border px-4 py-2 md:hidden">
                   <Recorrido c={conversacion} />
                 </div>
               )}
-              <div className="mx-auto grid max-w-3xl gap-6 px-4 pb-10 pt-6">
+              <div className="mx-auto grid max-w-3xl gap-6 px-4 pb-10 pt-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 motion-safe:duration-300">
                 {conversacion?.mensajes.map((m) => (
                   <BurbujaMensaje key={m.id} m={m} c={conversacion} locales={locales} herramientas={herramientas} nuevo={!iniciales.current.has(m.id)} />
                 ))}
                 <div ref={fin} />
               </div>
             </main>
-            <footer className="shrink-0 space-y-3 px-4 pb-4 pt-2">
+            <footer className="shrink-0 space-y-3 px-4 pb-4 pt-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 motion-safe:duration-300">
               <AgenteTrabajando {...(conversacion ? { c: conversacion } : {})} />
               <PromptInput
                 onSubmit={enviar}
@@ -258,10 +281,12 @@ export default function App() {
 
 function Inicio(p: { icono: React.ReactNode; titulo: string; texto: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={p.onClick} className="group flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-left transition hover:border-acento/60 hover:bg-accent">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition group-hover:text-acento">{p.icono}</span>
-      <span className="text-sm font-semibold">{p.titulo}</span>
-      <span className="text-xs leading-relaxed text-muted-foreground">{p.texto}</span>
+    <button type="button" onClick={p.onClick} className="hoja group flex items-start gap-3 rounded-xl border border-border p-3 text-left transition hover:border-acento/60 hover:bg-accent sm:flex-col sm:p-4">
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition group-hover:text-acento">{p.icono}</span>
+      <span className="grid gap-1">
+        <span className="text-sm font-semibold">{p.titulo}</span>
+        <span className="text-xs leading-relaxed text-muted-foreground">{p.texto}</span>
+      </span>
     </button>
   );
 }
@@ -278,7 +303,7 @@ function BurbujaMensaje({ m, c, locales, herramientas, nuevo }: { m: Mensaje; c:
             ))}
           </div>
         )}
-        {m.texto && <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-cobalto px-4 py-2.5 text-sm font-medium text-white">{m.texto}</div>}
+        {m.texto && <div className="max-w-[80%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-cobalto px-4 py-2.5 text-sm font-medium wrap-anywhere text-white">{m.texto}</div>}
       </div>
     );
   }
@@ -289,7 +314,7 @@ function BurbujaMensaje({ m, c, locales, herramientas, nuevo }: { m: Mensaje; c:
       </span>
       <div className="grid min-w-0 flex-1 gap-3">
         {m.texto && (
-          <div className="max-w-[68ch] text-[15px] leading-relaxed text-foreground [&_p]:my-1 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5">
+          <div className="max-w-[68ch] text-[15px] leading-relaxed wrap-anywhere text-foreground [&_a]:text-acento [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1 [&_pre]:overflow-x-auto [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5">
             <Markdown>{m.texto}</Markdown>
           </div>
         )}

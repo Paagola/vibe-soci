@@ -1,5 +1,6 @@
 /** Las tarjetas que el director pone dentro de sus mensajes: hechos del plato, plan de la pieza, progreso y resultado. */
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, Camera, Check, ChevronLeft, ChevronRight, Download, GalleryHorizontal, ImageIcon, Loader2, Minus, Plus, RotateCcw, Sparkles, X } from 'lucide-react';
 import { api, type Conversacion, type Elemento, type Hechos, type Local, type Pieza } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -7,7 +8,7 @@ import { Rueda } from './rueda';
 import { Composicion } from './composicion';
 import { Titular } from './society';
 
-const marco = 'rounded-xl border border-border bg-card text-card-foreground';
+const marco = 'hoja rounded-xl border border-border';
 const boton = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-4 h-9 text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
 const principal = cn(boton, 'h-11 rounded-full px-6 bg-primary text-primary-foreground font-display text-[17px] tracking-wide hover:brightness-95');
 const secundario = cn(boton, 'h-11 rounded-full px-5 border-2 border-cobalto text-cobalto font-semibold hover:bg-cobalto/10');
@@ -160,7 +161,7 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
         {plan.diapositivas.map((d, i) => {
           const rehace = !p.pieza.rehacer.length || p.pieza.rehacer.includes(i + 1);
           return (
-            <li key={i} className={cn('flex items-center gap-3 bg-card px-4 py-2.5', !rehace && 'opacity-45')}>
+            <li key={i} className={cn('flex items-center gap-3 px-4 py-2.5', rehace ? 'bg-card' : 'bg-muted text-muted-foreground')}>
               <span className="w-5 text-right text-xs tabular-nums text-muted-foreground">{i + 1}</span>
               {d.visual.foto === 'real' && real ? (
                 <img src={api.archivo(p.conversacion.id, real.archivo)} alt="" className="size-9 rounded-md object-cover" />
@@ -392,7 +393,7 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
           alCerrar={() => setRueda(false)}
         />
       )}
-      {grande && (
+      {grande && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setGrande(false)}>
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <img src={url(actual.png)} alt="" className="max-h-[90vh] max-w-[92vw] rounded-md object-contain" />
@@ -401,7 +402,8 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza }) {
           <button type="button" aria-label="Cerrar" className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" onClick={() => setGrande(false)}>
             <X className="size-5" />
           </button>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

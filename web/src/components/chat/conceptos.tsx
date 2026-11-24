@@ -31,17 +31,17 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
 
   if (b.estado === 'BUSCANDO') {
     return (
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 animate-in fade-in">
+      <div className="hoja flex items-center gap-3 rounded-xl border border-border p-4 animate-in fade-in">
         <ThinkingOrb labels={['Pensando tres ideas', 'Buscando otra mirada', 'Eligiendo titulares']} size={36} />
         <div className="text-sm font-semibold">Tres maneras de contarlo</div>
       </div>
     );
   }
-  if (b.estado === 'ERROR') return <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">No se pudieron proponer conceptos: {b.error}. Planifico sin ellos.</div>;
+  if (b.estado === 'ERROR') return <div className="hoja rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">No se pudieron proponer conceptos: {b.error}. Planifico sin ellos.</div>;
   if (b.estado === 'HECHO') {
     const c = b.conceptos[b.elegido ?? 0];
     return (
-      <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 animate-in fade-in">
+      <div className="hoja flex items-start gap-3 rounded-xl border border-border p-3 animate-in fade-in">
         <Lightbulb className="mt-0.5 size-4 shrink-0 text-acento" />
         <div className="min-w-0 text-sm">
           <div className="font-medium">Concepto: {c?.nombre}</div>
@@ -52,7 +52,7 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
     );
   }
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
+    <div className="hoja overflow-hidden rounded-xl border border-border">
       <div className="flex items-start gap-3 p-4">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
           <Lightbulb className="size-4" />

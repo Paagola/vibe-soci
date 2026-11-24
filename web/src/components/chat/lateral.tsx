@@ -1,5 +1,5 @@
 /** La barra lateral (conversaciones) y el recorrido de la conversación (en qué paso estás). */
-import { Check, MessageSquare, PanelLeftClose, Plus } from 'lucide-react';
+import { Check, MessageSquare, PanelLeftClose, PanelRightClose, Plus } from 'lucide-react';
 import type { Conversacion } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -8,16 +8,18 @@ export function Lateral(p: {
   actual?: string;
   abrir: (id?: string) => void;
   cerrar?: () => void;
+  desdeLaDerecha?: boolean;
   className?: string;
 }) {
+  const IconoCerrar = p.desdeLaDerecha ? PanelRightClose : PanelLeftClose;
   const hoy = new Date().toISOString().slice(0, 10);
   const grupos: Array<[string, typeof p.conversaciones]> = [
     ['Hoy', p.conversaciones.filter((c) => c.actualizada.slice(0, 10) === hoy)],
     ['Antes', p.conversaciones.filter((c) => c.actualizada.slice(0, 10) !== hoy)],
   ];
   return (
-    <aside className={cn('flex h-full w-64 shrink-0 flex-col border-r border-border bg-lateral', p.className)}>
-      <div className="flex h-14 items-center gap-2 px-4">
+    <aside className={cn('flex h-full w-64 shrink-0 flex-col border-border bg-lateral text-foreground', p.className)}>
+      <div className="flex h-14 shrink-0 items-center gap-2 px-4">
         <span className="relative font-[family-name:var(--font-serif)] text-[26px] font-extrabold italic leading-none">
           Estudio
           <svg aria-hidden="true" viewBox="0 0 120 12" preserveAspectRatio="none" className="absolute -bottom-2 left-0 h-2.5 w-full text-cobalto">
@@ -25,8 +27,8 @@ export function Lateral(p: {
           </svg>
         </span>
         {p.cerrar && (
-          <button type="button" onClick={p.cerrar} aria-label="Ocultar la barra" className="ml-auto rounded-lg p-1.5 text-tenue hover:bg-accent hover:text-foreground">
-            <PanelLeftClose className="size-4" />
+          <button type="button" onClick={p.cerrar} aria-label="Ocultar las conversaciones" className="ml-auto rounded-lg p-2 text-tenue hover:bg-accent hover:text-foreground">
+            <IconoCerrar className="size-5" />
           </button>
         )}
       </div>
