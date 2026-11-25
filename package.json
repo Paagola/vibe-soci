@@ -30,6 +30,7 @@
     "web:typecheck": "tsc --noEmit -p web/tsconfig.json"
   },
   "dependencies": {
+    "@radix-ui/react-tabs": "^1.2.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "express": "^5.3.0",

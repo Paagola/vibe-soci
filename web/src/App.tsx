@@ -1,6 +1,6 @@
 /**
  * El estudio, entero, es este chat.
- * - El historial queda a la izquierda en escritorio y se abre desde el borde derecho en móvil.
+ * - El historial se abre desde la cabecera del estudio.
  * - Arriba, el recorrido de la conversación (foto → ficha → plan → producción → listo): siempre sabes en qué paso estás.
  * - Portada: el orbe (escribes, piensa mientras responde el director y la respuesta se despliega) y tres maneras de
  *   empezar.
@@ -8,9 +8,11 @@
  *   debajo del campo, las acciones de siempre y «Todas las herramientas».
  * La conversación vive en el servidor y llega por SSE.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
-import { Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, PanelLeftOpen, PanelRightOpen, Sparkles, Square, Wand2 } from 'lucide-react';
+import { CalendarDays, Camera, ClipboardList, GalleryHorizontalEnd, LayoutGrid, LayoutDashboard, MessagesSquare, Plus, Sparkles, Square, Wand2 } from 'lucide-react';
+import { ChatCampana } from '@/components/chat/campana';
+import { PanelAgencia } from '@/components/agencia';
 import { PromptInput } from '@/components/ui/ai-chat-input';
 import { TarjetaReferencias } from '@/components/chat/referencias';
 import { TarjetaConceptos } from '@/components/chat/conceptos';
@@ -18,12 +20,14 @@ import MorphOrb from '@/components/ui/ai-thiking-orb-and-input';
 import { Bandeja, PanelDeHerramientas } from '@/components/chat/bandeja';
 import { TarjetaEncargo } from '@/components/chat/encargo';
 import { TarjetaHerramienta } from '@/components/chat/herramienta';
-import { Lateral, Recorrido } from '@/components/chat/lateral';
+import { Historial, Recorrido } from '@/components/chat/lateral';
 import { AgenteTrabajando } from '@/components/chat/society';
 import { MesaDeEdicion } from '@/components/chat/mesa';
 import { TarjetaHechos, TarjetaPlan, TarjetaProgreso, VisorPieza } from '@/components/chat/tarjetas';
-import { aBase64, api, type Bloque, type Conversacion, type Esfuerzo, type Formato, type Herramienta, type Local, type Mensaje } from '@/lib/api';
+import { aBase64, api, type Bloque, type Conversacion, type Esfuerzo, type Formato, type Herramienta, type Local, type Mensaje, type ResumenConversacion } from '@/lib/api';
 import { cn } from '@/lib/utils';
+
+const PanelEstudio = lazy(() => import('@/components/panel-estudio'));
 
 const FORMATOS: Record<string, Formato | 'auto'> = { Automático: 'auto', Post: 'post', Carrusel: 'carrusel' };
 const ESFUERZOS: Record<string, Esfuerzo> = { Rápido: 'rapido', Normal: 'normal', Máximo: 'maximo' };
@@ -35,15 +39,30 @@ const ICONOS = {
 
 const idDeLaRuta = () => /^\/c\/([a-z0-9-]+)/.exec(location.pathname)?.[1];
 const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const consultaEscritorio = '(min-width: 64rem)';
+const rutaCampana = '/campanas/nueva';
 
 export default function App() {
   const [conversacion, setConversacion] = useState<Conversacion>();
   const [locales, setLocales] = useState<Local[]>([]);
   const [herramientas, setHerramientas] = useState<Herramienta[]>([]);
-  const [conversaciones, setConversaciones] = useState<Array<{ id: string; titulo: string; actualizada: string }>>([]);
-  const [lateral, setLateral] = useState(true);
+  const [conversaciones, setConversaciones] = useState<ResumenConversacion[]>([]);
+  const [chatCampana, setChatCampana] = useState(location.pathname === rutaCampana);
+  const [localChatCampana, setLocalChatCampana] = useState<string>();
   const [panel, setPanel] = useState(false);
+  const [actividad, verActividad] = useState(location.pathname === '/panel');
+  const [localAgencia, setLocalAgencia] = useState<string>();
+  const [revision, refrescarPanel] = useState(0);
+  const gestionar = (local?: string) => { setLocalAgencia(local); setAgenciaAbierta(true); };
+  const nuevaCampana = (local?: string) => {
+    setAgenciaAbierta(false);
+    historialMovil.current?.close();
+    setLocalChatCampana(local);
+    setChatCampana(true);
+    verActividad(false);
+    setConversacion(undefined);
+    if (location.pathname !== rutaCampana) history.pushState(null, '', rutaCampana);
+  };
+  const [agenciaAbierta, setAgenciaAbierta] = useState(false);
   const [error, setError] = useState<string>();
   const [enviando, setEnviando] = useState(false);
   const [texto, setTexto] = useState('');
@@ -64,10 +83,12 @@ export default function App() {
   const abrir = useCallback(
     async (id?: string) => {
       historialMovil.current?.close();
+      verActividad(false);
+      setChatCampana(false);
       if (!id) {
         setConversacion(undefined);
         setPortada(true);
-        history.pushState(null, '', '/');
+        if (location.pathname !== '/') history.pushState(null, '', '/');
         return;
       }
       try {
@@ -84,30 +105,27 @@ export default function App() {
   );
 
   useEffect(() => {
-    void abrir(idDeLaRuta());
+    const sincronizar = () => {
+      if (location.pathname === '/panel' || location.pathname === rutaCampana) {
+        verActividad(location.pathname === '/panel');
+        setChatCampana(location.pathname === rutaCampana);
+      } else void abrir(idDeLaRuta());
+    };
+    sincronizar();
     void refrescarLista();
     api.locales().then(setLocales, (e: Error) => setError(e.message));
     api.herramientas().then(setHerramientas, () => {});
-    const atras = () => void abrir(idDeLaRuta());
+    const atras = sincronizar;
     window.addEventListener('popstate', atras);
     return () => window.removeEventListener('popstate', atras);
   }, [abrir, refrescarLista]);
-
-  useEffect(() => {
-    const escritorio = window.matchMedia(consultaEscritorio);
-    const ajustarHistorial = () => {
-      if (escritorio.matches) historialMovil.current?.close();
-    };
-    escritorio.addEventListener('change', ajustarHistorial);
-    return () => escritorio.removeEventListener('change', ajustarHistorial);
-  }, []);
 
   useEffect(() => {
     if (!conversacion?.id) return;
     return api.escuchar(conversacion.id, setConversacion);
   }, [conversacion?.id]);
 
-  // La lista de la izquierda se pone al día cuando cambia el título de la conversación abierta.
+  // El historial se pone al día cuando cambia el título de la conversación abierta.
   useEffect(() => {
     void refrescarLista();
   }, [conversacion?.id, conversacion?.titulo, refrescarLista]);
@@ -176,56 +194,53 @@ export default function App() {
   };
 
   const ocupado = enviando || Boolean(conversacion?.pensando);
-  const historial = { conversaciones, actual: portada ? undefined : conversacion?.id, abrir: (id?: string) => void abrir(id) };
+  const verPanel = () => {
+    if (!actividad) history.pushState(null, '', '/panel');
+    verActividad(true);
+    setChatCampana(false);
+  };
 
   return (
     <div className="flex h-dvh overflow-x-clip">
-      {lateral && (
-        <Lateral {...historial} cerrar={() => setLateral(false)} className="hidden border-r lg:flex" />
-      )}
-      <dialog
-        ref={historialMovil}
-        id="historial-movil"
-        aria-label="Conversaciones"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) e.currentTarget.close();
-        }}
-        className="fixed inset-y-0 right-0 left-auto m-0 h-dvh max-h-none w-72 max-w-[calc(100%-2rem)] bg-lateral text-foreground backdrop:bg-black/60 motion-safe:open:animate-in motion-safe:open:slide-in-from-right motion-safe:open:duration-200"
-      >
-        <Lateral {...historial} cerrar={() => historialMovil.current?.close()} desdeLaDerecha className="flex w-full border-l" />
+      <dialog ref={historialMovil} id="historial" aria-labelledby="titulo-historial"
+        onClick={e => { if (e.target === e.currentTarget) e.currentTarget.close(); }}
+        className="m-auto max-h-[90dvh] w-[min(42rem,94vw)] overflow-hidden rounded-2xl border border-border bg-popover text-foreground shadow-xl backdrop:bg-black/60">
+        <Historial conversaciones={conversaciones} actual={actividad || chatCampana || portada ? undefined : conversacion?.id}
+          abrir={id => void abrir(id)} cerrar={() => historialMovil.current?.close()}
+          gestionar={() => { historialMovil.current?.close(); gestionar(); }} />
       </dialog>
-
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="cristal z-20 m-3 mb-0 flex h-14 shrink-0 items-center gap-3 rounded-2xl px-4">
-          {!lateral && (
-            <button type="button" onClick={() => setLateral(true)} aria-label="Mostrar las conversaciones" className="hidden shrink-0 rounded-lg p-2 text-tenue hover:bg-accent hover:text-foreground lg:inline-flex">
-              <PanelLeftOpen className="size-4" />
-            </button>
-          )}
-          {portada || !conversacion ? (
-            <span className="text-sm font-semibold">Nueva conversación</span>
+        <header className="cristal z-20 m-3 mb-0 flex min-h-14 shrink-0 flex-wrap items-center gap-x-2 gap-y-0 rounded-2xl px-3 sm:px-4">
+          <button type="button" onClick={() => void abrir()} title="Nueva conversación" aria-label="Nueva conversación" className="rounded-lg p-2 hover:bg-accent"><Plus className="size-4" /></button>
+          <button type="button" onClick={() => { void refrescarLista(); historialMovil.current?.showModal(); }} aria-haspopup="dialog" aria-controls="historial" className="inline-flex items-center gap-2 rounded-lg p-2 text-sm font-medium hover:bg-accent">
+            <MessagesSquare className="size-4" /> Conversaciones
+          </button>
+          {actividad ? <span className="text-sm font-semibold">Panel del estudio</span> : chatCampana ? <span className="hidden text-sm font-semibold md:inline">Campaña</span> : portada || !conversacion ? (
+            <span className="hidden text-sm font-semibold md:inline">Nueva conversación</span>
           ) : (
             <>
-              <span className="min-w-0 max-w-[20rem] truncate text-sm font-semibold">{conversacion.titulo}</span>
+              <span className="hidden min-w-0 max-w-[20rem] truncate md:inline text-sm font-semibold">{conversacion.titulo}</span>
               <div className="ml-auto hidden min-w-0 md:block">
                 <Recorrido c={conversacion} />
               </div>
             </>
           )}
-          <button type="button" onClick={() => historialMovil.current?.showModal()} aria-label="Mostrar las conversaciones" aria-haspopup="dialog" aria-controls="historial-movil" className="ml-auto shrink-0 rounded-lg p-2 text-tenue hover:bg-accent hover:text-foreground lg:hidden">
-            <PanelRightOpen className="size-5" />
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <button type="button" onClick={verPanel} className="inline-flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-accent" aria-label="Panel del estudio"><LayoutDashboard className="size-4" /><span className="hidden sm:inline">Panel</span></button>
+            <button type="button" onClick={() => gestionar()} aria-haspopup="dialog" aria-label="Campañas" className="inline-flex items-center gap-2 rounded-lg p-2 text-sm hover:bg-accent"><CalendarDays className="size-4" /><span className="hidden sm:inline">Campañas</span></button>
+          </div>
         </header>
 
         <input ref={foto} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => void subirFotos(e.target.files)} />
 
-        {portada ? (
+        {actividad ? <Suspense fallback={<p role="status" className="p-6">Cargando panel…</p>}><PanelEstudio gestionar={gestionar} revision={revision} /></Suspense> : chatCampana ? <ChatCampana key={localChatCampana ?? 'chat-campana'} localInicial={localChatCampana} alCrear={() => refrescarPanel(n => n + 1)} /> : portada ? (
           <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             <div className="min-h-60 flex-1">
               <MorphOrb onSubmit={preguntarDesdeElOrbe} minThinkMs={1800} onAnswered={() => setTimeout(() => setPortada(false), 2200)} onContinue={() => setPortada(false)} />
             </div>
             <div className="shrink-0 px-4 pb-6 sm:pb-8">
-              <div className="mx-auto grid max-w-3xl gap-3 sm:grid-cols-3">
+              <div className="mx-auto grid max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Inicio icono={<CalendarDays className="size-5" />} titulo="Campañas del local" texto="Cuéntanos qué quieres conseguir y recibe un calendario de publicaciones." onClick={() => nuevaCampana()} />
                 <Inicio icono={<Camera className="size-5" />} titulo="Empieza con una foto" texto="Sube la foto del plato: el director la mira y te propone su ficha." onClick={() => foto.current?.click()} />
                 <Inicio icono={<Sparkles className="size-5" />} titulo="Post o carrusel" texto="Cada diapositiva con su foto y su diseño. Ves el plan y el coste antes." onClick={() => abrirPorId('pieza')} />
                 <Inicio icono={<ClipboardList className="size-5" />} titulo="Encargo paso a paso" texto="Editorial, cartel, por capas o director F3, con todas sus paradas." onClick={() => abrirPorId('encargo')} />
@@ -247,6 +262,10 @@ export default function App() {
                 </div>
               )}
               <div className="mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-6 px-4 pb-10 pt-6 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-right-8 motion-safe:duration-300">
+                {conversacion?.encargoCampana && <details className="hoja rounded-xl border border-border p-4" open={!conversacion.piezas.length}>
+                  <summary className="cursor-pointer font-semibold">Encargo del director · {conversacion.encargoCampana.brief?.campana ?? conversacion.titulo}</summary>
+                  <p className="mt-3 whitespace-pre-line text-sm">{conversacion.encargoCampana.indicaciones}</p>
+                </details>}
                 {conversacion?.mensajes.map((m) => (
                   <BurbujaMensaje key={m.id} m={m} c={conversacion} locales={locales} herramientas={herramientas} nuevo={!iniciales.current.has(m.id)} />
                 ))}
@@ -281,6 +300,7 @@ export default function App() {
       </div>
 
       {panel && <PanelDeHerramientas herramientas={herramientas} abrir={abrirHerramienta} cerrar={() => setPanel(false)} />}
+      {agenciaAbierta && <PanelAgencia localInicial={localAgencia} nueva={nuevaCampana} cerrar={() => { setAgenciaAbierta(false); refrescarPanel(n => n + 1); }} />}
     </div>
   );
 }

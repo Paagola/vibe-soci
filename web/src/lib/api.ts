@@ -16,6 +16,7 @@ export interface Hechos {
   elementos: Elemento[];
   mensaje: string;
   foto: string;
+  fotosPorLamina?: Array<{ lamina: number; foto: string }>;
   referencia?: string;
 }
 
@@ -134,6 +135,8 @@ export interface Pieza {
 }
 
 export interface Conversacion {
+  encargoCampana?: { titulo: string; indicaciones: string; canal?: 'historia'; formato: string; laminas: number;
+    brief?: { campana: string; objetivo: string; estrategia: string; fecha: string; audiencia: string; proposito: string; motivoFormato?: string; llamada: string; metrica: string } };
   id: string;
   titulo: string;
   creada: string;
@@ -152,15 +155,23 @@ export interface Local {
   ciudad: string;
 }
 
-async function pedir<T>(ruta: string, init?: RequestInit): Promise<T> {
+export async function pedir<T>(ruta: string, init?: RequestInit): Promise<T> {
   const r = await fetch(ruta, { ...init, headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) } });
   const cuerpo = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error((cuerpo as { error?: { message?: string } }).error?.message ?? `Error ${r.status}`);
   return cuerpo as T;
 }
 
+export interface ResumenConversacion {
+  id: string;
+  titulo: string;
+  actualizada: string;
+  tipos?: Array<'post' | 'carrusel' | 'historia' | 'campana'>;
+  campana?: string;
+}
+
 export const api = {
-  conversaciones: () => pedir<{ conversaciones: Array<{ id: string; titulo: string; actualizada: string }> }>('/api/chat').then((r) => r.conversaciones),
+  conversaciones: () => pedir<{ conversaciones: ResumenConversacion[] }>('/api/chat').then((r) => r.conversaciones),
   locales: () => pedir<{ locales: Local[] }>('/api/chat/locales').then((r) => r.locales),
   crear: () => pedir<{ conversacion: Conversacion }>('/api/chat', { method: 'POST' }).then((r) => r.conversacion),
   leer: (id: string) => pedir<{ conversacion: Conversacion }>(`/api/chat/${id}`).then((r) => r.conversacion),

@@ -476,7 +476,9 @@ Responde SOLO este JSON: {"veredicto":"USAR|REPETIR","motivo":"…","corregir":"
 /** Chat · antes del plan: tres conceptos de serie que se distinguen de verdad. */
 export function instruccionesConceptos(formato: 'post' | 'carrusel', n: number): string {
   return `Eres el director creativo de una agencia que lleva el Instagram de un restaurante. Antes de planificar
-${formato === 'post' ? 'un post' : `un carrusel de ${n} láminas`}, propones TRES CONCEPTOS para que el cliente elija.
+${formato === 'post'
+  ? 'un post, exploras TRES CONCEPTOS y ordenas primero el que mejor cumple el encargo. Ese concepto se usará para preparar el plan.'
+  : `un carrusel de ${n} láminas, propones TRES CONCEPTOS para que el cliente elija.`}
 
 QUÉ DEVUELVES: SOLO un JSON con esta forma:
 ${JSON.stringify(z.toJSONSchema(propuestaDeConceptos(n)))}

@@ -26,7 +26,7 @@ import type { Marca } from '../../dominio/modelos.js';
 import { LecturaFotografica, RelacionesGraficas, detallesFotograficos, detallesGraficos } from '../../dominio/referencia.js';
 import type { Receta } from '../../dominio/arte/receta.js';
 import {
-  Conversacion, costeEstimado, type CandidataDeReferencia, HechosDelPlato, llevaAcabado, problemasDePieza,
+  Conversacion, EncargoCampana, costeEstimado, type CandidataDeReferencia, HechosDelPlato, llevaAcabado, problemasDePieza,
   type AccionDelDirector, type ConceptoDeSerie, type DiapositivaDePieza, type RevisionDeFoto, type Bloque, type Esfuerzo, type Formato, type Mensaje, type Pieza, type PlanDePieza, type TurnoDelDirector,
 } from '../../dominio/chat.js';
 import { ErrorDeUsuario } from '../../dominio/errores.js';
@@ -59,7 +59,7 @@ export interface DepsChat {
   /** El encargo de arte del estudio (mapa de la foto, colores, voces…), para planificar. */
   prepararEncargo(entrada: EntradaEstudioDeArte): Promise<EncargoDeArte>;
   /** Genera una toma nueva. Devuelve los bytes (PNG o JPEG) y lo que costó. */
-  generarFoto(o: { id: string; prompt: string; referencias: Array<{ ruta: string; etiqueta: string }>; tamano: '1K' | '2K' }): Promise<{ bytes: Buffer; costeUsd: number; modelo: string }>;
+  generarFoto(o: { id: string; prompt: string; referencias: Array<{ ruta: string; etiqueta: string }>; aspectRatio?: '9:16'; tamano: '1K' | '2K' }): Promise<{ bytes: Buffer; costeUsd: number; modelo: string }>;
   /** Comprueba una foto generada; devuelve el defecto si hay que repetirla (franjas planas, dominante amarilla excesiva). */
   defectoDeFoto?(ruta: string, luzDeEscena?: string): Promise<string | undefined>;
   /** Corrige en el sitio lo que el código sabe corregir de una foto (una dominante amarilla moderada); devuelve qué hizo. */
@@ -119,10 +119,24 @@ type Oyente = (c: Conversacion) => void;
 const id = () => randomUUID().slice(0, 8);
 const ID_CONVERSACION = /^[a-z0-9][a-z0-9-]{0,80}$/;
 
+/** Una representación estable para comparar la fuente que se usó para escribir el pie con la ficha actual. */
+function evidenciaDelPlato(h: HechosDelPlato): string {
+  const componentes = h.elementos.map(e => [e.recuento, e.nombre, e.estado].filter(Boolean).join(' ')).sort();
+  return `${h.plato}. ${componentes.join(', ')}.`;
+}
+
+function coincideFicha(evidencia: string, h: HechosDelPlato): boolean {
+  const normalizar = (texto: string) => texto.normalize('NFKC').toLocaleLowerCase('es').trim().replace(/\s+/g, ' ');
+  return normalizar(evidencia) === normalizar(evidenciaDelPlato(h));
+}
+
 export class ServicioChat {
   private readonly oyentes = new Map<string, Set<Oyente>>();
   private readonly ediciones = new Set<string>();
   private readonly colas = new Map<string, Promise<unknown>>();
+
+  private readonly campanasEnPlanificacion = new Set<string>();
+  private readonly referenciasEnPlanificacion = new Set<string>();
 
   constructor(private readonly d: DepsChat) {}
 
@@ -148,10 +162,20 @@ export class ServicioChat {
 
   // ------------------------------------------------------------------ Persistencia y avisos
 
-  async listar(): Promise<Array<{ id: string; titulo: string; actualizada: string }>> {
+  private async conversacionesRecientes(): Promise<Conversacion[]> {
     const ids = await readdir(this.d.carpeta).catch(() => [] as string[]);
     const todas = await Promise.all(ids.filter((x) => ID_CONVERSACION.test(x)).map((x) => this.leer(x).catch(() => undefined)));
-    return todas.filter((c): c is Conversacion => Boolean(c)).map((c) => ({ id: c.id, titulo: c.titulo, actualizada: c.actualizada })).sort((a, b) => (a.actualizada < b.actualizada ? 1 : -1));
+    return todas.filter((c): c is Conversacion => Boolean(c)).sort((a, b) => b.actualizada.localeCompare(a.actualizada));
+  }
+
+  async listar() {
+    return (await this.conversacionesRecientes()).map(({ id, titulo, actualizada, encargoCampana, piezas, mensajes }) => {
+      const concepto = mensajes.flatMap(m => m.bloques).findLast(b => b.tipo === 'conceptos' || b.tipo === 'referencias');
+      const tipos = new Set(piezas.map(p => p.formato));
+      if (concepto?.pedido.formato && !encargoCampana) tipos.add(concepto.pedido.formato);
+      return { id, titulo, actualizada, campana: encargoCampana?.brief?.campana,
+        tipos: encargoCampana ? [encargoCampana.canal ?? encargoCampana.formato, 'campana' as const] : [...tipos] };
+    });
   }
 
   async leer(conversacion: string): Promise<Conversacion> {
@@ -167,6 +191,126 @@ export class ServicioChat {
     await mkdir(this.carpetaDe(c.id), { recursive: true });
     await this.guardar(c);
     return c;
+  }
+
+  /** Las fichas validadas por el dueño. Los deseos de comunicación y los conceptos creativos nunca son pruebas. */
+  async hechosParaCampana(local: string): Promise<Record<string, string>> {
+    const fichas: Record<string, string> = {};
+    const vistos = new Set<string>();
+    for (const c of await this.conversacionesRecientes()) {
+      if (c.hechos?.local !== local) continue;
+      // Las copias importadas remiten a su conversación de origen, salvo que el dueño haya confirmado otra foto aquí.
+      if (c.encargoCampana?.origen && !c.mensajes.some(m => m.bloques.some(b => b.tipo === 'hechos' && b.estado === 'HECHO' && b.propuesta.foto === c.hechos?.foto))) continue;
+      const h = c.hechos;
+      const clave = h.plato.trim().toLocaleLowerCase('es');
+      if (vistos.has(clave)) continue;
+      vistos.add(clave);
+      fichas[`plato:${c.id}`] = evidenciaDelPlato(h);
+      if (vistos.size >= 8) break;
+    }
+    return fichas;
+  }
+
+  async abrirPiezaDeCampana(idConversacion: string, encargo: EncargoCampana): Promise<string> {
+    const carpeta = this.carpetaDe(idConversacion);
+    const pedido = EncargoCampana.parse(encargo);
+    const c = await this.enCola(idConversacion, async () => {
+      const previo = await readFile(join(carpeta, 'conversacion.json'), 'utf8').catch((e: NodeJS.ErrnoException) => {
+        if (e.code !== 'ENOENT') throw e;
+      });
+      if (previo !== undefined) {
+        const existente = Conversacion.parse(JSON.parse(previo));
+        // Las conversaciones anteriores al brief estructurado ya contienen el encargo en indicaciones.
+        const comparable = existente.encargoCampana?.brief ? pedido : EncargoCampana.parse({ ...pedido, brief: undefined });
+        if (JSON.stringify(existente.encargoCampana) !== JSON.stringify(comparable)) throw new ErrorDeUsuario('Esta conversación ya corresponde a otro encargo.');
+        if (!existente.encargoCampana?.brief && pedido.brief) {
+          existente.encargoCampana = pedido;
+          await this.guardar(existente);
+        }
+        return existente;
+      }
+      const local = (await this.d.locales()).find(l => l.slug === pedido.local);
+      if (!local) throw new ErrorDeUsuario('El local de la campaña no está disponible en el estudio.');
+      const ahora = this.ahora();
+      const nueva = Conversacion.parse({ id: idConversacion, titulo: pedido.titulo, encargoCampana: pedido, creada: ahora, actualizada: ahora });
+      await mkdir(carpeta, { recursive: true });
+      if (pedido.origen) {
+        if (pedido.origen === idConversacion) throw new ErrorDeUsuario('La ficha de origen no es válida.');
+        const origen = await this.leer(pedido.origen).catch((e: unknown) => {
+          if (!(e instanceof ErrorDeUsuario)) throw e;
+        });
+        if (origen && origen.hechos?.local !== local.slug) throw new ErrorDeUsuario('La ficha de origen no está confirmada para este local.');
+        const h = origen?.hechos;
+        const foto = origen?.imagenes.find(i => i.id === h?.foto);
+        if (h && foto && (!pedido.evidenciaOrigen || coincideFicha(pedido.evidenciaOrigen, h))) {
+          const archivo = `imagenes/${foto.id}${extname(foto.archivo)}`;
+          await mkdir(join(carpeta, 'imagenes'), { recursive: true });
+          const copiada = await copyFile(this.rutaArchivo(pedido.origen, foto.archivo), this.rutaArchivo(idConversacion, archivo)).then(() => true).catch((e: NodeJS.ErrnoException) => {
+            if (e.code !== 'ENOENT') throw e;
+            return false;
+          });
+          if (copiada) {
+            const { referencia: _referencia, fotosPorLamina: _asignacionAnterior, ...ficha } = h;
+            nueva.imagenes.push({ ...foto, archivo });
+            nueva.hechos = ficha;
+          }
+        }
+      }
+      const fuente = pedido.evidenciaOrigen ? ` La pieza se preparó con esta ficha: ${pedido.evidenciaOrigen}` : '';
+      nueva.mensajes.push(this.mensaje('asistente', nueva.hechos
+        ? `Preparo «${pedido.titulo}» para ${local.marca.nombre} con la foto y los datos confirmados de «${nueva.hechos.plato}». Te enseñaré el plan y el coste.`
+        : `Vamos a preparar «${pedido.titulo}» para ${local.marca.nombre}. Sube una foto real del plato y dime cómo lo llamáis.${fuente} Con esos datos preparo el plan y su coste.`));
+      await this.guardar(nueva);
+      return nueva;
+    });
+    if (c.hechos && !c.piezas.some(p => p.plan)) void this.planificarCampana(c, 'normal');
+    return c.id;
+  }
+
+  private async planificarCampana(c: Conversacion, esfuerzo: Esfuerzo): Promise<void> {
+    const encargo = c.encargoCampana!;
+    if (this.campanasEnPlanificacion.has(c.id) || this.referenciasEnPlanificacion.has(c.id) ||
+        c.mensajes.some(m => m.bloques.some(b => b.tipo === 'referencias' && b.estado === 'PENDIENTE'))) return;
+    this.campanasEnPlanificacion.add(c.id);
+    try {
+      if (!this.d.director) {
+        const mensaje = 'El director no está disponible. Activa la conexión del estudio y vuelve a abrir la pieza.';
+        if (!c.mensajes.at(-1)?.bloques.some(b => b.tipo === 'error' && b.texto === mensaje)) await this.fallo(c.id, mensaje);
+        return;
+      }
+      await this.cambiar(c.id, actual => {
+        actual.pensando = true;
+        // Si el estudio se cerró durante una búsqueda o un plan, sus tarjetas interrumpidas ya no deben aceptar elecciones.
+        const motivo = 'La planificación anterior se interrumpió. Se retoma el encargo de la campaña.';
+        for (const b of actual.mensajes.flatMap(m => m.bloques)) {
+          if ((b.tipo === 'conceptos' || b.tipo === 'referencias') && (b.estado === 'BUSCANDO' || b.estado === 'PENDIENTE')) {
+            b.estado = 'ERROR';
+            b.error = motivo;
+          }
+        }
+        for (const p of actual.piezas) {
+          if (p.estado === 'PROPUESTA' && !p.plan) {
+            p.estado = 'ERROR';
+            p.error = motivo;
+            p.progreso = [{ estado: 'error', texto: motivo }];
+          }
+        }
+      });
+      await this.planificarPiezaNueva(c.id, {
+        formato: encargo.formato, diapositivas: encargo.laminas, indicaciones: encargo.indicaciones, esfuerzo,
+        conReferenciaElegida: Boolean(c.hechos?.referencia), automatica: true,
+      }, `Preparo el plan de «${encargo.titulo}».`);
+    } catch (error) {
+      await this.fallo(c.id, error);
+    } finally {
+      try {
+        await this.cambiar(c.id, actual => { actual.pensando = false; });
+      } catch (error) {
+        this.d.avisar?.(`No se pudo cerrar la planificación de ${c.id}: ${String(error)}`);
+      } finally {
+        this.campanasEnPlanificacion.delete(c.id);
+      }
+    }
   }
 
   suscribir(conversacion: string, oyente: Oyente): () => void {
@@ -186,13 +330,17 @@ export class ServicioChat {
 
   /** Cambios de una conversación en fila (nunca dos a la vez): leer, cambiar, guardar y avisar. */
   private cambiar<T>(conversacion: string, f: (c: Conversacion) => Promise<T> | T): Promise<T> {
-    const anterior = this.colas.get(conversacion) ?? Promise.resolve();
-    const siguiente = anterior.catch(() => {}).then(async () => {
+    return this.enCola(conversacion, async () => {
       const c = await this.leer(conversacion);
       const r = await f(c);
       await this.guardar(c);
       return r;
     });
+  }
+
+  private enCola<T>(conversacion: string, operacion: () => Promise<T>): Promise<T> {
+    const anterior = this.colas.get(conversacion) ?? Promise.resolve();
+    const siguiente = anterior.catch(() => {}).then(operacion);
     this.colas.set(conversacion, siguiente);
     return siguiente;
   }
@@ -269,22 +417,35 @@ export class ServicioChat {
     if (tarjeta.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa tarjeta ya está respondida.');
     if (!r.confirmar) {
       await this.cambiar(conversacion, (c) => {
-        this.tarjeta(c, bloque, 'hechos').estado = 'DESCARTADO';
+        const tarjeta = this.tarjeta(c, bloque, 'hechos');
+        if (tarjeta.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa tarjeta ya está respondida.');
+        tarjeta.estado = 'DESCARTADO';
       });
       return;
     }
     const leidos = HechosDelPlato.safeParse(r.hechos ?? tarjeta.propuesta);
     if (!leidos.success) throw new ErrorDeUsuario(`Revisa la tarjeta: ${leidos.error.issues.map((i) => `${i.path.join('.') || 'datos'}: ${i.message}`).join('; ')}`);
     const hechos = leidos.data;
+    if (c0.encargoCampana && hechos.local !== c0.encargoCampana.local) throw new ErrorDeUsuario('La ficha debe pertenecer al local de esta campaña.');
+    const evidencia = c0.encargoCampana?.evidenciaOrigen;
+    if (evidencia && !coincideFicha(evidencia, hechos)) {
+      throw new ErrorDeUsuario(`La campaña se preparó con esta ficha: ${evidencia} Revisa el nombre, los ingredientes y las cantidades, o prepara otra pieza para este plato.`);
+    }
     const local = (await this.d.locales()).find((l) => l.slug === hechos.local);
     if (!local) throw new ErrorDeUsuario(`No hay ningún local «${hechos.local}».`);
     const foto = c0.imagenes.find((i) => i.id === hechos.foto);
     if (!foto) throw new ErrorDeUsuario('La foto del plato no está en la conversación.');
+    const asignaciones = hechos.fotosPorLamina ?? [];
+    if (asignaciones.some(a => !c0.encargoCampana || a.lamina > c0.encargoCampana.laminas ||
+        a.foto === hechos.referencia || !c0.imagenes.some(img => img.id === a.foto)) ||
+        new Set(asignaciones.map(a => a.lamina)).size !== asignaciones.length) {
+      throw new ErrorDeUsuario('Revisa la foto del producto asignada a cada lámina del encargo.');
+    }
     if (hechos.referencia && !c0.imagenes.some((i) => i.id === hechos.referencia)) throw new ErrorDeUsuario('La referencia no está en la conversación.');
-    const real = await this.d.registrarFoto({ local: hechos.local, id: `chat-${conversacion}-${foto.id}`, ruta: this.rutaArchivo(conversacion, foto.archivo), tipo: 'REAL', descripcion: `Foto real de «${hechos.plato}» subida en el chat (${conversacion}).` });
-    await this.cambiar(conversacion, (c) => {
+    await this.cambiar(conversacion, async (c) => {
       const t = this.tarjeta(c, bloque, 'hechos');
       if (t.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa tarjeta ya está respondida.');
+      const real = await this.d.registrarFoto({ local: hechos.local, id: `chat-${conversacion}-${foto.id}`, ruta: this.rutaArchivo(conversacion, foto.archivo), tipo: 'REAL', descripcion: `Foto real de «${hechos.plato}» subida en el chat (${conversacion}).` });
       t.estado = 'HECHO';
       t.propuesta = hechos;
       c.hechos = { ...hechos, ...(!hechos.referencia && c.referencia ? { referencia: c.referencia } : {}), activoReal: real.activo.id };
@@ -294,6 +455,10 @@ export class ServicioChat {
       c.mensajes.push(this.mensaje('usuario', `✓ Confirmo los datos del plato: ${hechos.plato}.${t.formato === 'auto' ? '' : ` Quiero un ${t.formato}.`}`));
       c.pensando = true;
     });
+    if (c0.encargoCampana) {
+      void this.planificarCampana(await this.leer(conversacion), r.esfuerzo ?? 'normal');
+      return;
+    }
     void this.responder(conversacion, { formato: r.formato ?? tarjeta.formato ?? 'auto', esfuerzo: r.esfuerzo ?? tarjeta.esfuerzo ?? 'normal', nota: 'El cliente acaba de confirmar los hechos del plato. Si ya pidió una pieza, propónla ahora.' });
   }
 
@@ -464,7 +629,7 @@ export class ServicioChat {
   // ------------------------------------------------------------------ El director
 
   private async contexto(c: Conversacion, o: { formato: Formato | 'auto'; esfuerzo: Esfuerzo; nota?: string }): Promise<string> {
-    const locales = await this.d.locales();
+    const locales = (await this.d.locales()).filter(l => !c.encargoCampana || l.slug === c.encargoCampana.local);
     const resumenBloque = (b: Bloque) => {
       if (b.tipo === 'hechos') return `[tarjeta de hechos ${b.estado === 'PENDIENTE' ? 'sin responder' : b.estado === 'HECHO' ? 'confirmada' : 'descartada'}]`;
       if (b.tipo === 'plan') return `[plan de la pieza «${b.pieza}» ${b.estado === 'PENDIENTE' ? 'sin aprobar' : b.estado === 'HECHO' ? 'aprobado' : 'descartado'}]`;
@@ -474,6 +639,9 @@ export class ServicioChat {
     };
     return [
       `LOCALES (slug · nombre · ciudad · qué es):\n${locales.map((l) => `- ${l.slug} · ${l.marca.nombre} · ${l.marca.ciudad} · ${l.marca.descripcion}`).join('\n') || '- (ninguno)'}`,
+      ...(c.encargoCampana ? [`ENCARGO DE CAMPAÑA: ${c.encargoCampana.titulo}. Local ${c.encargoCampana.local}. ${c.encargoCampana.formato}, ${c.encargoCampana.laminas} lámina(s).
+${c.encargoCampana.indicaciones}
+El encargo orienta la pieza. Solo el cliente y su foto confirman los hechos. Con la foto, propón la ficha de este local.`] : []),
       `IMÁGENES DE LA CONVERSACIÓN: ${c.imagenes.map((i) => `«${i.id}» (${i.nombre})`).join(', ') || 'ninguna'}`,
       c.hechos
         ? `HECHOS CONFIRMADOS: local ${c.hechos.local}; plato «${c.hechos.plato}»; elementos ${c.hechos.elementos.map((e) => `${e.recuento ? `${e.recuento} ` : ''}${e.nombre} (${e.estado})`).join(', ')}; mensaje «${c.hechos.mensaje}»; foto «${c.hechos.foto}»${c.hechos.referencia ? `; referencia «${c.hechos.referencia}»` : ''}.`
@@ -540,11 +708,19 @@ export class ServicioChat {
     if (a.tipo === 'PROPONER_HECHOS') {
       const c = await this.leer(conversacion);
       const locales = await this.d.locales();
-      if (!locales.some((l) => l.slug === a.hechos.local)) a.hechos.local = locales[0]?.slug ?? a.hechos.local;
+      if (c.encargoCampana) a.hechos.local = c.encargoCampana.local;
+      else if (!locales.some((l) => l.slug === a.hechos.local)) a.hechos.local = locales[0]?.slug ?? a.hechos.local;
       if (!c.imagenes.some((i) => i.id === a.hechos.foto)) throw new Error(`El director señaló una foto que no existe («${a.hechos.foto}»).`);
       if (a.hechos.referencia && !c.imagenes.some((i) => i.id === a.hechos.referencia)) delete a.hechos.referencia;
       await this.decir(conversacion, turno.mensaje, [{ tipo: 'hechos', id: `hechos-${id()}`, estado: 'PENDIENTE', propuesta: a.hechos, formato: o.formato, esfuerzo: o.esfuerzo }]);
       return;
+    }
+    if (a.tipo === 'PROPONER_PIEZA') {
+      const c = await this.leer(conversacion);
+      if (c.encargoCampana && c.hechos && !c.piezas.some(p => p.plan)) {
+        await this.planificarCampana(c, o.esfuerzo);
+        return;
+      }
     }
     if (a.tipo === 'ABRIR_HERRAMIENTA') {
       await this.abrirHerramienta(conversacion, a.herramienta, a.valores, turno.mensaje);
@@ -638,7 +814,7 @@ export class ServicioChat {
   /** Planifica una pieza (o el ajuste de una hecha) y deja el plan con su coste para aprobarlo. */
   async planificarPiezaNueva(
     conversacion: string,
-    p: { formato?: Formato; diapositivas?: number; ajustar?: string; rehacer?: number[]; indicaciones: string; esfuerzo: Esfuerzo; busqueda?: string[]; conReferenciaElegida?: boolean; concepto?: ConceptoDeSerie | null; fuentes?: FuentesDePieza },
+    p: { formato?: Formato; diapositivas?: number; ajustar?: string; rehacer?: number[]; indicaciones: string; esfuerzo: Esfuerzo; busqueda?: string[]; conReferenciaElegida?: boolean; automatica?: boolean; concepto?: ConceptoDeSerie | null; fuentes?: FuentesDePieza },
     mensaje: string,
   ): Promise<void> {
     const c0 = await this.leer(conversacion);
@@ -660,7 +836,7 @@ export class ServicioChat {
     const pedido = { formato: formatoPedido, diapositivas: numeroPedido, indicaciones: p.indicaciones, esfuerzo: p.esfuerzo, fuentes };
     // Una pieza nueva empieza eligiendo su estética de referencia (un ajuste conserva la que tenía).
     if (!p.ajustar && !p.conReferenciaElegida && this.d.buscarReferencias) {
-      await this.buscarEsteticaDeReferencia(conversacion, pedido, p.busqueda ?? [], mensaje);
+      await this.buscarEsteticaDeReferencia(conversacion, pedido, p.busqueda ?? [], mensaje, p.automatica);
       return;
     }
     // Con referencia, su ficha antes de planificar: el plan parte de ella (una hermana), no solo de su imagen.
@@ -669,7 +845,7 @@ export class ServicioChat {
     }
     // Y antes del plan, el concepto: tres maneras distintas de contar el plato para que el cliente elija.
     if (!p.ajustar && p.concepto === undefined && this.d.director?.proponerConceptos) {
-      await this.proponerConceptosDeSerie(conversacion, pedido, mensaje);
+      await this.proponerConceptosDeSerie(conversacion, pedido, mensaje, p.automatica);
       return;
     }
     const c = await this.leer(conversacion);
@@ -744,10 +920,12 @@ export class ServicioChat {
 
   // ------------------------------------------------------------------ Concepto de la serie
 
-  private async proponerConceptosDeSerie(conversacion: string, pedido: PedidoDePieza, mensaje: string) {
+  private async proponerConceptosDeSerie(conversacion: string, pedido: PedidoDePieza, mensaje: string, automatica = false) {
     const bloque = `conc-${id()}`;
-    await this.decir(conversacion, mensaje ? `${mensaje}\n\nAntes del plan, te propongo tres maneras de contarlo.` : 'Antes del plan, te propongo tres maneras de contarlo.', [{ tipo: 'conceptos', id: bloque, estado: 'BUSCANDO', pedido, conceptos: [] }]);
-    void (async () => {
+    const elegirPorElUsuario = !automatica && pedido.formato !== 'post';
+    const aviso = elegirPorElUsuario ? 'Antes del plan, te propongo tres maneras de contarlo.' : 'El director elegirá el concepto y te mostrará el plan.';
+    await this.decir(conversacion, mensaje ? `${mensaje}\n\n${aviso}` : aviso, [{ tipo: 'conceptos', id: bloque, estado: 'BUSCANDO', pedido, conceptos: [] }]);
+    const preparar = async () => {
       try {
         const c = await this.leer(conversacion);
         const encargo = await this.encargo(c, bloque, pedido.fuentes);
@@ -757,8 +935,9 @@ export class ServicioChat {
         }
         await this.cambiar(conversacion, (cc) => {
           const b = this.bloqueConceptos(cc, bloque);
-          b.estado = 'PENDIENTE';
+          b.estado = elegirPorElUsuario ? 'PENDIENTE' : 'HECHO';
           b.conceptos = conceptos;
+          if (!elegirPorElUsuario) b.elegido = 0;
         });
       } catch (error) {
         await this.cambiar(conversacion, (cc) => {
@@ -767,9 +946,15 @@ export class ServicioChat {
           b.error = (error instanceof Error ? error.message : String(error)).slice(0, 600);
         }).catch(() => {});
         // Sin conceptos, se planifica igual: el concepto ayuda, no bloquea.
-        await this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true, concepto: null }, 'No he podido proponer conceptos: planifico directamente.');
+        return this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true, concepto: null }, 'No he podido proponer conceptos: planifico directamente.');
       }
-    })();
+      if (!elegirPorElUsuario) {
+        const concepto = this.bloqueConceptos(await this.leer(conversacion), bloque).conceptos[0]!;
+        await this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true, concepto }, `Vamos con «${concepto.nombre}». Preparo el plan visual.`);
+      }
+    };
+    if (!elegirPorElUsuario) await preparar();
+    else void preparar().catch(error => this.fallo(conversacion, error));
   }
 
   private bloqueConceptos(c: Conversacion, bloque: string): Extract<Bloque, { tipo: 'conceptos' }> {
@@ -818,10 +1003,11 @@ export class ServicioChat {
     return fuera.sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 8);
   }
 
-  private async buscarEsteticaDeReferencia(conversacion: string, pedido: PedidoDePieza, consultas: string[], mensaje: string) {
+  private async buscarEsteticaDeReferencia(conversacion: string, pedido: PedidoDePieza, consultas: string[], mensaje: string, conceptoAutomatico = false) {
     const bloque = `refs-${id()}`;
     await this.decir(conversacion, mensaje ? `${mensaje}\n\nAntes, busco referencias para elegir la estética.` : 'Busco referencias para elegir la estética.', [{ tipo: 'referencias', id: bloque, estado: 'BUSCANDO', pedido, consultas, candidatas: [], progreso: [] }]);
-    void (async () => {
+    const buscar = async () => {
+      let encontradas = false;
       try {
         const c = await this.leer(conversacion);
         const h = pedido.fuentes?.hechos ?? c.hechos!;
@@ -843,8 +1029,7 @@ export class ServicioChat {
           b.consultas = r.consultas;
           b.candidatas = r.candidatas;
         });
-        // Sin nada que elegir, se sigue sin referencia.
-        if (!r.candidatas.length) await this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true }, 'No he encontrado referencias que valgan: planifico sin ellas.');
+        encontradas = r.candidatas.length > 0;
       } catch (error) {
         const texto = error instanceof Error ? error.message : String(error);
         await this.cambiar(conversacion, (cc) => {
@@ -853,9 +1038,11 @@ export class ServicioChat {
           b.error = texto.slice(0, 600);
         }).catch(() => {});
         // La búsqueda no bloquea la pieza: se planifica igual.
-        await this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true }, 'No he podido buscar referencias: planifico sin ellas.');
       }
-    })();
+      if (!encontradas) await this.planificarPiezaNueva(conversacion, { ...pedido, conReferenciaElegida: true, automatica: conceptoAutomatico }, 'Planifico con la estética del estudio.');
+    };
+    if (conceptoAutomatico) await buscar();
+    else void buscar().catch(error => this.fallo(conversacion, error));
   }
 
   private bloqueReferencias(c: Conversacion, bloque: string): Extract<Bloque, { tipo: 'referencias' }> {
@@ -871,38 +1058,44 @@ export class ServicioChat {
     const fuentes = fuentesDePieza(c0, b0);
     const candidata = eleccion === 'auto' ? b0.candidatas[0] : b0.candidatas.find((x) => x.id === eleccion);
     if (eleccion !== 'ninguna' && !candidata) throw new ErrorDeUsuario('Esa referencia no está entre las candidatas.');
-    let imagen = candidata?.origen === 'propia' ? candidata.id : undefined;
-    if (candidata && !imagen) {
-      const ruta = this.rutaArchivo(conversacion, candidata.archivo);
-      const meta = await sharp(ruta).metadata();
-      imagen = `img-${id()}`;
-      const archivo = `imagenes/${imagen}${extname(ruta).toLowerCase() || '.jpg'}`;
-      await mkdir(this.rutaArchivo(conversacion, 'imagenes'), { recursive: true });
-      await copyFile(ruta, this.rutaArchivo(conversacion, archivo));
-      await this.cambiar(conversacion, (c) => {
-        c.imagenes.push({ id: imagen!, archivo, nombre: `referencia-${candidata.origen}${extname(ruta)}`, ancho: meta.width ?? 1, alto: meta.height ?? 1 });
-      });
-    }
-    await this.cambiar(conversacion, (c) => {
-      const b = this.bloqueReferencias(c, bloque);
-      if (b.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa elección ya está hecha.');
-      b.estado = eleccion === 'ninguna' ? 'DESCARTADO' : 'HECHO';
-      if (candidata) b.elegida = candidata.id;
-      if (imagen) b.imagenElegida = imagen;
-      const elegida = c.imagenes.find(i => i.id === imagen);
-      fuentes.referencia = elegida && { id: elegida.id, archivo: elegida.archivo };
-      if (c.hechos?.foto !== fuentes.hechos.foto || c.hechos.local !== fuentes.hechos.local) return;
-      if (imagen) {
-        c.referencia = imagen;
-        if (c.hechos) c.hechos.referencia = imagen;
-      } else {
-        delete c.referencia;
-        delete c.fichaReferencia;
-        if (c.hechos) delete c.hechos.referencia;
+    if (this.referenciasEnPlanificacion.has(conversacion)) throw new ErrorDeUsuario('Ya se está aplicando una referencia.');
+    this.referenciasEnPlanificacion.add(conversacion);
+    try {
+      let imagen = candidata?.origen === 'propia' ? candidata.id : undefined;
+      if (candidata && !imagen) {
+        const ruta = this.rutaArchivo(conversacion, candidata.archivo);
+        const meta = await sharp(ruta).metadata();
+        imagen = `img-${id()}`;
+        const archivo = `imagenes/${imagen}${extname(ruta).toLowerCase() || '.jpg'}`;
+        await mkdir(this.rutaArchivo(conversacion, 'imagenes'), { recursive: true });
+        await copyFile(ruta, this.rutaArchivo(conversacion, archivo));
+        await this.cambiar(conversacion, (c) => {
+          c.imagenes.push({ id: imagen!, archivo, nombre: `referencia-${candidata.origen}${extname(ruta)}`, ancho: meta.width ?? 1, alto: meta.height ?? 1 });
+        });
       }
-    });
-    const texto = candidata ? `Planifico la pieza a partir de «${candidata.titulo || 'Referencia elegida'}».` : 'Planifico la pieza sin referencia.';
-    await this.planificarPiezaNueva(conversacion, { ...b0.pedido, fuentes, conReferenciaElegida: true }, texto);
+      await this.cambiar(conversacion, (c) => {
+        const b = this.bloqueReferencias(c, bloque);
+        if (b.estado !== 'PENDIENTE') throw new ErrorDeUsuario('Esa elección ya está hecha.');
+        b.estado = eleccion === 'ninguna' ? 'DESCARTADO' : 'HECHO';
+        if (candidata) b.elegida = candidata.id;
+        if (imagen) b.imagenElegida = imagen;
+        const elegida = c.imagenes.find(i => i.id === imagen);
+        fuentes.referencia = elegida && { id: elegida.id, archivo: elegida.archivo };
+        if (c.hechos?.foto !== fuentes.hechos.foto || c.hechos.local !== fuentes.hechos.local) return;
+        if (imagen) {
+          c.referencia = imagen;
+          if (c.hechos) c.hechos.referencia = imagen;
+        } else {
+          delete c.referencia;
+          delete c.fichaReferencia;
+          if (c.hechos) delete c.hechos.referencia;
+        }
+      });
+      const texto = candidata ? `Planifico la pieza a partir de «${candidata.titulo || 'Referencia elegida'}».` : 'Planifico la pieza sin referencia.';
+      await this.planificarPiezaNueva(conversacion, { ...b0.pedido, fuentes, conReferenciaElegida: true, automatica: Boolean(c0.encargoCampana) }, texto);
+    } finally {
+      this.referenciasEnPlanificacion.delete(conversacion);
+    }
   }
 
   private async hechosDeLaPieza(hechos: FuentesDePieza['hechos']): Promise<HechosDeLaPieza> {
@@ -930,7 +1123,8 @@ export class ServicioChat {
       foto: real,
       hechos: await this.hechosDeLaPieza(hechos),
       tokensMarca: local.tokens,
-      mensaje: hechos.mensaje,
+      mensaje: c.encargoCampana ? [hechos.mensaje, c.encargoCampana.indicaciones].join('\n') : hechos.mensaje,
+      ...(c.encargoCampana?.canal === 'historia' ? { lienzo: 'HISTORIA_9_16' as const } : {}),
       creativo: true,
       direcciones: 1,
       vueltas: 0,
@@ -1041,9 +1235,12 @@ export class ServicioChat {
         const fotografo = `fotografo-${puesto}`;
         await this.paso(conversacion, piezaId, texto);
         const generar = d.visual.generar!;
+        const asignada = fuentes.hechos.fotosPorLamina?.find(a => a.lamina === n);
+        const imagenAsignada = asignada && c.imagenes.find(img => img.id === asignada.foto);
+        const fotoProducto = imagenAsignada ? this.rutaArchivo(conversacion, imagenAsignada.archivo) : entradaBase.foto.ruta;
         const etiquetaContinuidad = generar.conPlato ? '@image2' : '@image1';
         let prompt = [
-          promptFinal(generar, { nombre: local.marca.nombre, ciudad: local.marca.ciudad, descripcion: local.marca.descripcion }),
+          promptFinal(generar, { nombre: local.marca.nombre, ciudad: local.marca.ciudad, descripcion: local.marca.descripcion }, entradaBase.lienzo === 'HISTORIA_9_16' ? '9:16' : '3:4'),
           continuidad
             ? `${etiquetaContinuidad} is an earlier photograph from this same shoot: keep its session continuity (the same table surface, tableware, props, light direction, colour temperature and palette) but NOT its camera angle, distance or framing: this is a different shot of the series.`
             : '',
@@ -1055,14 +1252,14 @@ export class ServicioChat {
         let rutaAnterior: string | undefined;
         for (let intento = 1; intento <= 2; intento++) {
 
-          const referencias = [...(generar.conPlato ? [{ ruta: entradaBase.foto.ruta, etiqueta: 'image1: the real dish' }] : []), ...(continuidad ? [{ ruta: continuidad, etiqueta: `${etiquetaContinuidad.slice(1)}: session continuity` }] : [])];
+          const referencias = [...(generar.conPlato ? [{ ruta: fotoProducto, etiqueta: 'image1: the real dish' }] : []), ...(continuidad ? [{ ruta: continuidad, etiqueta: `${etiquetaContinuidad.slice(1)}: session continuity` }] : [])];
           await mesa({ id: fotografo, rol: 'fotografo', n, accion: intento > 1 ? `Repite la toma de la ${n}` : `Dispara la toma de la ${n}${continuidad ? ', con la luz de la sesión' : ''}` });
-          const r = await this.d.generarFoto({ id: `${piezaId}-${n}${intento > 1 ? `-${intento}` : ''}`, prompt, referencias, tamano: esfuerzo === 'rapido' ? '1K' : '2K' });
+          const r = await this.d.generarFoto({ id: `${piezaId}-${n}${intento > 1 ? `-${intento}` : ''}`, prompt, referencias, ...(entradaBase.lienzo === 'HISTORIA_9_16' ? { aspectRatio: '9:16' as const } : {}), tamano: esfuerzo === 'rapido' ? '1K' : '2K' });
           coste += r.costeUsd;
           archivo = `${carpeta}/fotos/${String(n).padStart(2, '0')}${intento > 1 ? `-${intento}` : ''}.png`;
           ruta = this.rutaArchivo(conversacion, archivo);
           try {
-            await exigirTomaNueva(r.bytes, [entradaBase.foto.ruta, ...(entradaBase.referencia ? [entradaBase.referencia.ruta] : []), ...(continuidad ? [continuidad] : [])]);
+            await exigirTomaNueva(r.bytes, [fotoProducto, ...(entradaBase.referencia ? [entradaBase.referencia.ruta] : []), ...(continuidad ? [continuidad] : [])]);
           } catch (error) {
             if (!(error instanceof ErrorDeUsuario) || intento === 2) throw error;
             decidir(n, 'Repetí la foto porque reproducía una imagen de referencia.');
@@ -1101,7 +1298,7 @@ export class ServicioChat {
               const protegida = pieza.formato === 'carrusel' && (n === 1 || n === plan.diapositivas.length);
               const toma = [d.resumen, generar.prompt, generar.luzDeEscena && 'Fuente de color prevista: ' + generar.luzDeEscena].filter(Boolean).join(' — ');
               await mesa({ id: 'director', rol: 'director', n, accion: rutaAnterior ? `Compara los dos intentos de la ${n}` : `Mira la foto de la ${n}${generar.conPlato ? ' frente al plato real' : ''}` });
-              const v = await revisar({ foto: ruta, ...(generar.conPlato ? { real: entradaBase.foto.ruta } : {}), ...(continuidad ? { continuidad } : {}), ...(rutaAnterior ? { anterior: rutaAnterior } : {}), toma, papel: d.papel, portada: protegida });
+              const v = await revisar({ foto: ruta, ...(generar.conPlato ? { real: fotoProducto } : {}), ...(continuidad ? { continuidad } : {}), ...(rutaAnterior ? { anterior: rutaAnterior } : {}), toma, papel: d.papel, portada: protegida });
               if (v.veredicto === 'REPETIR' && intento === 1) {
                 rutaAnterior = ruta;
                 decidir(n, `Repetí la foto: ${v.motivo}`);
@@ -1159,8 +1356,14 @@ export class ServicioChat {
         const nn = String(n).padStart(2, '0');
         const png = `${carpeta}/${nn}.png`;
         const movil = `${carpeta}/${nn}-movil.jpg`;
-        if (deFoto) await sharp(origen).rotate().resize(1080, 1440, { fit: 'cover', position: 'attention' }).png().toFile(this.rutaArchivo(conversacion, png));
-        else await copyFile(origen, this.rutaArchivo(conversacion, png));
+        if (deFoto) await sharp(origen).rotate().resize(1080, entradaBase.lienzo === 'HISTORIA_9_16' ? 1920 : 1440, { fit: 'cover', position: 'attention' }).png().toFile(this.rutaArchivo(conversacion, png));
+        else {
+          if (entradaBase.lienzo === 'HISTORIA_9_16') {
+            const { width, height } = await sharp(origen).metadata();
+            if (width !== 1080 || height !== 1920) throw new Error('El diseño de la historia debe medir 1080 × 1920 antes de entregarlo.');
+          }
+          await copyFile(origen, this.rutaArchivo(conversacion, png));
+        }
         await sharp(this.rutaArchivo(conversacion, png)).resize(540).jpeg({ quality: 84 }).toFile(this.rutaArchivo(conversacion, movil));
         // Las capas, de fondo a frente, en una carpeta propia de la lámina: la web las monta una a una.
         const capas: string[] = [];
@@ -1297,7 +1500,7 @@ export class ServicioChat {
           this.mensaje(
             'asistente',
             completa
-              ? `Aquí está${pieza.formato === 'carrusel' ? ` el carrusel (${listas} de ${total} diapositivas)` : ' el post'}.${conErrores.length ? ` La${conErrores.length > 1 ? 's' : ''} ${conErrores.join(', ')} tiene${conErrores.length > 1 ? 'n' : ''} detalles que el código midió (contraste o solape): dime si la rehago.` : ''}${decididas.length ? `\n\nLo que decidí por el camino:\n${decididas.map((t) => `- ${t}`).join('\n')}` : ''}\n\nPídeme cualquier cambio.`
+              ? `Aquí está${pieza.formato === 'carrusel' ? ` el carrusel (${listas} de ${total} diapositivas)` : c.encargoCampana?.canal === 'historia' ? ' la historia' : ' el post'}.${conErrores.length ? ` La${conErrores.length > 1 ? 's' : ''} ${conErrores.join(', ')} tiene${conErrores.length > 1 ? 'n' : ''} detalles que el código midió (contraste o solape): dime si la rehago.` : ''}${decididas.length ? `\n\nLo que decidí por el camino:\n${decididas.map((t) => `- ${t}`).join('\n')}` : ''}\n\nPídeme cualquier cambio.`
               : p.error!,
             { bloques: [{ tipo: 'pieza', id: `res-${id()}`, pieza: piezaId }] },
           ),

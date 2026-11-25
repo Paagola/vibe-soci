@@ -30,11 +30,12 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
     }
   };
 
+  const esPost = b.pedido?.formato === 'post';
   if (b.estado === 'BUSCANDO') {
     return (
       <div className="hoja flex items-center gap-3 rounded-xl border border-border p-4 animate-in fade-in">
         <ThinkingOrb labels={['Pensando tres ideas', 'Buscando otra mirada', 'Eligiendo titulares']} size={36} />
-        <div className="text-sm font-semibold">Tres maneras de contarlo</div>
+        <div className="text-sm font-semibold">{esPost ? "Eligiendo el concepto del post" : "Tres maneras de contarlo"}</div>
       </div>
     );
   }
@@ -45,13 +46,24 @@ export function TarjetaConceptos(p: { conversacion: Conversacion; bloque: Bloque
       <div className="hoja flex items-start gap-3 rounded-xl border border-border p-3 animate-in fade-in">
         <Lightbulb className="mt-0.5 size-4 shrink-0 text-acento" />
         <div className="min-w-0 text-sm">
-          <div className="font-medium">Concepto: {c?.nombre}</div>
-          {c && <div className="text-xs text-muted-foreground">{formatoDelConcepto(c.laminas.length)} · «{c.titular}»</div>}
+          <div className="font-medium">Concepto elegido · {c?.nombre}</div>
+          {c && <>
+            <div className="mt-1 text-sm font-semibold">«{c.titular}»</div>
+            <p className="mt-1 text-sm text-muted-foreground">{c.idea}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{c.fotografia}</p>
+          </>}
         </div>
         <Check className="ml-auto size-4 shrink-0 text-exito" />
       </div>
     );
   }
+  if (esPost && b.conceptos[0]) return <div className="hoja space-y-2 rounded-xl border border-border p-4">
+    <h3 className="text-sm font-semibold">{b.conceptos[0].nombre} · «{b.conceptos[0].titular}»</h3>
+    <p className="text-sm text-muted-foreground">{b.conceptos[0].idea}</p>
+    <button type="button" className={cn(boton, 'bg-primary text-primary-foreground')} disabled={ocupado !== undefined} onClick={() => void elegir('auto')}>Preparar esta propuesta</button>
+    {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+  </div>;
+
   return (
     <div className="hoja overflow-hidden rounded-xl border border-border">
       <div className="flex items-start gap-3 p-4">

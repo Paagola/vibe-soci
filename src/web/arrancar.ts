@@ -7,6 +7,7 @@ import { RAIZ, leerConfig } from '../config.js';
 import { ErrorDeUsuario } from '../dominio/errores.js';
 import { crearEstudio } from './estudio.js';
 import { crearServicioChat } from './chat.js';
+import { crearAgenciaWeb, arrancarRenovaciones } from './agencia.js';
 import { crearApp } from './servidor.js';
 
 const HOST = '127.0.0.1';
@@ -18,7 +19,9 @@ async function principal(): Promise<void> {
 
   const estudio = crearEstudio(config, { simuladoAlArrancar: simulado, carpetaPlantillas: join(RAIZ, 'plantillas') });
   const { chat, herramientas } = await crearServicioChat(config, estudio);
-  crearApp(estudio, chat, herramientas).listen(puerto, HOST, () => {
+  const agencia = crearAgenciaWeb(estudio, chat);
+  const servidor = crearApp(estudio, chat, herramientas, agencia).listen(puerto, HOST, () => {
+    servidor.once('close', arrancarRenovaciones(agencia));
     console.log(`Estudio de contenido en http://localhost:${puerto}${simulado ? '  (modo simulado: no gasta)' : ''}`);
     if (!config.geminiApiKey) console.log('  Sin GEMINI_API_KEY: usa el modo simulado o añade la clave en .env.');
     if (!config.hfKey) console.log('  Sin HF_KEY: genera a mano con plan.md e importa, o usa el modo simulado.');

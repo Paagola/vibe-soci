@@ -18,6 +18,8 @@ const Entorno = z.object({
   GEMINI_API_KEY: opcional(z.string().trim()),
   GEMINI_MODELO: opcional(z.string().trim()),
   GEMINI_MODELO_RESPALDO: opcional(z.string().trim()),
+  GEMINI_MODELO_ESTRATEGIA: opcional(z.string().trim()),
+  GEMINI_MODELO_REDACCION: opcional(z.string().trim()),
   GEMINI_MODELO_PRODUCTOR: opcional(z.string().trim()),
   GEMINI_MODELO_PRODUCTOR_RESPALDO: opcional(z.string().trim()),
   GEMINI_FACTURACION: opcional(z.enum(['si', 'no'])),
@@ -54,6 +56,8 @@ export interface Config {
   geminiModeloRespaldo?: string;
   /** Modelo de texto y visión de la orden con Productor. */
   geminiModeloProductor?: string;
+  geminiModeloEstrategia?: string;
+  geminiModeloRedaccion?: string;
   geminiModeloProductorRespaldo?: string;
   /** Indica si la clave tiene facturación activa. La generación de imágenes por la API la requiere. */
   geminiFacturacion: boolean;
@@ -84,6 +88,8 @@ export function leerConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     geminiModelo: e.GEMINI_MODELO ?? 'gemini-3.8-flash',
     geminiModeloRespaldo: e.GEMINI_MODELO_RESPALDO ?? 'gemini-3.5-flash',
     geminiModeloProductor: e.GEMINI_MODELO_PRODUCTOR ?? MODELO_PRODUCTOR_GEMINI,
+    geminiModeloEstrategia: e.GEMINI_MODELO_ESTRATEGIA ?? 'gemini-4-argon',
+    geminiModeloRedaccion: e.GEMINI_MODELO_REDACCION ?? MODELO_PRODUCTOR_GEMINI,
     geminiModeloProductorRespaldo: e.GEMINI_MODELO_PRODUCTOR_RESPALDO,
     geminiFacturacion: e.GEMINI_FACTURACION === 'si',
     geminiTopeUsd: e.GEMINI_TOPE_USD ?? 1,

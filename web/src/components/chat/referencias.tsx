@@ -1,9 +1,9 @@
 /**
  * La estética de referencia: antes de planificar cada post o carrusel, el estudio trae candidatas de Pinterest, de los
- * posts anteriores del local y de las referencias del estudio. El cliente elige una (o «Decide tú», o sin referencia).
+ * posts anteriores del local y de las referencias del estudio. El cliente elige una o continúa sin referencia.
  */
 import { useState } from 'react';
-import { Check, ExternalLink, GalleryHorizontal, Images, Loader2, Sparkles } from 'lucide-react';
+import { Check, ExternalLink, GalleryHorizontal, Images, Loader2 } from 'lucide-react';
 import { api, type Bloque, type Conversacion } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { ThinkingOrb } from '@/components/ui/ai-thiking-orb-and-input';
@@ -48,7 +48,7 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
     return (
       <div className="hoja rounded-xl border border-border p-4 animate-in fade-in">
         <div className="flex items-center gap-3">
-          <ThinkingOrb labels={['Buscando en Pinterest', 'Mirando posts del local', 'Eligiendo referencias']} size={36} />
+          <ThinkingOrb labels={['Buscando en Pinterest', 'Mirando posts del local', 'Preparando opciones']} size={36} />
           <div className="min-w-0">
             <div className="text-sm font-semibold">Buscando la estética de referencia</div>
             {b.consultas.length > 0 && <div className="truncate text-xs text-muted-foreground">{b.consultas.map((q) => `«${q}»`).join(' · ')}</div>}
@@ -150,9 +150,6 @@ export function TarjetaReferencias(p: { conversacion: Conversacion; bloque: Bloq
         <span className="mr-auto text-xs text-destructive">{error}</span>
         <button type="button" className={cn(boton, 'text-muted-foreground hover:bg-accent hover:text-foreground')} disabled={Boolean(ocupado)} onClick={() => void elegir('ninguna')}>
           Sin referencia
-        </button>
-        <button type="button" className={cn(boton, 'h-11 rounded-full border-2 border-cobalto px-5 font-semibold text-cobalto hover:bg-cobalto/10')} disabled={Boolean(ocupado)} onClick={() => void elegir('auto')}>
-          {ocupado === 'auto' ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />} Decide tú
         </button>
         <button type="button" className={cn(boton, 'h-11 rounded-full bg-primary px-6 font-display text-[17px] tracking-wide text-primary-foreground hover:brightness-95')} disabled={!marcada || Boolean(ocupado)} onClick={() => marcada && void elegir(marcada)}>
           {ocupado && ocupado === marcada ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} Usar esta

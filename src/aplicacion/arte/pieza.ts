@@ -41,7 +41,7 @@ export function sinLuzCalida(prompt: string): string {
 }
 
 /** Completa el encargo de cámara con las reglas de fidelidad, luz y fotografía sin texto. */
-export function promptFinal(v: NonNullable<Visual['generar']>, local: { nombre: string; ciudad: string; descripcion: string }): string {
+export function promptFinal(v: NonNullable<Visual['generar']>, local: { nombre: string; ciudad: string; descripcion: string }, aspecto: '3:4' | '9:16' = '3:4'): string {
   return [
     v.conPlato
       ? '@image1 documents the real dish. Keep the ingredients, portions, relative sizes, tableware and garnish. Make a NEW photograph from the directed viewpoint: reveal a different side or overlap and change the distance or height. Preserve the plating as an arrangement in three-dimensional space. Build the scene and its lighting afresh.'
@@ -52,7 +52,7 @@ export function promptFinal(v: NonNullable<Visual['generar']>, local: { nombre: 
       : 'Neutral daylight white balance (about 5000–5500 K): the plate, tablecloth and any white read truly white; wood and food keep their natural colours. No yellow, orange, amber or golden colour cast, no warm filter, no sepia, no orange highlights.',
     'Keep real differences in size, wear and surface finish. Give each object weight at its contact points. Reflections follow the light source and the material; focus falls away with real scene depth.',
     `The place: ${local.descripcion} (${local.ciudad}).`,
-    'Photorealistic professional editorial photograph, vertical 3:4. People, if any, are anonymous adults, natural and candid. Absolutely no text, letters, numbers, signs, menus, logos or watermarks anywhere in the image.',
+    `Photorealistic professional editorial photograph, vertical ${aspecto}. People, if any, are anonymous adults, natural and candid. Absolutely no text, letters, numbers, signs, menus, logos or watermarks anywhere in the image.`,
     // Nano Banana Pro tomó «clean dark shadow space in the upper area» al pie de la letra y pintó una franja negra
     // plana (Lo Güeno, lote-1): el aire para el texto tiene que salir de la propia escena.
     'Any calm area left for typography must be part of the real scene (a dark wall, deep shadow, sky, tablecloth or an out-of-focus background) and the photograph must fill the whole frame: never a flat empty band, border, frame or letterbox.',
@@ -113,7 +113,7 @@ export async function registrarFotoGenerada(
         ruta: relative(process.cwd(), o.ruta),
         sha256: sha,
         copiadoEn: ahora,
-        ...(o.tipo === 'REAL' ? {} : { generacion: { modelo: o.modelo ?? '—', requestId: o.trabajo ?? o.id, promptArchivo: '—', prompt: o.prompt ?? '', parametros: { aspecto: '3:4' }, referencias: o.referencias ?? [], generadoEn: ahora } }),
+        ...(o.tipo === 'REAL' ? {} : { generacion: { modelo: o.modelo ?? '—', requestId: o.trabajo ?? o.id, promptArchivo: '—', prompt: o.prompt ?? '', parametros: { aspecto: meta.height === Math.round((meta.width ?? 0) * 16 / 9) ? '9:16' : '3:4' }, referencias: o.referencias ?? [], generadoEn: ahora } }),
       },
     }),
     { 'original.png': bytes, ...(mascara ? { 'mascara.png': mascara } : {}) },
@@ -122,10 +122,10 @@ export async function registrarFotoGenerada(
 }
 
 /** El pintor del estudio: compone la intención con el compositor real y mide sus errores. */
-export function crearPintor(d: { compositor: Compositor; activos: AlmacenActivos; procesador: ProcesadorImagen; tokensMarca: Tokens }): (intencion: Intencion, carpeta: string) => Promise<Pintura> {
+export function crearPintor(d: { compositor: Compositor; activos: AlmacenActivos; procesador: ProcesadorImagen; tokensMarca: Tokens; lienzo?: 'HISTORIA_9_16' }): (intencion: Intencion, carpeta: string) => Promise<Pintura> {
   return async (intencion, carpeta) => {
     await mkdir(carpeta, { recursive: true });
-    const r = await componerDiseno({ compositor: d.compositor, activos: d.activos, disenos: new AlmacenDisenosFicheros(carpeta), procesador: d.procesador }, intencion, 'pieza', { tokensMarca: d.tokensMarca });
+    const r = await componerDiseno({ compositor: d.compositor, activos: d.activos, disenos: new AlmacenDisenosFicheros(carpeta), procesador: d.procesador }, d.lienzo ? { ...intencion, lienzo: { formato: d.lienzo } } : intencion, 'pieza', { tokensMarca: d.tokensMarca });
     const png = join(r.guardado.carpeta, 'diseno.png');
     const movil = join(carpeta, 'movil.png');
     await sharp(png).resize(360).png().toFile(movil);

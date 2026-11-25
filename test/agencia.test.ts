@@ -124,3 +124,26 @@ test('la API sirve el calendario del local, aísla la simulación y rechaza una 
   assert.equal((await enviar('POST', ruta, crear)).status, 409);
   assert.deepEqual(await (await fetch(base + '/api/agencia/locales')).json(), { locales: [], simulado: false });
 });
+
+test('el siguiente calendario aprende solo de recuentos comparables, también cuando uno es cero', async t => {
+  const carpeta = await mkdtemp(join(tmpdir(), 'agencia-aprendizaje-'));
+  t.after(() => rm(carpeta, { recursive: true, force: true }));
+  const agencia = new Agencia({ carpeta, marca: async () => marca, zonaHoraria: 'Europe/Madrid',
+    ahora: () => new Date('2026-12-20T12:00:00Z'), agentes: () => ({
+      planificar: ctx => agentesSimulados().planificar({ ...ctx, historial: [] }),
+    }) });
+  const crear = (inicio: string, objetivo = pedido.solicitud.objetivo) => agencia.crear(marca.slug, randomUUID(), {
+    ...pedido, renovar: false, solicitud: { ...pedido.solicitud, inicio, objetivo },
+  });
+  for (const [fecha, valor, semanal] of [['2026-10-01', 0, true], ['2026-10-15', 8, true], ['2026-11-01', 99, false]] as const) {
+    const c = await crear(fecha);
+    await agencia.resultado(marca.slug, c.id, 0, { valor, nota: '', primerosSieteDias: semanal });
+  }
+  const otra = await crear('2026-12-01', 'Que vuelvan');
+  assert.equal(otra.referenciaSemanal, undefined);
+  const siguiente = await crear('2026-12-15');
+  assert.equal(siguiente.referenciaSemanal?.muestras, 2);
+  assert.equal(siguiente.referenciaSemanal.mediana, 4);
+  assert.equal(siguiente.piezas[0]!.metrica, siguiente.referenciaSemanal.metrica);
+  assert.deepEqual((await agencia.listar(marca.slug)).campanas[0]!.referenciaSemanal, siguiente.referenciaSemanal);
+});

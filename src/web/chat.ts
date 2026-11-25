@@ -102,8 +102,8 @@ export async function crearServicioChat(config: Config, estudio?: Estudio, avisa
     return todos.filter((l): l is LocalDelChat => Boolean(l)).sort((a, b) => a.marca.nombre.localeCompare(b.marca.nombre));
   };
 
-  const generarFoto = async (o: { id: string; prompt: string; referencias: Array<{ ruta: string; etiqueta: string }>; tamano: '1K' | '2K' }) => {
-    const r = await generador.generar({ id: o.id, prompt: o.prompt, referencias: o.referencias, aspectRatio: '3:4', tamano: o.tamano });
+  const generarFoto = async (o: { id: string; prompt: string; referencias: Array<{ ruta: string; etiqueta: string }>; aspectRatio?: '9:16'; tamano: '1K' | '2K' }) => {
+    const r = await generador.generar({ id: o.id, prompt: o.prompt, referencias: o.referencias, aspectRatio: o.aspectRatio ?? '3:4', tamano: o.tamano });
     return { bytes: r.bytes, costeUsd: r.costeUsd, modelo: r.modelo };
   };
   const herramientas = estudio ? crearHerramientasChat({ config, estudio, generarFoto }) : undefined;
@@ -150,13 +150,13 @@ export async function crearServicioChat(config: Config, estudio?: Estudio, avisa
     },
     leerTextoMovil: async png => (await leerCartel(png, [])).lineas,
     componerFotografiaConTexto: (entrada, receta, cabecera) => componerFotografiaConTexto(
-      crearPintor({ compositor, activos, procesador, tokensMarca: entrada.tokensMarca }), entrada, receta, cabecera),
+      crearPintor({ compositor, activos, procesador, tokensMarca: entrada.tokensMarca, lienzo: entrada.lienzo }), entrada, receta, cabecera),
     componer: (entrada, receta, esfuerzo) =>
       componerVisual(
         {
           medidor,
           silueta: (f) => medidor.silueta(f),
-          pintar: crearPintor({ compositor, activos, procesador, tokensMarca: entrada.tokensMarca }),
+          pintar: crearPintor({ compositor, activos, procesador, tokensMarca: entrada.tokensMarca, lienzo: entrada.lienzo }),
           metricas: metricas as never,
           corpus,
           // Salvo en «rápido», la pieza la mira un crítico (con la referencia como listón) y su parche solo se queda si

@@ -9,6 +9,8 @@ import { describirError, ErrorHttp } from './errores.js';
 import type { Estudio } from './estudio.js';
 import type { ServicioChat } from '../aplicacion/chat/servicioChat.js';
 import { RAIZ } from '../config.js';
+import { crearAgenciaWeb } from './agencia.js';
+import { rutasDeAgencia } from './rutas/agencia.js';
 import { rutasDeArchivos } from './rutas/archivos.js';
 import { rutasDelChat, type HerramientasDeLaWeb } from './rutas/chat.js';
 import { rutasDeEncargos } from './rutas/encargos.js';
@@ -20,12 +22,13 @@ import { rutasDeProcesos } from './rutas/procesos.js';
 /** La interfaz del chat, compilada (npm run web:build). */
 const CARPETA_WEB = join(RAIZ, 'web', 'dist');
 
-export function crearApp(estudio: Estudio, chat?: ServicioChat, herramientas?: HerramientasDeLaWeb): express.Express {
+export function crearApp(estudio: Estudio, chat?: ServicioChat, herramientas?: HerramientasDeLaWeb, agencia = crearAgenciaWeb(estudio, chat)): express.Express {
   const app = express();
   // El chat lleva su propio límite (las fotos van dentro del JSON): va antes del lector general.
   if (chat) app.use('/api/chat', rutasDelChat(chat, herramientas));
   app.use(express.json({ limit: '1mb' }));
 
+  app.use('/api/agencia', rutasDeAgencia(agencia));
   app.use('/api', rutasDelEstudio(estudio));
   app.use('/api/piezas', rutasDePiezas(estudio));
   app.use('/api/encargos', rutasDeEncargos(estudio));

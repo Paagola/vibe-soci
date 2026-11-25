@@ -36,6 +36,7 @@ export const HechosDelPlato = z.object({
   mensaje: z.string().min(4).max(240).describe('Lo que el local quiere contar con la pieza.'),
   /** La foto real del plato (id de una imagen de la conversación). */
   foto: Id,
+  fotosPorLamina: z.array(z.object({ lamina: z.number().int().min(1).max(6), foto: Id })).max(6).optional(),
   /** Un post que le gusta al cliente, para tomarlo como listón (id de una imagen de la conversación). */
   referencia: Id.optional(),
 });
@@ -308,7 +309,22 @@ export const Pieza = z.object({
 });
 export type Pieza = z.infer<typeof Pieza>;
 
+export const EncargoCampana = z.object({
+  canal: z.literal('historia').optional(),
+  brief: z.object({ campana: z.string(), objetivo: z.string(), estrategia: z.string(), fecha: z.iso.date(),
+    audiencia: z.string(), proposito: z.string(), motivoFormato: z.string().optional(), llamada: z.string(), metrica: z.string() }).optional(),
+  local: Id,
+  titulo: z.string().min(1),
+  formato: Formato,
+  laminas: z.number().int().min(1).max(6),
+  indicaciones: z.string().min(1),
+  origen: Id.optional(),
+  evidenciaOrigen: z.string().min(1).optional(),
+}).refine(e => e.formato === 'post' ? e.laminas === 1 : e.laminas >= 3, 'Un post tiene una lámina y un carrusel entre tres y seis.');
+export type EncargoCampana = z.infer<typeof EncargoCampana>;
+
 export const Conversacion = z.object({
+  encargoCampana: EncargoCampana.optional(),
   id: Id,
   titulo: z.string().default('Nueva conversación'),
   creada: z.string(),

@@ -90,7 +90,7 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: Extract<B
         <div className="grid min-w-0 flex-1 gap-3">
           <div className="grid gap-1">
             <Etiqueta>Local</Etiqueta>
-            <select className={campo} value={h.local} onChange={(e) => setH({ ...h, local: e.target.value })}>
+            <select disabled={Boolean(p.conversacion.encargoCampana)} className={campo} value={h.local} onChange={(e) => setH({ ...h, local: e.target.value })}>
               {!local && <option value={h.local}>{h.local}</option>}
               {p.locales.map((l) => (
                 <option key={l.slug} value={l.slug}>
@@ -103,16 +103,25 @@ export function TarjetaHechos(p: { conversacion: Conversacion; bloque: Extract<B
             <Etiqueta>Plato</Etiqueta>
             <input className={campo} value={h.plato} onChange={(e) => setH({ ...h, plato: e.target.value })} />
           </div>
-          <label className="grid gap-1 text-sm font-medium text-muted-foreground">
+          {p.conversacion.encargoCampana ? <p className="text-sm">Formato del calendario · {p.conversacion.encargoCampana.canal ?? p.conversacion.encargoCampana.formato} · {p.conversacion.encargoCampana.laminas} lámina(s)</p> : <label className="grid gap-1 text-sm font-medium text-muted-foreground">
             Formato de la pieza
             <select className={campo} value={formato} onChange={(e) => setFormato(e.target.value as Formato | 'auto')}>
               <option value="auto">Automático</option>
               <option value="post">Post</option>
               <option value="carrusel">Carrusel</option>
             </select>
-          </label>
+          </label>}
         </div>
       </div>
+      {p.conversacion.encargoCampana && p.conversacion.imagenes.filter(i => i.id !== h.referencia).length > 1 && <fieldset className="grid gap-2 px-4 pb-4">
+        <legend className="text-sm font-medium">Foto de producto para cada lámina</legend>
+        {Array.from({ length: p.conversacion.encargoCampana.laminas }, (_, i) => <label key={i} className="text-sm">Lámina {i + 1}
+          <select className={campo} value={h.fotosPorLamina?.find(a => a.lamina === i + 1)?.foto ?? h.foto}
+            onChange={e => setH({ ...h, fotosPorLamina: [...(h.fotosPorLamina ?? []).filter(a => a.lamina !== i + 1), { lamina: i + 1, foto: e.target.value }] })}>
+            {p.conversacion.imagenes.filter(img => img.id !== h.referencia).map(img => <option key={img.id} value={img.id}>{img.nombre}</option>)}
+          </select>
+        </label>)}
+      </fieldset>}
       <div className="grid gap-2 border-t border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <Etiqueta>Lo que se ve en el plato</Etiqueta>
@@ -162,7 +171,7 @@ export function TarjetaPlan(p: { conversacion: Conversacion; bloque: { id: strin
   return (
     <div className={cn(marco, 'overflow-hidden', p.bloque.estado === 'DESCARTADO' && 'opacity-60')}>
       <div className="p-4">
-        <Titular grande="Tu" cursiva={p.pieza.formato === 'carrusel' ? `carrusel de ${plan.diapositivas.length}` : 'post'} />
+        <Titular grande="Tu" cursiva={p.pieza.formato === 'carrusel' ? `carrusel de ${plan.diapositivas.length}` : (p.conversacion.encargoCampana?.canal === 'historia' ? 'historia' : 'post')} />
         {p.pieza.base && <p className="mt-1 text-sm text-muted-foreground">{`Ajuste${p.pieza.rehacer.length ? ` de la ${p.pieza.rehacer.join(', ')}` : ''}`}</p>}
         <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">{plan.idea}</p>
       </div>
@@ -351,7 +360,7 @@ export function VisorPieza(p: { conversacion: Conversacion; pieza: Pieza; mostra
       </div>
       {rueda && (
         <Rueda
-          titulo={p.pieza.formato === 'carrusel' ? 'Carrusel' : 'Post'}
+          titulo={p.pieza.formato === 'carrusel' ? 'Carrusel' : (p.conversacion.encargoCampana?.canal === 'historia' ? 'Historia' : 'Post')}
           items={listas.map((d) => ({ title: `${d.n}. ${p.pieza.plan?.diapositivas[d.n - 1]?.resumen ?? ''}`.slice(0, 60), image: url(d.png), href: url(d.png) }))}
           alCerrar={() => setRueda(false)}
         />

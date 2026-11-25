@@ -3,11 +3,13 @@
  * su coste → aprobación → tomas nuevas y diseño de cada diapositiva → carrusel entregado. Y las reglas del plan.
  */
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, writeFile, unlink, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import sharp from 'sharp';
+import { entregarPublicacion } from '../src/aplicacion/agencia/entrega.js';
+import { Pieza } from '../src/dominio/chat.js';
 import { ServicioChat, type DepsChat } from '../src/aplicacion/chat/servicioChat.js';
 import { degrada } from '../src/aplicacion/arte/pieza.js';
 import { Receta } from '../src/dominio/arte/receta.js';
@@ -39,6 +41,25 @@ const plan = (n: number): PlanDePieza => ({
     { papel: 'ambiente', resumen: 'El plato en la barra con gente', visual: { ...toma('At the bar with people'), receta: receta('MARCO') } },
     { papel: 'cierre', resumen: 'Cenital tranquilo con la firma', visual: { ...toma('Overhead calm'), receta: receta('EDITORIAL') } },
   ].slice(0, n) as PlanDePieza['diapositivas'],
+});
+
+it('la entrega conserva el orden y se recupera si faltaba un archivo sin duplicar la salida', async t => {
+  const carpeta = await mkdtemp(join(tmpdir(), 'entrega-'));
+  t.after(() => rm(carpeta, { recursive: true, force: true }));
+  const publicacion = { id: 'campana-prueba', local: 'la-plaza', fecha: '2026-11-25', texto: 'Croquetas', metrica: 'Guardados', campana: 'prueba', indice: 0 };
+  const pieza = Pieza.parse({ id: 'pieza-prueba', formato: 'carrusel', estado: 'LISTA', esfuerzo: 'normal', costeEstimadoUsd: 0, plan: plan(3),
+    diapositivas: [3, 1, 2].map(n => ({ n, png: 'toma-' + n })) });
+  const ruta = (f: string) => join(carpeta, f);
+  await writeFile(ruta('toma-1'), 'primera');
+  await assert.rejects(entregarPublicacion(carpeta, publicacion, pieza, ruta), /ENOENT/);
+  await assert.rejects(readFile(ruta('campana-prueba/publicacion.json')), /ENOENT/);
+  for (const n of [2, 3]) await writeFile(ruta('toma-' + n), String(n));
+  await entregarPublicacion(carpeta, publicacion, pieza, ruta);
+  await unlink(ruta('toma-1'));
+  await entregarPublicacion(carpeta, publicacion, pieza, ruta);
+  const manifiesto = JSON.parse(await readFile(ruta('campana-prueba/publicacion.json'), 'utf8'));
+  assert.deepEqual(manifiesto.imagenes, ['01.png', '02.png', '03.png']);
+  assert.equal(await readFile(ruta('campana-prueba/01.png'), 'utf8'), 'primera');
 });
 
 async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['buscarReferencias']; extra?: Partial<DepsChat>; plan?: () => PlanDePieza } = {}) {
@@ -87,7 +108,7 @@ async function montar(o: { conDirector?: boolean; buscarReferencias?: DepsChat['
     },
     ...o.extra,
   };
-  return { chat: new ServicioChat(deps), llamadas, carpeta };
+  return { chat: new ServicioChat(deps), llamadas, carpeta, deps };
 }
 
 /** Espera a que la conversación cumpla algo (los turnos del director van en segundo plano). */
@@ -146,6 +167,164 @@ describe('chat del estudio', () => {
     const c = await chat.crear();
     assert.throws(() => chat.rutaArchivo(c.id, '../otra/conversacion.json'));
     assert.throws(() => chat.rutaArchivo('../x', 'a.png'));
+  });
+});
+
+describe('piezas del calendario de campaña', () => {
+  const encargo = { local: 'asador-etxebarri', titulo: 'Croquetas al centro', formato: 'carrusel' as const, laminas: 4, indicaciones: 'Abrir con el plato entero. ' + 'Conservar el nombre y mostrar la forma de servir. '.repeat(18) };
+  const foto = async () => ({ nombre: 'croquetas.jpg', bytes: await sharp({ create: { width: 30, height: 40, channels: 3, background: '#996633' } }).jpeg().toBuffer() });
+  const bloquesDe = (c: Conversacion) => c.mensajes.flatMap(m => m.bloques);
+
+  it('abre una vez, fija el local y espera la referencia para decidir el concepto con el brief íntegro hasta el presupuesto', async () => {
+    const img = await foto();
+    const m = await montar({ buscarReferencias: async o => {
+      assert.equal(o.indicaciones, encargo.indicaciones);
+      await writeFile(join(o.destino, 'referencia.jpg'), img.bytes);
+      return { consultas: [], candidatas: [{ id: 'ref-estudio', origen: 'estudio', archivo: `${o.prefijo}/referencia.jpg`, titulo: 'Estudio' }] };
+    } });
+    const locales = await m.deps.locales();
+    m.deps.locales = async () => [...locales, { ...locales[0]!, slug: 'otro-local' }];
+    const director = m.deps.director!;
+    director.turnoDelChat = async (ctx, imagenes) => {
+      assert.ok(ctx.includes(encargo.indicaciones));
+      assert.ok(!ctx.includes('otro-local'));
+      return { mensaje: 'Comprueba la ficha del plato.', accion: { tipo: 'PROPONER_HECHOS', hechos: { local: 'otro-local', plato: 'Croquetas', elementos: [{ nombre: 'croqueta', estado: 'rebozada', recuento: 4 }], mensaje: 'Que la gente comparta', foto: imagenes[0]!.id } } };
+    };
+    const concepto = { nombre: 'El último bocado', idea: 'Una mesa que comparte el plato al centro', titular: 'Una más', fotografia: 'Detalle de la croqueta sobre la mesa.', laminas: ['Abrir con la mesa', 'Acercar el plato', 'Mostrar el relleno', 'Cerrar con la firma'] };
+    director.proponerConceptos = async () => [concepto, { ...concepto, nombre: 'Al centro' }, { ...concepto, nombre: 'La mesa' }];
+    const pedidos: Parameters<typeof director.planificarPieza>[1][] = [];
+    director.planificarPieza = async (_e, o) => { pedidos.push(o); return plan(4); };
+    const id = 'campana-pieza-uno';
+    await Promise.all([m.chat.abrirPiezaDeCampana(id, encargo), m.chat.abrirPiezaDeCampana(id, encargo)]);
+    const inicial = await m.chat.leer(id);
+    assert.equal(inicial.mensajes.length, 1);
+    assert.match(inicial.mensajes[0]!.texto, /foto real/);
+    assert.deepEqual(inicial.encargoCampana, encargo);
+    await assert.rejects(m.chat.abrirPiezaDeCampana(id, { ...encargo, local: 'otro-local' }), /otro encargo/);
+    await assert.rejects(m.chat.abrirPiezaDeCampana('../xx', encargo), /no existe/);
+    await m.chat.enviar(id, { texto: 'Es nuestro plato.', imagenes: [img], formato: 'post' });
+    const conFicha = await esperar(m.chat, id, c => bloquesDe(c).some(b => b.tipo === 'hechos'));
+    const ficha = bloquesDe(conFicha).find(b => b.tipo === 'hechos')!;
+    assert.equal(ficha.propuesta.local, encargo.local);
+    await assert.rejects(m.chat.responderHechos(id, ficha.id, { confirmar: true, hechos: { ...ficha.propuesta, local: 'otro-local' } }), /local de esta campaña/);
+    const [segundaFoto] = await m.chat.subirImagenes(id, [img]);
+    const asignar = (lamina: number) => ({ ...ficha.propuesta, fotosPorLamina: [{ lamina, foto: segundaFoto! }] });
+    await assert.rejects(m.chat.responderHechos(id, ficha.id, { confirmar: true, hechos: asignar(5) }), /cada lámina/);
+    await m.chat.responderHechos(id, ficha.id, { confirmar: true, formato: 'post', hechos: asignar(2) });
+    const conReferencia = await esperar(m.chat, id, c => !c.pensando && bloquesDe(c).some(b => b.tipo === 'referencias' && b.estado === 'PENDIENTE'));
+    const referencia = bloquesDe(conReferencia).find(b => b.tipo === 'referencias')!;
+    assert.equal(pedidos.length, 0);
+    await m.chat.abrirPiezaDeCampana(id, encargo);
+    assert.ok(bloquesDe(await m.chat.leer(id)).some(b => b.tipo === 'referencias' && b.id === referencia.id && b.estado === 'PENDIENTE'));
+    await m.chat.elegirEstetica(id, referencia.id, 'ref-estudio');
+    const conPlan = await esperar(m.chat, id, c => bloquesDe(c).some(b => b.tipo === 'plan') && !c.pensando);
+    assert.deepEqual(conPlan.hechos?.fotosPorLamina, [{ lamina: 2, foto: segundaFoto }]);
+    assert.equal(pedidos.length, 1);
+    assert.deepEqual(pedidos[0], { formato: 'carrusel', diapositivas: 4, indicaciones: encargo.indicaciones, concepto });
+    assert.ok(bloquesDe(conPlan).some(b => b.tipo === 'referencias' && b.elegida === 'ref-estudio'));
+    assert.ok(bloquesDe(conPlan).some(b => b.tipo === 'conceptos' && b.elegido === 0));
+    assert.ok(bloquesDe(conPlan).some(b => b.tipo === 'plan' && b.estado === 'PENDIENTE'));
+    await m.chat.abrirPiezaDeCampana(id, encargo);
+    assert.equal((await m.chat.leer(id)).piezas.length, 1);
+    assert.equal(m.llamadas.fotos, 0);
+
+    assert.deepEqual(await m.chat.hechosParaCampana('otro-local'), {});
+    assert.deepEqual(await m.chat.hechosParaCampana(encargo.local), { [`plato:${id}`]: 'Croquetas. 4 croqueta rebozada.' });
+    const reutilizada = await m.chat.abrirPiezaDeCampana('otra-pieza', { ...encargo, origen: id });
+    const esperandoReferencia = await esperar(m.chat, reutilizada, c => !c.pensando && bloquesDe(c).some(b => b.tipo === 'referencias' && b.estado === 'PENDIENTE'));
+    await m.chat.elegirEstetica(reutilizada, bloquesDe(esperandoReferencia).find(b => b.tipo === 'referencias')!.id, 'ninguna');
+    const copia = await esperar(m.chat, reutilizada, c => bloquesDe(c).some(b => b.tipo === 'plan') && !c.pensando);
+    assert.equal(copia.hechos?.plato, 'Croquetas');
+    assert.equal(copia.imagenes[0]?.id, conPlan.hechos?.foto);
+    assert.deepEqual(Object.keys(await m.chat.hechosParaCampana(encargo.local)), [`plato:${id}`]);
+    assert.equal(m.llamadas.fotos, 0);
+    await assert.rejects(m.chat.abrirPiezaDeCampana('no-es-su-plato', { ...encargo, local: 'otro-local', origen: id }), /este local/);
+    await unlink(m.chat.rutaArchivo(id, conPlan.imagenes[0]!.archivo));
+    await m.chat.abrirPiezaDeCampana('falta-la-foto', { ...encargo, origen: id });
+    const sinFoto = await m.chat.leer('falta-la-foto');
+    assert.equal(sinFoto.hechos, undefined);
+    assert.match(sinFoto.mensajes[0]!.texto, /Sube una foto real/);
+  });
+
+  it('produce una historia en vertical y conserva su formato en la entrega', async () => {
+    const m = await montar({ plan: () => plan(1) });
+    const salida = join(m.carpeta, 'historia.png');
+    m.deps.componer = async (entrada, receta) => {
+      assert.equal(entrada.lienzo, 'HISTORIA_9_16');
+      await sharp({ create: { width: 1080, height: 1920, channels: 3, background: '#ece5d8' } }).png().toFile(salida);
+      return { png: salida, problemas: [], reparada: false, receta };
+    };
+    const id = await m.chat.abrirPiezaDeCampana('historia-local', { ...encargo, formato: 'post', canal: 'historia', laminas: 1 });
+    await m.chat.enviar(id, { texto: 'Croquetas.', imagenes: [await foto()] });
+    const propuesta = await esperar(m.chat, id, c => bloquesDe(c).some(b => b.tipo === 'hechos'));
+    const ficha = bloquesDe(propuesta).find(b => b.tipo === 'hechos')!;
+    await m.chat.responderHechos(id, ficha.id, { confirmar: true });
+    const previa = await esperar(m.chat, id, c => bloquesDe(c).some(b => b.tipo === 'plan'));
+    await m.chat.responderPlan(id, bloquesDe(previa).find(b => b.tipo === 'plan')!.id, true);
+    const lista = await esperar(m.chat, id, c => c.piezas.some(p => p.estado === 'LISTA'));
+    assert.equal(m.llamadas.generadas[0]?.aspectRatio, '9:16');
+    const pieza = lista.piezas[0]!;
+    await entregarPublicacion(m.carpeta, { id: 'entrega-historia', local: encargo.local, fecha: '2026-11-25', formato: 'historia', texto: 'Croquetas', metrica: 'Respuestas', campana: id, indice: 0 }, pieza, f => m.chat.rutaArchivo(id, f));
+    const meta = await sharp(join(m.carpeta, 'entrega-historia/01.png')).metadata();
+    assert.deepEqual([meta.width, meta.height], [1080, 1920]);
+    assert.equal(JSON.parse(await readFile(join(m.carpeta, 'entrega-historia/publicacion.json'), 'utf8')).formato, 'historia');
+  });
+
+  it('una ficha sustituida exige corroborar el plato original y un fallo del plan se reintenta solo al reabrir', async () => {
+    const img = await foto();
+    const { chat, deps, llamadas } = await montar({ buscarReferencias: async o => {
+      await writeFile(join(o.destino, 'referencia.jpg'), img.bytes);
+      return { consultas: [], candidatas: [{ id: 'ref', origen: 'estudio', archivo: `${o.prefijo}/referencia.jpg`, titulo: 'Portada' }] };
+    } });
+    const origen = await chat.crear();
+    const [idFoto] = await chat.subirImagenes(origen.id, [img]);
+    const fuente = await chat.leer(origen.id);
+    const arroz = { local: encargo.local, plato: 'Arroz', elementos: [{ nombre: 'arroz', estado: 'meloso', recuento: 1 }], mensaje: 'Comer en la mesa', foto: idFoto!, activoReal: 'original' };
+    const fichero = chat.rutaArchivo(origen.id, 'conversacion.json');
+    await writeFile(fichero, JSON.stringify({ ...fuente, hechos: arroz }));
+    const evidenciaOrigen = (await chat.hechosParaCampana(encargo.local))[`plato:${origen.id}`]!;
+    await writeFile(fichero, JSON.stringify({ ...fuente, hechos: { ...arroz, plato: 'Sopa' } }));
+    const encargoOriginal = { ...encargo, origen: origen.id, evidenciaOrigen };
+    const id = await chat.abrirPiezaDeCampana('ficha-sustituida', encargoOriginal);
+    const inicio = await chat.leer(id);
+    assert.equal(inicio.hechos, undefined);
+    assert.deepEqual(inicio.imagenes, []);
+    assert.ok(inicio.mensajes[0]!.texto.includes(evidenciaOrigen));
+    await chat.enviar(id, { texto: 'Nuestra foto', imagenes: [img] });
+    const c = await esperar(chat, id, x => bloquesDe(x).some(b => b.tipo === 'hechos'));
+    const ficha = bloquesDe(c).find(b => b.tipo === 'hechos')!;
+    await assert.rejects(chat.responderHechos(id, ficha.id, { confirmar: true }), /La campaña se preparó con esta ficha/);
+    assert.equal((await chat.leer(id)).hechos, undefined);
+    let intentos = 0;
+    deps.director!.proponerConceptos = async () => [{ nombre: 'El arroz al centro', idea: 'La textura del arroz en primer plano', titular: 'Al centro', fotografia: 'Cenital de la mesa y detalle en primer plano', laminas: ['El grano en detalle'] }];
+    deps.director!.planificarPieza = async () => {
+      intentos++;
+      if (intentos === 1) throw new Error('El proveedor está ocupado');
+      return plan(4);
+    };
+    await chat.responderHechos(id, ficha.id, { confirmar: true, hechos: { ...arroz, foto: ficha.propuesta.foto } });
+    const alternativas = await esperar(chat, id, x => !x.pensando && bloquesDe(x).some(b => b.tipo === 'referencias' && b.estado === 'PENDIENTE'));
+    await assert.rejects(chat.elegirEstetica(id, bloquesDe(alternativas).find(b => b.tipo === 'referencias')!.id, 'ref'), /proveedor está ocupado/);
+    assert.equal(intentos, 1);
+    assert.equal((await chat.leer(id)).piezas.length, 1);
+    await chat.abrirPiezaDeCampana(id, encargoOriginal);
+    const reintento = await esperar(chat, id, x => !x.pensando && bloquesDe(x).some(b => b.tipo === 'plan'));
+    assert.equal(intentos, 2);
+    assert.equal(reintento.piezas.filter(p => p.plan).length, 1);
+    assert.equal(llamadas.fotos, 0);
+  });
+
+  it('mantiene los chats anteriores y hace visible la ausencia de director sin consumir imágenes', async () => {
+    const { chat, llamadas } = await montar({ conDirector: false });
+    const anterior = await chat.crear();
+    await assert.rejects(chat.abrirPiezaDeCampana(anterior.id, encargo), /otro encargo/);
+    assert.equal((await chat.leer(anterior.id)).encargoCampana, undefined);
+    const id = await chat.abrirPiezaDeCampana('sin-director', encargo);
+    await chat.enviar(id, { texto: 'Foto', imagenes: [await foto()] });
+    const c = await esperar(chat, id, x => bloquesDe(x).some(b => b.tipo === 'error'));
+    assert.equal(c.pensando, false);
+    assert.equal(c.piezas.length, 0);
+    assert.equal(llamadas.fotos, 0);
   });
 });
 
@@ -622,7 +801,11 @@ describe('chat del estudio · formato aprobado', () => {
   });
 
   it('mantiene la selección de la ficha y produce todas las láminas de un concepto antiguo aunque el selector dijera post', async () => {
-    const m = await montar();
+    let laminas = 1;
+    const m = await montar({ plan: () => plan(laminas), buscarReferencias: async o => {
+      await sharp({ create: { width: 30, height: 40, channels: 3, background: '#224466' } }).jpeg().toFile(join(o.destino, 'estilo.jpg'));
+      return { consultas: [], candidatas: [{ id: 'ref-post', titulo: 'Referencia de prueba', origen: 'estudio', archivo: o.prefijo + '/estilo.jpg' }] };
+    } });
     const c = await m.chat.crear();
     const director = (m.chat as unknown as { d: DepsChat }).d.director!;
     const concepto = {
@@ -641,10 +824,22 @@ describe('chat del estudio · formato aprobado', () => {
     const ficha = conFicha.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'hechos')!;
     assert.equal(ficha.formato, 'post');
     await m.chat.responderHechos(c.id, ficha.id, { confirmar: true });
-    const conConceptos = await esperar(m.chat, c.id, (x) => !x.pensando && x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'conceptos' && b.estado === 'PENDIENTE')));
+    const opciones = await esperar(m.chat, c.id, x => x.mensajes.some(m => m.bloques.some(b => b.tipo === 'referencias' && b.estado === 'PENDIENTE')));
+    assert.equal(m.llamadas.planes, 0);
+    const referencia = opciones.mensajes.flatMap(m => m.bloques).find(b => b.tipo === 'referencias')!;
+    await m.chat.elegirEstetica(c.id, referencia.id, 'ref-post');
+    const conConceptos = await esperar(m.chat, c.id, (x) => !x.pensando && x.mensajes.some((mm) => mm.bloques.some((b) => b.tipo === 'conceptos' && b.estado === 'HECHO' && b.elegido === 0)));
     const tarjeta = conConceptos.mensajes.flatMap((mm) => mm.bloques).find((b) => b.tipo === 'conceptos')!;
     assert.equal(tarjeta.pedido.esfuerzo, 'rapido');
     assert.doesNotMatch(conConceptos.mensajes.find((mm) => mm.bloques.some((b) => b.id === tarjeta.id))!.texto, /carrusel/i);
+    assert.equal(conConceptos.piezas[0]?.plan?.diapositivas.length, 1);
+    assert.ok(conConceptos.mensajes.flatMap(m => m.bloques).some(b => b.tipo === 'referencias' && b.estado === 'HECHO' && b.elegida === 'ref-post'));
+    assert.deepEqual((await m.chat.listar())[0]?.tipos, ['post']);
+    conConceptos.piezas = [];
+    conConceptos.mensajes = conConceptos.mensajes.filter(m => !m.bloques.some(b => b.tipo === 'plan'));
+    tarjeta.estado = 'PENDIENTE';
+    delete tarjeta.elegido;
+    laminas = 4;
     // Las tarjetas guardadas antes de verificar la longitud podían presentar 1, 4 y 3 láminas en el mismo pedido post.
     tarjeta.conceptos[1]!.laminas = ['Presentación del plato', 'El corte en primer plano', 'El gesto de la mesa', 'La firma del local'];
     assert.equal(propuestaDeConceptos(1).safeParse({ conceptos: tarjeta.conceptos }).success, false);

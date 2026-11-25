@@ -7,6 +7,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { GastoGemini } from '../../adaptadores/gemini/imagenGemini.js';
 import { Router } from 'express';
 import { listarEncargos } from '../../aplicacion/post/consultasPost.js';
 import { comprobarReferencia } from '../../aplicacion/referencias/comprobarReferencia.js';
@@ -18,6 +19,10 @@ type Veredicto = (typeof VEREDICTOS)[number];
 
 export function rutasDelPanel(estudio: Estudio): Router {
   const rutas = Router();
+
+  rutas.get('/panel/consumo', async (_req, res) => {
+    res.json(await consumoMensual(join(estudio.config.carpetaDatos, 'gasto'), estudio.config.zonaHoraria));
+  });
 
   rutas.get('/panel', async (_req, res) => {
     const deps = await estudio.post();
@@ -61,7 +66,10 @@ export function rutasDelPanel(estudio: Estudio): Router {
 
 /** Las líneas JSON de un registro; las que no se leen se saltan (un registro a medio escribir no tumba el panel). */
 async function lineas(ruta: string): Promise<Array<Record<string, unknown>>> {
-  const texto = await readFile(ruta, 'utf8').catch(() => '');
+  const texto = await readFile(ruta, 'utf8').catch(e => {
+    if (e.code === 'ENOENT') return '';
+    throw e;
+  });
   return texto
     .split('\n')
     .filter((l) => l.trim())
@@ -83,14 +91,18 @@ const texto = (valor: unknown) => (typeof valor === 'string' ? valor : null);
  * herramientas/generarActivo.ts). Lo FALLIDO no cobra. Por la API consta un importe ESTIMADO en USD; por el MCP,
  * los créditos (su precio en USD no está confirmado, así que no se convierte).
  */
-export async function gastoHiggsfield(ruta: string) {
+async function peticionesHiggsfield(ruta: string) {
   const porPeticion = new Map<string, Record<string, unknown>>();
   for (const linea of await lineas(ruta)) {
     const clave = texto(linea.requestId) ?? `${texto(linea.receta)}|${texto(linea.activo)}`;
     const previa = porPeticion.get(clave);
-    porPeticion.set(clave, { ...previa, ...linea, estimadoUsd: linea.estimadoUsd ?? previa?.estimadoUsd });
+    porPeticion.set(clave, { ...previa, ...linea, inicio: previa?.inicio ?? linea.fecha, estimadoUsd: linea.estimadoUsd ?? previa?.estimadoUsd });
   }
-  const validas = [...porPeticion.values()].filter((g) => g.estado !== 'FALLIDO');
+  return [...porPeticion.values()].filter((g) => g.estado !== 'FALLIDO');
+}
+
+export async function gastoHiggsfield(ruta: string) {
+  const validas = await peticionesHiggsfield(ruta);
   const mcp = validas.filter((g) => g.via === 'MCP');
   const api = validas.filter((g) => g.via !== 'MCP');
   const fechas = validas.map((g) => texto(g.fecha)).filter((f): f is string => Boolean(f)).sort();
@@ -123,4 +135,68 @@ export async function usoGeminiTexto(ruta: string) {
     desde: fechas[0] ?? null,
     hasta: fechas.at(-1) ?? null,
   };
+}
+
+export async function consumoMensual(carpeta: string, zonaHoraria: string, ahora = new Date()) {
+  const fechaLocal = new Intl.DateTimeFormat('sv-SE', { timeZone: zonaHoraria, year: 'numeric', month: '2-digit' });
+  const actual = fechaLocal.format(ahora);
+  const nuevo = (mes: string) => ({ mes, entrada: 0, salida: 0, razonamiento: 0, llamadas: 0, imagenes: 0,
+    imagenUsd: 0, textoEstimadoUsd: 0, imagenEstimadaUsd: 0, higgsfieldEstimadoUsd: 0, creditos: 0, sinTarifa: 0 });
+  const meses = new Map([[actual, nuevo(actual)]]);
+  for (let i = 1; i < 6; i++) {
+    const fecha = new Date(actual + '-15T12:00:00Z');
+    fecha.setUTCMonth(fecha.getUTCMonth() - i);
+    const mes = fecha.toISOString().slice(0, 7);
+    meses.set(mes, nuevo(mes));
+  }
+  const periodo = (fecha: unknown) => {
+    const instante = typeof fecha === 'string' ? Date.parse(fecha) : NaN;
+    if (!Number.isFinite(instante)) return;
+    const mes = fechaLocal.format(instante);
+    if (!meses.has(mes)) meses.set(mes, nuevo(mes));
+    return meses.get(mes)!;
+  };
+  const [texto, imagen, higgsfield] = await Promise.all([lineas(join(carpeta, 'gemini-texto.jsonl')),
+    lineas(join(carpeta, 'gemini.jsonl')), peticionesHiggsfield(join(carpeta, 'higgsfield.jsonl'))]);
+  for (const l of texto) {
+    const m = periodo(l.fecha);
+    if (!m) continue;
+    m.llamadas++;
+    m.entrada += numero(l.tokensEntrada);
+    m.salida += numero(l.tokensSalida);
+    m.razonamiento += numero(l.tokensRazonamiento);
+    if (l.tier !== 'GRATUITO') {
+      if (l.tier === 'PAGO' && l.modelo === 'gemini-4-hydrogen') {
+        m.textoEstimadoUsd += (numero(l.tokensEntrada) * 1.5 + (numero(l.tokensSalida) + numero(l.tokensRazonamiento)) * 7.5) / 1e6;
+      } else m.sinTarifa++;
+    }
+  }
+  const envios = new Map<string, GastoGemini & { inicio: string }>();
+  for (const linea of imagen) {
+    const registro = GastoGemini.safeParse(linea);
+    if (!registro.success) continue;
+    const g = registro.data;
+    const clave = JSON.stringify([g.receta, g.activo]);
+    const previo = envios.get(clave);
+    envios.set(clave, { ...previo, ...g, inicio: previo?.inicio ?? g.fecha });
+  }
+  for (const g of envios.values()) {
+    const m = periodo(g.inicio);
+    if (!m || g.estado === 'FALLIDO') continue;
+    if (g.estado === 'COMPLETADO') m.imagenes++;
+    m.entrada += g.uso?.promptTokenCount ?? 0;
+    m.salida += g.uso?.candidatesTokenCount ?? 0;
+    m.razonamiento += g.uso?.thoughtsTokenCount ?? 0;
+    if (g.tier === 'PAGO') {
+      if (g.realUsd !== undefined) m.imagenUsd += g.realUsd;
+      else m.imagenEstimadaUsd += g.estimadoUsd;
+    }
+  }
+  for (const g of higgsfield) {
+    const m = periodo(g.inicio);
+    if (!m) continue;
+    if (g.via === 'MCP') m.creditos += numero(g.creditos);
+    else m.higgsfieldEstimadoUsd += numero(g.estimadoUsd);
+  }
+  return { actual, meses: [...meses.values()].sort((a, b) => b.mes.localeCompare(a.mes)) };
 }

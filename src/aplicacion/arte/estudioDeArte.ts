@@ -57,6 +57,7 @@ export interface DepsEstudioDeArte {
 }
 
 export interface EntradaEstudioDeArte {
+  lienzo?: 'HISTORIA_9_16';
   id: string;
   local: string;
   foto: ActivoDisponible;
