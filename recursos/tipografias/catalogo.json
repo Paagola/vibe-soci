@@ -486,7 +486,12 @@
       "fuente": "https://github.com/collletttivo/sprat/tree/bdf9c50243d647290ecb21555b03a1aafba447ac",
       "sha256": "38ecf781f4efd964bfca79129c7a04982ff5531bee76b269b6e544e5d5f14dbb",
       "descargada": "2026-11-17",
-      "clasificacion": ["serif", "condensada", "editorial", "display"],
+      "clasificacion": [
+        "serif",
+        "condensada",
+        "editorial",
+        "display"
+      ],
       "nota": "Titular corto con mucho peso cuando la fotografía deja una franja estrecha."
     },
     {
@@ -497,7 +502,12 @@
       "fuente": "https://github.com/collletttivo/mazius-display/tree/5798d69b14f0b7c1691f031f2ecb98ebdb709b54",
       "sha256": "8a460733c62f6b25fca2d1e9812fd484c85511c02e08e2caf2979f3e9c65aad4",
       "descargada": "2026-11-17",
-      "clasificacion": ["serif", "editorial", "alto-contraste", "display"],
+      "clasificacion": [
+        "serif",
+        "editorial",
+        "alto-contraste",
+        "display"
+      ],
       "nota": "Titular editorial con espacio libre y contraste suficiente para sus trazos finos."
     },
     {
@@ -508,7 +518,12 @@
       "fuente": "https://github.com/collletttivo/mattone/tree/b1dc55dc6a432708ab00329d452d8f6907c6e570",
       "sha256": "ca095d075d591e2a30b360c9a5c0377160d0de6a1592d9c5d337b23eba9a35ae",
       "descargada": "2026-11-17",
-      "clasificacion": ["grotesca", "extendida", "pesada", "display"],
+      "clasificacion": [
+        "grotesca",
+        "extendida",
+        "pesada",
+        "display"
+      ],
       "nota": "Una o dos palabras de cartel cuando la marca admite una voz ancha y de gran peso."
     },
     {
@@ -519,8 +534,24 @@
       "fuente": "https://github.com/collletttivo/ronzino/tree/24df8cdde479fef13948de629c3b10849e1dffb5",
       "sha256": "38eae51962f14cc86e5e3cc4cf0c6e0892ff40e3377de39a163c1e7ffe3e6305",
       "descargada": "2026-11-17",
-      "clasificacion": ["grotesca", "texto", "apoyo"],
+      "clasificacion": [
+        "grotesca",
+        "texto",
+        "apoyo"
+      ],
       "nota": "Texto de apoyo para acompañar un titular expresivo sin competir por la atención."
+    },
+    {
+      "id": "playfair-display",
+      "familia": "Playfair Display",
+      "archivo": "playfair-display/PlayfairDisplay[wght].ttf",
+      "licencia": "OFL-1.1",
+      "fuente": "https://github.com/google/fonts/tree/main/ofl/playfairdisplay",
+      "descargada": "2026-11-24",
+      "clasificacion": [
+        "serif"
+      ],
+      "nota": "Tipografía de marca de Asador El Sarmiento (titulos), descargada al dar de alta el local."
     }
   ]
 }
