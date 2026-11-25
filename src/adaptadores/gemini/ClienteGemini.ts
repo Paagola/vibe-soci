@@ -51,6 +51,8 @@ export interface OpcionesClienteGemini {
   avisar?: (mensaje: string) => void;
   /** Se llama tras cada respuesta con su recuento de tokens. */
   alUsar?: (uso: UsoGemini) => void;
+  /** Tiempo máximo por petición (por defecto, 90 s). Pensar sobre varias imágenes puede necesitar más. */
+  tiempoMaximoMs?: number;
 }
 
 export class ClienteGemini {
@@ -58,10 +60,13 @@ export class ClienteGemini {
   private readonly dormir: (ms: number) => Promise<void>;
   private readonly avisar: (mensaje: string) => void;
   private readonly alUsar: (uso: UsoGemini) => void;
+  private readonly tiempoMaximoMs: number;
   /** Si un modelo falla, las siguientes llamadas de esta ejecución empiezan por el de respaldo. */
   private primerModelo = 0;
   private readonly antesDeEnviar: OpcionesClienteGemini['antesDeEnviar'];
   private ultimoModelo?: string;
+  /** Por qué terminó la última respuesta (STOP, MAX_TOKENS…): sale en el error si el JSON no vale. */
+  private ultimoFin?: string;
 
   get modeloUtilizado(): string {
     return this.ultimoModelo ?? this.modelos[this.primerModelo] ?? 'Gemini';
@@ -78,6 +83,7 @@ export class ClienteGemini {
     this.dormir = opciones.dormir ?? ((ms) => new Promise((resolver) => setTimeout(resolver, ms)));
     this.avisar = opciones.avisar ?? (() => {});
     this.alUsar = opciones.alUsar ?? (() => {});
+    this.tiempoMaximoMs = opciones.tiempoMaximoMs ?? TIEMPO_MAXIMO_PETICION_MS;
   }
 
   async generarJson<T>(instrucciones: string, partes: ParteGemini[], esquema: z.ZodType<T>): Promise<T> {
@@ -87,7 +93,7 @@ export class ClienteGemini {
       const texto = await this.generar(instrucciones, conversacion);
       const resultado = interpretarJson(texto, esquema);
       if (resultado.ok) return resultado.datos;
-      if (intento >= 2) throw new ErrorDeServicio(SERVICIO, `la respuesta no tiene el formato pedido (${resultado.problema})`, true);
+      if (intento >= 2) throw new ErrorDeServicio(SERVICIO, `la respuesta no tiene el formato pedido (${resultado.problema}${this.ultimoFin ? `; fin: ${this.ultimoFin}` : ''})`, true);
 
       conversacion = [
         ...conversacion,
@@ -117,6 +123,7 @@ export class ClienteGemini {
       throw new ErrorDeServicio(SERVICIO, `ha bloqueado la petición (${datos.promptFeedback.blockReason})`, false);
     }
     const candidato = datos.candidates?.[0];
+    this.ultimoFin = candidato?.finishReason;
     const texto = (candidato?.content?.parts ?? [])
       .filter((parte) => !parte.thought)
       .map((parte) => parte.text ?? '')
@@ -150,7 +157,7 @@ export class ClienteGemini {
           method: 'POST',
           headers: { 'x-goog-api-key': this.apiKey, 'Content-Type': 'application/json' },
           body: JSON.stringify(cuerpo),
-          signal: AbortSignal.timeout(TIEMPO_MAXIMO_PETICION_MS),
+          signal: AbortSignal.timeout(this.tiempoMaximoMs),
         });
       } catch (error) {
         // Si no contesta en el tiempo máximo, no se repite: se pasa al modelo de respaldo.
@@ -188,8 +195,9 @@ export function interpretarJson<T>(texto: string, esquema: z.ZodType<T>): Interp
   let datos: unknown;
   try {
     datos = JSON.parse(limpio);
-  } catch {
-    return { ok: false, problema: 'no es JSON válido' };
+  } catch (error) {
+    // Con el motivo de JSON.parse y el final del texto se ve si la respuesta vino cortada o mal escapada.
+    return { ok: false, problema: `no es JSON válido: ${(error as Error).message.slice(0, 120)}; ${texto.length} caracteres, termina en «${texto.slice(-80).replace(/\s+/g, ' ')}»` };
   }
   const resultado = esquema.safeParse(datos);
   return resultado.success ? { ok: true, datos: resultado.data } : { ok: false, problema: describirProblemas(resultado.error).join('; ') };

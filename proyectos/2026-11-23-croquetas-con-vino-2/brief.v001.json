@@ -1,0 +1,139 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-23-croquetas-con-vino-2",
+  "local": "asador-etxebarri",
+  "version": 1,
+  "creadoEn": "2026-11-23T00:17:13.807Z",
+  "actualizadoEn": "2026-11-23T00:17:13.807Z",
+  "modo": "CODIGO",
+  "marca": {
+    "nombre": "Asador Etxebarri",
+    "ciudad": "Axpe (Bizkaia)",
+    "descripcion": "Asador de brasa con leña en la plaza de Axpe, al pie de la montaña. Producto y fuego, sin artificios.",
+    "tonos": [
+      "sobrio",
+      "artesano",
+      "fuego"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "croquetas con vino",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "croqueta de rebozado fino",
+          "estado": "dorada, de forma oblonga con rebozado liso y fino y ligeras marcas de tueste",
+          "recuento": 3,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "croqueta de rebozado grueso",
+          "estado": "dorada oscura, de forma oblonga con rebozado grueso y crujiente",
+          "recuento": 2,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "porción de salsa blanca",
+          "estado": "cremosa, brillante, situada como base bajo cada croqueta",
+          "recuento": 5,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "cebollino picado",
+          "estado": "fresco, cortado en trozos pequeños verdes esparcidos por el centro del plato y sobre las salsas",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "plato cuadrado de cerámica",
+          "estado": "blanco roto con borde oscuro moteado y motivo floral negro estampado en el centro",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "botella de vino tinto",
+          "estado": "botella cerrada de vidrio oscuro con etiqueta color crema con tipografía negra",
+          "recuento": null,
+          "cortados": 1,
+          "origen": "NOTA"
+        }
+      ],
+      "huella": "dc3fad37d7507091963dbb89fb37197edd11428a50dc39fc9f2a9e76cd527c5b"
+    },
+    "datosPorConfirmar": [
+      "«croqueta de rebozado fino»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«croqueta de rebozado grueso»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«porción de salsa blanca»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«cebollino picado»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«plato cuadrado de cerámica»: lo ve el director en la foto; la nota del dueño no lo dice."
+    ]
+  },
+  "idea": null,
+  "formato": "carrusel",
+  "estetica": "EDITORIAL_OSCURO",
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "el plato entero, con el titular"
+    },
+    {
+      "n": 2,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "croqueta de rebozado fino",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 3,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "croqueta de rebozado grueso",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 4,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "porción de salsa blanca",
+      "para": "un recorte de la foto elegida"
+    },
+    {
+      "n": 5,
+      "papel": "cierre",
+      "foto": "FOTO_ELEGIDA",
+      "para": "firma, ciudad e Instagram"
+    }
+  ],
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

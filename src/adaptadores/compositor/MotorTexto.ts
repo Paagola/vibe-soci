@@ -3,6 +3,7 @@
  * No depende de las fuentes instaladas en el sistema: el mismo texto sale igual en cualquier máquina.
  */
 import type { Fuente } from 'fontkit';
+import type { AjusteLetra, FormaTexto } from '../../dominio/diseno/intencion.js';
 import type { CatalogoTipografico } from './tipografias.js';
 
 export interface EstiloMotor {
@@ -15,10 +16,26 @@ export interface EstiloMotor {
   interlineado: number;
   /** Rasgos OpenType que se activan además de los de serie (smcp, onum, swsh…). */
   rasgos?: string[];
+  /**
+   * Edición fina de la letra (escala, inclinación, espaciado por línea, ajustes por letra). Se aplica aquí, al
+   * generar cada glifo, y por eso vale igual para medir, ajustar, pintar, tratar y comprobar el texto.
+   */
+  forma?: FormaTexto;
 }
 
-/** Lo que hace falta para medir o trazar una línea. */
-type EstiloDeLinea = Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking' | 'rasgos'>;
+/**
+ * Lo que hace falta para medir o trazar una línea. Con `forma`, los ajustes por letra cuentan desde la primera letra
+ * de la línea y el espaciado es el de la primera de `trackingPorLinea`: para la línea i de un bloque se usa deLinea().
+ */
+export type EstiloDeLinea = Pick<EstiloMotor, 'fuente' | 'ejes' | 'tracking' | 'rasgos' | 'forma'>;
+
+/** Una línea ya colocada de un bloque (lo que guarda el documento resuelto). */
+export interface LineaColocada {
+  texto: string;
+  tamano: number;
+  x: number;
+  base: number;
+}
 
 /** Medida de una línea a un cuerpo dado, en px. Las coordenadas son relativas al origen de la línea. */
 export interface Medida {
@@ -49,13 +66,25 @@ export interface BloqueCompuesto {
   visual: { x: number; y: number; w: number; h: number };
 }
 
-/** Una letra ya colocada: su trazo SVG, el carácter, su caja (y crece hacia abajo) y su línea base. */
+/**
+ * Una letra ya colocada: su trazo SVG, el carácter, su caja (y crece hacia abajo) y la línea base de su línea (un
+ * ajuste por letra que la sube o la baja mueve el trazo y la caja, no la base: así se sabe a qué línea pertenece).
+ */
 export interface GlifoTrazado {
   d: string;
   caracter: string;
   caja: { x0: number; y0: number; x1: number; y1: number };
   base: number;
 }
+
+/** Letras visibles de un texto: todo menos los espacios. Es lo que cuenta el `indice` de los ajustes por letra. */
+export function contarLetras(texto: string): number {
+  let n = 0;
+  for (const c of texto) if (!/\s/u.test(c)) n++;
+  return n;
+}
+
+const esEspacio = (codigo: number) => /\s/u.test(String.fromCodePoint(codigo));
 
 export type ModoAjuste = 'ancho' | 'ancho-por-linea' | 'alto' | 'eje-ancho' | 'caja' | 'fijo';
 
@@ -81,6 +110,8 @@ interface MedidaUnidades {
 
 export class MotorTexto {
   private readonly medidas = new Map<string, MedidaUnidades>();
+  /** Medidas con forma, en px a cuerpo 1000 (no en unidades de fuente). */
+  private readonly medidasConForma = new Map<string, MedidaUnidades>();
 
   constructor(private readonly catalogo: CatalogoTipografico) {}
 
@@ -88,9 +119,52 @@ export class MotorTexto {
     return caso === 'mayusculas' ? texto.toLocaleUpperCase('es-ES') : texto;
   }
 
-  alturaMayusculas(estilo: Pick<EstiloMotor, 'fuente' | 'ejes'>, tamano: number): number {
+  /** Altura de mayúscula en px. Con `forma`, la de la letra ya estirada o encogida en vertical (escalaY). */
+  alturaMayusculas(estilo: Pick<EstiloMotor, 'fuente' | 'ejes'> & { forma?: Pick<FormaTexto, 'escalaY'> }, tamano: number): number {
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
-    return (fuente.capHeight * tamano) / fuente.unitsPerEm;
+    const altura = (fuente.capHeight * tamano) / fuente.unitsPerEm;
+    return estilo.forma ? altura * estilo.forma.escalaY : altura;
+  }
+
+  /**
+   * El estilo de la línea `i` de un bloque cuya primera letra es la número `desde` del texto: su espaciado (el de
+   * `trackingPorLinea`, si lo hay) y sus ajustes por letra, contados desde su primera letra. Sin forma, el mismo estilo.
+   */
+  deLinea(estilo: EstiloDeLinea, i: number, desde: number): EstiloDeLinea {
+    const f = estilo.forma;
+    if (!f) return estilo;
+    const { trackingPorLinea, letras, ...resto } = f;
+    return {
+      fuente: estilo.fuente,
+      ejes: estilo.ejes,
+      tracking: trackingPorLinea?.[i] ?? estilo.tracking,
+      ...(estilo.rasgos ? { rasgos: estilo.rasgos } : {}),
+      forma: { ...resto, letras: letras.filter((l) => l.indice >= desde).map((l) => ({ ...l, indice: l.indice - desde })) },
+    };
+  }
+
+  /** El estilo de cada línea de un bloque, en orden (ver deLinea). */
+  estilosDeLineas(estilo: EstiloDeLinea, textos: string[]): EstiloDeLinea[] {
+    if (!estilo.forma) return textos.map(() => estilo);
+    let desde = 0;
+    return textos.map((texto, i) => {
+      const deEsta = this.deLinea(estilo, i, desde);
+      desde += contarLetras(texto);
+      return deEsta;
+    });
+  }
+
+  /** Las letras de cada línea de un bloque ya colocado, con la forma de cada una. Es lo que pintan y miden todos. */
+  glifosDeBloque(estilo: EstiloDeLinea, lineas: LineaColocada[]): GlifoTrazado[][] {
+    const estilos = this.estilosDeLineas(estilo, lineas.map((l) => l.texto));
+    return lineas.map((l, i) => this.glifos(estilos[i]!, l.texto, l.tamano, l.x, l.base));
+  }
+
+  /** Trazo SVG de todas las líneas de un bloque ya colocado. */
+  trazarBloque(estilo: EstiloDeLinea, lineas: LineaColocada[]): string {
+    return this.glifosDeBloque(estilo, lineas)
+      .map((glifos) => glifos.map((g) => g.d).join(''))
+      .join('');
   }
 
   /** Nombre de la familia de una fuente del catálogo (para contar las voces de una pieza). */
@@ -104,6 +178,7 @@ export class MotorTexto {
   }
 
   medir(estilo: EstiloDeLinea, texto: string, tamano: number): Medida {
+    if (estilo.forma) return this.medirConForma(estilo, texto, tamano);
     const { fuente, ejes } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const rasgos = estilo.rasgos?.length ? estilo.rasgos : undefined;
     const clave = `${estilo.fuente}|${JSON.stringify(ejes)}|${estilo.tracking}|${rasgos ? `${rasgos.join(',')}|` : ''}${texto}`;
@@ -116,8 +191,34 @@ export class MotorTexto {
     return { ancho: (unidades.maxX - unidades.minX) * s, minX: unidades.minX * s, maxX: unidades.maxX * s, arriba: unidades.arriba * s, abajo: unidades.abajo * s };
   }
 
+  /**
+   * Medida con forma: la caja exacta de las letras ya transformadas (estiradas, inclinadas, movidas, giradas). Toda la
+   * geometría es proporcional al cuerpo, así que se mide una vez a 1000 px y se escala.
+   */
+  private medirConForma(estilo: EstiloDeLinea, texto: string, tamano: number): Medida {
+    const { ejes } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
+    const rasgos = estilo.rasgos?.length ? estilo.rasgos : undefined;
+    const clave = `${estilo.fuente}|${JSON.stringify(ejes)}|${estilo.tracking}|${rasgos ? `${rasgos.join(',')}|` : ''}${JSON.stringify(estilo.forma)}|${texto}`;
+    let mil = this.medidasConForma.get(clave);
+    if (!mil) {
+      const { glifos } = this.glifosConForma(estilo, texto, 1000, 0, 0);
+      mil = glifos.length
+        ? {
+            minX: Math.min(...glifos.map((g) => g.caja.x0)),
+            maxX: Math.max(...glifos.map((g) => g.caja.x1)),
+            arriba: Math.max(0, ...glifos.map((g) => -g.caja.y0)),
+            abajo: Math.max(0, ...glifos.map((g) => g.caja.y1)),
+          }
+        : { minX: 0, maxX: 0, arriba: 0, abajo: 0 };
+      this.medidasConForma.set(clave, mil);
+    }
+    const s = tamano / 1000;
+    return { ancho: (mil.maxX - mil.minX) * s, minX: mil.minX * s, maxX: mil.maxX * s, arriba: mil.arriba * s, abajo: mil.abajo * s };
+  }
+
   /** Lo que avanza la pluma al escribir un texto (con su espaciado): sirve para repetirlo en fila sin que se pise. */
   avance(estilo: EstiloDeLinea, texto: string, tamano: number): number {
+    if (estilo.forma) return this.glifosConForma(estilo, texto, tamano, 0, 0).avance;
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const linea = componerLinea(fuente, texto, estilo.rasgos);
     const unidades = linea.positions.reduce((suma, p) => suma + p.xAdvance + estilo.tracking * fuente.unitsPerEm, 0);
@@ -142,6 +243,7 @@ export class MotorTexto {
    * comprobar cuánto se ve de cada una.
    */
   glifos(estilo: EstiloDeLinea, texto: string, tamano: number, x: number, base: number): GlifoTrazado[] {
+    if (estilo.forma) return this.glifosConForma(estilo, texto, tamano, x, base).glifos;
     const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
     const s = tamano / fuente.unitsPerEm;
     const linea = componerLinea(fuente, texto, estilo.rasgos);
@@ -163,6 +265,66 @@ export class MotorTexto {
       pluma += posicion.xAdvance + estilo.tracking * fuente.unitsPerEm;
     });
     return glifos;
+  }
+
+  /**
+   * Las letras de una línea con su forma. Cada glifo se lleva de unidades de fuente a px con una sola matriz:
+   * escala (la de la línea × la de la letra), inclinación respecto a la línea base y su sitio; el giro de una letra va
+   * después, alrededor del centro de su caja. La pluma avanza con la letra ya escalada, así que una letra más ancha o
+   * más grande empuja a las siguientes en vez de montarse. Devuelve también el avance total, en px.
+   */
+  private glifosConForma(estilo: EstiloDeLinea, texto: string, tamano: number, x: number, base: number): { glifos: GlifoTrazado[]; avance: number } {
+    const f = estilo.forma!;
+    const { fuente } = this.catalogo.fuente(estilo.fuente, estilo.ejes);
+    const unidades = fuente.unitsPerEm;
+    const s = tamano / unidades;
+    const tracking = f.trackingPorLinea?.[0] ?? estilo.tracking;
+    const inclinacion = Math.tan((f.inclinacion * Math.PI) / 180);
+    const ajustes = new Map<number, AjusteLetra>(f.letras.map((l) => [l.indice, l]));
+    const linea = componerLinea(fuente, texto, estilo.rasgos);
+    let pluma = 0;
+    let letra = 0;
+    let anterior: AjusteLetra | undefined;
+    const glifos: GlifoTrazado[] = [];
+    linea.glyphs.forEach((glifo, i) => {
+      const posicion = linea.positions[i]!;
+      const propias = glifo.codePoints.filter((c) => !esEspacio(c)).length;
+      // Un glifo sin carácter (una tilde que la fuente separa de su letra) va con la letra de antes, sin repetir su kerning.
+      let ajuste: AjusteLetra | undefined;
+      if (glifo.codePoints.length === 0) ajuste = anterior && { ...anterior, dx: 0 };
+      else if (propias > 0) {
+        ajuste = ajustes.get(letra);
+        anterior = ajuste;
+      }
+      letra += propias;
+      if (ajuste) pluma += ajuste.dx * unidades;
+      const escala = ajuste?.escala ?? 1;
+      if (glifo.path.commands.length > 0) {
+        const gx = x + (pluma + posicion.xOffset * f.escalaX * escala) * s;
+        const gy = base - posicion.yOffset * f.escalaY * escala * s - (ajuste?.dy ?? 0) * tamano;
+        const sx = s * escala * f.escalaX;
+        const sy = s * escala * f.escalaY;
+        let trazo = glifo.path.transform(sx, 0, sy * inclinacion, -sy, gx, gy);
+        if (ajuste && ajuste.giro !== 0) {
+          const b = trazo.bbox;
+          const cx = (b.minX + b.maxX) / 2;
+          const cy = (b.minY + b.maxY) / 2;
+          const a = (ajuste.giro * Math.PI) / 180;
+          const cos = Math.cos(a);
+          const sin = Math.sin(a);
+          trazo = trazo.transform(cos, sin, -sin, cos, cx - cx * cos + cy * sin, cy - cx * sin - cy * cos);
+        }
+        const b = trazo.bbox;
+        glifos.push({
+          d: trazo.toSVG(),
+          caracter: glifo.codePoints.length ? String.fromCodePoint(...glifo.codePoints) : '',
+          caja: { x0: b.minX, x1: b.maxX, y0: b.minY, y1: b.maxY },
+          base,
+        });
+      }
+      pluma += posicion.xAdvance * f.escalaX * escala + tracking * unidades;
+    });
+    return { glifos, avance: pluma * s };
   }
 
   /** Texto repartido alrededor de un círculo completo, con las letras mirando hacia fuera. */
@@ -208,7 +370,7 @@ export class MotorTexto {
         break;
       }
       case 'ancho-por-linea':
-        lineas = parrafos.map((t) => ({ texto: t, tamano: this.tamanoParaAncho(conEjes(ejes), [t], caja.w) }));
+        lineas = parrafos.map((t, i) => ({ texto: t, tamano: this.tamanoParaAncho(conEjes(ejes), parrafos, caja.w, i) }));
         break;
       case 'alto': {
         const tamano = this.tamanoParaAlto(conEjes(ejes), parrafos.length, caja.h);
@@ -249,9 +411,10 @@ export class MotorTexto {
     });
     const altoMayusculas = bases.at(-1) ?? 0;
     const desplazamiento = peticion.vertical === 'arriba' ? 0 : peticion.vertical === 'abajo' ? caja.h - altoMayusculas : (caja.h - altoMayusculas) / 2;
+    const estilos = this.estilosDeLineas(estilo, lineas.map((l) => l.texto));
 
     const compuestas = lineas.map((linea, i) => {
-      const medida = this.medir(estilo, linea.texto, linea.tamano);
+      const medida = this.medir(estilos[i]!, linea.texto, linea.tamano);
       const x =
         peticion.alinear === 'izquierda'
           ? caja.x - medida.minX
@@ -273,9 +436,11 @@ export class MotorTexto {
     };
   }
 
-  /** Cuerpo con el que la línea más ancha ocupa justo `ancho`. */
-  private tamanoParaAncho(estilo: EstiloMotor, lineas: string[], ancho: number): number {
-    const mayor = Math.max(...lineas.map((t) => this.medir(estilo, t, 1000).ancho));
+  /** Cuerpo con el que la línea más ancha (o solo la línea `solo`) ocupa justo `ancho`. Cada línea, con su forma. */
+  private tamanoParaAncho(estilo: EstiloMotor, lineas: string[], ancho: number, solo?: number): number {
+    const estilos = this.estilosDeLineas(estilo, lineas);
+    const cuales = solo === undefined ? lineas.map((_, i) => i) : [solo];
+    const mayor = Math.max(...cuales.map((i) => this.medir(estilos[i]!, lineas[i]!, 1000).ancho));
     return (1000 * ancho) / mayor;
   }
 
@@ -294,7 +459,8 @@ export class MotorTexto {
     const anchoCon = (wdth: number) => {
       const ejes = { ...estilo.ejes, wdth };
       const tamano = this.tamanoParaAlto({ ...estilo, ejes }, lineas.length, caja.h);
-      const ancho = Math.max(...lineas.map((t) => this.medir({ ...estilo, ejes }, t, tamano).ancho));
+      const estilos = this.estilosDeLineas({ ...estilo, ejes }, lineas);
+      const ancho = Math.max(...lineas.map((t, i) => this.medir(estilos[i]!, t, tamano).ancho));
       return { tamano, ancho, ejes };
     };
     if (!rango) {
@@ -323,7 +489,8 @@ export class MotorTexto {
     const cabe = (tamano: number) => {
       const lineas = this.partirParrafos(estilo, parrafos, caja.w, tamano);
       const alto = capRatio * tamano + (lineas.length - 1) * estilo.interlineado * tamano;
-      return alto <= caja.h && lineas.every((l) => this.medir(estilo, l, tamano).ancho <= caja.w + 0.5);
+      const estilos = this.estilosDeLineas(estilo, lineas);
+      return alto <= caja.h && lineas.every((l, i) => this.medir(estilos[i]!, l, tamano).ancho <= caja.w + 0.5);
     };
     let bajo = 4;
     let alto = 2000;
@@ -335,29 +502,41 @@ export class MotorTexto {
     return bajo;
   }
 
-  /** Parte cada párrafo en líneas que caben en `ancho`, sin dejar «de», «la», «y»… al final de una línea. */
+  /**
+   * Parte cada párrafo en líneas que caben en `ancho`, sin dejar «de», «la», «y»… al final de una línea.
+   * Cada línea candidata se mide con la forma que tendría en su sitio (su número de línea y su primera letra), así que
+   * el corte es el mismo que luego se pinta. Sin forma, todas se miden con el mismo estilo, como siempre.
+   */
   partirParrafos(estilo: EstiloMotor, parrafos: string[], ancho: number, tamano: number): string[] {
-    const cabe = (t: string) => this.medir(estilo, t, tamano).ancho <= ancho + 0.5;
     const lineas: string[] = [];
+    let letrasAntes = 0;
     for (const parrafo of parrafos) {
       const palabras = parrafo.split(/\s+/).filter(Boolean);
-      const propias: string[][] = [];
-      let actual: string[] = [];
+      // La primera letra de cada palabra en el texto entero (para los ajustes por letra de la línea en que caiga).
+      const inicio: number[] = [];
       for (const palabra of palabras) {
-        const candidata = [...actual, palabra];
-        if (actual.length === 0 || cabe(candidata.join(' '))) actual = candidata;
+        inicio.push(letrasAntes);
+        letrasAntes += contarLetras(palabra);
+      }
+      const texto = (linea: number[]) => linea.map((k) => palabras[k]!).join(' ');
+      const cabe = (linea: number[], fila: number) => this.medir(this.deLinea(estilo, fila, inicio[linea[0]!]!), texto(linea), tamano).ancho <= ancho + 0.5;
+      const propias: number[][] = [];
+      let actual: number[] = [];
+      palabras.forEach((_, k) => {
+        const candidata = [...actual, k];
+        if (actual.length === 0 || cabe(candidata, lineas.length + propias.length)) actual = candidata;
         else {
           propias.push(actual);
-          actual = [palabra];
+          actual = [k];
         }
-      }
+      });
       if (actual.length) propias.push(actual);
       // 1. Sin viudas: si la última línea se queda con una sola palabra, baja otra de la línea anterior (si cabe).
       const ultima = propias.at(-1);
       const penultima = propias.at(-2);
       if (ultima && penultima && ultima.length === 1 && penultima.length > 2) {
         const candidata = [penultima.at(-1)!, ...ultima];
-        if (cabe(candidata.join(' '))) {
+        if (cabe(candidata, lineas.length + propias.length - 1)) {
           penultima.pop();
           propias[propias.length - 1] = candidata;
         }
@@ -366,11 +545,11 @@ export class MotorTexto {
       //    Va después de lo anterior, porque bajar una palabra puede dejar al descubierto una corta («en una»).
       for (let i = 0; i < propias.length - 1; i++) {
         const linea = propias[i]!;
-        while (linea.length > 1 && NO_AL_FINAL.has(linea.at(-1)!.toLocaleLowerCase('es-ES'))) {
+        while (linea.length > 1 && NO_AL_FINAL.has(palabras[linea.at(-1)!]!.toLocaleLowerCase('es-ES'))) {
           propias[i + 1]!.unshift(linea.pop()!);
         }
       }
-      lineas.push(...propias.map((p) => p.join(' ')));
+      lineas.push(...propias.map(texto));
     }
     return lineas;
   }

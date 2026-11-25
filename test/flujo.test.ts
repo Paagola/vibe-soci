@@ -96,7 +96,10 @@ describe('flujo completo en simulado', () => {
 
     const manual = await corregirDiapositiva(deps, pieza.id, 3, 'Más luz en el plato', { manual: true, confirmar: siempreSi });
     assert.equal(manual.generacion?.estado, 'PENDIENTE_MANUAL');
-    const importada = await importarImagen(deps, pieza.id, 3, foto);
+    await assert.rejects(importarImagen(deps, pieza.id, 3, foto), /reproduce una referencia/);
+    const nueva = join(carpeta, 'toma.jpg');
+    await sharp({ create: { width: 360, height: 450, channels: 3, background: '#87794c' } }).jpeg().toFile(nueva);
+    const importada = await importarImagen(deps, pieza.id, 3, nueva);
     assert.equal(importada.version, 2);
     assert.equal(importada.estado, 'COMPLETADA');
 

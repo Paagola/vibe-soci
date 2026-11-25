@@ -16,19 +16,19 @@ import { contraste } from './color.js';
 import { OCUPACION_DE_SUJETO, type MapaDeFoto } from './mapaDeFoto.js';
 import type { CapaPropuesta, Composicion } from './propuesta.js';
 
-const COLUMNAS = 12;
-const PRIMERA_FILA = 2; // la 1 y la 16 quedan fuera de la zona segura
-const ULTIMA_FILA = 15;
+export const COLUMNAS = 12;
+export const PRIMERA_FILA = 2; // la 1 y la 16 quedan fuera de la zona segura
+export const ULTIMA_FILA = 15;
 /** Ancho de una columna más su medianil, en px del lienzo de 1080 (retícula de 12 con margen 72 y medianil 12). */
-const PASO_COLUMNA = (1080 - 2 * 72 + 12) / COLUMNAS;
-const PASO_FILA = (1440 - 2 * 72 + 12) / 16;
+export const PASO_COLUMNA = (1080 - 2 * 72 + 12) / COLUMNAS;
+export const PASO_FILA = (1440 - 2 * 72 + 12) / 16;
 /** Cuerpo de los textos pequeños: el mínimo del dialecto. */
-const CUERPO_PEQUENO = 34;
-const CUERPO_ANOTACION = 44;
+export const CUERPO_PEQUENO = 34;
+export const CUERPO_ANOTACION = 44;
 /** Segundo nivel de texto (entre el titular y la firma): un 35 % más que la firma, para que se separe como nivel. */
-const CUERPO_SEGUNDO = 46;
+export const CUERPO_SEGUNDO = 46;
 /** Contraste que se pide al elegir la tinta: el de WCAG con un margen, porque el mapa mide medias por celda. */
-const MARGEN_DE_CONTRASTE = 1.3;
+export const MARGEN_DE_CONTRASTE = 1.3;
 
 export interface VocesDeLaPieza {
   titular: string;
@@ -88,7 +88,7 @@ export interface Colocacion {
   notas: string[];
 }
 
-interface Caja {
+export interface Caja {
   col: [number, number];
   fila: [number, number];
 }
@@ -98,7 +98,7 @@ const alto = (c: Caja) => c.fila[1] - c.fila[0] + 1;
 const acotar = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
 
 /** Rejilla de ocupación: el plato (de la máscara) y lo que ya se ha colocado. */
-class Rejilla {
+export class Rejilla {
   private readonly usada: boolean[];
 
   constructor(
@@ -166,9 +166,24 @@ export function elegirTinta(caja: Caja, mapa: MapaDeFoto, colores: Tinta[], rati
 }
 
 /** La más oscura y la más clara de las tintas (para el fondo, el velo y un texto sobre velo). */
-function extremos(colores: Tinta[]): { oscura: Tinta; clara: Tinta } {
+export function extremos(colores: Tinta[]): { oscura: Tinta; clara: Tinta } {
   const porLuz = [...colores].sort((a, b) => contraste(b.hex, '#FFFFFF') - contraste(a.hex, '#FFFFFF'));
   return { oscura: porLuz[0]!, clara: porLuz[porLuz.length - 1]! };
+}
+
+/**
+ * El mayor rectángulo libre de la foto para un titular (al menos 5 columnas × 2 filas), celda a celda: lo que no pisa el
+ * sujeto de verdad (su máscara, no su caja). Prefiere el más grande y, a igual tamaño, el más ancho y más arriba.
+ */
+export function aireReal(rejilla: Rejilla): Caja | undefined {
+  const tamanos: Array<[number, number]> = [];
+  for (let w = COLUMNAS; w >= 5; w--) for (let h = 5; h >= 2; h--) tamanos.push([w, h]);
+  tamanos.sort((a, b) => b[0] * b[1] - a[0] * a[1] || b[0] - a[0]);
+  for (const [w, h] of tamanos) {
+    const c = rejilla.hueco(w, h, { col: 1, fila: PRIMERA_FILA });
+    if (c) return c;
+  }
+  return undefined;
 }
 
 export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
@@ -213,18 +228,43 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
   if (comp.mecanismo === 'ANOTACIONES' && !comp.anotaciones?.length) problemas.push('ANOTACIONES necesita al menos una anotación.');
   if (comp.mecanismo !== 'ANOTACIONES' && (comp.anotaciones?.length ?? 0) > 1) problemas.push('Con este mecanismo, una anotación como mucho (un solo gesto a mano por pieza).');
 
-  const detras = Boolean(sujeto) && comp.mecanismo !== 'ANOTACIONES';
+  let detras = Boolean(sujeto) && comp.mecanismo !== 'ANOTACIONES';
   const unaPalabra = !/\s/.test((e.textos[titular] ?? '').trim());
   // Sangrar es cortar las letras en los DOS cantos: solo con una palabra, que llena el ancho entero sin partirse.
-  const sangra = Boolean(comp.sangra) && unaPalabra;
+  let sangra = Boolean(comp.sangra) && unaPalabra;
   if (comp.sangra && !unaPalabra) notas.push('«sangra» solo se aplica a un titular de una palabra: con más, se partiría en líneas y no llegaría a los cantos.');
-  let cajaTitular: Caja;
+  let cajaTitular: Caja = { col: [1, COLUMNAS], fila: [PRIMERA_FILA, PRIMERA_FILA + 1] };
   let cajaAcento: Caja | undefined;
   let lado: 'arriba' | 'abajo' = 'arriba';
+  let enHueco = false;
   if (sujeto && detras) {
     const libresArriba = Math.max(0, sujeto.fila[0] - PRIMERA_FILA);
     const libresAbajo = Math.max(0, ULTIMA_FILA - sujeto.fila[1]);
     lado = ajustes.lado ?? comp.lado ?? (libresAbajo > libresArriba ? 'abajo' : 'arriba');
+    let libres = lado === 'arriba' ? libresArriba : libresAbajo;
+    // El lado pedido no tiene aire y el otro sí: se cambia de lado antes que rendirse.
+    const otro = lado === 'arriba' ? libresAbajo : libresArriba;
+    if (libres < 2 && otro >= 2 && !ajustes.lado) {
+      lado = lado === 'arriba' ? 'abajo' : 'arriba';
+      libres = otro;
+      notas.push(`El titular va ${lado === 'arriba' ? 'encima' : 'debajo'} del plato: en el lado pedido no había aire.`);
+    }
+    // Ni encima ni debajo hay filas enteras libres (en una escena, un objeto alto —una botella— llega hasta el borde),
+    // pero puede haber aire de verdad al lado o en una esquina: se busca celda a celda y el titular va allí, sin
+    // pasar por detrás del plato. Así una foto con aire no acaba convertida en un plato recortado sobre color.
+    const hueco = libres < 2 && !acento ? aireReal(rejilla) : undefined;
+    if (hueco) {
+      cajaTitular = hueco;
+      lado = ladoDe(hueco);
+      detras = false;
+      sangra = false;
+      enHueco = true;
+      notas.push(`El titular va en el aire de la foto (columnas ${hueco.col.join('–')}, filas ${hueco.fila.join('–')}): no había filas libres encima ni debajo del plato.`);
+    }
+  }
+  if (sujeto && detras) {
+    const libresArriba = Math.max(0, sujeto.fila[0] - PRIMERA_FILA);
+    const libresAbajo = Math.max(0, ULTIMA_FILA - sujeto.fila[1]);
     const libres = lado === 'arriba' ? libresArriba : libresAbajo;
     // El tamaño del titular lo pone el aire de su lado (su caja es ese aire); cuánto se mete en el plato lo decide el
     // compositor, que lo acerca hasta que el plato tape del 20 al 45 % de su franja más tapada (relación «detras»).
@@ -233,7 +273,7 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     // taparía el acento. Por eso el acento necesita cuatro filas de aire (dos suyas y dos del titular).
     const desplazamiento = acento ? 2 : 0;
     // Sin aire, el titular «detrás» quedaría tapado casi entero (Sushita, 15/11: el 76 %): no se coloca.
-    if (libres < 2) problemas.push(`No hay aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato (${libres} fila(s); encima ${libresArriba} y debajo ${libresAbajo}): el titular quedaría tapado. Usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano), ANOTACIONES, o el otro lado si tiene aire.`);
+    if (libres < 2) problemas.push(`No hay aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato (${libres} fila(s); encima ${libresArriba} y debajo ${libresAbajo}): el titular quedaría tapado, y el código no encontró aire en ninguna otra parte de la foto. Si el plato llena la foto, usa PLATO_SOBRE_COLOR (el plato recortado sobre color plano) con el producto grande; si no, ANOTACIONES o la foto sin titular.`);
     if (acento && libres < 4) problemas.push(`Para el acento hacen falta cuatro filas de aire ${lado === 'arriba' ? 'encima' : 'debajo'} del plato y hay ${libres}: usa TITULAR_DETRAS (o el otro lado, si tiene más aire).`);
     // Una sola palabra no puede partirse en dos líneas: su caja puede entrar una fila en el plato y crecer sin riesgo.
     const filas = acotar(libres - desplazamiento + (unaPalabra ? 1 : 0), 2, 7) + (ajustes.titularMasAlto ?? 0);
@@ -246,7 +286,7 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
       cajaTitular = { col: [1, COLUMNAS], fila: [Math.max(PRIMERA_FILA, f1 - filas + 1), f1] };
       if (acento) cajaAcento = { col: [4, COLUMNAS - 1], fila: [ULTIMA_FILA - 1, ULTIMA_FILA] };
     }
-  } else {
+  } else if (!enHueco) {
     // Sin plato recortable (o con anotaciones): el titular, grande, en la zona libre mayor.
     const zona = mapa.libres.find((z) => z.fila[1] >= PRIMERA_FILA && z.fila[0] <= ULTIMA_FILA);
     const f0 = acotar(zona?.fila[0] ?? PRIMERA_FILA, PRIMERA_FILA, ULTIMA_FILA);
@@ -255,7 +295,13 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     lado = ladoDe(cajaTitular);
     if (ancho(cajaTitular) < 6) notas.push('La zona libre mayor es estrecha: el titular será más pequeño.');
   }
+  // Con relación «detras», el compositor mueve el titular dentro de «entre» hasta que el plato lo tape lo justo: toda esa
+  // franja es suya. Si el apoyo o la firma cayeran en ella, el titular acabaría encima de ellos (Etxebarri, 22/11:
+  // «PRODUCTO Y FUEGO» sobre «BRASA CON LEÑA», contraste 1:1).
+  const entre: [number, number] | undefined =
+    detras && sujeto ? (lado === 'arriba' ? [cajaTitular.fila[0], Math.min(ULTIMA_FILA, sujeto.fila[0] + 3)] : [Math.max(PRIMERA_FILA, sujeto.fila[1] - 3), cajaTitular.fila[1]]) : undefined;
   rejilla.ocupar(cajaTitular);
+  if (entre) rejilla.ocupar({ col: cajaTitular.col, fila: [Math.min(entre[0], cajaTitular.fila[0]), Math.max(entre[1], cajaTitular.fila[1])] });
   if (cajaAcento) rejilla.ocupar(cajaAcento);
 
   const tintaTitular = tintaDe('titular', cajaTitular, 3, e.colorDeVoz[e.voces.titular]);
@@ -280,7 +326,7 @@ export function colocar(comp: Composicion, e: EntornoDeMecanismo): Colocacion {
     relacion: detras ? 'detras' : 'aparte',
     ...(sangra ? { sangra: true } : {}),
     ...(comp.tinta ? { tinta: comp.tinta } : {}),
-    ...(detras && sujeto ? { entre: lado === 'arriba' ? [cajaTitular.fila[0], Math.min(ULTIMA_FILA, sujeto.fila[0] + 3)] : [Math.max(PRIMERA_FILA, sujeto.fila[1] - 3), cajaTitular.fila[1]] } : {}),
+    ...(entre ? { entre } : {}),
   });
 
   // ---------------------------------------------------------------- 2. Apoyo y firma, en celdas libres

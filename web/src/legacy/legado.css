@@ -1,0 +1,392 @@
+/* Los formularios del encargo paso a paso (legado de El pase) con el aspecto del chat. Todo va dentro de .legado. */
+.legado {
+  display: grid;
+  gap: 0.9rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.legado h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.legado h3 {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.legado h4 {
+  font-weight: 600;
+}
+.legado p {
+  margin: 0.25rem 0;
+}
+.legado .muted,
+.legado small {
+  color: var(--muted-foreground);
+}
+.legado form,
+.legado fieldset,
+.legado section {
+  display: grid;
+  gap: 0.6rem;
+}
+.legado fieldset {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+.legado legend {
+  padding: 0 0.25rem;
+  font-weight: 600;
+}
+.legado .campo {
+  display: grid;
+  gap: 0.25rem;
+}
+.legado .campo > span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.legado input:not([type='checkbox']):not([type='range']):not([type='file']),
+.legado select,
+.legado textarea {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid var(--input);
+  background: color-mix(in oklch, var(--background) 60%, transparent);
+  padding: 0.45rem 0.7rem;
+  outline: none;
+}
+.legado input:focus,
+.legado select:focus,
+.legado textarea:focus {
+  border-color: var(--ring);
+}
+.legado input[type='file'] {
+  font-size: 0.8rem;
+}
+.legado label:not(.campo) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.legado button,
+.legado a.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.1rem;
+  padding: 0 0.95rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  font-weight: 500;
+  transition: background 0.15s, opacity 0.15s, transform 0.1s;
+}
+.legado button:hover,
+.legado a.boton:hover {
+  background: var(--accent);
+}
+.legado button:active {
+  transform: scale(0.97);
+}
+.legado button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.legado button.primario,
+.legado button[type='submit'].primario {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+.legado button.primario:hover {
+  opacity: 0.9;
+  background: var(--primary);
+}
+.legado .acciones,
+.legado .grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.legado details {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.8rem;
+}
+.legado details[open] {
+  padding-bottom: 0.8rem;
+}
+.legado summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+.legado details > *:not(summary) {
+  margin-top: 0.6rem;
+}
+.legado .aviso-linea {
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in oklch, var(--acento) 45%, transparent);
+  background: color-mix(in oklch, var(--acento) 12%, transparent);
+  padding: 0.55rem 0.8rem;
+}
+.legado .aviso-linea[data-alerta] {
+  border-color: color-mix(in oklch, var(--destructive) 50%, transparent);
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
+}
+.legado dl.datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.2rem 0.9rem;
+}
+.legado dl.datos dt {
+  color: var(--muted-foreground);
+}
+.legado figure.foto-ficha {
+  display: grid;
+  gap: 0.3rem;
+}
+.legado figure img,
+.legado img {
+  max-width: 100%;
+  border-radius: 0.75rem;
+}
+.legado figure.foto-ficha img {
+  max-height: 22rem;
+  object-fit: contain;
+  background: var(--muted);
+}
+.legado figcaption {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.legado .comparacion-ficha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.6rem;
+}
+.legado .selector-candidatas,
+.legado ul.referencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+.legado .selector-candidatas button,
+.legado ul.referencias button {
+  height: auto;
+  flex-direction: column;
+  padding: 0.3rem;
+  border-radius: 0.75rem;
+  font-size: 0.7rem;
+}
+.legado .selector-candidatas img,
+.legado ul.referencias img {
+  width: 5rem;
+  height: 6.25rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.legado .selector-candidatas button[aria-pressed='true'] {
+  border-color: var(--acento);
+}
+.legado .ref-vacia {
+  display: block;
+  width: 5rem;
+  height: 6.25rem;
+  border-radius: 0.5rem;
+  background: var(--muted);
+}
+.legado ol.lista-elementos {
+  display: grid;
+  gap: 0.3rem;
+  list-style: none;
+  padding: 0;
+}
+.legado ol.lista-elementos button {
+  width: 100%;
+  justify-content: flex-start;
+  border-radius: 0.6rem;
+}
+.legado ol.lista-elementos button[aria-pressed='true'] {
+  border-color: var(--acento);
+}
+.legado ol.lista-elementos i {
+  font-style: normal;
+  color: var(--muted-foreground);
+}
+.legado ol.lista-elementos small {
+  margin-left: auto;
+}
+.legado .fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.legado ul,
+.legado ol {
+  padding-left: 1.1rem;
+}
+.legado ul {
+  list-style: disc;
+}
+.legado ol {
+  list-style: decimal;
+}
+.legado .subida {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+.legado .subida img {
+  max-height: 12rem;
+  object-fit: contain;
+}
+.legado .encargos-lista {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+  padding: 0;
+}
+.legado .encargos-lista button {
+  width: 100%;
+  height: auto;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 0.4rem;
+  border-radius: 0.75rem;
+  text-align: left;
+}
+.legado .encargos-lista img,
+.legado .encargos-lista .ref-vacia {
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+.legado .estado-encargo {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+}
+.legado-estaciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.legado-estaciones button {
+  height: 1.8rem;
+  padding: 0 0.7rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.legado-estaciones button[data-estado='hecha'] {
+  color: var(--foreground);
+}
+.legado-estaciones button[data-estado='actual'] {
+  border-color: var(--acento);
+  color: var(--foreground);
+}
+.legado-estaciones button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.legado-progreso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  background: var(--muted);
+  padding: 0.5rem 0.75rem;
+}
+.legado-progreso[data-error='true'] {
+  color: var(--destructive);
+}
+.legado-progreso small {
+  flex-basis: 100%;
+}
+.legado-girando {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  border: 2px solid var(--acento);
+  border-right-color: transparent;
+  animation: legado-giro 0.8s linear infinite;
+}
+@keyframes legado-giro {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.legado-herramientas:not([hidden]) {
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.9rem;
+}
+/* Avisos flotantes y diálogo de confirmar (ui.js). */
+.legado-avisos {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 70;
+  display: grid;
+  gap: 0.5rem;
+}
+.legado-avisos .aviso {
+  max-width: 22rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--popover);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.5);
+}
+.legado-avisos .aviso-error {
+  border-color: color-mix(in oklch, var(--destructive) 60%, transparent);
+}
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(4px);
+}
+.modal {
+  display: grid;
+  gap: 0.75rem;
+  width: min(32rem, calc(100vw - 2rem));
+  max-height: 85vh;
+  overflow: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--popover);
+  padding: 1.25rem;
+  font-size: 0.875rem;
+}
+.modal .acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.modal button {
+  height: 2.1rem;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.modal button:not(.secundario) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}

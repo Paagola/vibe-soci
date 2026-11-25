@@ -21,7 +21,7 @@ import type { ActivoDisponible, CapaRenderizada, Compositor, Renderizado } from 
 import { BibliotecaTratamientosFicheros } from '../ficheros/BibliotecaTratamientosFicheros.js';
 import { dibujoRama, trazadoDeSello, trazadoElipse, trazadoMancha, trazadoPoligono } from './formas.js';
 import type { MotorTexto } from './MotorTexto.js';
-import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
+import { aplicarMascaraDeSujeto, alfaDelSujeto, conOpacidad, documentoSvg, enLienzo, escaparXml, estiloDeTexto, mascaraAlTamano, redondear, trazoDeTexto, type CapaTextoResuelta } from './raster.js';
 import { ResolutorDiseno } from './resolutor.js';
 import { aplicarTinta, papel } from './tinta.js';
 import { interpretarReceta } from './interpreteRecetas.js';
@@ -42,6 +42,7 @@ const FUSION_SHARP: Record<Fusion, Blend> = {
 type CapaSello = Extract<CapaResuelta, { tipo: 'sello' }>;
 type CapaPatron = Extract<CapaResuelta, { tipo: 'patron' }>;
 type CapaForma = Extract<CapaResuelta, { tipo: 'forma' }>;
+type VentanaEditable = { foto: Buffer; trazado: string };
 
 export class CompositorSharp implements Compositor {
   private readonly resolutor: ResolutorDiseno;
@@ -63,17 +64,35 @@ export class CompositorSharp implements Compositor {
 
   async renderizar(resuelto: Resuelto, activos: Record<string, ActivoDisponible>): Promise<Renderizado> {
     const capas: CapaRenderizada[] = [];
+    const ventanas = new Map<string, VentanaEditable>();
     for (const capa of resuelto.capas) {
       const clave = claveDe(capa, resuelto.lienzo, activos);
       const guardada = this.cache.get(clave);
-      const png = guardada ?? (await this.pintar(capa, resuelto.lienzo, activos));
+      let png: Buffer;
+      if (capa.tipo === 'imagen' && capa.ventana?.forma === 'poligono') {
+        // El SVG editable necesita la fotografía completa detrás de la máscara. También se reutiliza si cambian los vértices.
+        const rectangular = { ...capa, ventana: undefined };
+        const claveFoto = claveDe(rectangular, resuelto.lienzo, activos);
+        const foto = this.cache.get(claveFoto) ?? await this.pintar(rectangular, resuelto.lienzo, activos);
+        this.cache.set(claveFoto, foto);
+        const { x, y, w, h } = capa.destino;
+        const trazado = trazadoPoligono(capa.ventana.puntos.map(p => ({
+          x: Math.round(x) + p.x * Math.max(1, Math.round(w)),
+          y: Math.round(y) + p.y * Math.max(1, Math.round(h)),
+        })));
+        ventanas.set(capa.id, { foto, trazado });
+        const mascara = Buffer.from(documentoSvg(resuelto.lienzo, `<path d="${trazado}"/>`));
+        png = guardada ?? await sharp(foto).composite([{ input: mascara, blend: 'dest-in' }]).png().toBuffer();
+      } else {
+        png = guardada ?? await this.pintar(capa, resuelto.lienzo, activos);
+      }
       if (!guardada) this.cache.set(clave, png);
       capas.push({ id: capa.id, z: capa.z, png, reutilizada: Boolean(guardada) });
     }
     return {
       png: await componer(resuelto, capas, 0, capas.length),
       capas,
-      svgEditable: this.svg(resuelto, capas, 'editable'),
+      svgEditable: this.svg(resuelto, capas, 'editable', ventanas),
       svgExacto: this.svg(resuelto, capas, 'exacto'),
       contraste: await this.medirContraste(resuelto, capas),
     };
@@ -111,7 +130,7 @@ export class CompositorSharp implements Compositor {
           .ensureAlpha()
           .png()
           .toBuffer();
-        if (capa.ventana) {
+        if (capa.ventana && capa.ventana.forma !== 'poligono') {
           const ventana = capa.ventana;
           const contorno = ventana.forma === 'arco'
             ? `<path d="${arcoDe({ x: 0, y: 0, w, h })}"/>`
@@ -176,7 +195,8 @@ export class CompositorSharp implements Compositor {
       }
 
       case 'texto': {
-        const { cuerpo, definiciones } = this.svgDeTexto(capa, `opacity="${capa.opacidad}"`);
+        const dibujo = this.svgDeTexto(capa, `opacity="${capa.opacidad}"`);
+        const { cuerpo, definiciones } = desenfoqueDeTexto(dibujo, capa, lienzo);
         return this.acabar(await vectorial(lienzo, cuerpo, definiciones), capa, lienzo, activos);
       }
 
@@ -238,9 +258,8 @@ export class CompositorSharp implements Compositor {
       : `fill="${capa.estilo.color}"`;
     const matriz = `matrix(${capa.matriz.join(' ')})`;
     if (capa.tratamiento) {
-      // Tipografía especial: cada letra por separado, para que el tratamiento pueda trabajarlas una a una.
-      const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
-      const glifos = capa.lineas.flatMap((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base));
+      // Tipografía especial: cada letra por separado (ya con su forma), para que el tratamiento las trabaje una a una.
+      const glifos = this.motor.glifosDeBloque(estiloDeTexto(capa), capa.lineas).flat();
       const cap = Math.max(...capa.lineas.map((l) => this.motor.alturaMayusculas(capa.estilo, l.tamano)));
       const { receta, valores, semilla } = capa.tratamiento;
       const tratado = interpretarReceta({ receta, valores, semilla, glifos, cap, color: capa.estilo.color, idCapa: capa.id });
@@ -453,36 +472,75 @@ export class CompositorSharp implements Compositor {
    * Exacto: el texto va como trazos (igual que el PNG, sin depender de las fuentes).
    * Un texto con tinta impresa o recortado por el sujeto va, en el exacto, como imagen (es lo que se ve); en el
    * editable sigue siendo texto limpio, que es lo que se puede retocar.
+   * Con forma (edición fina de la letra), el exacto lleva los trazos ya transformados. El editable aplica a cada línea
+   * la escala, la inclinación y su espaciado con un transform del <text>, pero NO los ajustes por letra (kerning, subir,
+   * escalar o girar una letra): un <text> no los puede guardar sin partirse en letras sueltas, que ya no se editan como
+   * texto. Para ver la pieza exacta está el exacto (o el PNG).
    */
-  private svg(resuelto: Resuelto, capas: CapaRenderizada[], modo: 'editable' | 'exacto'): string {
+  private svg(resuelto: Resuelto, capas: CapaRenderizada[], modo: 'editable' | 'exacto', ventanas?: Map<string, VentanaEditable>): string {
     const { ancho, alto } = resuelto.lienzo;
     const partes = resuelto.capas.map((capa, i) => {
       const fusion = capa.fusion === 'normal' ? '' : ` style="mix-blend-mode:${capa.fusion}"`;
+      if (modo === 'editable' && capa.tipo === 'relleno') {
+        return `  <rect id="${capa.id}" width="${ancho}" height="${alto}" fill="${capa.color}" opacity="${capa.opacidad}"${fusion}/>`;
+      }
+      if (modo === 'editable' && capa.tipo === 'forma' && !capa.tinta && !capa.recorte) {
+        return `  <g id="${capa.id}" opacity="${capa.opacidad}"${fusion}>${figura(capa)}</g>`;
+      }
       const rasterizado = capa.tipo === 'texto' && modo === 'exacto' && (capa.tinta || capa.recorte || capa.tratamiento);
       if (capa.tipo !== 'texto' || rasterizado) {
-        const datos = capas[i]!.png.toString('base64');
-        return `  <image id="${capa.id}" data-archivo="capas/${nombreDeCapa(capa)}" href="data:image/png;base64,${datos}" x="0" y="0" width="${ancho}" height="${alto}"${fusion}/>`;
+        const ventana = ventanas?.get(capa.id);
+        const datos = (ventana?.foto ?? capas[i]!.png).toString('base64');
+        const mascara = ventana ? `<defs><clipPath id="ventana.${capa.id}"><path d="${ventana.trazado}"/></clipPath></defs>` : '';
+        const recorte = ventana ? ` clip-path="url(#ventana.${capa.id})"` : '';
+        return `  ${mascara}<image id="${capa.id}" data-archivo="capas/${nombreDeCapa(capa)}" href="data:image/png;base64,${datos}" x="0" y="0" width="${ancho}" height="${alto}"${recorte}${fusion}/>`;
       }
       const matriz = `matrix(${capa.matriz.join(' ')})`;
       if (modo === 'exacto') {
-        const { cuerpo, definiciones } = this.svgDeTexto(capa, `opacity="${capa.opacidad}"${fusion}`);
+        const dibujo = this.svgDeTexto(capa, `opacity="${capa.opacidad}"${capa.desenfoque ? '' : fusion}`);
+        const { cuerpo, definiciones } = desenfoqueDeTexto(dibujo, capa, resuelto.lienzo, fusion);
         const marcado = cuerpo.replace(/^<(path|g) /, `<$1 id="${capa.id}" `);
         return `  ${definiciones ? `<defs>${definiciones}</defs>` : ''}${marcado}`;
       }
       const familia = this.catalogo.familia(capa.estilo.fuente);
       const peso = capa.estilo.ejes.wght ?? 400;
-      const anchura = capa.estilo.ejes.wdth ?? 100;
+      const ejes = Object.entries(capa.estilo.ejes).map(([eje, valor]) => `'${eje}' ${valor}`).join(', ');
+      const rasgos = capa.estilo.rasgos?.map(r => `'${r}' 1`).join(', ');
       const pintura = capa.contorno ? `fill="none" stroke="${capa.estilo.color}" stroke-width="${capa.contorno}"` : `fill="${capa.estilo.color}"`;
+      const forma = capa.estilo.forma;
       const lineas = capa.lineas
-        .map((l) => `<text x="${l.x}" y="${l.base}" font-size="${l.tamano}" letter-spacing="${capa.estilo.tracking * l.tamano}">${escaparXml(l.texto)}</text>`)
+        .map((l, i) => {
+          if (!forma) return `<text x="${l.x}" y="${l.base}" font-size="${l.tamano}" letter-spacing="${capa.estilo.tracking * l.tamano}">${escaparXml(l.texto)}</text>`;
+          // El espaciado se da antes de escalar: se divide por la escala para que, ya escalado, mida lo mismo que en el PNG.
+          const tracking = forma.trackingPorLinea?.[i] ?? capa.estilo.tracking;
+          const transformacion = `translate(${l.x} ${l.base}) skewX(${-forma.inclinacion}) scale(${forma.escalaX} ${forma.escalaY})`;
+          return `<text transform="${transformacion}" font-size="${l.tamano}" letter-spacing="${redondear4((tracking * l.tamano) / forma.escalaX)}">${escaparXml(l.texto)}</text>`;
+        })
         .join('');
-      return `  <g id="${capa.id}" transform="${matriz}" font-family="${familia}" font-weight="${Math.round(peso)}" style="font-variation-settings:'wdth' ${anchura}, 'wght' ${peso}${capa.fusion === 'normal' ? '' : `; mix-blend-mode:${capa.fusion}`}" ${pintura} opacity="${capa.opacidad}">${lineas}</g>`;
+      const css = [
+        'font-optical-sizing:none', 'font-kerning:normal',
+        ejes && `font-variation-settings:${ejes}`, rasgos && `font-feature-settings:${rasgos}`,
+        !capa.desenfoque && capa.fusion !== 'normal' && `mix-blend-mode:${capa.fusion}`,
+      ].filter(Boolean).join('; ');
+      const grupo = `<g id="${capa.id}"${capa.decorativo ? ' aria-hidden="true"' : ''} transform="${matriz}" font-family="${familia}" font-weight="${Math.round(peso)}" style="${css}" ${pintura} opacity="${capa.opacidad}">${lineas}</g>`;
+      const { cuerpo, definiciones } = desenfoqueDeTexto({ cuerpo: grupo, definiciones: '' }, capa, resuelto.lienzo, fusion);
+      return `  ${definiciones ? `<defs>${definiciones}</defs>` : ''}${cuerpo}`;
     });
     return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="0 0 ${ancho} ${alto}">\n${partes.join('\n')}\n</svg>\n`;
   }
 }
 
 // ------------------------------------------------------------------ Ayudantes
+
+/** El mismo filtro SVG trabaja en píxeles de lienzo en el PNG, los trazos y el texto editable. */
+function desenfoqueDeTexto(dibujo: { cuerpo: string; definiciones: string }, capa: CapaTextoResuelta, lienzo: Lienzo, fusion = '') {
+  if (!capa.desenfoque) return dibujo;
+  const id = `desenfoque.${capa.id}`;
+  const filtro = `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="${lienzo.ancho}" height="${lienzo.alto}"><feGaussianBlur stdDeviation="${capa.desenfoque}"/></filter>`;
+  return { cuerpo: `<g filter="url(#${id})"${fusion}>${dibujo.cuerpo}</g>`, definiciones: dibujo.definiciones + filtro };
+}
+
+const redondear4 = (n: number) => Math.round(n * 10000) / 10000;
 
 /** Lo que define el contenido de una capa: si no cambia, la capa no se vuelve a pintar. */
 function claveDe(capa: CapaResuelta, lienzo: Lienzo, activos: Record<string, ActivoDisponible>): string {
@@ -684,6 +742,7 @@ function lineaDePixel(capa: CapaTextoResuelta, motor: MotorTexto, escala: number
   if (capa.lineas.length <= 1) return () => 0;
   const [a, b, c, d, e, f] = capa.matriz;
   const det = a * d - b * c;
+  // Con forma, la altura de mayúscula ya es la de la letra estirada o encogida (escalaY).
   const centros = capa.lineas.map((l) => l.base - motor.alturaMayusculas(capa.estilo, l.tamano) / 2);
   return (x, y) => {
     const px = (x + 0.5) * escala - e;

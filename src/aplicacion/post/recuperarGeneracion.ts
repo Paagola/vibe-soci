@@ -2,6 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import { link, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { z } from 'zod';
+import { exigirTomaNueva } from '../../adaptadores/imagen/copiaDeReferencia.js';
+import { ErrorDeUsuario } from '../../dominio/errores.js';
 import type { EncargoPost, IntentoFoto } from '../../dominio/post.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
 import type { PeticionFoto } from '../../puertos/Foto.js';
@@ -82,6 +84,12 @@ export async function prepararRecuperacion(
         throw error;
       });
       if (!bytes || huella(bytes) !== activo.sha256) return undefined;
+      try {
+        await exigirTomaNueva(bytes, peticion.referencias.map(r => r.ruta));
+      } catch (error) {
+        if (error instanceof ErrorDeUsuario) return undefined;
+        throw error;
+      }
       return { n, activo: activo.id, final: 'PENDIENTE', motivos: [], costeUsd: generacion.costeEstimadoUsd ?? 0 };
     },
   };

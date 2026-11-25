@@ -75,6 +75,25 @@ describe('F3.1 · mecanismos: TITULAR_DETRAS', () => {
     assert.ok(texto(r.capas, 'firma')!.caja.fila[0]! > m.sujeto!.fila[1], 'la firma, en el lado contrario, pegada al borde');
   });
 
+  it('lo pequeño nunca cae en la franja por la que el compositor mueve el titular hacia el plato (Etxebarri, 22/11)', () => {
+    // El plato llega casi al borde de abajo: el apoyo y la firma no caben en el lado contrario y buscan sitio en el del
+    // titular. Antes caían junto al plato, dentro de «entre», y el titular, al bajar, quedaba encima de ellos.
+    for (const cy of [0.7, 0.74, 0.78]) {
+      const m = mapaSintetico({ cy, ry: 0.2 });
+      const r = colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma', apoyo: 'apoyo' }), entorno(m));
+      const t = texto(r.capas, 'titular')!;
+      assert.ok(t.entre, `cy ${cy}: el titular va detrás y tiene franja`);
+      for (const id of ['firma', 'apoyo'] as const) {
+        const x = texto(r.capas, id);
+        if (!x) {
+          assert.ok(r.problemas.some((p) => p.includes(textos[id])), `cy ${cy}: si «${id}» no cabe, lo dice`);
+          continue;
+        }
+        assert.ok(x.caja.fila[0]! > t.entre![1]! || x.caja.fila[1]! < t.entre![0]!, `cy ${cy}: «${id}» ${JSON.stringify(x.caja)} cae en la franja del titular ${JSON.stringify(t.entre)}`);
+      }
+    }
+  });
+
   it('con «lado: abajo» el titular va debajo; con más aire abajo, va abajo solo', () => {
     const m = mapaSintetico({ cy: 0.38 });
     const t = texto(colocar(comp({ mecanismo: 'TITULAR_DETRAS' }), entorno(m)).capas, 'titular')!;
@@ -203,6 +222,35 @@ describe('F3.2 · sin aire no hay titular detrás', () => {
   it('si el plato llena la foto (Sushita), TITULAR_DETRAS no se coloca y propone PLATO_SOBRE_COLOR', () => {
     const lleno = mapaSintetico({ cy: 0.5, rx: 0.6, ry: 0.48 });
     assert.match(colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma' }), entorno(lleno)).problemas.join(), /No hay aire .*PLATO_SOBRE_COLOR/);
+  });
+});
+
+describe('F3.2 · el aire real de una escena (Etxebarri, 23/11)', () => {
+  it('con una botella que llega al borde de arriba, el titular va en el aire de la esquina, sin pasar por detrás y sin pisar nada', () => {
+    // Plato abajo a la derecha y una botella alta a la derecha que toca el borde: ni encima ni debajo quedan filas
+    // enteras libres, pero el cuadrante de arriba a la izquierda es pared lisa.
+    const ancho = 120;
+    const alto = 160;
+    const rgb = new Uint8Array(ancho * alto * 3);
+    const mascara = new Uint8Array(ancho * alto);
+    for (let y = 0; y < alto; y++) {
+      for (let x = 0; x < ancho; x++) {
+        const i = y * ancho + x;
+        const plato = (x / ancho - 0.55) ** 2 / 0.42 ** 2 + (y / alto - 0.8) ** 2 / 0.2 ** 2 <= 1;
+        const botella = x / ancho >= 0.72 && x / ancho <= 0.86 && y / alto <= 0.66;
+        rgb.set(plato || botella ? [200, 80, 50] : [30, 30, 30], i * 3);
+        mascara[i] = plato || botella ? 255 : 0;
+      }
+    }
+    const m = construirMapa({ ancho, alto, rgb, mascara });
+    const r = colocar(comp({ mecanismo: 'TITULAR_DETRAS', firma: 'firma' }), entorno(m));
+    assert.deepEqual(r.problemas, []);
+    const t = texto(r.capas, 'titular')!;
+    assert.equal(t.relacion, 'aparte');
+    assert.ok(!pisaElPlato(m, t.caja), `el titular no pisa ni el plato ni la botella: ${JSON.stringify(t.caja)}`);
+    assert.ok(t.caja.col[0] === 1 && t.caja.col[1]! >= 5, 'en el aire de la izquierda, con anchura de titular');
+    assert.ok(r.capas.some((c) => c.tipo === 'foto'), 'la foto sigue a sangre');
+    assert.match(r.notas.join(), /aire de la foto/);
   });
 });
 

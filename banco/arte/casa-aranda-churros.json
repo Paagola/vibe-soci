@@ -1,0 +1,32 @@
+{
+  "id": "casa-aranda-churros",
+  "local": "casa-aranda",
+  "activo": "casa-aranda-post-foto-mcp-2",
+  "plato": "Churros con chocolate y café con leche",
+  "elementos": [
+    {
+      "nombre": "churros",
+      "estado": "dorados y crujientes",
+      "recuento": 4
+    },
+    {
+      "nombre": "chocolate",
+      "estado": "espeso, en taza",
+      "recuento": 1
+    },
+    {
+      "nombre": "café con leche",
+      "estado": "en vaso",
+      "recuento": 1
+    },
+    {
+      "nombre": "bandeja",
+      "estado": "metálica",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "El ritual del desayuno de siempre.",
+  "creativo": true,
+  "previa": "datos/disenos/casa-aranda/casa-aranda-post/v001/diseno.png",
+  "referencia": "ref-post-03"
+}

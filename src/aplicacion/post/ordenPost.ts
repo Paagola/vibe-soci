@@ -22,12 +22,15 @@ import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join, relative, resolve } from 'node:path';
 import sharp from 'sharp';
+import { exigirTomaNueva } from '../../adaptadores/imagen/copiaDeReferencia.js';
+import { comprobarFotosDeSalida, comprobarFuentesDelPlan, referenciasFotograficas } from './fuentesDeLaPieza.js';
 import { escribirJsonAtomico } from '../../adaptadores/ficheros/escribirJsonAtomico.js';
 import type { CriticoEditorial } from '../productor/criticaEditorial.js';
 import { revisarEntrega } from '../productor/revisarEntrega.js';
 import { direccionParaLaFoto } from '../productor/editorial.js';
 import { materializarEditorial } from '../productor/componerEditorial.js';
 import { Activo } from '../../dominio/activos.js';
+import { direccionFotografica } from '../../dominio/referencia.js';
 import { Intencion, Tokens } from '../../dominio/diseno/intencion.js';
 import type { HechosDeLaPieza } from '../../dominio/diseno/propuesta.js';
 import { AIRE_MINIMO, type AireMedido } from '../../dominio/comprobacionSalida.js';
@@ -323,7 +326,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       const imagen = r.origen.archivo; // la imagen o captura guardada (en un enlace bloqueado, no hay)
       referencia = {
         id: r.id,
-        resumen: f ? [f.titulo, f.familia, `capas: ${f.capas.join(' / ')}`, `retícula: ${f.reticula}`].join(' · ') : 'sin ficha',
+        resumen: f ? [f.titulo, f.familia, `capas: ${f.capas.join(' / ')}`, `retícula: ${f.reticula}`, direccionFotografica(f)].join(' · ') : 'sin ficha',
         ...(imagen ? { imagen: deps.referencias.referencias.rutaArchivo(e.local, r.id, imagen) } : {}),
       };
       familia = f?.familia;
@@ -360,30 +363,28 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     const revision = revisarPropuesta(propuesta, opcionesPrompt, { lado: { ancho: real.activo.ancho, alto: real.activo.alto }, nota: e.plato, ...hechos });
     const problemas = revision.problemas;
     const prompt = revision.prompt + (e.productorEditorial ? direccionParaLaFoto(await deps.productor?.leerBrief?.(e.proyecto)) : '');
-    // F3.3 (punto 11): en un carrusel, cada diapositiva de detalle con su propia foto: la foto de más que haya subido el
-    // dueño para ese elemento (no se genera) o, si no, una toma nueva sacada de la misma foto real.
     // F3.3: un elemento que la nota del dueño llama con otra preparación no se confirma (gunkan / rollito de papel de arroz).
     problemas.push(...contradiccionesConLaNota(e.plato, propuesta.descripcion.elementos));
     const nombres = propuesta.descripcion.elementos.map((x) => x.nombre);
     const extras = e.fotosExtra.map((x) => ({ ...x, nombre: elementoParecido(x.elemento, nombres) }));
     for (const x of extras) if (!x.nombre) problemas.push(`La foto de más «${x.ruta}» dice que enseña «${x.elemento}», pero no es ninguno de los elementos descritos (${nombres.join(', ')}): corrige el elemento o la descripción.`);
-    const tomas: TomaDelEncargo[] =
-      e.formato !== 'carrusel'
-        ? []
-        : [
-            ...extras.filter((x) => x.nombre && x.activo).map((x) => ({ elemento: x.nombre!, prompt: '', real: true, elegida: x.activo })),
-            ...(e.productorEditorial ? [] : propuesta.tomas ?? []).filter((t) => !extras.some((x) => x.nombre === t.elemento)).map((t) => ({ elemento: t.elemento, prompt: montarPromptFotoNueva(huecosDeTomaEfectivos(propuesta, t, opcionesPrompt), { ...opcionesPrompt, deDetalle: true }) })),
-          ]
-            .slice(0, 3)
-            .map((t, i) => ({ n: i + 1, ...t }));
-    const generadas = tomas.filter((t) => !t.real);
+    const detalles = propuesta.tomas ?? [];
+    const elementosDeDetalle = [...new Set([...extras.flatMap(x => x.nombre ? [x.nombre] : []), ...detalles.map(t => t.elemento)])];
+    const tomas: TomaDelEncargo[] = e.formato !== 'carrusel' || e.productorEditorial ? [] : elementosDeDetalle.slice(0, 3).map((elemento, i) => {
+      const detalle = detalles.find(t => t.elemento === elemento);
+      const fuente = extras.find(x => x.nombre === elemento)?.activo;
+      const promptDetalle = detalle
+        ? montarPromptFotoNueva(huecosDeTomaEfectivos(propuesta, detalle, opcionesPrompt), { ...opcionesPrompt, deDetalle: true })
+        : prompt + ` New close-up of the documented element «${elemento}», from a different camera position.`;
+      return { n: i + 1, elemento, prompt: promptDetalle, ...(fuente ? { referenciaDetalle: fuente } : {}) };
+    });
     const encargo = { ...e, propuesta: { archivo: e.propuesta?.archivo ?? 'foto/propuesta.json', prompt, problemas } };
     await writeFile(ruta, `${JSON.stringify({ ...guardada, propuesta, opcionesPrompt, prompt, problemas }, null, 2)}\n`);
     if (accion.confirmo && problemas.length) return { encargo, parar: `No se puede confirmar con problemas: ${problemas.join(' | ')}. Corrige ${relative(deps.raiz, ruta)}.`, usaAccion: true };
 
     const disponible = deps.generador.disponible();
     const estimado = disponible.ok ? await deps.generador.estimarUsd(peticion(e, real.ruta, prompt, 0, await rutaDeEstilo(deps, e))) : 0;
-    const fotos = 1 + generadas.length;
+    const fotos = 1 + tomas.length;
     const elementos = propuesta.descripcion.elementos.map((x) => `${x.nombre}${x.recuento !== null ? ` ×${x.recuento}` : ''}${x.cortados ? ` (+${x.cortados} cortado por el borde)` : ''}${x.dudoso ? ' ¿?' : ''} (${x.estado})`).join('; ');
     const mirar = recuentosQueMirar(propuesta.descripcion);
     if (!accion.confirmo) {
@@ -396,11 +397,11 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           `  Cámara: de ${propuesta.descripcion.anguloGrados}° a ${propuesta.huecos.camara.anguloGrados}° · ${propuesta.huecos.camara.descripcion}`,
           ...(opcionesPrompt?.desdeElInventario && propuesta.descripcion.elementos.every((x) => x.enEncuadre === true) ? ['  Toma: entran todos los elementos de la lista.'] : []),
           `  Prompt${tomas.length ? ' de la portada' : ''}: ${prompt}`,
-          ...tomas.map((t) => (t.real ? `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, tal cual (no se genera).` : `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`)),
+          ...tomas.map(t => `  Toma de detalle ${t.n} («${t.elemento}»): ${t.prompt}`),
           problemas.length ? `  PROBLEMAS (hay que corregirlos en ${relative(deps.raiz, ruta)} antes de confirmar): ${problemas.join(' | ')}` : '  Cumple la plantilla y la regla «otra toma».',
           disponible.ok
-            ? generadas.length
-              ? `  FOTOS: ${fotos} (la portada y ${generadas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una). Podrás pedir otra portada después de ver la primera, dentro del límite de ${MAX_INTENTOS_SEGUIDOS} candidatas. Un detalle que no pase usa un recorte.`
+            ? tomas.length
+              ? `  FOTOS: ${fotos} (la portada y ${tomas.length} detalle(s)). Gasto: ≤ ${(estimado * fotos).toFixed(3)} USD con ${deps.generador.nombre} (≤ ${estimado.toFixed(3)} cada una). Podrás pedir otra portada después de ver la primera, dentro del límite de ${MAX_INTENTOS_SEGUIDOS} candidatas. Un detalle que no pase usa un recorte.`
               : `  Gasto: ≤ ${estimado.toFixed(3)} USD por candidata con ${deps.generador.nombre}. Se hará una: podrás pedir otra después de verla, dentro del límite de ${MAX_INTENTOS_SEGUIDOS}.`
             : `  Generación por la API no disponible: ${disponible.motivo}.`,
           `  Para corregir: edita ${relative(deps.raiz, ruta)} («propuesta»). Para seguir: --confirmo`,
@@ -491,6 +492,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
         continue;
       }
       const solicitud = { ...peticion(e, real.ruta, t.prompt, 0, estilo), id: `${e.proyecto}-toma-${t.n}` };
+      if (t.referenciaDetalle) solicitud.referencias.push({
+        ruta: (await deps.activos.obtener(e.local, t.referenciaDetalle)).ruta,
+        etiqueta: 'Additional identity reference for this detail. Photograph it anew.',
+      });
       const detalle = await resolverFoto(solicitud, 1, `Toma de detalle ${t.n} del encargo ${e.proyecto}: ${t.elemento}`, undefined, Boolean(accion.importar));
       if (detalle.parada) nota(`Toma de detalle ${t.n}: ${detalle.parada} Se usará un recorte de la foto confirmada.`);
       tomas.push(detalle.intento ? { ...t, intento: detalle.intento } : t);
@@ -555,10 +560,10 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
       nota('El usuario volvió al inventario para ajustar la toma.');
       return { encargo: ir(e, 'CONFIRMAR_ELEMENTOS'), parar: 'Revisa el inventario y la toma antes de autorizar otra candidata.', usaAccion: true };
     }
-    const original = accion.foto === 'original';
+    if (accion.foto === 'original') throw new ErrorDeUsuario('La foto original solo sirve de referencia. Elige una candidata nueva.');
     const intento = typeof accion.foto === 'number' ? e.intentos.find(i => i.n === accion.foto) : e.intentos.at(-1);
     if (accion.rechazo) {
-      if (!intento || original || intento.final === 'PENDIENTE') throw new ErrorDeUsuario('Elige una candidata revisada para rechazarla.');
+      if (!intento || intento.final === 'PENDIENTE') throw new ErrorDeUsuario('Elige una candidata revisada para rechazarla.');
       const brief = await deps.productor?.leerBrief?.(e.proyecto);
       const puedeGenerar = accion.reintentar !== false && deps.generador.disponible().ok && puedeReintentarFoto(e, brief?.presupuesto.fotos);
       if (accion.reintentar && !puedeGenerar) throw new ErrorDeUsuario('No se puede pedir otra candidata con la autorización y el generador actuales.');
@@ -583,23 +588,19 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
           ...fotos,
           ...(intento?.motivos.length ? [`  Avisos de la última candidata: ${intento.motivos.join('; ')}`] : []),
           ...(await Promise.all(
-            e.tomas.filter((t) => t.real).map(async (t) => `  Detalle ${t.n} («${t.elemento}»): la foto de más del dueño, ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.elegida!)).ruta)}`),
-          )),
-          ...(await Promise.all(
             e.tomas.filter((t) => t.intento).map(async (t) => `  Toma de detalle ${t.n} («${t.elemento}»): ${relative(deps.raiz, (await deps.activos.obtener(e.local, t.intento!.activo)).ruta)} · ${t.intento!.final}${t.intento!.final === 'DESCARTA' ? ' (no se usará: su diapositiva irá con un recorte de la portada)' : ''}`),
           )),
-          '  Elige con --confirmo [--foto N | --foto original]. Para descartar y pedir otra dentro del presupuesto: --rechazo "motivo".',
+          '  Elige con --confirmo [--foto N]. Para descartar y pedir otra dentro del presupuesto: --rechazo "motivo".',
           ...(e.tomas.length ? ['  En un carrusel: --sin-toma N quita una toma de detalle que no vale · --portada-toma N hace la portada con esa toma (un producto aislado) y deja la foto para los recortes y el cierre'] : []),
         ].join('\n'),
       };
     }
-    if (!original && (!intento || intento.final === 'PENDIENTE')) throw new ErrorDeUsuario('Elige una foto que ya esté lista para revisar.');
-    const fotoElegida = original ? e.activoReal : intento?.activo;
+    if (!intento || intento.final === 'PENDIENTE') throw new ErrorDeUsuario('Elige una foto que ya esté lista para revisar.');
+    const fotoElegida = intento.activo;
     if (!fotoElegida || !await deps.activos.existe(e.local, fotoElegida)) throw new ErrorDeUsuario('El archivo de la foto elegida no está disponible.');
-    if (original && e.usoFotoReal !== 'PUBLICABLE') throw new ErrorDeUsuario('La foto original está marcada solo para pruebas de composición.');
     const fuera = new Set(accion.sinToma ?? []);
     const tomas = e.tomas.map((t): TomaDelEncargo => {
-      if (fuera.has(t.n) || (original && !t.real)) {
+      if (fuera.has(t.n) || t.real) {
         const { elegida: _x, ...sin } = t;
         return sin;
       }
@@ -610,21 +611,18 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
     if (confirmadas.length) nota(`Tomas de detalle confirmadas: ${confirmadas.map((t) => `${t.n} («${t.elemento}»)`).join(', ')}.`);
     const portada = accion.portadaToma !== undefined ? confirmadas.find((t) => t.n === accion.portadaToma) : undefined;
     if (accion.portadaToma !== undefined && !portada) return { encargo: e, parar: `La toma ${accion.portadaToma} no está confirmada: no puede ser la portada.`, usaAccion: true };
-    if (original) {
-      nota('El usuario eligió la foto original para la composición.');
-    } else if (intento) {
-      await deps.activos.actualizar(e.local, intento.activo, {
-        fidelidad: {
-          frente: e.activoReal as string,
-          veredicto: 'CONSERVA',
-          metodo: `revisión humana en la orden única, tras la comprobación automática (${intento.final})`,
-          medidas: {},
-          notas: intento.motivos,
-          revisadoEn: deps.ahora(),
-        },
-      });
-      nota(`Foto del intento ${intento.n} confirmada por el usuario (comprobación automática: ${intento.final}).`);
-    }
+    await comprobarFotosDeSalida(deps, e, [fotoElegida, ...confirmadas.map(t => t.elegida!)]);
+    await deps.activos.actualizar(e.local, intento.activo, {
+      fidelidad: {
+        frente: e.activoReal as string,
+        veredicto: 'CONSERVA',
+        metodo: `revisión humana en la orden única, tras la comprobación automática (${intento.final})`,
+        medidas: {},
+        notas: intento.motivos,
+        revisadoEn: deps.ahora(),
+      },
+    });
+    nota(`Foto del intento ${intento.n} confirmada por el usuario (comprobación automática: ${intento.final}).`);
     if (portada) nota(`La portada sale de la toma ${portada.n} («${portada.elemento}»); los recortes y el cierre usan la foto confirmada.`);
     return { encargo: ir(e, 'MASCARA', { fotoElegida, tomas, ...(portada ? { portadaDeToma: portada.n } : {}) }), usaAccion: true };
   },
@@ -710,6 +708,7 @@ const PASOS: Record<Exclude<PasoPost, 'HECHO'>, Paso> = {
 
   async COMPONER(deps, e, _a, nota) {
     const carpeta = join(deps.proyectos, e.proyecto);
+    await comprobarFuentesDelPlan(deps, carpeta, e);
     const pieza = await deps.componedor.componer(carpeta, { etiqueta: 'orden-post' });
     const errores = pieza.diapositivas.flatMap((d) => d.problemas.filter((p) => p.gravedad === 'ERROR').map((p) => `${d.id} v${d.version}: ${p.tipo}: ${p.mensaje}`));
     if (errores.length) {
@@ -803,6 +802,7 @@ async function registrarFotoGenerada(
   f: { id: string; bytes: Buffer; generacion: { modelo: string; costeUsd: number; tarifa: string }; prompt: string; n: number; descripcion: string },
 ): Promise<void> {
   const { id, bytes, generacion, prompt, n } = f;
+  await exigirTomaNueva(bytes, await referenciasFotograficas(deps, e));
   const meta = await sharp(bytes).metadata();
   const extension = meta.format === 'jpeg' ? 'jpg' : (meta.format ?? 'png');
   const archivo = `original.${extension}`;

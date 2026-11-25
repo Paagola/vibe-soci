@@ -28,6 +28,12 @@ export const DatosNuevoEncargo = z.object({
   formato: z.enum(['post', 'carrusel']).default('post'),
   /** Punto 10: la estética. Sin ella, la de la familia de la referencia. */
   estetica: Estetica.optional(),
+  /** Punto 9: el generador ve también la referencia como @image2, solo de estilo. */
+  estiloDeReferencia: z.boolean().optional(),
+  /** El titular puede ser un copy creativo (sin afirmar nada que no conste). */
+  titularCreativo: z.boolean().optional(),
+  /** F3.3: qué enseña cada foto de más (en el orden de las fotos que se suben con el encargo). */
+  elementosExtra: z.array(z.string().trim().min(2).max(120)).max(3).optional(),
   /** Nombre del proyecto. Si no se da, sale de la fecha y de la nota. */
   proyecto: z
     .string()
@@ -39,6 +45,8 @@ export const DatosNuevoEncargo = z.object({
 export interface OpcionesAbrirEncargo {
   /** Ruta absoluta de la foto subida. */
   foto: string;
+  /** F3.3: rutas absolutas de las fotos de más del dueño (carrusel). */
+  fotosExtra?: string[];
   simulado: boolean;
   zonaHoraria: string;
 }
@@ -74,6 +82,16 @@ export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: O
   const destino = join(carpeta, 'foto', `subida${extname(opciones.foto).toLowerCase()}`);
   await mkdir(join(carpeta, 'foto'), { recursive: true });
   await copyFile(opciones.foto, destino);
+  // Las fotos de más del dueño, junto a la principal (cada una con lo que enseña).
+  const extras: Array<{ ruta: string; elemento: string }> = [];
+  for (const [i, ruta] of (opciones.fotosExtra ?? []).slice(0, 3).entries()) {
+    const elemento = datos.elementosExtra?.[i];
+    if (!elemento) throw new ErrorDeUsuario(`Di qué enseña la foto de más ${i + 1}.`);
+    const copia = join(carpeta, 'foto', `extra-${i + 1}${extname(ruta).toLowerCase()}`);
+    await copyFile(ruta, copia);
+    const rel = relative(deps.raiz, copia);
+    extras.push({ ruta: rel.startsWith('..') ? copia : rel, elemento });
+  }
   try {
     const relativa = relative(deps.raiz, destino);
     return await crearEncargo(deps, {
@@ -87,6 +105,9 @@ export async function abrirEncargo(deps: DepsPost, entrada: unknown, opciones: O
       usoFotoReal: datos.usoFotoReal,
       formato: datos.formato,
       ...(datos.estetica ? { estetica: datos.estetica } : {}),
+      ...(datos.estiloDeReferencia ? { estiloDeReferencia: true } : {}),
+      ...(datos.titularCreativo ? { titularCreativo: true } : {}),
+      ...(extras.length ? { fotosExtra: extras } : {}),
       simulado: opciones.simulado,
       ...(datos.referencia ? { referencia: datos.referencia } : {}),
     });

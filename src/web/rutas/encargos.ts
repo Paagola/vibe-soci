@@ -31,7 +31,8 @@ const PROYECTO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MASCARA_MS = 3_000;
 const COMPONER_MS = 6_000;
 
-const CuerpoNuevo = z.object({ subidaId: z.string() }).passthrough();
+/** La foto subida y, para un carrusel, hasta tres fotos de más (con «elementosExtra»: qué enseña cada una). */
+const CuerpoNuevo = z.object({ subidaId: z.string(), extrasIds: z.array(z.string()).max(3).optional() }).passthrough();
 const CuerpoAvanzar = z
   .object({
     /** La parada que se confirma: si el encargo ya no está en ella, no se confirma nada. */
@@ -99,9 +100,10 @@ export function rutasDeEncargos(estudio: Estudio): Router {
   });
 
   rutas.post('/', async (req, res) => {
-    const { subidaId, ...datos } = validar(CuerpoNuevo, req.body, 'El encargo no es válido.');
-    const encargo = await abrirEncargo(await estudio.post(), datos, { foto: estudio.subidas.ruta(subidaId), simulado: estudio.simulado(), zonaHoraria: estudio.config.zonaHoraria });
-    await estudio.subidas.borrar([subidaId]);
+    const { subidaId, extrasIds, ...datos } = validar(CuerpoNuevo, req.body, 'El encargo no es válido.');
+    const extras = (extrasIds ?? []).map((id) => estudio.subidas.ruta(id));
+    const encargo = await abrirEncargo(await estudio.post(), datos, { foto: estudio.subidas.ruta(subidaId), ...(extras.length ? { fotosExtra: extras } : {}), simulado: estudio.simulado(), zonaHoraria: estudio.config.zonaHoraria });
+    await estudio.subidas.borrar([subidaId, ...(extrasIds ?? [])]);
     // Nada más abrirlo, la orden corre hasta su primera parada (referencia que falta o elementos por confirmar).
     const trabajo = await lanzar(estudio, encargo.proyecto, (deps, alProgresar) => avanzarConProgreso(deps, encargo.proyecto, {}, alProgresar));
     res.status(201).json({ encargo: { proyecto: encargo.proyecto }, trabajo });

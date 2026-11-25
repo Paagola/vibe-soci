@@ -49,14 +49,12 @@ export async function prepararPlanEditorial(
   };
   const paginas = brief.plan.map((base, i) => {
     const d = plan.diapositivas[i]!;
-    const propia = e.fotosExtra.some(t => t.elemento === base.elemento);
-    const original = d.tratamiento === 'FOTO_TEXTO_AL_BORDE' && d.arco;
-    const foto = d.tratamiento === 'RECORTE_DETALLE' ? 'RECORTE' : original || (propia && d.papel === 'detalle') ? 'FOTO_DEL_DUENO' : 'FOTO_ELEGIDA';
+    const foto = d.tratamiento === 'RECORTE_DETALLE' ? 'RECORTE' : 'FOTO_ELEGIDA';
     const para = {
       CARTEL: 'cartel tipográfico con el nombre confirmado y la fotografía elegida',
       FOTO_LIMPIA: 'fotografía a sangre, sin texto',
-      FOTO_TEXTO_AL_BORDE: original ? 'texto editable en arco sobre el borde observado del original' : 'dato del brief compuesto al borde de la fotografía',
-      RECORTE_DETALLE: 'detalle por recorte de la foto original sobre el punto observado',
+      FOTO_TEXTO_AL_BORDE: 'dato del brief compuesto al borde de la fotografía nueva',
+      RECORTE_DETALLE: 'detalle por recorte de la fotografía nueva aprobada',
       CIERRE_TEXTO: 'cierre con los datos seleccionados del brief',
     }[d.tratamiento];
     return { ...base, foto, para } as typeof base;

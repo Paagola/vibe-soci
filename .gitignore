@@ -24,3 +24,6 @@ revision-externa.zip
 # Copias sueltas de carpetas de la biblioteca (no son la fuente)
 biblioteca/ejemplos.zip
 biblioteca/referencias.zip
+
+# Interfaz del chat compilada (npm run web:build)
+web/dist/

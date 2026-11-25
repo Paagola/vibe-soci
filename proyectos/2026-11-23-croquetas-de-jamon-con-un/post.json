@@ -1,0 +1,137 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-23-croquetas-de-jamon-con-un",
+  "local": "asador-etxebarri",
+  "plato": "Croquetas de jamón con un tinto",
+  "fotoSubida": "proyectos/2026-11-23-croquetas-de-jamon-con-un/foto/subida.webp",
+  "usoFotoReal": "SOLO_PRUEBA_COMPOSICION",
+  "estiloDeReferencia": false,
+  "formato": "post",
+  "titularCreativo": true,
+  "simulado": false,
+  "taller": {
+    "seleccionEditorial": true,
+    "comanda": {
+      "editorial": {
+        "ruta": "FOTO_PLATO",
+        "motivo": "El encargo se puede contar con el alimento y su contexto de servicio. La fuente tiene luminosidad media intermedia; separa el foco por contraste local.",
+        "enfoque": "Mostrar en vista cenital el orden geométrico de las seis croquetas de jamón sobre sus puntos de salsa blanca en el plato cuadrado ornamentado, acompañadas por el servicio del tinto de la botella presente en el encargo sobre una mesa editorial despejada.",
+        "comprobar": "El grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial.",
+        "evidencias": [
+          {
+            "id": "salorio-croquetas",
+            "fuente": "Eva Salorio · Croquetas",
+            "pagina": "https://evasalorio.com/portfolio/",
+            "imagen": "https://evasalorio.com/wp-content/uploads/2025/09/Croquetas-DEF.jpg",
+            "lectura": "Las piezas ovales cambian de orientación dentro de un recipiente estrecho. La luz deja pequeñas sombras entre los rebozados. La referencia abre una pieza central; una fuente que sólo documenta piezas enteras conserva ese límite."
+          },
+          {
+            "id": "oak-08",
+            "fuente": "Convincible · The Oak Bistro",
+            "pagina": "https://www.convincible.media/projects/the-oak-bistro-social-media",
+            "imagen": "https://www.datocms-assets.com/3013/1775143769-2022-12-kale-chickpea-chestnut-bon-bon-vegan-xmas-menu.jpg?w=750&h=500&fit=crop&auto=format%2Ccompress",
+            "lectura": "Un arco ancho de salsa roja rodea tres bocados amarillos. La cerámica clara deja ver el intervalo entre las piezas."
+          }
+        ]
+      },
+      "propuestaPortada": {
+        "vista": "CENITAL",
+        "plano": "MEDIO",
+        "gesto": "Una mano sostiene por el tallo una copa con vino tinto junto a la esquina superior izquierda del plato, mientras la botella permanece apoyada al borde de la escena y las seis croquetas reposan intactas sobre la salsa y el cebollino.",
+        "encuadre": "Toma cenital perpendicular sobre mantel de lino neutro claro; el plato cuadrado crema con el motivo floral oscuro y las dos hileras paralelas de croquetas ocupa el centro y la mitad derecha, equilibrado a la izquierda por la copa de vino tinto en mano y la silueta parcial de la botella.",
+        "idea": "Mostrar en vista cenital el orden geométrico de las seis croquetas de jamón sobre sus puntos de salsa blanca en el plato cuadrado ornamentado, acompañadas por el servicio del tinto de la botella presente en el encargo sobre una mesa editorial despejada.",
+        "luz": "NATURAL"
+      },
+      "modoDeLuz": "NATURAL",
+      "puesta": {
+        "sugerencia": "Una mano sostiene por el tallo una copa con vino tinto junto a la esquina superior izquierda del plato, mientras la botella permanece apoyada al borde de la escena y las seis croquetas reposan intactas sobre la salsa y el cebollino. Toma cenital perpendicular sobre mantel de lino neutro claro; el plato cuadrado crema c",
+        "ambito": "PRODUCTO",
+        "vajilla": "ESTUDIO",
+        "soporte": "Elige un soporte de estudio de gres mate en un único tono que contraste con el alimento. Recompón desde cero el reparto de la porción. Conserva todo ingrediente y respeta los apoyos físicos.",
+        "apetito": "Debe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales."
+      },
+      "nombrePlato": "Croquetas de jamón con un tinto",
+      "toma": {
+        "seleccion": {
+          "opcion": "AUTO",
+          "plano": "MEDIO"
+        },
+        "camara": {
+          "anguloGrados": 90,
+          "descripcion": "Sitúa la cámara sobre el producto con el sensor paralelo al plano de apoyo.",
+          "objetivoMm": 85,
+          "apertura": 11,
+          "giroGrados": 0,
+          "distancia": "MEDIO",
+          "vista": "CENITAL",
+          "evidencia": "Se lee el contorno en planta. La cara frontal se comprime y las formas antes superpuestas se separan allí donde la fuente lo permite."
+        },
+        "alternativa": {
+          "anguloGrados": 12,
+          "descripcion": "Coloca el objetivo apenas por encima del plano de apoyo, desde un flanco.",
+          "objetivoMm": 70,
+          "apertura": 8,
+          "giroGrados": 75,
+          "distancia": "MEDIO",
+          "vista": "RASANTE",
+          "evidencia": "El borde próximo se levanta delante del lejano. Se ve espesor de perfil y la superficie superior se estrecha."
+        },
+        "cambios": [],
+        "encuadre": "Una mano sostiene por el tallo una copa con vino tinto junto a la esquina superior izquierda del plato, mientras la botella permanece apoyada al borde de la escena y las seis croquetas reposan intactas sobre la salsa y el cebollino. Toma cenital perpendicular sobre mantel de lino neutro claro; el plato cuadrado crema con el motivo floral oscuro y las dos hileras paralelas de croquetas ocupa el centro y la mitad derecha, equilibrado a la izquierda por la copa de vino tinto en mano y la silueta parcial de la botella.",
+        "accion": "",
+        "luz": "Luz natural de una ventana lateral, balance de día neutro de unos 5000 K. Sombras direccionales de borde suave con detalle, como en una mesa junto a la ventana. Una parte del plato recibe más luz que la otra. Conserva el color de los materiales, como la tela teja y la loza clara en una sesión editorial casera. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia.",
+        "foco": "El grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial.",
+        "conservar": "Mantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar."
+      },
+      "direccion": {
+        "criterioVisual": {
+          "foco": "Mostrar en vista cenital el orden geométrico de las seis croquetas de jamón sobre sus puntos de salsa blanca en el plato cuadrado ornamentado, acompañadas por el servicio del tinto de la botella presente en el encargo sobre una mesa editorial despejada.",
+          "conservar": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+          "comprobar": "El grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial."
+        },
+        "gesto": "RITMO",
+        "sujeto": "Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.",
+        "escena": "Una mano sostiene por el tallo una copa con vino tinto junto a la esquina superior izquierda del plato, mientras la botella permanece apoyada al borde de la escena y las seis croquetas reposan intactas sobre la salsa y el cebollino. Toma cenital perpendicular sobre mantel de lino neutro claro; el plato cuadrado crema con el motivo floral oscuro y las dos hileras paralelas de croquetas ocupa el centro y la mitad derecha, equilibrado a la izquierda por la copa de vino tinto en mano y la silueta parcial de la botella.",
+        "tipografia": "Fotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.",
+        "materia": "Mantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto."
+      },
+      "textos": [],
+      "fotografia": {
+        "temperatura": "CALIDA",
+        "dominantes": [
+          "#CEA986",
+          "#A67146",
+          "#6E4A33",
+          "#E6D5C3",
+          "#2E1C13"
+        ],
+        "acento": "#A67146",
+        "luz": 0.536,
+        "aire": "Zona de poco detalle de la foto: columnas 5–12/12 y filas 3–6/16."
+      },
+      "fotoSha256": "e09998fc9c3e10988b0bb1bd507de26bea85f95ce73d21aa7b4c3e153e52271b",
+      "uso": "SOLO_PRUEBA_COMPOSICION",
+      "prompt": "Produce una fotografía editorial gastronómica a sangre, vertical 4:5, sin texto añadido ni diseño gráfico superpuesto.\n\nSujeto descrito por el local, como contexto visual: \"Croquetas de jamón con un tinto\"\n\nFoco de la pieza: Mostrar en vista cenital el orden geométrico de las seis croquetas de jamón sobre sus puntos de salsa blanca en el plato cuadrado ornamentado, acompañadas por el servicio del tinto de la botella presente en el encargo sobre una mesa editorial despejada.\n\nRasgo que conservar: Retrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.\n\nRevisión a 360 px: El grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial.\n\nRetrata el sujeto documentado en la fotografía del local. Conserva ingredientes, preparación, cantidad, anatomía, proporciones y color de cocción. La colocación y la cámara pertenecen a la nueva sesión.\n\nUna mano sostiene por el tallo una copa con vino tinto junto a la esquina superior izquierda del plato, mientras la botella permanece apoyada al borde de la escena y las seis croquetas reposan intactas sobre la salsa y el cebollino. Toma cenital perpendicular sobre mantel de lino neutro claro; el plato cuadrado crema con el motivo floral oscuro y las dos hileras paralelas de croquetas ocupa el centro y la mitad derecha, equilibrado a la izquierda por la copa de vino tinto en mano y la silueta parcial de la botella.\n\nMantén la textura del sujeto y el color de su preparación. Ajusta la exposición sobre el rasgo reconocible y conserva las sombras de contacto.\n\nFotografía a sangre. Preserva los rótulos físicos que ya existan en la fuente. Ninguna letra, firma, marco o marca superpuestos.\n\nElige un soporte de estudio de gres mate en un único tono que contraste con el alimento. Recompón desde cero el reparto de la porción. Conserva todo ingrediente y respeta los apoyos físicos.\n\nDebe verse el punto de preparación mediante el corte, la rugosidad o el brillo que documenta la fuente. Conserva volumen, color y humedad naturales.\n\nObserva primero la fotografía fuente. Construye una sola toma vertical desde un punto de vista físicamente distinto, dentro de lo documentado.\nLa altura original queda por observar en la foto adjunta.\nToma principal. CENITAL · 90° de inclinación, desplazamiento angular 0°, medio, 85 mm, f/11. Sitúa la cámara sobre el producto con el sensor paralelo al plano de apoyo. Se lee el contorno en planta. La cara frontal se comprime y las formas antes superpuestas se separan allí donde la fuente lo permite.\nSolo si al mirar la foto fuente ya reconoces la perspectiva principal, ejecuta en su lugar esta segunda posición: RASANTE · 12° de inclinación, desplazamiento angular 75°, medio, 70 mm, f/8. Coloca el objetivo apenas por encima del plano de apoyo, desde un flanco. El borde próximo se levanta delante del lejano. Se ve espesor de perfil y la superficie superior se estrecha. Entrega una sola imagen.\nLuz natural de una ventana lateral, balance de día neutro de unos 5000 K. Sombras direccionales de borde suave con detalle, como en una mesa junto a la ventana. Una parte del plato recibe más luz que la otra. Conserva el color de los materiales, como la tela teja y la loza clara en una sesión editorial casera. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia.\nEl grano, el color y el contorno ovalado o redondo se cotejan con la fuente. Si sólo hay piezas enteras, se conservan enteras. Un lote fotografiado no establece el número de una ración comercial.\nMantén el contenido de la ración y el acabado realmente fotografiado. Sigue cada pieza de un extremo al otro antes de encuadrar.\nComprueba que cambió la proyección de una parte reconocible. Un giro del lienzo, un recorte o una luz distinta mantienen la misma perspectiva y requieren repetir la toma antes de dar por acabada la imagen. Conserva las caras ocultas que no se puedan reconstruir con fidelidad.\n\nEntrega sólo la fotografía. Revisa que las únicas letras sean las de objetos y rótulos presentes en la imagen del local.\n\nLa fotografía del local es la única fuente de identidad. Mantén su color reconocible. Entrega la imagen final.",
+      "huella": "3712885aa2b423016eb6f6fced77731b58c882ce26bc6a87d35c479cb605a292"
+    },
+    "candidatas": [],
+    "envios": []
+  },
+  "paso": "CONFIRMAR_ELEMENTOS",
+  "intentos": [],
+  "tomas": [],
+  "fotosExtra": [],
+  "historial": [
+    {
+      "fecha": "2026-11-23T15:51:45.945Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-23T15:52:00.662Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Dirección, fotografía fuente y copy preparados para revisión."
+    }
+  ],
+  "creadoEn": "2026-11-23T15:51:45.945Z"
+}

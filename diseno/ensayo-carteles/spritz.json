@@ -1,0 +1,69 @@
+{
+  "esquema": "diseno/intencion@1",
+  "id": "spritz",
+  "titulo": "Aperol Spritz",
+  "notas": "Collage de papel. El texto cálido fuera de foco funciona como eco de la firma. Las cuatro llamadas rodean la silueta sin invadir la bebida. Adaptación de la referencia 2:3 al feed 3:4.",
+  "marca": "baubar",
+  "lienzo": {"formato": "FEED_3_4"},
+  "reticula": {"columnas": 12, "filas": 16, "margen": 21, "medianil": 12},
+  "activos": {"foto": "spritz"},
+  "tokens": {
+    "colores": {"papel": "#FFF5EB", "teja": "#A53F2B", "oro": "#FFB834"},
+    "estilos": {
+      "marca": {"fuente": "archivo", "color": "@teja", "tracking": -0.055, "interlineado": 1, "ejes": {"wght": 730}},
+      "ligera": {"fuente": "work-sans", "color": "@teja", "tracking": -0.06, "interlineado": 1, "ejes": {"wght": 380}},
+      "enfasis": {"fuente": "archivo", "color": "@teja", "tracking": -0.04, "interlineado": 1, "ejes": {"wght": 700}},
+      "llamada": {"fuente": "archivo", "color": "@teja", "tracking": -0.045, "interlineado": 0.82, "ejes": {"wght": 740, "wdth": 103}},
+      "firma": {"fuente": "caveat", "color": "@teja", "tracking": -0.045, "interlineado": 1, "ejes": {"wght": 400}},
+      "receta": {"fuente": "archivo", "color": "@teja", "tracking": -0.04, "interlineado": 1.14, "ejes": {"wght": 400, "wdth": 83}},
+      "cierre": {"fuente": "archivo", "color": "@teja", "tracking": -0.045, "interlineado": 1, "ejes": {"wght": 700, "wdth": 83}},
+      "eco": {"fuente": "caveat", "color": "@oro", "tracking": -0.04, "interlineado": 0.78, "ejes": {"wght": 600}}
+    }
+  },
+  "textos": {
+    "marca": "@baubar",
+    "ciudad": "Sorocaba - SP",
+    "consulta": "Qual o melhor drink para um",
+    "enfasis": "Ariano?",
+    "eco": "Aperol Spritz\nAperol Spritz",
+    "calma": "ACALMA\nA MENTE",
+    "anima": "ANIMA\nA GALERA",
+    "instiga": "INSTIGA A\nCRIATIVIDADE",
+    "alegra": "ALEGRA\nO MOMENTO",
+    "firma": "Aperol Spritz",
+    "izquierda": "Bastante gelo\n1 dose espumante",
+    "derecha": "2 doses Aperol\nágua com gás",
+    "cierre": "beba com moderação"
+  },
+  "capas": [
+    {"id": "papel", "tipo": "relleno", "color": "@papel"},
+    {"id": "fibra", "tipo": "textura", "recurso": "papel", "fusion": "soft-light", "intensidad": 0.12, "escala": 1.1, "semilla": 22},
+    {"id": "eco", "tipo": "texto", "texto": "@eco", "estilo": "eco", "caja": {"x": -0.115, "y": 0.36, "w": 1.23, "h": 0.345}, "ajuste": "caja", "alinear": "centro", "vertical": "centro", "opacidad": 0.43, "desenfoque": 9, "decorativo": true, "sangrado": true},
+    {"id": "fotografia", "tipo": "imagen", "activo": "foto", "caja": {"x": 0.216, "y": 0.202, "w": 0.568, "h": 0.575}, "enfoque": {"x": 0.5, "y": 0.462}, "ventana": {"forma": "poligono", "puntos": [{"x": 0.1, "y": 0.18}, {"x": 0.265, "y": 0.178}, {"x": 0.244, "y": 0.105}, {"x": 0.34, "y": 0.07}, {"x": 0.431, "y": 0.089}, {"x": 0.47, "y": 0.009}, {"x": 0.568, "y": 0}, {"x": 0.629, "y": 0.086}, {"x": 0.798, "y": 0.078}, {"x": 0.848, "y": 0.116}, {"x": 0.808, "y": 0.226}, {"x": 0.867, "y": 0.27}, {"x": 0.872, "y": 0.68}, {"x": 0.902, "y": 0.777}, {"x": 0.992, "y": 0.83}, {"x": 0.92, "y": 0.905}, {"x": 0.659, "y": 0.978}, {"x": 0.355, "y": 0.978}, {"x": 0.176, "y": 0.926}, {"x": 0.148, "y": 0.865}, {"x": 0.149, "y": 0.457}, {"x": 0.045, "y": 0.426}, {"x": 0, "y": 0.334}, {"x": 0.021, "y": 0.245}]}},
+    {"id": "marca", "tipo": "texto", "texto": "@marca", "estilo": "marca", "caja": {"x": 0.31, "y": 0.049, "w": 0.38, "h": 0.019}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "ciudad", "tipo": "texto", "texto": "@ciudad", "estilo": "ligera", "caja": {"x": 0.28, "y": 0.084, "w": 0.44, "h": 0.018}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "borde-busqueda", "tipo": "forma", "figura": "rect", "caja": {"x": 0.12, "y": 0.136, "w": 0.76, "h": 0.041}, "color": "@teja", "grosor": 1.45, "radio": 35},
+    {"id": "lente", "tipo": "forma", "figura": "elipse", "caja": {"x": 0.137, "y": 0.147, "w": 0.016, "h": 0.012}, "color": "@teja", "grosor": 2.8},
+    {"id": "mango", "tipo": "forma", "figura": "linea", "desde": {"x": 0.1505, "y": 0.157}, "hasta": {"x": 0.159, "y": 0.164}, "color": "@teja", "grosor": 3.4, "opacidad": 1},
+    {"id": "separador-busqueda", "tipo": "forma", "figura": "linea", "desde": {"x": 0.172, "y": 0.14}, "hasta": {"x": 0.172, "y": 0.173}, "color": "@teja", "grosor": 0.9, "opacidad": 0.6},
+    {"id": "consulta", "tipo": "texto", "texto": "@consulta", "estilo": "ligera", "caja": {"x": 0.201, "y": 0.144, "w": 0.437, "h": 0.024}, "ajuste": "caja", "alinear": "derecha", "vertical": "centro"},
+    {"id": "enfasis", "tipo": "texto", "texto": "@enfasis", "estilo": "enfasis", "caja": {"x": 0.648, "y": 0.144, "w": 0.145, "h": 0.024}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro", "forma": {"inclinacion": 12}},
+    {"id": "calma", "tipo": "texto", "texto": "@calma", "estilo": "llamada", "caja": {"x": 0.04, "y": 0.243, "w": 0.174, "h": 0.049}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "anima", "tipo": "texto", "texto": "@anima", "estilo": "llamada", "caja": {"x": 0.759, "y": 0.295, "w": 0.195, "h": 0.049}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "instiga", "tipo": "texto", "texto": "@instiga", "estilo": "llamada", "caja": {"x": 0.03, "y": 0.700, "w": 0.262, "h": 0.051}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "alegra", "tipo": "texto", "texto": "@alegra", "estilo": "llamada", "caja": {"x": 0.753, "y": 0.748, "w": 0.218, "h": 0.052}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "firma", "tipo": "texto", "texto": "@firma", "estilo": "firma", "caja": {"x": 0.29, "y": 0.787, "w": 0.42, "h": 0.044}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "filete-receta", "tipo": "forma", "figura": "linea", "desde": {"x": 0.274, "y": 0.851}, "hasta": {"x": 0.726, "y": 0.851}, "color": "@teja", "grosor": 0.95, "opacidad": 0.75},
+    {"id": "division-receta", "tipo": "forma", "figura": "linea", "desde": {"x": 0.511, "y": 0.854}, "hasta": {"x": 0.511, "y": 0.913}, "color": "@teja", "grosor": 0.85, "opacidad": 0.65},
+    {"id": "izquierda", "tipo": "texto", "texto": "@izquierda", "estilo": "receta", "caja": {"x": 0.214, "y": 0.86, "w": 0.265, "h": 0.051}, "ajuste": "caja", "alinear": "derecha", "vertical": "centro"},
+    {"id": "derecha", "tipo": "texto", "texto": "@derecha", "estilo": "receta", "caja": {"x": 0.541, "y": 0.86, "w": 0.258, "h": 0.051}, "ajuste": "caja", "alinear": "izquierda", "vertical": "centro"},
+    {"id": "cierre-izquierdo", "tipo": "forma", "figura": "linea", "desde": {"x": 0, "y": 0.943}, "hasta": {"x": 0.353, "y": 0.943}, "color": "@teja", "grosor": 0.85, "opacidad": 0.72},
+    {"id": "cierre-derecho", "tipo": "forma", "figura": "linea", "desde": {"x": 0.647, "y": 0.943}, "hasta": {"x": 1, "y": 0.943}, "color": "@teja", "grosor": 0.85, "opacidad": 0.72},
+    {"id": "cierre", "tipo": "texto", "texto": "@cierre", "estilo": "cierre", "caja": {"x": 0.357, "y": 0.931, "w": 0.286, "h": 0.021}, "ajuste": "caja", "alinear": "centro", "vertical": "centro"},
+    {"id": "grano-impresion", "tipo": "textura", "recurso": "grano", "fusion": "overlay", "intensidad": 0.065, "escala": 1, "semilla": 14}
+  ],
+  "relaciones": [
+    {"tipo": "contrasteMinimo", "texto": "consulta", "ratio": 4.5},
+    {"tipo": "contrasteMinimo", "texto": "cierre", "ratio": 4.5}
+  ]
+}

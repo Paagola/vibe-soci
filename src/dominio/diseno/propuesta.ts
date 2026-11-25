@@ -14,6 +14,7 @@
  */
 import { z } from 'zod';
 import { rectDeCaja } from './reticula.js';
+import { compilarPlanos, type MontajeEditorial } from './montajeEditorial.js';
 import { RECORTE_4_5_PX, TAMANO_PROPORCION } from '../reglas.js';
 
 const Id = z.string().regex(/^[a-z][a-z0-9-]*$/);
@@ -75,6 +76,9 @@ const CapaPlato = z.object({
   filo: Token.optional().describe('Filo de pegatina alrededor del plato recortado, en este color.'),
   /** F3.3: qué foto se recorta (el papel, p. ej. «detalle1»); sin él, la foto nueva de la portada. */
   activo: Id.optional(),
+  /** Estudio de arte: no es el producto sino un recurso gráfico recortado (un garabato a tinta): sin sombra y sin papel de sujeto. */
+  recurso: z.boolean().optional(),
+  plano: z.enum(['fondo', 'frente']).optional().describe('Solo con «recurso»: por detrás del producto (fondo) o por delante (frente).'),
 });
 
 const CapaTexto = z.object({
@@ -83,7 +87,9 @@ const CapaTexto = z.object({
   texto: Id.describe('Clave de «textos».'),
   voz: Id.describe('Una voz de la lista.'),
   caja: Celdas,
-  ajuste: z.enum(['ancho', 'caja', 'alto', 'fijo']).describe('ancho: llena el ancho de la caja (titulares). caja: lo más grande que quepa. alto: llena el alto. fijo: con «tamano».'),
+  ajuste: z
+    .enum(['ancho', 'caja', 'alto', 'fijo', 'ancho-por-linea', 'eje-ancho'])
+    .describe('ancho: llena el ancho de la caja (titulares). caja: lo más grande que quepa. alto: llena el alto. fijo: con «tamano». ancho-por-linea: cada línea llena el ancho (bloque de cartel). eje-ancho: llena el alto y la fuente se estrecha o ensancha hasta llenar el ancho.'),
   tamano: z.number().min(34).max(400).optional().describe('Solo con ajuste «fijo». Mínimo 34.'),
   alinear: z.enum(['izquierda', 'centro', 'derecha']).optional(),
   vertical: z.enum(['arriba', 'centro', 'abajo']).optional(),
@@ -113,6 +119,8 @@ const CapaPatron = z.object({
   filas: z.number().int().min(1).max(12).optional().describe('palabra: filas que caben en la caja.'),
   ladrillo: z.boolean().optional().describe('palabra: cada fila arranca a media palabra de la anterior.'),
   contornoAlterno: z.boolean().optional().describe('palabra: una fila rellena y otra en contorno.'),
+  /** Estudio de arte (esqueleto PATRON): la caja exacta en fracciones del lienzo, sin sangrado: una palabra por fila, ajustada al ancho. */
+  rect: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), w: z.number().min(0.05).max(1), h: z.number().min(0.02).max(1) }).optional(),
   giro: Giro.optional(),
   desvanece: z.enum(['no', 'arriba', 'abajo', 'izquierda', 'derecha', 'centro']).optional().describe('puntos: hacia dónde se apagan.'),
   suave: z.boolean().optional().describe('De textura: muy flojo (al 16 %), por detrás de todo.'),
@@ -268,7 +276,7 @@ export const PropuestaDeDiseno = BasePropuesta.extend({
 export type PropuestaDeDiseno = z.infer<typeof PropuestaDeDiseno>;
 
 /** La propuesta ya colocada, capa a capa: lo que compila compilarIntencion. */
-export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas' | 'carrusel'> & { capas: CapaPropuesta[] };
+export type Maqueta = Omit<PropuestaDeDiseno, 'composicion' | 'capas' | 'carrusel'> & { capas: CapaPropuesta[]; montaje?: MontajeEditorial };
 
 // ------------------------------------------------------------------ Hechos y comprobación de los textos
 
@@ -302,6 +310,9 @@ export function normalizar(texto: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9ñ@.]+/g, ' ')
+    // El punto se conserva dentro de una web o un usuario («dak.es»), no al final de una frase («sin complejos.»).
+    .replace(/\.+(?=\s|$)/g, '')
+    .replace(/(^|\s)\.+/g, '$1')
     .trim();
 }
 
@@ -332,6 +343,11 @@ export interface OpcionesDeTexto {
   titularCreativo?: boolean;
   /** Palabras del post de referencia: no pueden pasar a la pieza. */
   palabrasDeReferencia?: string[];
+  /**
+   * Estudio de arte: frases creativas más largas (una idea, un giro), siempre sin cifras ni reclamos. Por defecto, la
+   * regla de siempre: un titular creativo de dos palabras como mucho.
+   */
+  creativo?: { maxPalabras: number; maxTextos: number };
 }
 
 /**
@@ -364,7 +380,8 @@ export function problemasDeTextos(textos: TextoPropuesto[], hechos: HechosDeLaPi
         problemas.push(`«${t.texto}» se declara CREATIVO y este encargo no lo permite: usa solo palabras que consten en los datos.`);
         continue;
       }
-      if (palabras.length > 2) problemas.push(`El texto creativo «${t.texto}» tiene ${palabras.length} palabras; como mucho, dos.`);
+      const maxPalabras = opciones.creativo?.maxPalabras ?? 2;
+      if (palabras.length > maxPalabras) problemas.push(`El texto creativo «${t.texto}» tiene ${palabras.length} palabras; como mucho, ${maxPalabras}.`);
       if (/\d/.test(t.texto)) problemas.push(`El texto creativo «${t.texto}» lleva una cifra: las cifras solo salen de los datos.`);
       const reclamos = palabras.filter((p) => RECLAMOS.has(p) && !consta(p));
       if (reclamos.length) problemas.push(`El texto creativo «${t.texto}» afirma algo que no consta (${reclamos.join(', ')}).`);
@@ -384,7 +401,8 @@ export function problemasDeTextos(textos: TextoPropuesto[], hechos: HechosDeLaPi
     const cifrasSinRespaldo = cifras.filter((c) => !new RegExp(`(^|[^0-9.,])${c.replace(/[.,]/g, '[.,]')}([^0-9]|$)`).test(Object.values(corpus).join(' · ')));
     if (cifrasSinRespaldo.length) problemas.push(`«${t.texto}» lleva una cifra que no consta (${cifrasSinRespaldo.join(', ')}): ni precios, ni fechas, ni recuentos inventados.`);
   }
-  if (creativos > 1) problemas.push(`Hay ${creativos} textos creativos; como mucho, uno (el titular).`);
+  const maxTextos = opciones.creativo?.maxTextos ?? 1;
+  if (creativos > maxTextos) problemas.push(`Hay ${creativos} textos creativos; como mucho, ${maxTextos === 1 ? 'uno (el titular)' : maxTextos}.`);
   return problemas;
 }
 
@@ -526,9 +544,9 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
     problemas.push('La pieza parte de una referencia: di en «seToma» qué oficio tomas de ella y en «noSeCopia» qué no copias.');
   }
   const fotos = p.capas.filter((x) => x.tipo === 'foto' && (x.tratamiento ?? 'natural') === 'natural');
-  const platos = p.capas.filter((x) => x.tipo === 'plato');
+  const platos = p.capas.filter((x) => x.tipo === 'plato' && !x.recurso);
   if (platos.length > 1) problemas.push('Hay más de una capa «plato»: el plato va una vez.');
-  if (fotos.length === 0 && platos.length === 0) problemas.push('La pieza no enseña el plato: hace falta una capa «plato» (recortado) o una «foto» al natural.');
+  if (!p.montaje && fotos.length === 0 && platos.length === 0) problemas.push('La pieza no enseña el plato: hace falta una capa «plato» (recortado) o una «foto» al natural.');
   if (platos.length && !c.tieneMascara) problemas.push('La foto no tiene máscara: no se puede recortar el plato. Usa la foto a sangre o en un marco.');
   const aSangre = p.capas.find((x) => x.tipo === 'foto' && x.encuadre === 'sangre' && (x.tratamiento ?? 'natural') === 'natural');
   // El sujeto con el que se relacionan los textos: el plato recortado o, en una foto a sangre con máscara, su silueta.
@@ -601,7 +619,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           }
         }
         // La silueta del plato de una foto a sangre: no se pinta, pero deja que los textos se relacionen con él.
-        if (natural && x.encuadre === 'sangre' && sujetoFantasma && !usados.has('plato')) {
+        if (natural && x.encuadre === 'sangre' && (x.activo ?? 'foto') === 'foto' && sujetoFantasma && !usados.has('plato')) {
           usados.add('plato');
           poner(Plano3.FOTO, { id: 'plato', tipo: 'recorte', activo: 'foto', alineadoCon: id, opacidad: 0, nota: 'Silueta del plato de la foto a sangre: no se pinta.' });
         }
@@ -609,6 +627,23 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
       }
 
       case 'plato': {
+        if (x.recurso) {
+          // Un recurso gráfico recortado (garabato): no es el sujeto; va por detrás o por delante del producto.
+          if (!x.caja || !x.ancho) {
+            problemas.push('recurso: hace falta «caja» y «ancho».');
+            break;
+          }
+          poner(x.plano === 'frente' ? Plano3.FRENTE : Plano3.DETRAS, {
+            id: idLibre(x.activo ?? 'recurso'),
+            tipo: 'recorte',
+            activo: x.activo ?? 'recurso',
+            escala: { anchoSujeto: x.ancho },
+            ancla: { caja: aFracciones(x.caja), alinear: x.alinear ?? 'centro' },
+            ...(x.giro ? { giro: x.giro } : {}),
+            nota: 'Recurso gráfico (no es el producto).',
+          });
+          break;
+        }
         usados.add('plato');
         if (x.sombra && x.sombra !== 'no') {
           poner(
@@ -694,7 +729,7 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
           tipo: 'patron',
           motivo: x.motivo,
           color: color(x.color, donde),
-          ...(x.caja ? { caja: aFracciones(x.caja, x.motivo === 'palabra') } : {}),
+          ...(x.rect ? { caja: { x: r4(x.rect.x), y: r4(x.rect.y), w: r4(x.rect.w), h: r4(x.rect.h) } } : x.caja ? { caja: aFracciones(x.caja, x.motivo === 'palabra') } : {}),
           ...(x.motivo === 'palabra' && x.texto && x.voz ? { texto: texto(x.texto, donde), estilo: voz(x.voz, donde), filas: x.filas ?? 5, desfase: x.ladrillo ? 0.5 : 0, contornoAlterno: x.contornoAlterno ? 3 : 0 } : {}),
           ...(x.motivo === 'puntos' ? { paso: 20, tamano: [0.38, 0], desvanece: x.desvanece ?? 'abajo' } : {}),
           ...(x.motivo === 'cuadros' ? { paso: 36 } : {}),
@@ -794,6 +829,11 @@ export function compilarIntencion(p: Maqueta, c: ContextoDeCompilacion): Compila
   if (noSolapar.length) relaciones.push({ tipo: 'noSolapar', textos: noSolapar, sujeto: 'plato', maximo: 0.03 });
   // Se pinta por planos; dentro de cada uno, en el orden en que lo escribió el director.
   const ordenadas = capas.map((x, i) => ({ ...x, i })).sort((a, b) => a.plano - b.plano || a.i - b.i).map((x) => x.capa);
+  if (p.montaje) {
+    const planos = compilarPlanos(p.montaje, { color, voz, texto });
+    ordenadas.push(...planos.capas);
+    relaciones.push(...planos.relaciones);
+  }
 
   return {
     problemas,

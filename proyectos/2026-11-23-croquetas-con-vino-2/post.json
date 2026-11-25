@@ -1,0 +1,151 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-23-croquetas-con-vino-2",
+  "local": "asador-etxebarri",
+  "plato": "croquetas con vino",
+  "fotoSubida": "proyectos/2026-11-23-croquetas-con-vino-2/foto/subida.webp",
+  "usoFotoReal": "PUBLICABLE",
+  "estiloDeReferencia": false,
+  "estetica": "EDITORIAL_OSCURO",
+  "formato": "carrusel",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "HECHO",
+  "activoReal": "2026-11-23-croquetas-con-vino-2-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of croquettes on white sauce with a bottle of wine at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: oblong croquette with a smooth fine golden-brown breadcrumb crust; oblong croquette with a coarse crunchy golden-brown breadcrumb crust; small mound of glossy creamy white sauce; finely chopped fresh green chives; square off-white ceramic plate with a speckled rim and a black floral stencil pattern in the center; dark glass wine bottle with a cream paper label. Exactly 3 × oblong croquette with a smooth fine golden-brown breadcrumb crust; 2 × oblong croquette with a coarse crunchy golden-brown breadcrumb crust; 5 × small mound of glossy creamy white sauce. Nothing else added. New composition by a professional food photographer: a low three-quarter view at 22 degrees above a dark matte surface, rotated 70 degrees to the right side of the plate, framing the entire square plate angled diagonally in the lower half while the wine bottle stands further back on the left, 85 mm lens at f/2.8, the square ceramic plate sits low in the lower-right and lower-center of the frame with the two parallel rows of croquettes leading the eye toward the dark wine bottle standing softly out of focus in the back-left shadow, keeping every element complete and leaving the upper-right quadrant completely dark and uncluttered for the title. A single neutral 5000 K hard studio side-back light from the left-rear, raking across the golden crusts and bottle edge to sculpt crisp texture and specular highlights on the white sauce while the dark background falls off 1.5 to 2 stops into deep near-black shadow with no fill light and neutral white balance, deep near-black shadow and neutral dark tones dominate the frame, with the warm golden-brown croquette crusts as the only rich bright colour against the neutral off-white ceramic and cream sauce. Overall aesthetic: low-key light, a single hard side light or flash, deep shadows; a dark, almost black environment; no props beyond the real tableware; rich but controlled colours, the dish the only bright area; the dish in three-quarter view in the lower part, dark air above for the title. Iluminación de estudio de producto: un solo foco neutro de unos 5000 K, lateral y ligeramente por detrás, dibuja el contorno. El alimento es lo más luminoso y el fondo cae entre 1,5 y 2 pasos, sin relleno sobre el fondo. Negros con profundidad y reflejos controlados, sin quemar. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep a coherent light direction and preserve the texture of the dish. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "autorizacion": {
+    "fecha": "2026-11-23T00:17:41.579Z",
+    "maxIntentos": 2,
+    "estimadoPorIntentoUsd": 0.161446,
+    "intentosPrevios": 0
+  },
+  "intentos": [
+    {
+      "n": 1,
+      "activo": "2026-11-23-croquetas-con-vino-2-foto-1",
+      "final": "DESCARTA",
+      "motivos": [
+        "anatomía por teselas de croqueta de rebozado grueso: 3 cuerpos (se esperan 2)",
+        "anatomía por teselas de porción de salsa blanca: 6 cuerpos (se esperan 5)",
+        "no es otra toma: mismo punto de vista que la foto subida (La imagen 2 mantiene exactamente el mismo punto de vista, distancia y colocación de las croquetas, el cebollino y la botella que la imagen 1, cambiando solo la iluminación y el fondo.)"
+      ],
+      "costeUsd": 0.142566
+    }
+  ],
+  "tomas": [],
+  "fotosExtra": [],
+  "fotoElegida": "2026-11-23-croquetas-con-vino-2-foto-1",
+  "historial": [
+    {
+      "fecha": "2026-11-23T00:13:51.255Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-23T00:13:51.305Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: El local ya tiene 6 piezas: la referencia es opcional. (6 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-23T00:13:51.305Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia: Editorial oscuro."
+    },
+    {
+      "fecha": "2026-11-23T00:13:51.312Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-23-croquetas-con-vino-2-real (382 × 510 px)."
+    },
+    {
+      "fecha": "2026-11-23T00:17:13.805Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (1 intento(s))."
+    },
+    {
+      "fecha": "2026-11-23T00:17:13.816Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 6 elemento(s))."
+    },
+    {
+      "fecha": "2026-11-23T00:17:41.579Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Confirmado: elementos, prompt y hasta 2 intentos (≤ 0.161 USD cada uno)."
+    },
+    {
+      "fecha": "2026-11-23T00:17:41.584Z",
+      "paso": "GENERAR",
+      "nota": "Productor: inventario confirmado por ti (web) y congelado en el brief v3."
+    },
+    {
+      "fecha": "2026-11-23T00:18:07.116Z",
+      "paso": "GENERAR",
+      "nota": "Foto 2026-11-23-croquetas-con-vino-2-foto-1 generada con Gemini gemini-3-pro-image (de pago) (gemini-3-pro-image): 0.1426 USD."
+    },
+    {
+      "fecha": "2026-11-23T00:18:07.699Z",
+      "paso": "COMPROBAR",
+      "nota": "Máscara del sujeto (APPLE_VISION): caja 1392 × 1213 px."
+    },
+    {
+      "fecha": "2026-11-23T00:18:38.090Z",
+      "paso": "COMPROBAR",
+      "nota": "Comprobación del intento 1: DESCARTA (anatomía por teselas de croqueta de rebozado grueso: 3 cuerpos (se esperan 2); anatomía por teselas de porción de salsa blanca: 6 cuerpos (se esperan 5); no es otra toma: mismo punto de vista que la foto subida (La imagen 2 mantiene exactamente el mismo punto de vista, distancia y colocación de las croquetas, el cebollino y la botella que la imagen 1, cambiando solo la iluminación y el fondo.))."
+    },
+    {
+      "fecha": "2026-11-23T00:18:49.933Z",
+      "paso": "CONFIRMAR_FOTO",
+      "nota": "Foto del intento 1 confirmada por el usuario (comprobación automática: DESCARTA)."
+    },
+    {
+      "fecha": "2026-11-23T00:18:50.055Z",
+      "paso": "INTENCION",
+      "nota": "Composición lista: 5 página(s), brief v3."
+    },
+    {
+      "fecha": "2026-11-23T00:19:37.539Z",
+      "paso": "COMPONER",
+      "nota": "Intención de diseño guardada: detalle-1 v2 (intenciones/detalle-1.json)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.635Z",
+      "paso": "COMPONER",
+      "nota": "Crítica del render (gemini-4-hydrogen): APROBADA."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta post v1: datos/disenos/2026-11-23-croquetas-con-vino-2/post/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-1 v2: datos/disenos/2026-11-23-croquetas-con-vino-2/detalle-1/v002/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-2 v1: datos/disenos/2026-11-23-croquetas-con-vino-2/detalle-2/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta detalle-3 v1: datos/disenos/2026-11-23-croquetas-con-vino-2/detalle-3/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Compuesta cierre v1: datos/disenos/2026-11-23-croquetas-con-vino-2/cierre/v001/exportadas (3:4 y 4:5)."
+    },
+    {
+      "fecha": "2026-11-23T00:20:41.636Z",
+      "paso": "COMPONER",
+      "nota": "Hojas de revisión: datos/disenos/2026-11-23-croquetas-con-vino-2/revision/orden-post. La pieza cuenta para el umbral de referencia."
+    }
+  ],
+  "creadoEn": "2026-11-23T00:13:51.255Z"
+}

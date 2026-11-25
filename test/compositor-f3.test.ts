@@ -577,6 +577,71 @@ describe('F3 · trazo a mano', () => {
   });
 });
 
+describe('Dirección de arte por capas · ventana fotográfica y eco de lettering', () => {
+  const caja = { x: 0.15, y: 0.18, w: 0.5, h: 0.5 };
+  const puntos = [{ x: 0, y: .25 }, { x: .5, y: 0 }, { x: 1, y: .25 }, { x: 1, y: 1 }, { x: .5, y: .6 }, { x: 0, y: 1 }];
+  const foto = { id: 'bebida', tipo: 'imagen', activo: 'barra', caja, zoom: 1.3, enfoque: { x: 0.35, y: 0.7 } };
+
+  it('recorta respecto al marco desplazado, conserva el encuadre y deja los vértices editables', async () => {
+    const plana = await pintar(intencion([fondo, foto], { barra: 'barra' }));
+    const cortada = await pintar(intencion([fondo, { ...foto, ventana: { forma: 'poligono', puntos } }], { barra: 'barra' }));
+    const alpha = await alfaDe(cortada.render, foto.id);
+    const centroX = (caja.x + .5 * caja.w) * ANCHO;
+    const y = (f: number) => Math.round((caja.y + caja.h * f) * ALTO);
+    assert.equal(alpha[y(.4) * ANCHO + centroX], 255, 'hay foto en el centro');
+    assert.equal(alpha[y(.85) * ANCHO + centroX], 0, 'la muesca cóncava es transparente');
+    assert.equal(alpha[y(.03) * ANCHO + Math.round((caja.x + .02 * caja.w) * ANCHO)], 0, 'la esquina exterior es transparente');
+    const muestra = { left: centroX - 18, top: y(.4), width: 36, height: 36 };
+    const detalle = (r: Renderizado) => sharp(r.capas[1]!.png).extract(muestra).raw().toBuffer();
+    assert.deepEqual(await detalle(cortada.render), await detalle(plana.render));
+    const incrustada = cortada.render.svgEditable.match(/<image id="bebida"[^>]*?data:image\/png;base64,([^"]+)/);
+    assert.ok(incrustada);
+    assert.deepEqual(Buffer.from(incrustada[1]!, 'base64'), plana.render.capas[1]!.png, 'el SVG conserva la foto incluso fuera de la máscara');
+    assert.match(cortada.render.svgEditable, /<clipPath id="ventana\.bebida"><path d="M/);
+  });
+
+  it('rechaza una ventana sin superficie o con vértices fuera del marco', () => {
+    for (const invalidos of [puntos.slice(0, 2), [{ x: 0, y: 0 }, { x: .4, y: .4 }, { x: 1, y: 1 }], [...puntos, { x: -.2, y: .3 }]]) {
+      assert.throws(() => intencion([{ ...foto, ventana: { forma: 'poligono', puntos: invalidos } }], { barra: 'barra' }));
+    }
+  });
+
+  it('exporta el papel, los filetes y la cápsula como geometría editable', async () => {
+    const { render } = await pintar(intencion([fondo,
+      { id: 'capsula', tipo: 'forma', figura: 'rect', caja, color: '@rojo', grosor: 2, radio: 30 },
+      { id: 'filete', tipo: 'forma', figura: 'linea', desde: { x: 0, y: .4 }, hasta: { x: 1, y: .4 }, color: '@negro', grosor: 1 },
+    ]));
+    assert.match(render.svgEditable, /<rect id="fondo"[^>]*fill="#/);
+    assert.match(render.svgEditable, /<g id="capsula"[^>]*><rect[^>]*rx="30"[^>]*stroke-width="2"/);
+    assert.match(render.svgEditable, /<g id="filete"[^>]*><line[^>]*stroke-width="1"/);
+  });
+
+  it('conserva en el texto del SVG la variante óptica y los rasgos escogidos para la fuente', async () => {
+    const { render } = await pintar(intencion([
+      { id: 'firma', tipo: 'texto', texto: 'Hour', estilo: 'script', caja, ajuste: 'alto' },
+    ], {}, { tokens: { estilos: { script: { fuente: 'ballet', ejes: { opsz: 32 }, rasgos: ['swsh'], color: '#714C22' } } } }));
+    assert.match(render.svgEditable, /font-variation-settings:'opsz' 32/);
+    assert.match(render.svgEditable, /font-feature-settings:'swsh' 1/);
+    assert.match(render.svgEditable, /font-optical-sizing:none/);
+  });
+
+  it('difumina solo la capa indicada, conserva letras editables y comprueba el sangrado del texto informativo', async () => {
+    const eco = { id: 'eco', tipo: 'texto', texto: 'SPRITZ', estilo: 'cartel', caja: { x: -.15, y: .38, w: 1.3, h: .19 }, ajuste: 'ancho', sangrado: true };
+    const nombre = { ...eco, id: 'nombre', caja: { x: .2, y: .75, w: .6, h: .15 } };
+    const nitida = await pintar(intencion([fondo, eco, nombre]));
+    assert.ok(nitida.problemas.includes('LETRA_PERDIDA:eco'), 'una letra informativa fuera del lienzo se sigue detectando');
+    const suave = await pintar(intencion([fondo, { ...eco, decorativo: true, desenfoque: 9 }, nombre]));
+    assert.ok(!suave.problemas.some(p => p.endsWith(':eco')));
+    const a = await alfaDe(nitida.render, 'eco');
+    const b = await alfaDe(suave.render, 'eco');
+    assert.ok(b.filter((v, i) => v > 15 && a[i] === 0).length > 1000, 'el alfa suave se extiende fuera del borde original');
+    assert.deepEqual(suave.render.capas[2]!.png, nitida.render.capas[2]!.png, 'la copia informativa sigue igual de nítida');
+    assert.match(suave.render.svgEditable, /<feGaussianBlur stdDeviation="9"/);
+    assert.match(suave.render.svgEditable, /<g id="eco"[^>]*aria-hidden="true"[^>]*><text[^>]*>SPRITZ<\/text>/);
+    assert.match(suave.render.svgExacto, /<g id="eco" filter="url\(#desenfoque\.eco\)"/);
+  });
+});
+
 describe('F3 · reproducción a tinta de una foto', () => {
   const imagen = (retoque: unknown) => ({ id: 'i', tipo: 'imagen', activo: 'disco', caja: { x: 0, y: 0.125, w: 1, h: 0.75 }, retoque });
 

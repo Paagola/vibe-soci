@@ -1,0 +1,95 @@
+{
+  "nombre": "Prensa 1932",
+  "idea": "Llevar la profundidad por capas de la referencia al registro de mañana y papel impreso de una churrería centenaria, con tipografía de madera sólida detrás de la bandeja.",
+  "lecturas": [
+    "La bandeja de churros dorados sobre el círculo ocre",
+    "El titular monumental «CHURROS» abajo, parcialmente cubierto por la bandeja",
+    "El acento «cada mañana», la firma «CASA ARANDA» arriba y el sello «MÁLAGA 1932»"
+  ],
+  "esqueleto": "CARTEL",
+  "lado": "abajo",
+  "fondo": "@crema",
+  "acento": "@ocre",
+  "textos": [
+    {
+      "clave": "titular",
+      "texto": "CHURROS",
+      "fuente": "PLATO",
+      "cita": "Churros con chocolate y café con leche"
+    },
+    {
+      "clave": "acento",
+      "texto": "cada mañana",
+      "fuente": "CREATIVO",
+      "cita": ""
+    },
+    {
+      "clave": "sello-ciudad",
+      "texto": "MÁLAGA",
+      "fuente": "MARCA",
+      "cita": "Málaga (calle Herrería del Rey, centro histórico)"
+    },
+    {
+      "clave": "sello-ano",
+      "texto": "1932",
+      "fuente": "MARCA",
+      "cita": "Churrería y cafetería fundada en 1932: churros con chocolate y café."
+    },
+    {
+      "clave": "firma",
+      "texto": "CASA ARANDA",
+      "fuente": "MARCA",
+      "cita": "Casa Aranda"
+    }
+  ],
+  "producto": {
+    "escala": "enorme",
+    "giro": 0,
+    "sombra": "proyectada",
+    "lado": "centro"
+  },
+  "titular": {
+    "texto": "titular",
+    "voz": "estudio-madera",
+    "escala": "monumental",
+    "relacion": "detras",
+    "color": "@chocolate",
+    "tinta": "impresa",
+    "registro": "@ocre",
+    "giro": 0
+  },
+  "acentoManuscrito": {
+    "texto": "acento",
+    "voz": "script",
+    "color": "@chocolate"
+  },
+  "firma": {
+    "texto": "firma",
+    "voz": "rotulo",
+    "color": "@chocolate"
+  },
+  "operaciones": [
+    {
+      "tipo": "FORMA_DETRAS",
+      "figura": "circulo",
+      "color": "@ocre"
+    },
+    {
+      "tipo": "SELLO",
+      "forma": "ovalo",
+      "lineas": [
+        "sello-ciudad",
+        "sello-ano"
+      ],
+      "color": "@crema",
+      "fondo": "@chocolate"
+    },
+    {
+      "tipo": "TEXTURA",
+      "recurso": "papel"
+    }
+  ],
+  "elementos": [],
+  "parentesco": "Conserva la estructura de planos superpuestos (papel, círculo detrás, tipografía monumental abajo tapada por el producto con sombra) más el sello lateral.",
+  "mejora": "Cambia el naranja saturado por papel crema luminoso de mañana y sustituye la extendida moderna por tipo de madera impresa con doble registro ocre."
+}

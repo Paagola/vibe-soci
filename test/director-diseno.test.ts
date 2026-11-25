@@ -629,7 +629,7 @@ describe('Punto 1 · carrusel en la orden única', () => {
     await stat(join(carpeta, 'datos', 'disenos', 'tomas', 'detalle-1', 'v001', 'exportadas', '4x5.jpg'));
   });
 
-  it('F3.3 (punto 11): la foto de más del dueño va tal cual a su detalle y no se genera; las demás tomas sí', async () => {
+  it('F3.3 (punto 11): la foto adicional del dueño orienta una toma nueva para el detalle', async () => {
     const generador = new GeneradorFotoSimulado();
     const d: DepsPost = {
       raiz: RAIZ,
@@ -646,14 +646,15 @@ describe('Punto 1 · carrusel en la orden única', () => {
     };
     await crearEncargo(d, { proyecto: 'extra', local: 'asador-etxebarri', plato: PLATO, foto: FOTO, referencia: 'ref-post-30', simulado: true, formato: 'carrusel', fotosExtra: [{ ruta: FOTO, elemento: 'la pieza 2 de cerca' }] });
     let r = await avanzar(d, 'extra');
-    assert.match(r.parada, /FOTOS: 2 \(la portada y 1 detalle/);
-    assert.match(r.parada, /Detalle 1 \(«pieza simulada 2»\): la foto de más del dueño/);
+    assert.match(r.parada, /FOTOS: 3 \(la portada y 2 detalle/);
+    assert.match(r.parada, /Toma de detalle 1 \(«pieza simulada 2»/);
     r = await avanzar(d, 'extra', { confirmo: true });
-    assert.equal(generador.peticiones.length, 2, 'la portada y la toma que no tiene foto del dueño');
+    assert.equal(generador.peticiones.length, 3);
+    assert.match(generador.peticiones[1]!.referencias.at(-1)!.ruta, /extra-real-2/);
     r = await avanzar(d, 'extra', { confirmo: true });
     assert.equal(r.parada, 'HECHO', r.parada);
     const detalle = Intencion.parse(JSON.parse(await readFile(join(carpeta, 'proyectos', 'extra', 'intenciones', 'detalle-1.json'), 'utf8')));
-    assert.equal(detalle.activos.detalle1, 'extra-real-2');
+    assert.equal(detalle.activos.detalle1, 'extra-toma-1');
     assert.equal(detalle.textos.titular, 'Pieza simulada 2');
   });
 

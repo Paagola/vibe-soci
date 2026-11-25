@@ -1,19 +1,29 @@
-/** Aplicación Express: API JSON en /api (piezas del generador antiguo y encargos de la orden única), archivos en /archivos y el frontend estático. */
-import { fileURLToPath } from 'node:url';
+/**
+ * Aplicación Express: el chat del estudio en /api/chat, el resto de la API JSON en /api (piezas, encargos, procesos y
+ * panel), archivos en /archivos y la interfaz del chat (web/, compilada con Vite en web/dist).
+ */
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import express, { type ErrorRequestHandler } from 'express';
 import { describirError, ErrorHttp } from './errores.js';
 import type { Estudio } from './estudio.js';
+import type { ServicioChat } from '../aplicacion/chat/servicioChat.js';
+import { RAIZ } from '../config.js';
 import { rutasDeArchivos } from './rutas/archivos.js';
+import { rutasDelChat, type HerramientasDeLaWeb } from './rutas/chat.js';
 import { rutasDeEncargos } from './rutas/encargos.js';
 import { rutasDelPanel } from './rutas/panel.js';
 import { rutasDelEstudio } from './rutas/estudio.js';
 import { rutasDePiezas } from './rutas/piezas.js';
 import { rutasDeProcesos } from './rutas/procesos.js';
 
-const CARPETA_PUBLICA = fileURLToPath(new URL('./publico/', import.meta.url));
+/** La interfaz del chat, compilada (npm run web:build). */
+const CARPETA_WEB = join(RAIZ, 'web', 'dist');
 
-export function crearApp(estudio: Estudio): express.Express {
+export function crearApp(estudio: Estudio, chat?: ServicioChat, herramientas?: HerramientasDeLaWeb): express.Express {
   const app = express();
+  // El chat lleva su propio límite (las fotos van dentro del JSON): va antes del lector general.
+  if (chat) app.use('/api/chat', rutasDelChat(chat, herramientas));
   app.use(express.json({ limit: '1mb' }));
 
   app.use('/api', rutasDelEstudio(estudio));
@@ -25,8 +35,18 @@ export function crearApp(estudio: Estudio): express.Express {
     throw new ErrorHttp(404, 'NO_ENCONTRADO', 'Esa ruta de la API no existe.');
   });
   app.use('/archivos', rutasDeArchivos(estudio));
-  app.get('/', (_req, res) => res.redirect('/pase.html'));
-  app.use(express.static(CARPETA_PUBLICA));
+  app.use(express.static(CARPETA_WEB));
+  // Las rutas de página (/, /c/<conversación>) son la interfaz del chat (una sola página). Un archivo que no existe, o
+  // algo de /api o /archivos, no: eso es un 404 (nunca la página en su lugar).
+  app.get('/{*resto}', (req, res, next) => {
+    if (/^\/(api|archivos)(\/|$)/.test(req.path) || /\.[a-z0-9]+$/i.test(req.path)) return next();
+    if (existsSync(join(CARPETA_WEB, 'index.html'))) res.sendFile(join(CARPETA_WEB, 'index.html'));
+    else res.status(503).type('text/plain').send('La interfaz no está compilada: npm run web:build');
+  });
+
+  app.use((_req, res) => {
+    res.status(404).type('text/plain').send('No existe.');
+  });
 
   const manejarError: ErrorRequestHandler = (error, _req, res, _next) => {
     const { status, error: cuerpo } = describirError(error);

@@ -1,0 +1,27 @@
+{
+  "id": "etxebarri-gambas",
+  "local": "asador-etxebarri",
+  "activo": "etx-soc-v3-otro-angulo-mcp-1",
+  "plato": "Gamba roja de Palamós a la brasa",
+  "elementos": [
+    {
+      "nombre": "gambas rojas",
+      "estado": "a la brasa, con las puntas tostadas",
+      "recuento": 2
+    },
+    {
+      "nombre": "sal gruesa",
+      "estado": "en granos sobre el caparazón",
+      "recuento": null
+    },
+    {
+      "nombre": "plato",
+      "estado": "de cristal esmerilado",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "El producto y el fuego: una gamba hecha a la brasa, sin nada más.",
+  "creativo": true,
+  "previa": "datos/disenos/etxebarri/etxebarri-post/v006/diseno.png",
+  "referencia": "ref-post-30"
+}

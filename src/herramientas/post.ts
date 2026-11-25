@@ -19,7 +19,7 @@
  * ni reclamos). Por defecto, todo lo que dice la pieza tiene que constar en los datos.
  * --formato carrusel: portada, dos o tres detalles y un cierre con la firma (punto 1). F3.3: cada detalle con su foto
  *   (una toma nueva de ese elemento, sacada de la foto real; la primera parada dice cuántas fotos y el gasto total).
- * --foto-extra: una foto real de más que sube el dueño para el detalle de un elemento (se usa tal cual, sin generar).
+ * --foto-extra: una foto real de más que sube el dueño para el detalle de un elemento (orienta una toma nueva de ese detalle).
  * --estetica: EDITORIAL_SERENO, EDITORIAL_OSCURO, COLOR_POP, MAXIMALISMO, MEDITERRANEO_LUMINOSO o RUSTICO_FUEGO (punto 10;
  *   sin ella, la de la familia de la referencia). Manda sobre la foto y el diseño.
  * --estilo-de-referencia: el generador recibe también la imagen de la referencia como @image2, solo de estilo (punto 9).
@@ -98,7 +98,7 @@ async function principal(): Promise<void> {
 async function seguir(deps: DepsPost, proyecto: string): Promise<void> {
   const foto = values.foto === undefined || values.foto === 'original' ? values.foto : Number(values.foto);
   if (foto !== undefined && (!values.confirmo || (foto !== 'original' && (!Number.isSafeInteger(foto) || foto < 1)))) {
-    throw new ErrorDeUsuario('Usa --confirmo --foto original o --confirmo --foto N.');
+    throw new ErrorDeUsuario('Elige una candidata con --confirmo --foto N.');
   }
   if (foto !== undefined && (await leerEncargo(deps, proyecto)).paso !== 'CONFIRMAR_FOTO') {
     throw new ErrorDeUsuario('Solo puedes seleccionar una foto en la parada de revisión.');

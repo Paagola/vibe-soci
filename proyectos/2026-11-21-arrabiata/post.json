@@ -1,0 +1,68 @@
+{
+  "esquema": "post/encargo@1",
+  "proyecto": "2026-11-21-arrabiata",
+  "local": "meson-lo-gueno",
+  "plato": "arrabiata",
+  "fotoSubida": "proyectos/2026-11-21-arrabiata/foto/subida.jpg",
+  "usoFotoReal": "PUBLICABLE",
+  "referencia": "ref-post-17",
+  "estiloDeReferencia": false,
+  "estetica": "COLOR_POP",
+  "formato": "carrusel",
+  "titularCreativo": false,
+  "simulado": false,
+  "productorEditorial": true,
+  "paso": "CONFIRMAR_ELEMENTOS",
+  "activoReal": "2026-11-21-arrabiata-real",
+  "propuesta": {
+    "archivo": "foto/propuesta.json",
+    "prompt": "@image1 is a real photo of penne arrabiata at a restaurant. Use it only as the list of elements, not as a layout to copy. The new photograph must contain the same real elements: ridged penne rigate pasta coated in glossy red tomato sauce; cooked red tomato chunks and crushed red chili flakes; fine strands of pale shredded cheese on the pasta and plate rim; one dark blue-black speckled stoneware bowl; one dark matte fluted underplate. Exactly 1 × one dark blue-black speckled stoneware bowl; 1 × one dark matte fluted underplate. Nothing else added. New composition by a professional food photographer: slightly high three-quarter view rotated around the dish, showing the whole bowl and fluted underplate centered in the lower half with generous margin on all sides, 50 mm lens at f/5.6, the whole dish and dark tableware sit intact in the lower center over a plain uniform white-grey surface for clean cutout, leaving wide empty space above for the stacked headline behind the bowl, on a clean, plain, uniform background with even light around the whole dish, so it can be cut out cleanly. Bright 5000 K directional studio side light like a large window, illuminating one side more than the other, casting a crisp soft-edged contact shadow with neutral white balance, neutral white-grey background and dark tableware making the saturated orange-red tomato pasta the sole strong color. Overall aesthetic: bright, even studio light with crisp contact shadows; a clean, plain, uniform background that makes the dish easy to cut out; no props: only the dish on its real tableware; saturated, punchy colours; the whole dish inside the frame, not cut by any edge, from a slightly high three-quarter view. Luz natural de una ventana lateral, balance de día neutro de unos 5000 K. Sombras direccionales de borde suave con detalle, como en una mesa junto a la ventana. Una parte del plato recibe más luz que la otra. Conserva el color de los materiales, como la tela teja y la loza clara en una sesión editorial casera. Balance de blancos neutro. La loza blanca y el lino claro conservan su tono neutro, incluso si la escena tiene materiales de color. Los dorados pertenecen a la cocción y a la corteza, los rojos o marrones a los materiales que los tienen. Corrige una dominante amarilla, ámbar o naranja que tiña toda la imagen, incluso si aparece en una foto de referencia. Photographic realism, no text. Editorial direction: Keep the upper part quiet for a large masthead. Let the top edge of the dish reach the lower edge of that space. Keep the characteristic colours of the ingredients consistent. Render no lettering or graphics.",
+    "problemas": []
+  },
+  "intentos": [],
+  "tomas": [],
+  "fotosExtra": [],
+  "historial": [
+    {
+      "fecha": "2026-11-21T17:25:40.142Z",
+      "paso": "REFERENCIA",
+      "nota": "encargo creado"
+    },
+    {
+      "fecha": "2026-11-21T17:26:02.823Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia elegida: ref-post-17."
+    },
+    {
+      "fecha": "2026-11-21T17:26:02.865Z",
+      "paso": "REFERENCIA",
+      "nota": "Referencia: Parte de la referencia «ref-post-17» (F3). (1 piezas del local; obligatoria hasta 5)."
+    },
+    {
+      "fecha": "2026-11-21T17:26:02.866Z",
+      "paso": "REFERENCIA",
+      "nota": "Estética deducida de la referencia (F3): Color pop con recorte."
+    },
+    {
+      "fecha": "2026-11-21T17:26:03.323Z",
+      "paso": "REFERENCIA",
+      "nota": "AVISO: no se ha podido mirar el tratamiento de ref-post-17 (Gemini: HTTP 402: { \"error\": { \"code\": 402, \"message\": \"Your prepayment credits are depleted. Please go to AI Studio at https://ai.studio/projects to manage your project and billing. Learn more at https://ai.google.dev); el diseño sigue sin él."
+    },
+    {
+      "fecha": "2026-11-21T17:26:03.329Z",
+      "paso": "FOTO_REAL",
+      "nota": "Foto subida registrada como activo 2026-11-21-arrabiata-real (1192 × 1800 px)."
+    },
+    {
+      "fecha": "2026-11-22T23:49:32.859Z",
+      "paso": "PROPUESTA",
+      "nota": "Propuesta del director (2 intento(s))."
+    },
+    {
+      "fecha": "2026-11-22T23:49:32.880Z",
+      "paso": "CONFIRMAR_ELEMENTOS",
+      "nota": "Productor: brief v1 en brief.json (inventario PROPUESTO de 5 elemento(s))."
+    }
+  ],
+  "creadoEn": "2026-11-21T17:25:40.142Z"
+}

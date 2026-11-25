@@ -1,0 +1,32 @@
+{
+  "id": "logueno-habas",
+  "local": "meson-lo-gueno",
+  "activo": "meson-lo-gueno-post-foto-mcp-1",
+  "plato": "Habas con jamón en cazuela de barro",
+  "elementos": [
+    {
+      "nombre": "habas",
+      "estado": "tiernas y salteadas",
+      "recuento": null
+    },
+    {
+      "nombre": "jamón",
+      "estado": "en taquitos",
+      "recuento": null
+    },
+    {
+      "nombre": "cebolla",
+      "estado": "pochada",
+      "recuento": null
+    },
+    {
+      "nombre": "cazuela de barro",
+      "estado": "con asas",
+      "recuento": 1
+    }
+  ],
+  "mensaje": "Una tapa castiza para la barra.",
+  "creativo": true,
+  "previa": "datos/disenos/meson-lo-gueno/lo-gueno-post/v001/diseno.png",
+  "referencia": "ref-post-05"
+}

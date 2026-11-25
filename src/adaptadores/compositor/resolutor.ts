@@ -5,7 +5,7 @@
  */
 import type { Activo } from '../../dominio/activos.js';
 import { semillaDe } from '../../dominio/diseno/azar.js';
-import type { Caja, Capa, CapaDe, Color, EstiloTexto, Intencion, Retoque, Tinta, Tratamiento } from '../../dominio/diseno/intencion.js';
+import { formaNeutra, type Caja, type Capa, type CapaDe, type Color, type EstiloTexto, type FormaTexto, type Intencion, type Retoque, type Tinta, type Tratamiento } from '../../dominio/diseno/intencion.js';
 import { problemasDeReceta, valoresDeParametros, type Receta } from '../../dominio/tipografia/receta.js';
 import type { BibliotecaDeTratamientos } from '../../puertos/BibliotecaDeTratamientos.js';
 import { medirOficio, problemasDeOficio } from '../../dominio/diseno/oficio.js';
@@ -13,8 +13,8 @@ import type { CapaResuelta, EstiloResuelto, LineaDeSello, Problema, RecorteDeTex
 import { alinearEn, dentroDe, lienzoDe, rectDeCaja, zonaSegura, type Lienzo, type Rect } from '../../dominio/diseno/reticula.js';
 import type { ActivoDisponible } from '../../puertos/Compositor.js';
 import { radioInterior } from './formas.js';
-import type { MotorTexto } from './MotorTexto.js';
-import { alfaDeSvg, alfaDelSujeto, cobertura, documentoSvg, medidorDeCobertura, trazoDeTexto, type CapaRecorteResuelta, type CapaTextoResuelta } from './raster.js';
+import { contarLetras, type MotorTexto } from './MotorTexto.js';
+import { alfaDeSvg, alfaDelSujeto, cobertura, documentoSvg, estiloDeTexto, medidorDeCobertura, trazoDeTexto, type CapaRecorteResuelta, type CapaTextoResuelta } from './raster.js';
 
 /** Resolución a la que se miden coberturas y solapes (un cuarto del lienzo basta y es rápido). */
 const ESCALA_MEDIDA = 0.25;
@@ -372,15 +372,29 @@ export class ResolutorDiseno {
   private resolverTexto(capa: CapaDe<'texto'>, comun: Comun, marco: Rect, estilo: EstiloTexto, color: (valor: Color) => string, contenido: string): CapaTextoResuelta {
     const girado = capa.rotacion !== 0;
     const local = { x: 0, y: 0, w: girado ? marco.h : marco.w, h: girado ? marco.w : marco.h };
+    const forma = this.formaDe(capa, contenido, estilo);
     const bloque = this.motor.componer({
       texto: contenido,
-      estilo: { fuente: estilo.fuente, ejes: estilo.ejes, caso: estilo.caso, tracking: estilo.tracking, interlineado: estilo.interlineado, ...(estilo.rasgos.length ? { rasgos: estilo.rasgos } : {}) },
+      estilo: {
+        fuente: estilo.fuente,
+        ejes: estilo.ejes,
+        caso: estilo.caso,
+        tracking: estilo.tracking,
+        interlineado: estilo.interlineado,
+        ...(estilo.rasgos.length ? { rasgos: estilo.rasgos } : {}),
+        ...(forma ? { forma } : {}),
+      },
       caja: local,
       ajuste: capa.ajuste,
       tamano: capa.tamano,
       alinear: capa.alinear,
       vertical: capa.vertical,
     });
+    if (forma?.trackingPorLinea && forma.trackingPorLinea.length !== bloque.lineas.length) {
+      throw new RangeError(
+        `«${capa.id}»: forma.trackingPorLinea tiene ${forma.trackingPorLinea.length} valor(es) y el texto sale en ${bloque.lineas.length} línea(s) (${bloque.lineas.map((l) => `«${l.texto}»`).join(' / ')}). Tiene que haber uno por línea.`,
+      );
+    }
     // Del sistema del bloque (sin girar) al lienzo. −90: se lee de abajo arriba; 90: de arriba abajo.
     const recta: Matriz =
       capa.rotacion === 0
@@ -394,7 +408,7 @@ export class ResolutorDiseno {
       ...comun,
       tipo: 'texto',
       texto: contenido,
-      estilo: { ...aEstiloResuelto(estilo, color), ejes: bloque.ejes, ...(capa.color ? { color: color(capa.color) } : {}) },
+      estilo: { ...aEstiloResuelto(estilo, color), ejes: bloque.ejes, ...(capa.color ? { color: color(capa.color) } : {}), ...(forma ? { forma } : {}) },
       tamano: redondear3(bloque.tamano),
       lineas: bloque.lineas.map((l) => ({ texto: l.texto, x: redondear3(l.x), base: redondear3(l.base), tamano: redondear3(l.tamano), ancho: redondear3(l.medida.ancho), fin: redondear3(l.x + l.medida.maxX) })),
       caja: transformarRect(bloque.visual, matriz),
@@ -402,6 +416,8 @@ export class ResolutorDiseno {
       rotacion: capa.rotacion,
       contorno: capa.contorno,
       sangrado: capa.sangrado,
+      ...(capa.decorativo ? { decorativo: true } : {}),
+      ...(capa.desenfoque ? { desenfoque: capa.desenfoque } : {}),
       ...(capa.giro !== 0 ? { giro: capa.giro } : {}),
       ...(capa.corte
         ? {
@@ -418,6 +434,23 @@ export class ResolutorDiseno {
           }
         : {}),
     };
+  }
+
+  /**
+   * La edición fina de la letra de un texto, comprobada: una forma neutra (todo a su valor por defecto) es como no
+   * tenerla, para que pinte exactamente lo mismo; un ajuste a una letra que no existe para con un error claro.
+   */
+  private formaDe(capa: CapaDe<'texto'>, contenido: string, estilo: EstiloTexto): FormaTexto | undefined {
+    if (!capa.forma || formaNeutra(capa.forma)) return undefined;
+    const compuesto = this.motor.aplicarCaso(contenido, estilo.caso);
+    const total = contarLetras(compuesto);
+    const fuera = capa.forma.letras.filter((l) => l.indice >= total);
+    if (fuera.length) {
+      throw new RangeError(
+        `«${capa.id}»: forma.letras ajusta la letra ${fuera.map((l) => l.indice).join(', ')}, pero «${compuesto.replace(/\n/g, ' / ')}» tiene ${total} letras (de la 0 a la ${total - 1}; los espacios no cuentan).`,
+      );
+    }
+    return capa.forma;
   }
 
   /** El sello: su forma en px y el texto del centro al tamaño más grande que cabe dentro de ella. */
@@ -722,7 +755,7 @@ export class ResolutorDiseno {
       if (marcador) {
         problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'MARCADOR', mensaje: `«${capa.id}» lleva «${marcador}», un hueco de plantilla sin rellenar: no puede publicarse. Pon el dato real o quita el texto.` });
       }
-      if (capa.tipo === 'texto') {
+      if (capa.tipo === 'texto' && !capa.decorativo) {
         // 4 px de tolerancia: las letras redondas sobresalen un poco de la línea base y eso es normal en tipografía.
         if (!capa.sangrado && !dentroDe(capa.caja, zona, 4)) {
           problemas.push({ gravedad: 'ERROR', capa: capa.id, tipo: 'ZONA_SEGURA', mensaje: `«${capa.id}» se sale de la zona segura (se cortaría en 4:5 o quedaría pegado al borde).` });
@@ -764,7 +797,7 @@ export class ResolutorDiseno {
   private async comprobarLetras(resueltas: Map<string, CapaResuelta>, activos: Record<string, ActivoDisponible>, lienzo: Lienzo, problemas: Problema[]): Promise<void> {
     const W = Math.round(lienzo.ancho * ESCALA_MEDIDA);
     const H = Math.round(lienzo.alto * ESCALA_MEDIDA);
-    const textos = [...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.opacidad > 0);
+    const textos = [...resueltas.values()].filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && !c.decorativo && c.opacidad > 0);
     const recortes = [...resueltas.values()].filter((c): c is CapaRecorteResuelta => c.tipo === 'recorte');
     const alfas = new Map<string, Uint8Array>();
     const alfaDe = async (r: { activo: string; origen: Rect; destino: Rect; giro?: number }) => {
@@ -779,9 +812,9 @@ export class ResolutorDiseno {
     };
 
     for (const capa of textos) {
-      const estilo = { fuente: capa.estilo.fuente, ejes: capa.estilo.ejes, tracking: capa.estilo.tracking, ...(capa.estilo.rasgos ? { rasgos: capa.estilo.rasgos } : {}) };
       const esLetra = (c: string) => /[\p{L}\p{N}]/u.test(c);
-      const porLinea = capa.lineas.map((l) => this.motor.glifos(estilo, l.texto, l.tamano, l.x, l.base).filter((g) => esLetra(g.caracter)));
+      // Las mismas letras que se pintan, con su forma: una letra movida o agrandada se mide donde queda.
+      const porLinea = this.motor.glifosDeBloque(estiloDeTexto(capa), capa.lineas).map((glifos) => glifos.filter((g) => esLetra(g.caracter)));
       const letras = porLinea.flat();
       if (letras.length === 0) continue;
 
@@ -873,7 +906,7 @@ export class ResolutorDiseno {
   /** Dos textos apilados (uno encima del otro, compartiendo columna) necesitan aire entre ellos. Se mide la tinta. */
   private comprobarSeparacion(resueltas: Map<string, CapaResuelta>, problemas: Problema[]): void {
     const textos = [...resueltas.values()]
-      .filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && c.rotacion === 0 && !c.giro && c.opacidad > 0)
+      .filter((c): c is CapaTextoResuelta => c.tipo === 'texto' && !c.decorativo && c.rotacion === 0 && !c.giro && c.opacidad > 0)
       .map((c) => ({ c, cuerpo: Math.min(...c.lineas.map((l) => l.tamano)) }))
       .sort((a, b) => a.c.caja.y - b.c.caja.y);
     for (let i = 0; i < textos.length; i++) {

@@ -27,6 +27,15 @@ export const Caja = z.union([CajaReticula, CajaFraccion]);
 export type Caja = z.infer<typeof Caja>;
 
 export const Punto = z.object({ x: z.number(), y: z.number() });
+const Fraccion = z.number().min(0).max(1);
+/** Vértices relativos al marco fotográfico, que pueden formar también un polígono cóncavo. */
+const PuntosDeVentana = z.array(z.object({ x: Fraccion, y: Fraccion })).min(3).max(32).refine(puntos => {
+  const areaDoble = puntos.reduce((area, p, i) => {
+    const siguiente = puntos[(i + 1) % puntos.length]!;
+    return area + p.x * siguiente.y - p.y * siguiente.x;
+  }, 0);
+  return Math.abs(areaDoble) > 1e-8;
+}, 'La ventana fotográfica debe encerrar una superficie.');
 
 export const Fusion = z.enum(['normal', 'multiply', 'screen', 'overlay', 'soft-light', 'darken', 'lighten']);
 export type Fusion = z.infer<typeof Fusion>;
@@ -130,6 +139,7 @@ export const CapaImagen = z.object({
   ventana: z.discriminatedUnion('forma', [
     z.object({ forma: z.literal('arco') }),
     z.object({ forma: z.literal('redondeada'), radio: z.number().min(0).max(600) }),
+    z.object({ forma: z.literal('poligono'), puntos: PuntosDeVentana }),
   ]).optional(),
   retoque: Retoque.optional(),
 });
@@ -239,6 +249,57 @@ export const Tratamiento = z.object({
 });
 export type Tratamiento = z.infer<typeof Tratamiento>;
 
+/**
+ * Un ajuste de una sola letra. `indice` cuenta las letras visibles del texto tal como se compone (ya en mayúsculas si
+ * el estilo lo pide), sin espacios, desde 0 y seguido a través de las líneas: en «PULPO A\nFEIRA», la «A» es la 5 y la
+ * «F» la 6. Una ligadura («fi») es una sola letra en el dibujo: lleva el ajuste de su primera letra.
+ */
+export const AjusteLetra = z
+  .object({
+    indice: z.int().nonnegative(),
+    /**
+     * Espacio extra antes de esta letra, en em (kerning del par con la anterior): la letra y las que la siguen en su
+     * línea se mueven a la vez, así que no se pisan.
+     */
+    dx: z.number().min(-0.5).max(0.5).default(0),
+    /** Sube (+) o baja (−) solo esta letra, en em. */
+    dy: z.number().min(-0.5).max(0.5).default(0),
+    /** Tamaño de esta letra (1 = el de la línea). Crece desde su pie y empuja a las siguientes: no se monta. */
+    escala: z.number().min(0.7).max(1.4).default(1),
+    /** Giro de esta letra alrededor de su centro, en grados (sentido de las agujas del reloj). */
+    giro: z.number().min(-25).max(25).default(0),
+  })
+  .strict();
+export type AjusteLetra = z.infer<typeof AjusteLetra>;
+
+/**
+ * Edición fina de la letra (Fase B de la tipografía especial, diseno/tipografia-especial/FASE-B.md). Lo que el estilo
+ * no da por sí solo: estirar o encoger una fuente que no es variable, inclinarla, espaciar cada línea a su manera y
+ * retocar letras sueltas. Los rangos son estrechos a propósito: ±15 % de escala no deforma el dibujo de la letra.
+ * El compositor usa la misma geometría para medir y ajustar el bloque, para pintar, para los tratamientos y para las
+ * comprobaciones (letra perdida o tapada, contraste por líneas, separación).
+ */
+export const FormaTexto = z
+  .object({
+    /** Ancho de la letra (1 = el de la fuente). Cuenta para los ajustes «ancho», «caja»…: una letra más ancha da un cuerpo menor. */
+    escalaX: z.number().min(0.85).max(1.15).default(1),
+    /** Alto de la letra (1 = el de la fuente). Cambia la altura de mayúscula, y con ella el ajuste «alto» y los mínimos. */
+    escalaY: z.number().min(0.85).max(1.15).default(1),
+    /** Oblicua, en grados: + inclina hacia la derecha (para fuentes sin itálica). */
+    inclinacion: z.number().min(-15).max(15).default(0),
+    /** El espaciado de cada línea (em), en orden; sustituye al del estilo. Tiene que haber uno por línea. */
+    trackingPorLinea: z.array(z.number().min(-0.2).max(0.6)).min(1).max(12).optional(),
+    letras: z.array(AjusteLetra).max(60).default([]),
+  })
+  .strict()
+  .refine((f) => new Set(f.letras.map((l) => l.indice)).size === f.letras.length, { message: 'cada letra se ajusta una sola vez: hay un «indice» repetido en «letras»', path: ['letras'] });
+export type FormaTexto = z.infer<typeof FormaTexto>;
+
+/** Una forma que no cambia nada (todo en su valor neutro): se trata como si no estuviera, y pinta igual. */
+export function formaNeutra(f: FormaTexto): boolean {
+  return f.escalaX === 1 && f.escalaY === 1 && f.inclinacion === 0 && !f.trackingPorLinea && f.letras.every((l) => l.dx === 0 && l.dy === 0 && l.escala === 1 && l.giro === 0);
+}
+
 export const CapaTexto = z.object({
   ...base,
   tipo: z.literal('texto'),
@@ -261,6 +322,10 @@ export const CapaTexto = z.object({
   giro: Giro.default(0),
   /** Puede salirse de la zona segura (titulares monumentales que sangran). */
   sangrado: z.boolean().default(false),
+  /** Lettering ambiental que puede quedar cortado u oculto. Los textos informativos se maquetan en sus propias capas. */
+  decorativo: z.boolean().optional(),
+  /** Desviación gaussiana en píxeles del lienzo para dar profundidad al texto. */
+  desenfoque: z.number().min(0).max(32).optional(),
   /** Solo el contorno de las letras, con este grosor en px. */
   contorno: z.number().positive().optional(),
   color: Color.optional(),
@@ -268,6 +333,8 @@ export const CapaTexto = z.object({
   tinta: Tinta.optional(),
   /** Tipografía especial (una receta de recursos/tratamientos/). No se combina con contorno, corte ni tinta. */
   tratamiento: Tratamiento.optional(),
+  /** Edición fina de la letra: escala, inclinación, espaciado por línea y ajustes por letra (ver FormaTexto). */
+  forma: FormaTexto.optional(),
   /**
    * - «fuera» sobre una foto a sangre: la palabra queda detrás del plato sin tener que recortarlo.
    * - «dentro» con `contorno`: el titular pasa a contorno al cruzar el producto (post-19, «BEST COFFEE EVER»).

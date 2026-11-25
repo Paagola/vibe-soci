@@ -1,0 +1,209 @@
+{
+  "esquema": "post/brief@1",
+  "proyecto": "2026-11-21-arrabiata",
+  "local": "meson-lo-gueno",
+  "version": 2,
+  "creadoEn": "2026-11-22T23:49:32.862Z",
+  "actualizadoEn": "2026-11-22T23:49:53.310Z",
+  "modo": "PRODUCTOR",
+  "marca": {
+    "nombre": "Mesón Lo Güeno",
+    "ciudad": "Málaga (calle Marín García, centro)",
+    "descripcion": "Mesón de tapas en el centro de Málaga: barra de madera, embutidos y montaditos.",
+    "tonos": [
+      "taberna",
+      "castizo",
+      "animado"
+    ]
+  },
+  "lienzo": {
+    "proporcion": "3:4",
+    "ancho": 1080,
+    "alto": 1440,
+    "exporta": [
+      "3:4",
+      "4:5"
+    ]
+  },
+  "hechos": {
+    "nota": "arrabiata",
+    "inventario": {
+      "estado": "PROPUESTO",
+      "elementos": [
+        {
+          "nombre": "Penne rigate",
+          "estado": "cocidos y cubiertos de salsa roja brillante",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Trozos de tomate y copos de chile",
+          "estado": "cocinados y repartidos entre la pasta",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Queso rallado",
+          "estado": "en hebras finas sobre la pasta y el borde del plato",
+          "recuento": null,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Bol cerámico oscuro",
+          "estado": "azul negro moteado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        },
+        {
+          "nombre": "Plato bajo acanalado negro",
+          "estado": "mate con borde estriado, entero",
+          "recuento": 1,
+          "cortados": 0,
+          "origen": "FOTO"
+        }
+      ],
+      "huella": "c4703e468c9dfb42ab2bbab8663d5f6d8688f929e94de2fa31d4003984961346"
+    },
+    "datosPorConfirmar": [
+      "«Penne rigate»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Trozos de tomate y copos de chile»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Queso rallado»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Bol cerámico oscuro»: lo ve el director en la foto; la nota del dueño no lo dice.",
+      "«Plato bajo acanalado negro»: lo ve el director en la foto; la nota del dueño no lo dice."
+    ]
+  },
+  "idea": null,
+  "formato": "carrusel",
+  "estetica": "COLOR_POP",
+  "referencia": {
+    "id": "ref-post-17"
+  },
+  "plan": [
+    {
+      "n": 1,
+      "papel": "portada",
+      "foto": "FOTO_ELEGIDA",
+      "para": "cartel tipográfico con el nombre confirmado y la fotografía elegida"
+    },
+    {
+      "n": 2,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Penne rigate",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 3,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Trozos de tomate y copos de chile",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 4,
+      "papel": "detalle",
+      "foto": "RECORTE",
+      "elemento": "Queso rallado",
+      "para": "detalle por recorte de la foto original sobre el punto observado"
+    },
+    {
+      "n": 5,
+      "papel": "cierre",
+      "foto": "FOTO_ELEGIDA",
+      "para": "cierre con los datos seleccionados del brief"
+    }
+  ],
+  "editorial": {
+    "modelo": "gemini-4-hydrogen",
+    "briefVersion": 1,
+    "fotoSha256": "8072c362dc451b82ac8cd2140f4f6b3f153f61dbc7c9dec4bf21bb889efd9c21",
+    "inventarioSha256": "c4703e468c9dfb42ab2bbab8663d5f6d8688f929e94de2fa31d4003984961346",
+    "referencia": "ref-post-17",
+    "fichaReferencia": "{\"esquema\":\"referencia/ficha@1\",\"titulo\":\"«SPAGHETTI Bolognese» simétrico\",\"familia\":\"F3\",\"mecanismos\":[\"PLATO_CORTADO_POR_EL_BORDE\",\"FORMAS_ORGANICAS\",\"LOGOTIPO_TIPOGRAFICO\"],\"capas\":[\"ultramar\",\"manchas orgánicas amarillas en los lados\",\"plato vacío cortado por arriba y plato de espaguetis cortado por abajo (cenitales)\",\"antetítulo espaciado\",\"«SPAGHETTI» + «Bolognese» script\",\"botón con flechas\"],\"reticula\":\"Simétrica; margen ≈ 8 %\",\"tipografia\":[{\"rol\":\"TITULAR\",\"clasificacion\":\"heavy\",\"escala\":7},{\"rol\":\"SECUNDARIO\",\"clasificacion\":\"script\",\"escala\":6},{\"rol\":\"APOYO\",\"clasificacion\":\"versalitas\",\"escala\":2}],\"paleta\":[{\"hex\":\"#1803A8\",\"rol\":\"fondo ultramar\"},{\"hex\":\"#E1AB53\",\"rol\":\"manchas amarillas\"},{\"hex\":\"#E3E3E5\",\"rol\":\"platos y texto\"}],\"foto\":\"Cenitales recortados, cortados por los bordes\",\"recursos\":[{\"recurso\":\"manchas\",\"funcion\":\"energía\"},{\"recurso\":\"platos cortados\",\"funcion\":\"encuadran el texto\"}],\"lectura\":[\"el título\",\"el plato\",\"ORDER NOW\"],\"porQueFunciona\":\"Simetría y contraste azul y amarillo.\",\"analizadaPor\":\"ESTUDIO_A_MANO\",\"analizadaEn\":\"2026-11-07\"}",
+    "fichaSha256": "9338207e3173644b9a2514ea5f10feb7c4a45fa0ec9bc2e0aadf493eb7fd4dd7",
+    "oficioSha256": "42dffc23b125473a149b1ba6816f0a31b6ce517f099ef0aa590ab69688845132",
+    "plan": {
+      "esquema": "post/editorial@1",
+      "hiloVisual": "COLOR",
+      "diapositivas": [
+        {
+          "n": 1,
+          "papel": "portada",
+          "tratamiento": "CARTEL",
+          "estructura": "CABECERA",
+          "superficie": "PAPEL",
+          "texto": {
+            "fuente": "ELEMENTO",
+            "indice": 0
+          },
+          "firma": true
+        },
+        {
+          "n": 2,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.38,
+            "y": 0.52
+          },
+          "zoom": 1.8,
+          "elemento": 0
+        },
+        {
+          "n": 3,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.33,
+            "y": 0.48
+          },
+          "zoom": 2.4,
+          "elemento": 1
+        },
+        {
+          "n": 4,
+          "papel": "detalle",
+          "tratamiento": "RECORTE_DETALLE",
+          "enfoque": {
+            "x": 0.64,
+            "y": 0.22
+          },
+          "zoom": 2.4,
+          "elemento": 2
+        },
+        {
+          "n": 5,
+          "papel": "cierre",
+          "tratamiento": "CIERRE_TEXTO",
+          "textos": [
+            {
+              "fuente": "MARCA"
+            },
+            {
+              "fuente": "CIUDAD"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "restricciones": {
+    "fidelidad": "FLEXIBLE",
+    "noInventar": true,
+    "usoFotoReal": "PUBLICABLE",
+    "reglasDeMarca": [
+      "sin logotipo inventado",
+      "sin precios",
+      "sin premios",
+      "sin afirmaciones comerciales"
+    ]
+  },
+  "presupuesto": {
+    "fotos": 2,
+    "llamadasTexto": 12
+  }
+}

@@ -40,7 +40,9 @@ export const TomaDelEncargo = z.object({
   intento: IntentoFoto.optional(),
   /** El activo confirmado para su diapositiva. */
   elegida: z.string().optional(),
-  /** Es una foto real que ha subido el dueño (no se genera ni se comprueba: es suya). */
+  /** Activo de entrada adicional para orientar la toma. */
+  referenciaDetalle: z.string().optional(),
+  /** Cargas históricas que se excluyen de la entrega. */
   real: z.boolean().optional(),
 });
 export type TomaDelEncargo = z.infer<typeof TomaDelEncargo>;

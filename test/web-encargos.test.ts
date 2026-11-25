@@ -244,7 +244,8 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal(d.revisionEditorial.estado, 'APROBADA');
     const [portada, recorte, cierre] = d.diseno.diapositivas;
     assert.deepEqual(portada.intencion.contenido.textos, {});
-    assert.equal(recorte.intencion.contenido.activos.foto, d.encargo.activoReal);
+    assert.equal(recorte.intencion.contenido.activos.foto, d.encargo.fotoElegida);
+    for (const pagina of d.diseno.diapositivas) assert.ok(!Object.values(pagina.intencion.contenido.activos).includes(d.encargo.activoReal));
     assert.equal(recorte.intencion.contenido.capas[0].zoom, 2);
     assert.ok(Object.values(cierre.intencion.contenido.textos).includes(d.brief.marca.nombre));
     const original = await archivo(d.base + 'disenos/' + portada.versiones[0].exportadas[0].archivo);
@@ -298,7 +299,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.deepEqual(lecturas[2], [['post', 1], ['detalle-1', 2], ['cierre', 2]]);
   });
 
-  it('el post editorial explora, confirma, encuadra el original y revisa rótulos sin gastar', async () => {
+  it('el post editorial explora, confirma e importa una toma nueva para revisar sus rótulos', async () => {
     const proyecto = 'sala-editorial', ruta = '/api/encargos/' + proyecto;
     const fuente = await imagenDeLectura([{ texto: 'BAR' }], '#364335', 600);
     const subida = await subir('sala.png', fuente);
@@ -323,18 +324,20 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal(zip.status, 200);
     assert.ok(zip.bytes.includes(Buffer.from('sin texto añadido')));
     assert.ok(zip.bytes.includes(Buffer.from(inicial.encargo.taller.comanda.editorial.evidencias[0].id)));
-    assert.equal((await decidir('USAR_ORIGINAL', { posicion: 0 })).status, 200);
+    assert.notEqual((await decidir('USAR_ORIGINAL', { posicion: 0 })).status, 200);
+    const nueva = await subir('nueva.png', await imagenDeLectura([{ texto: 'BAR' }], '#837768'));
+    assert.equal((await decidir('IMPORTAR', { subidaId: nueva.id, usoCandidata: 'PUBLICABLE' })).status, 200);
     const candidata = (await detalle(proyecto)).encargo.taller.candidatas[0];
-    assert.equal(candidata.origen, 'ORIGINAL');
-    assert.equal(candidata.encuadreOriginal, 0);
+    assert.equal(candidata.origen, 'IMPORTACION');
+    assert.equal(candidata.encuadreOriginal, undefined);
     assert.equal(candidata.lectura.coincide, null);
-    const comprobaciones = { version: 1, transcripcion: [], producto: true, gesto: true, legibilidad: true };
+    const comprobaciones = { version: 1, transcripcion: [], producto: true, gesto: true, legibilidad: true, apetito: true, cambioDeToma: true, vistaObservada: inicial.encargo.taller.comanda.toma?.camara.vista };
     assert.notEqual((await decidir('APROBAR', comprobaciones)).status, 200);
     assert.notEqual((await decidir('APROBAR', { ...comprobaciones, sinTextoAnadido: true, transcripcion: ['EXTRA'] })).status, 200);
     assert.equal((await decidir('APROBAR', { ...comprobaciones, sinTextoAnadido: true })).status, 200);
     const final = await detalle(proyecto);
     assert.deepEqual(final.encargo.taller.envios, []);
-    assert.equal(final.encargo.taller.candidatas[0].revision.cambioDeToma, undefined);
+    assert.ok(final.encargo.taller.candidatas[0].revision);
     assert.equal((await archivo(ruta + '/taller/exportacion')).status, 200);
   });
 
@@ -355,7 +358,10 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal((await decidir('CONFIRMAR_DIRECCION')).status, 200);
     const zip = await archivo(ruta + '/taller/paquete');
     assert.ok(zip.bytes.includes(Buffer.from('fotografía base sin texto añadido')));
-    assert.equal((await decidir('USAR_ORIGINAL', { posicion: .2 })).status, 200);
+    const copia = await subir('copia.jpg', await sharp(foto).resize(720).jpeg().toBuffer());
+    assert.notEqual((await decidir('IMPORTAR', { subidaId: copia.id })).status, 200);
+    const toma = await subir('sesion.png', await sharp(Buffer.from('<svg width="360" height="450"><rect width="360" height="450" fill="#cfc6af"/><ellipse cx="150" cy="310" rx="80" ry="46" fill="#593a2a"/></svg>')).png().toBuffer());
+    assert.equal((await decidir('IMPORTAR', { subidaId: toma.id })).status, 200);
     const v1 = (await detalle(proyecto)).encargo.taller.candidatas[0];
     assert.equal(v1.composicion.estilo, 'CONTRASTE');
     assert.equal(v1.composicion.posicion, 'SUPERIOR_DERECHA');
@@ -370,7 +376,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal(v2.composicion.versionBase, 1);
     assert.equal(v2.composicion.familia, 'archivo');
     assert.equal(v2.composicion.posicion, 'SUPERIOR_IZQUIERDA');
-    assert.equal(v2.encuadreOriginal, .2);
+    assert.equal(v2.encuadreOriginal, undefined);
     assert.notEqual((await decidir('RECOMPONER_TITULO', cambio)).status, 200);
     // Volver a la primera composición crea una revisión vigente del mismo raster.
     const vuelta = await decidir('RECOMPONER_TITULO', { version: 2, estiloTitulo: 'CONTRASTE', posicionTitulo: 'SUPERIOR_DERECHA' });
@@ -384,7 +390,7 @@ describe('API web · encargos de la orden única (simulado)', () => {
     assert.equal(editada.comanda.textos[0].texto, 'Café');
     assert.equal(editada.confirmada.huella, editada.candidatas[3].comanda);
     assert.equal(editada.candidatas[3].composicion.baseSha256, v1.composicion.baseSha256);
-    const revision = { version: 4, transcripcion: ['Café'], producto: true, gesto: true, legibilidad: true };
+    const revision = { version: 4, transcripcion: ['Café'], producto: true, gesto: true, legibilidad: true, apetito: true, cambioDeToma: true, vistaObservada: comanda.toma.camara.vista };
     assert.notEqual((await decidir('APROBAR', revision)).status, 200);
     assert.equal((await decidir('APROBAR', { ...revision, composicionTipografica: true })).status, 200);
     assert.notEqual((await archivo(ruta + '/taller/exportacion')).status, 200);

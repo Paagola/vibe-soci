@@ -31,6 +31,22 @@ export const TARIFAS: Readonly<Record<string, Tarifa>> = {
     tokensImagen: { '1K': 1120, '2K': 1120, '4K': 2000 },
     fuente: 'aistudio.google.com/docs/pricing, consultado el 07/11/2026 (sin capa gratuita)',
   },
+  /** Nano Banana 2: el modelo de los recursos gráficos del estudio de arte (elementos y escenas), no de la foto del plato. */
+  'gemini-3.1-flash-image': {
+    entrada: 0.5,
+    salidaTexto: 3,
+    salidaImagen: 60,
+    tokensImagen: { '1K': 1120, '2K': 1680, '4K': 2520 },
+    fuente: 'aistudio.google.com/docs/pricing, consultado el 22/11/2026: 0,067 USD por imagen 1K (1120 tokens a 60 USD/M), 0,101 a 2K, 0,151 a 4K',
+  },
+  /** Nano Banana 2 Lite. */
+  'gemini-3.1-flash-lite-image': {
+    entrada: 0.25,
+    salidaTexto: 1.5,
+    salidaImagen: 30,
+    tokensImagen: { '1K': 1120, '2K': 1120, '4K': 1120 },
+    fuente: 'aistudio.google.com/docs/pricing, consultado el 22/11/2026: 0,0336 USD por imagen 1K (solo publica 1K)',
+  },
 };
 
 /** El razonamiento no se conoce antes de enviar: se reserva este máximo para que la estimación no se quede corta. */
@@ -113,20 +129,28 @@ export type GastoGemini = z.infer<typeof GastoGemini>;
 /**
  * Lo gastado, por envío (receta + activo; gana la última línea): el coste real si se conoce; si no, el estimado.
  * Cuentan 0 el tier gratuito y lo FALLIDO (rechazo HTTP, no cobra). Lo ENVIADO sin respuesta cuenta su estimado.
+ * Con `desde`, solo los envíos hechos desde ese momento (la fecha de su primera línea): el tope es mensual.
  */
-export function sumarGasto(lineas: string[]): number {
-  const porEnvio = new Map<string, GastoGemini>();
+export function sumarGasto(lineas: string[], desde?: Date): number {
+  const porEnvio = new Map<string, GastoGemini & { enviadoEn: string }>();
   for (const linea of lineas.filter((l) => l.trim())) {
     const gasto = GastoGemini.parse(JSON.parse(linea));
     const clave = `${gasto.receta}|${gasto.activo}`;
-    porEnvio.set(clave, { ...porEnvio.get(clave), ...gasto });
+    const previo = porEnvio.get(clave);
+    porEnvio.set(clave, { ...previo, ...gasto, enviadoEn: previo?.enviadoEn ?? gasto.fecha });
   }
   let suma = 0;
   for (const g of porEnvio.values()) {
     if (g.tier === 'GRATUITO' || g.estado === 'FALLIDO') continue;
+    if (desde && new Date(g.enviadoEn).getTime() < desde.getTime()) continue;
     suma += g.realUsd ?? g.estimadoUsd;
   }
   return suma;
+}
+
+/** El primer instante del mes natural (hora local) de `ahora`: desde ahí cuenta el tope de GEMINI_TOPE_USD. */
+export function inicioDelMes(ahora = new Date()): Date {
+  return new Date(ahora.getFullYear(), ahora.getMonth(), 1);
 }
 
 const Respuesta = z.object({

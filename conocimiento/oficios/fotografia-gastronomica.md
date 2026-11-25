@@ -7,6 +7,8 @@ formatos: post, carrusel, historia
 
 # Fotografía gastronómica
 
+El estudio de percepción y el ensayo de Café Albor explican cómo traducir una referencia a cámara, iluminación, materiales y sensación, con criterios para revisar la toma. [Método y ejemplos](../../diseno/ensayo-fotografia/README.md)
+
 Una buena dirección de arte no sale de poner una tipografía bonita sobre una foto mediocre. La foto decide más que cualquier otra capa. Este oficio decide **qué foto necesita la idea** y cómo conseguirla sin traicionar el plato.
 
 ## Lo que se controla, por separado

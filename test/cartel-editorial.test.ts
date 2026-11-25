@@ -54,6 +54,12 @@ async function fotografiarFigura(carpeta: string) {
     procedencia: { ruta: 'fixture', sha256, copiadoEn: fecha },
     mascara: { archivo: 'mascara.png', metodo: 'MANUAL', creadaEn: fecha, incluye: 'figura', bbox: { x: 325, y: 280, w: 395, h: 540 } },
   }), { 'foto.png': foto, 'mascara.png': mascara });
+  const fuente = await pintar('#5c4d3e', '#6f2714');
+  const huellaFuente = createHash('sha256').update(fuente).digest('hex');
+  await almacen.crear(Activo.parse({ id: 'foto-real', localSlug: encargo.local, tipo: 'REAL', uso: 'SOLO_PRUEBA_COMPOSICION',
+    descripcion: 'Referencia del plato', archivo: 'fuente.png', ancho: 720, alto: 960, sha256: huellaFuente,
+    procedencia: { ruta: 'fixture-fuente', sha256: huellaFuente, copiadoEn: fecha },
+  }), { 'fuente.png': fuente });
   return almacen;
 }
 
@@ -102,14 +108,13 @@ describe('Cartel editorial', () => {
       const critico = new CriticoEditorialSimulado([{ id: 'post', version: 1, motivo: 'La silueta roza el pie de una letra.',
         correccion: { tipo: 'DESPEJAR_TITULAR' } }]);
       const deps = { proyectos: carpeta, activos, criticoEditorial: critico };
-      const conUnaFoto = { ...encargo, activoReal: encargo.fotoElegida };
-      assert.equal(await revisarEntrega(deps, conUnaFoto, brief, entrega), 'COMPONER');
+      assert.equal(await revisarEntrega(deps, encargo, brief, entrega), 'COMPONER');
       const segunda = Intencion.parse(JSON.parse(await readFile(ruta, 'utf8')));
       assert.equal(segunda.padre, 1);
       assert.deepEqual(segunda.textos, arte.textos);
       assert.deepEqual(segunda.activos, arte.activos);
       const entregaCorregida = await new ComponedorProyectos(RAIZ, carpeta).componer(proyecto);
-      const revision = await revisarEntrega({ ...deps, criticoEditorial: new CriticoEditorialSimulado() }, conUnaFoto, brief, entregaCorregida);
+      const revision = await revisarEntrega({ ...deps, criticoEditorial: new CriticoEditorialSimulado() }, encargo, brief, entregaCorregida);
       assert.ok(revision !== 'COMPONER' && revision.estado === 'CORREGIDA');
 
       const corregida = { ...segunda, notas: 'Cambio de posición aceptado', version: 3, padre: 2 };
