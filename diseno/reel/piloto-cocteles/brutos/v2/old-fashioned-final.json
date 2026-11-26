@@ -1,0 +1,14 @@
+{
+  "drink": "old-fashioned",
+  "shot": "final",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/old-fashioned.png",
+  "source_sha256": "eae6b9e54b88f9a39d9ef5bf9be81f918a38aa439c44d2a3e6258c5d6adb6ab4",
+  "duration": 6,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed amber Old Fashioned with one large clear ice cube and orange peel in the original short straight tumbler, counter and amber bar lighting in the first image. Hero portrait of the served drink for a menu. At the initial eye-level angle, slowly and visibly dolly straight forward about twelve percent in five seconds, giving genuine parallax between rim and back bar. Keep the whole silhouette and the foot in frame, horizontal center fixed, the left third clear for labels. In the drink, the single ice cube shifts a few millimeters and nudges the orange peel as the camera glides closer. Focus tracks the glass rim, warm practical backlighting stays constant. No hands or tools, one complete unbroken take and quiet room tone. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "ec0e0cdd-bea0-4af6-a45a-1701e01596bf",
+  "status": "prepared"
+}

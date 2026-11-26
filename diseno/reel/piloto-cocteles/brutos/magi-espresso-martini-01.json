@@ -19,6 +19,8 @@
   "upload_sha256": "000b55bef22173b927ec109a641cbf09052143220846c28c3d9da7cdb27a89cc",
   "prompt": "A single locked-off, eye-level 4-second bar shot in real time. Keep the camera on the tripod, same composition, exposure and focus from first frame to finish. Preserve this exact stemmed espresso martini glass, dark coffee, its thin light crema and existing coffee beans. The glass and stem stay absolutely still on the counter. Early in the shot a single small drop of espresso falls vertically from above the rim into the center of the crema. Its tiny point of contact makes one subtle ring ripple across the foam and fade; the existing beans barely rock. The final second is a clean still hero shot. Preserve the practical amber bar lights and stone counter. Diegetic audio only: a soft isolated liquid plip in sync with contact, quiet indoor room tone. No hand, extra glass, splashing stream, text, speech or music.",
   "idempotency_key": "a90077d4-2c0f-4b35-a17f-507dd2aee6bd",
-  "status": "queued",
-  "request_id": "01a217e9-45e0-745e-905c-f91a698e46dc"
+  "status": "completed",
+  "request_id": "01a217e9-45e0-745e-905c-f91a698e46dc",
+  "media": "magi-espresso-martini-01.mp4",
+  "media_sha256": "9e6ba988412ba795e52dadb91ef7a43ffc3236f2903195382b118c5aa152b6e6"
 }

@@ -1,0 +1,14 @@
+{
+  "drink": "espresso-martini",
+  "shot": "macro",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/espresso-martini-macro.png",
+  "source_sha256": "9b1ae66a145c10baa0a8b689460fe0e6756f8ed21540e8e81d2beaf39160537f",
+  "duration": 4,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed dark Espresso Martini with golden crema and three coffee beans in the original low stemmed coupe, counter and amber bar lighting in the first image. Single close-up at the reference camera angle. Begin the action immediately: a silver bar pick enters from the right, gently nudges just one of the three coffee beans into a triangle with the other two and lifts away; a fine ripple travels through the crema. Three beans throughout. Frame the visible contact tightly. Continuous physically plausible motion with a brief resolving hold. The tool remains at the surface. Intimate diegetic sound. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "0cec522a-0364-46f9-a8d6-83cfd5404427",
+  "status": "prepared"
+}

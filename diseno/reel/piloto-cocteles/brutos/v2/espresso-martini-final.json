@@ -1,0 +1,14 @@
+{
+  "drink": "espresso-martini",
+  "shot": "final",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/espresso-martini.png",
+  "source_sha256": "9761289b9719188f9e56d9c73d78853c3ddfe5ec2307f57bdeebc4a8c5de230e",
+  "duration": 6,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed dark Espresso Martini with golden crema and three coffee beans in the original low stemmed coupe, counter and amber bar lighting in the first image. Hero portrait of the served drink for a menu. At the initial eye-level angle, slowly and visibly dolly straight forward about twelve percent in five seconds, giving genuine parallax between rim and back bar. Keep the whole silhouette and the foot in frame, horizontal center fixed, the left third clear for labels. In the drink, a small ripple fades across the golden crema, gently rocking the existing beans as the camera glides closer. Focus tracks the glass rim, warm practical backlighting stays constant. No hands or tools, one complete unbroken take and quiet room tone. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "a883b67f-a249-422c-a857-5675f6c234f1",
+  "status": "prepared"
+}

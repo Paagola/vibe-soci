@@ -154,6 +154,17 @@ Variante de diseño para Torre de Vega. Se apoya en las fotos disponibles de com
 
 ## Cómo criticar, reparar y aprender
 
+### Prueba de montaje por bandas · revisión del piloto de cócteles
+
+El primer pase aprobó la composición general y la lectura del cierre. Al compararlo con el pin, el dueño identificó cuatro fallos que aquellas notas de revisión dejaron pasar. Para encargos basados en una referencia, el crítico debe ver ambos vídeos en paralelo y juzgar cada banda por separado. [Revisión y segundo montaje](piloto-cocteles/README.md)
+
+| Fallo del primer pase | Lo que debe entregar el agente | Qué comprobar en el export |
+|---|---|---|
+| Solo había vídeo en la apertura. | El montador identifica bruto e intervalo por banda en apertura, detalle y cierre. Declara cualquier movimiento reconstruido en composición. | Reproducir las nueve ventanas. En detalle deben moverse la acción o el líquido. En cierre debe poder seguirse el gesto o el cambio de encuadre previsto. |
+| El Clover quedaba dentro (7/10), el Old giraba sobre sí mismo (3/10) y el Espresso permanecía quieto (0/10). | Dirección entrega primer cuadro, contacto, dirección y último cuadro de cada gesto. En esta referencia las salidas son izquierda, derecha e izquierda. | Cámara estable, pie sobre la barra y copa completamente fuera antes del corte. Inspeccionar también el borde por el que sale la mano. |
+| La serif en dos líneas alteraba la escala y el papel de los nombres. | Arte mide una muestra del pin y busca en el catálogo local una familia de estructura y peso semejantes. Registra cuerpo, anclaje y fondo más difícil. | Revisar los tres nombres completos a 360 px de ancho, también sobre piel, espuma y reflejos. El mismo nombre mantiene su sitio al cambiar de plano. |
+| Los nombres aparecían al cierre y se perdía el efecto de descubrirlos con la mano. | Composición entrega fondo limpio, texto editable y primer término con transparencia. El rótulo permanece anclado a la barra. | Examinar antes del agarre, con parte de la palabra descubierta y tras la salida. Ninguna letra puede pasar por delante de los dedos o el vaso durante el barrido. |
+
 | Hallazgo observable | Quién decide y cómo se resuelve |
 |---|---|
 | Plato, espacio, proceso, afirmación o anatomía falsos | El crítico de fidelidad señala fuente y fotogramas. Parar ese intervalo. Recuperar material fiel ya disponible, o volver al fotograma y al prompt causantes. La media artística no compensa este fallo. |

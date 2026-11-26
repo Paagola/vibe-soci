@@ -11,13 +11,16 @@ PROMPTS A EJECUTAR
 
 Tasks
 ==============
-Terminar reel/fuentes
+Terminar reel/piloto-cocteles
 
 PROMPT: Quiero que antes de empezar a desarrollar, quiero que simules este dlujo de subagentes con subagentes tan potentes como argon y que me generes un reel, referenica: [https://es.pinterest.com/pin/511017888998079557/](https://es.pinterest.com/pin/511017888998079557/).
 Busca imágenes de cócteles en internet, genera las tomas con sus referencias y el mcp de higgsfield con nano banana pro y procede con la creación del reel y luego la edición del mismo con tesseract.
 Aprende de errores que puedan ir ocurriendo e itera hasta que quede perfecto.
 
-ESTADO: Seis imágenes creadas.
+ESTADO: Segundo montaje de 12 s. Salidas izquierda/derecha/izquierda, nombres descubiertos detrás de las copas y detalle y cierre editados con vídeo.
+Máster: diseno/reel/piloto-cocteles/cocteles-v2.mp4
+Proyecto editable: diseno/reel/piloto-cocteles/cocteles-v2.tsrct
+Referencia, decisiones de montaje y revisión: diseno/reel/piloto-cocteles/README.md
 
 -----------------------------------------------
 

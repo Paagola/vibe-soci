@@ -19,6 +19,8 @@
   "upload_sha256": "c16b8cc812b1059448fca3adf456f88f6c71bb6eb6d57b778085de2323ba5808",
   "prompt": "A single continuous locked-off real-time shot on a sturdy tripod. Preserve this exact photographed bar, amber backlight, stone counter, coupe shape, red Clover Club and its cream foam from the first frame. The camera, exposure, framing and focus stay fixed. Immediately a single bartender's bare left hand with short natural nails enters from screen left at counter height. The thumb and forefinger gently grasp the thin stem just above the foot. In one continuous short motion the hand draws the coupe horizontally to the left by about one bowl-width, foot always flat on the bar, then releases and leaves frame left. The glass remains on screen in the left third and settles for the final second. Liquid lags very slightly, staying inside the glass. Only synchronized location sound: soft glass foot sliding across stone, quiet distant room tone. One drink, natural anatomy, no text, speech or music.",
   "idempotency_key": "5c1d20b5-4a20-4bbe-9088-efac36fda3d2",
-  "status": "in_progress",
-  "request_id": "01a217e9-1a60-730c-aa7d-97e413d013e6"
+  "status": "completed",
+  "request_id": "01a217e9-1a60-730c-aa7d-97e413d013e6",
+  "media": "magi-clover-club-01.mp4",
+  "media_sha256": "cc7ea705d39f021294f62f3dec8e71ff621ee8a28962d6138abb199fb802ddc3"
 }

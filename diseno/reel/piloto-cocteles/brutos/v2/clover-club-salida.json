@@ -1,0 +1,15 @@
+{
+  "drink": "clover-club",
+  "shot": "salida",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/clover-club.png",
+  "source_sha256": "ddc354257b545adbec9c0fceacdcd64464a18eb150eef61458af1e10ab5fdfb9",
+  "last_frame": "clover-club-barra.jpg",
+  "duration": 5,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed ruby red Clover Club with an ivory foam cap in the original delicate stemmed coupe, counter and amber bar lighting in the first image. Keep the camera completely locked. In the first half-second a single natural bartender hand enters from screen left and pinches the stem securely just above its foot. In ONE smooth continuous deliberate slide it pulls the entire glass from center ALL THE WAY OFFSCREEN LEFT, its base always in contact with the counter. Keep pulling past the edge until even the last glass pixel and every finger have exited. The final full second shows only the empty bar counter and unchanged background. Do not release the glass inside the shot. Do not pan or follow. Realistic contact sounds of glass on stone. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "28c62271-211e-472c-aa14-79e008b3f433",
+  "status": "prepared"
+}

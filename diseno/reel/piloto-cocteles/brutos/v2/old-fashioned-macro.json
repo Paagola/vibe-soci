@@ -1,0 +1,14 @@
+{
+  "drink": "old-fashioned",
+  "shot": "macro",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/old-fashioned-macro.png",
+  "source_sha256": "d7283e634a4fa299089dbccc552c7b12fcec6dac4697e49bf1e6dbf91df42ec1",
+  "duration": 4,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed amber Old Fashioned with one large clear ice cube and orange peel in the original short straight tumbler, counter and amber bar lighting in the first image. Single close-up at the reference camera angle. Begin the action immediately: slender bar tweezers grasp the top edge of the existing strip of orange zest, lift just one tip above the ice, turn it slightly and tuck it back along the cube. The polished metal then retreats. Frame the visible contact tightly. Continuous physically plausible motion with a brief resolving hold. The tool remains at the surface. Intimate diegetic sound. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "3bc1745c-542a-46e2-b9f4-54dbcc55026d",
+  "status": "prepared"
+}

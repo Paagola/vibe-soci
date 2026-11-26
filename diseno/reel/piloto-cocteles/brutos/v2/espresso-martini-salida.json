@@ -1,0 +1,15 @@
+{
+  "drink": "espresso-martini",
+  "shot": "salida",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/espresso-martini.png",
+  "source_sha256": "9761289b9719188f9e56d9c73d78853c3ddfe5ec2307f57bdeebc4a8c5de230e",
+  "last_frame": "espresso-martini-barra.jpg",
+  "duration": 5,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed dark Espresso Martini with golden crema and three coffee beans in the original low stemmed coupe, counter and amber bar lighting in the first image. Keep the camera completely locked. In the first half-second a single natural bartender hand enters from screen left and pinches the stem securely just above its foot. In ONE smooth continuous deliberate slide it pulls the entire glass from center ALL THE WAY OFFSCREEN LEFT, its base always in contact with the counter. Keep pulling past the edge until even the last glass pixel and every finger have exited. The final full second shows only the empty bar counter and unchanged background. Do not release the glass inside the shot. Do not pan or follow. Realistic contact sounds of glass on stone. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "3a999b7c-b557-491f-a430-42c177f41008",
+  "status": "prepared"
+}

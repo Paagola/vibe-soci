@@ -1,0 +1,14 @@
+{
+  "drink": "clover-club",
+  "shot": "macro",
+  "model": "sand/magi-2/image-to-video",
+  "source": "../../fotogramas/clover-club-macro.png",
+  "source_sha256": "e34232278d724d818b94c21bab81efaee07eb94762c3d7eda164e07df5a197d5",
+  "duration": 4,
+  "aspect_ratio": "16:9",
+  "resolution": "1080p",
+  "generate_audio": true,
+  "prompt": "One unbroken horizontal 16:9 naturalistic shot. Preserve the exact photographed ruby red Clover Club with an ivory foam cap in the original delicate stemmed coupe, counter and amber bar lighting in the first image. Single close-up at the reference camera angle. Begin the action immediately: a pipette tip enters above the ivory foam, places one tiny ruby dot on its surface, then lifts away. The pinpoint of color blooms gently in the foam. Frame the visible contact tightly. Continuous physically plausible motion with a brief resolving hold. The tool remains at the surface. Intimate diegetic sound. No text, graphic overlays, music, dialogue, edits or extra glasses.",
+  "idempotency_key": "60f2ad13-cb21-4406-8731-5273025ecec2",
+  "status": "prepared"
+}
