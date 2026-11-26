@@ -89,3 +89,19 @@ test('una historia nace de su propósito y conserva ese motivo tras la edición'
   const aprobado = await agentesGemini(cliente(plan, { incidencias: [], cambiarEstrategia: false }), cliente({ piezas: plan.piezas })).planificar(ctx);
   assert.deepEqual(aprobado, plan);
 });
+
+test('el seguimiento de una historia mantiene su formato y la acción medida aunque cambie el objetivo', async () => {
+  const agentes = agentesSimulados();
+  const solicitud = { ...contexto.solicitud, objetivo: 'Recibir preguntas en historias', semanas: 1 };
+  const original = await agentes.planificar({ ...contexto, solicitud });
+  const { formato, llamada, metrica } = original.piezas[0]!;
+  const siguiente = await agentes.planificar({
+    ...contexto,
+    solicitud: { ...solicitud, objetivo: 'Que más vecinos nos conozcan' },
+    referenciaSemanal: { formato, llamada, metrica, muestras: 1, mediana: 3 },
+  });
+  const primera = siguiente.piezas[0]!;
+  assert.deepEqual({ formato: primera.formato, llamada: primera.llamada, metrica: primera.metrica }, { formato, llamada, metrica });
+  assert.equal(primera.formato, 'historia');
+  assert.match(siguiente.estrategia, /durante siete días/);
+});

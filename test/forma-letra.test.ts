@@ -75,18 +75,19 @@ describe('forma: sin ella, nada cambia', () => {
   // Hashes (sha256, 16 primeros hex) del PNG, del SVG exacto y del editable, tomados con el código ANTERIOR a la Fase B
   // (commit 5514032) con estas mismas intenciones. Si la forma tocara el camino de siempre, cambiarían. El del editable
   // se volvió a tomar cuando el SVG editable pasó a llevar rellenos y formas como vectores, y todos los ejes y rasgos.
+  // Los PNG se verificaron con ese mismo commit y la versión de sharp del lockfile en Linux x64.
   const ESCENARIOS: Record<string, { capas: unknown[]; hashes: [string, string, string] }> = {
     ancho: { capas: [fondo, t()], hashes: ['32381c247502acab', '8abc3bc3688dfd45', 'e56a566788ad6498'] },
     'ancho-por-linea': { capas: [fondo, t({ texto: 'Pulpo a la\nbrasa', estilo: 'fr', ajuste: 'ancho-por-linea', caja: { x: 0.1, y: 0.2, w: 0.8, h: 0.4 } })], hashes: ['9e3ccdda5043a5c4', '94e776dbc8b671d2', '8cc120edb820a751'] },
-    'eje-ancho': { capas: [fondo, t({ texto: 'MESON\nLO GUENO', estilo: 'any', ajuste: 'eje-ancho', caja: { x: 0.1, y: 0.2, w: 0.8, h: 0.3 } })], hashes: ['20a5752cf0fe061c', '747e7ee3e2d85994', '8c1ce020220e0b77'] },
+    'eje-ancho': { capas: [fondo, t({ texto: 'MESON\nLO GUENO', estilo: 'any', ajuste: 'eje-ancho', caja: { x: 0.1, y: 0.2, w: 0.8, h: 0.3 } })], hashes: ['bdc5a5cbd72e49c7', '747e7ee3e2d85994', '8c1ce020220e0b77'] },
     caja: {
       capas: [fondo, t({ texto: 'Churros con chocolate de la casa desde mil novecientos treinta y dos', estilo: 'arch', ajuste: 'caja', caja: { x: 0.1, y: 0.5, w: 0.6, h: 0.3 }, alinear: 'derecha', vertical: 'abajo' })],
-      hashes: ['f8af9fa24cb25686', 'a76ba390a62a7a2c', 'f9b1b2ba81dd47b4'],
+      hashes: ['aec771fc5e966f90', 'a76ba390a62a7a2c', 'f9b1b2ba81dd47b4'],
     },
-    fijo: { capas: [fondo, t({ texto: 'Una mesa larga para comer en familia los domingos', estilo: 'lora', ajuste: 'fijo', tamano: 64, caja: { x: 0.1, y: 0.6, w: 0.7, h: 0.3 } })], hashes: ['2450f2f0c4de9e09', '73d5c228f5c9a705', 'f5609fee5cd324d6'] },
+    fijo: { capas: [fondo, t({ texto: 'Una mesa larga para comer en familia los domingos', estilo: 'lora', ajuste: 'fijo', tamano: 64, caja: { x: 0.1, y: 0.6, w: 0.7, h: 0.3 } })], hashes: ['6ee57e7796fcc542', '73d5c228f5c9a705', 'f5609fee5cd324d6'] },
     // La semilla de la derretida sale del id de la intención: tiene que ser el mismo que el de entonces.
     derretida2: { capas: [fondo, t({ texto: 'CASA\nARANDA', caja: { x: 0.1, y: 0.3, w: 0.8, h: 0.3 }, tratamiento: { receta: 'derretida', parametros: { gotas: 1, largo: 1.2 } } })], hashes: ['edd0d061e2b9f8fc', '2910bbef413191af', 'c5e19add5e98d874'] },
-    papel: { capas: [fondo, t({ estilo: 'fr', texto: 'Café Albor', tratamiento: { receta: 'papel' } })], hashes: ['bbba71128d2c589e', '031eb5d7d1399962', 'c831661301e4ef46'] },
+    papel: { capas: [fondo, t({ estilo: 'fr', texto: 'Café Albor', tratamiento: { receta: 'papel' } })], hashes: ['f6f4429b8677e3f2', '031eb5d7d1399962', 'c831661301e4ef46'] },
     corte: { capas: [fondo, t({ corte: { en: 0.5, angulo: 8, desplazamiento: 20, separacion: 6 } })], hashes: ['c749a6fb06cc49b4', '160104041b521987', 'e56a566788ad6498'] },
   };
 

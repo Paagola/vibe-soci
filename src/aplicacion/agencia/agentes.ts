@@ -177,6 +177,12 @@ const acciones = [
   { llamada: '¿Qué te gustaría saber antes de venir?', metrica: 'Preguntas recibidas en los comentarios', proposito: 'Descubrir qué información ayudaría a preparar una visita.' },
 ];
 
+const accionDeHistoria = {
+  llamada: 'Responde a esta historia con tu pregunta.',
+  metrica: 'Respuestas recibidas a la historia',
+  proposito: 'Conocer las dudas de quien organiza la visita.',
+};
+
 export function agentesSimulados(): AgentesCampana {
   return {
     async planificar(contexto) {
@@ -194,22 +200,27 @@ export function agentesSimulados(): AgentesCampana {
       const porSemana = Math.min(2, fuentes.length);
       const indiceInicial = /compart|conozcan|descubr|conocer/i.test(solicitud.objetivo) ? 2
         : /pregunt|opini|convers/i.test(solicitud.objetivo) ? 3 : 0;
+      const referencia = contexto.referenciaSemanal;
+      const accionesDeReferencia = referencia?.formato === 'historia' ? [accionDeHistoria] : acciones;
+      const accionDeReferencia = referencia && (referencia.formato !== 'carrusel' || narrativas.length > 0)
+        ? accionesDeReferencia.find(a => a.llamada === referencia.llamada && a.metrica === referencia.metrica)
+        : undefined;
       const piezas: PlanCampana['piezas'] = [];
       for (let semana = 0; semana < solicitud.semanas; semana++) {
         for (let posicion = 0; posicion < porSemana; posicion++) {
           const paso = piezas.length + contexto.historial.length;
-          const referencia = contexto.referenciaSemanal;
-          const repetir = piezas.length === 0 && referencia && acciones.some(a => a.llamada === referencia.llamada && a.metrica === referencia.metrica)
-            && (referencia.formato === 'post' || narrativas.length > 0);
-          const carrusel = repetir ? referencia.formato === 'carrusel' : posicion === 1 && narrativas.length > 0;
-          const historia = !carrusel && (repetir ? referencia.formato === 'historia' : /historia|stories/i.test(solicitud.objetivo));
+          const seguimiento = piezas.length === 0 && referencia && accionDeReferencia
+            ? { formato: referencia.formato, accion: accionDeReferencia }
+            : undefined;
+          const carrusel = seguimiento ? seguimiento.formato === 'carrusel' : posicion === 1 && narrativas.length > 0;
+          const historia = !carrusel && (seguimiento ? seguimiento.formato === 'historia' : /historia|stories/i.test(solicitud.objetivo));
           const candidatas = carrusel ? narrativas : breves.length ? breves : fuentes;
           const [fuente, hecho] = candidatas[(semana + contexto.historial.length + (carrusel && !breves.length ? 1 : 0)) % candidatas.length]!;
-          const accion = historia && !repetir ? { llamada: 'Responde a esta historia con tu pregunta.', metrica: 'Respuestas recibidas a la historia', proposito: 'Conocer las dudas de quien organiza la visita.' } : repetir ? acciones.find(a => a.llamada === referencia.llamada)! : acciones[(paso + indiceInicial) % acciones.length]!;
+          const accion = seguimiento?.accion ?? (historia ? accionDeHistoria : acciones[(paso + indiceInicial) % acciones.length]!);
           const mensaje = hecho.trim().split(/(?<=[.!?])\s/)[0]!;
           const extracto = mensaje.length <= 280 ? mensaje.replace(/[.!?]$/, '') : nombreLocal;
-          const pie = extracto === nombreLocal ? nombreLocal : repetir ? `${extracto}. ${nombreLocal}` : `${nombreLocal} · ${extracto}`;
-          const enfoque = repetir ? 'Abrir con el detalle confirmado para observar si cambia la respuesta a la misma invitación.' : carrusel ? 'Abrir con el nombre y revelar el detalle en la segunda lámina.'
+          const pie = extracto === nombreLocal ? nombreLocal : seguimiento ? `${extracto}. ${nombreLocal}` : `${nombreLocal} · ${extracto}`;
+          const enfoque = seguimiento ? 'Abrir con el detalle confirmado para observar si cambia la respuesta a la misma invitación.' : carrusel ? 'Abrir con el nombre y revelar el detalle en la segunda lámina.'
             : 'Destacar un dato del local que ayude a recordarlo.';
           piezas.push({
             dia: semana * 7 + posicion * 3, formato: carrusel ? 'carrusel' : historia ? 'historia' : 'post',
@@ -219,15 +230,15 @@ export function agentesSimulados(): AgentesCampana {
             enfoque, fuente, llamada: accion.llamada, metrica: accion.metrica,
             texto: `${pie}. ${accion.llamada}`,
             guion: carrusel
-              ? [`${repetir ? 'Abrir con el detalle del local' : 'Portada tipográfica con la firma'} «${repetir ? extracto : nombreLocal}».`, `Dar protagonismo al dato confirmado «${extracto}».`, `Cerrar con «${accion.llamada}».`]
-              : [repetir ? `Abrir con «${extracto}» como detalle protagonista y cerrar con la firma «${nombreLocal}».` : `Componer «${extracto}» con la tipografía de la marca.`],
+              ? [`${seguimiento ? 'Abrir con el detalle del local' : 'Portada tipográfica con la firma'} «${seguimiento ? extracto : nombreLocal}».`, `Dar protagonismo al dato confirmado «${extracto}».`, `Cerrar con «${accion.llamada}».`]
+              : [seguimiento ? `Abrir con «${extracto}» como detalle protagonista y cerrar con la firma «${nombreLocal}».` : `Componer «${extracto}» con la tipografía de la marca.`],
           });
         }
       }
       const brief = esquemaEstrategia(contexto).parse({
         nombre: `Una visita a ${nombreLocal}`,
         fundamento: `El local quiere «${solicitud.objetivo}». Un detalle que el negocio ya tiene documentado permite al lector imaginar una visita y decidir con quién compartirla.`,
-        estrategia: `Para «${solicitud.objetivo}», la campaña presentará los datos confirmados de ${nombreLocal}. Cada pieza invitará a una acción que se pueda contar después de publicarla.` + (contexto.referenciaSemanal && piezas[0]?.llamada === contexto.referenciaSemanal.llamada ? ' Esta vez abriremos con el detalle del local y observaremos la misma invitación durante siete días.' : ''),
+        estrategia: `Para «${solicitud.objetivo}», la campaña presentará los datos confirmados de ${nombreLocal}. Cada pieza invitará a una acción que se pueda contar después de publicarla.` + (accionDeReferencia ? ' Esta vez abriremos con el detalle del local y observaremos la misma invitación durante siete días.' : ''),
         piezas,
       });
       return esquemaDeEdicion(brief, contexto).parse({ piezas });

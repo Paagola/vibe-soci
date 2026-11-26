@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "conceptoId": "que-pedimos",
+  "local": "Torre de Vega «El Mora» · La Alquería, Alhaurín de la Torre",
+  "formato": "9:16",
+  "ancho": 1080,
+  "alto": 1920,
+  "duracionMs": 14000,
+  "referenciaDeMontaje": {
+    "url": "https://es.pinterest.com/pin/765400899209087726/",
+    "mecanismo": "Una selección gráfica activa cada cambio de plato. La cámara y la mesa están fijas. Los cortes secos ocurren al toque y el último plato queda visible con la pregunta de cierre."
+  },
+  "inventarioPropuesto": [
+    {
+      "id": "foto-pil-pil",
+      "papel": "PLATO",
+      "archivo": "fuentes/langostinos.webp",
+      "sha256": "d16bf9159a188acb7de2509fb0535a49b93452d7d667b397644c006a808fa7f5",
+      "elementos": [
+        "Cazuela circular de barro marrón",
+        "Langostinos pelados en la disposición visible",
+        "Aceite y reflejos de la superficie",
+        "Guindilla oscura",
+        "Trozos rojos visibles sin identificación culinaria",
+        "Plato blanco labrado",
+        "Mantel claro tramado"
+      ],
+      "fueraDeEncuadre": [
+        "Platos periféricos",
+        "Borde de vaso",
+        "Cesta del borde derecho"
+      ],
+      "origen": "https://www.restaurantetorredevega.com/assets/img/fotos/langostinos-pil-pil.63a0c123-1080.webp"
+    },
+    {
+      "id": "foto-comedor",
+      "papel": "LOCAL",
+      "archivo": "fuentes/comedor.webp",
+      "sha256": "2bf34322c2276ff16cc25bab467dcb7a244da2ecca1d12b8dec199a3ee4dd6f9",
+      "elementos": [
+        "Ladrillo visto y paño central de piedra",
+        "Cortinas blancas con luz de ventana",
+        "Mesas con manteles claros",
+        "Sillas de madera con asiento trenzado",
+        "Copas y botellas presentes en la foto"
+      ],
+      "fueraDeEncuadre": [
+        "Etiquetas o tarjetas legibles en primer plano"
+      ],
+      "origen": "https://www.restaurantetorredevega.com/assets/img/local/salon.4a4db13f-1000.webp"
+    },
+    {
+      "id": "foto-jamon",
+      "papel": "PLATO",
+      "origen": "https://www.restaurantetorredevega.com/assets/img/fotos/jamon-iberico.2a3b2542-1024.webp",
+      "archivo": "fuentes/jamon.webp",
+      "sha256": "d84fe06a14f5d6d74b47b8e87b64d4b839a5e81cf96533f1b0eeae1fe7343de5",
+      "elementos": [
+        "Lonchas finas de jamón ibérico con veta blanca dispuestas en abanico",
+        "Plato blanco circular"
+      ],
+      "fueraDeEncuadre": [
+        "Pila de platos al fondo",
+        "Mantel negro de la foto de origen"
+      ]
+    },
+    {
+      "id": "foto-entrecot",
+      "papel": "PLATO",
+      "origen": "proyectos/2026-11-14-entrecot-de-vaca-curado-directo/post.json",
+      "archivo": "fuentes/entrecot.webp",
+      "sha256": "1ce07457ae972667a6989f5e8b69e92f59b557dc41620136f6ac25c104bb644b",
+      "elementos": [
+        "Entrecot cortado con centro rosado",
+        "Escamas de sal",
+        "Patatas fritas",
+        "Pimientos verdes de guarnición",
+        "Plato llano circular de barro"
+      ],
+      "fueraDeEncuadre": [
+        "Barril de madera con marca"
+      ]
+    }
+  ],
+  "textosPropuestos": [
+    {
+      "texto": "¿Qué pedimos?",
+      "respaldo": "Pregunta editorial para elegir entre platos documentados."
+    },
+    {
+      "texto": "Jamón ibérico",
+      "respaldo": "Plato documentado en la foto oficial y en la carta pública."
+    },
+    {
+      "texto": "Entrecot",
+      "respaldo": "Nombre en la carta pública y en la comanda de la foto real del repositorio."
+    },
+    {
+      "texto": "Langostinos al pil-pil",
+      "respaldo": "Nombre del plato en la carta pública."
+    },
+    {
+      "texto": "Langostinos al pil-pil\nTorre de Vega · El Mora",
+      "respaldo": "Nombre del plato en la carta pública y nombre del local en la web oficial."
+    }
+  ],
+  "promptContinuidad": "A single locked vertical camera at a high three-quarter angle over the same pale woven tablecloth in the real dining room. Match the approved empty-table anchor exactly: identical crop, real table, folds, chair edge, lens, window light and shadow direction. Each approved dish reference appears fully served at the same tabletop position after a clean hard cut. Keep every dish, its authentic plating and portion intact. Keep the lower-left area clear for graphics added in editing. Audio: quiet dining-room tone, no speech or music. No fingers, phone, graphics or lettering. No morphing, dissolves or camera movement.",
+  "planos": [
+    {
+      "id": "mesa",
+      "funcion": "GANCHO",
+      "desdeMs": 0,
+      "hastaMs": 3200,
+      "accionEnFotograma": "La mesa ya está encuadrada y el selector gráfico entra en el primer segundo. Una pulsación marca el primer corte.",
+      "camara": {
+        "movimiento": "FIJA",
+        "desplazamientoPctEncuadre": 0
+      },
+      "referencias": [
+        {
+          "fuenteId": "foto-comedor",
+          "papel": "IDENTIDAD_LOCAL"
+        }
+      ],
+      "rotulo": {
+        "texto": "¿Qué pedimos?",
+        "desdeMs": 0,
+        "hastaMs": 3200
+      },
+      "criterioDeRechazo": "Se mueve el encuadre o se inventan mobiliario, marcas o vajilla en la zona reservada para el plato.",
+      "promptFotograma": "Photograph a real table in the referenced dining room from a locked high three-quarter camera angle, vertical framing. The seat is already pulled up to the pale cloth edge in the top of frame. Soft window light from the left catches the real cloth weave. Clear the center for an incoming plate and leave readable space below left. Keep the room unobtrusive and the frame free of people, lettering and graphics.",
+      "promptMovimiento": "Hold the approved table exactly still with quiet room tone. End on a clean hard cut to the first plate. The selection cue will be added in editing."
+    },
+    {
+      "id": "jamon",
+      "funcion": "ELECCION",
+      "desdeMs": 3200,
+      "hastaMs": 6000,
+      "accionEnFotograma": "El primer toque ya ha cambiado la mesa al plato de jamón, servido y quieto en la posición asignada.",
+      "camara": {
+        "movimiento": "FIJA",
+        "desplazamientoPctEncuadre": 0
+      },
+      "referencias": [
+        {
+          "fuenteId": "foto-jamon",
+          "papel": "IDENTIDAD_PLATO"
+        },
+        {
+          "fuenteId": "foto-comedor",
+          "papel": "IDENTIDAD_LOCAL"
+        }
+      ],
+      "rotulo": {
+        "texto": "Jamón ibérico",
+        "desdeMs": 3200,
+        "hastaMs": 6000
+      },
+      "criterioDeRechazo": "Cambian la disposición o la vajilla del jamón, la geometría de la mesa o el borde de la silla.",
+      "promptFotograma": "Use the approved empty-table image as the composition anchor and the ham photograph as the dish identity. The actual plate of thin fan-arranged Iberian ham slices is already set on the center mark. Keep the original white plate, marbling and arrangement. Match the empty-table camera, cloth and window light exactly. No other dishes or lettering.",
+      "promptMovimiento": "Hold the plated ham with no camera or plate movement. Preserve the table pattern across the cut. End on a clean hard cut to the steak."
+    },
+    {
+      "id": "entrecot",
+      "funcion": "ELECCION",
+      "desdeMs": 6000,
+      "hastaMs": 8800,
+      "accionEnFotograma": "La segunda pulsación ya ha sustituido el jamón por el entrecot con patatas fritas y pimientos.",
+      "camara": {
+        "movimiento": "FIJA",
+        "desplazamientoPctEncuadre": 0
+      },
+      "referencias": [
+        {
+          "fuenteId": "foto-entrecot",
+          "papel": "IDENTIDAD_PLATO"
+        },
+        {
+          "fuenteId": "foto-comedor",
+          "papel": "IDENTIDAD_LOCAL"
+        }
+      ],
+      "rotulo": {
+        "texto": "Entrecot",
+        "desdeMs": 6000,
+        "hastaMs": 8800
+      },
+      "criterioDeRechazo": "Cambian el punto visible de la carne, la guarnición o el plato de barro, o aparece el barril de la foto original.",
+      "promptFotograma": "Use the approved empty-table frame as the composition anchor. The real sliced steak is already plated on its original terracotta plate with its pink center, salt flakes, fries and green peppers. Preserve the serving and place the plate at the same table position as the ham. Match the cloth, camera and light exactly. No barrel, extra food or lettering.",
+      "promptMovimiento": "Hold the real steak and its sides completely still. Cut directly to the pil-pil at the same place on the table. No visual transformation between plates."
+    },
+    {
+      "id": "pil-pil",
+      "funcion": "REVELADO",
+      "desdeMs": 8800,
+      "hastaMs": 14000,
+      "accionEnFotograma": "La tercera pulsación ya ha revelado la cazuela de pil-pil. El brillo del aceite se mueve dentro del plato fijo.",
+      "camara": {
+        "movimiento": "FIJA",
+        "desplazamientoPctEncuadre": 0
+      },
+      "referencias": [
+        {
+          "fuenteId": "foto-pil-pil",
+          "papel": "IDENTIDAD_PLATO"
+        },
+        {
+          "fuenteId": "foto-comedor",
+          "papel": "IDENTIDAD_LOCAL"
+        }
+      ],
+      "rotulo": {
+        "texto": "Langostinos al pil-pil\nTorre de Vega · El Mora",
+        "desdeMs": 8800,
+        "hastaMs": 14000
+      },
+      "criterioDeRechazo": "Cambian los langostinos, la cazuela o el plato de base, aparecen platos periféricos o se desplaza la mesa.",
+      "promptFotograma": "Use the approved empty-table frame as the composition anchor. The real circular terracotta dish of pil-pil prawns is already served on its embossed white underplate at the same table position. Keep the visible prawn arrangement, red pieces, dark chili and oil. A small reflection is already present on the oil. Preserve the table, camera and light. No peripheral dishes or lettering.",
+      "promptMovimiento": "Hold the exact framing and let only the oil highlight shimmer gently. Keep the dish intact and leave time to read the closing signature added in editing."
+    }
+  ]
+}
