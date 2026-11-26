@@ -1,1 +1,48 @@
-ejecutar informe-recursos-graficos y otro prompt para abaratar costes de tokens, arquitectura-agentica.md
+PROMPTS A EJECUTAR
+===================
+
+- informe-recursos-graficos
+
+- otro prompt para abaratar costes de tokens
+
+- arquitectura-agentica.md
+
+-----------------------------------------------
+
+Tasks
+==============
+Terminar reel/fuentes
+
+PROMPT: Quiero que antes de empezar a desarrollar, quiero que simules este dlujo de subagentes con subagentes tan potentes como argon y que me generes un reel, referenica: [https://es.pinterest.com/pin/511017888998079557/](https://es.pinterest.com/pin/511017888998079557/).
+Busca imágenes de cócteles en internet, genera las tomas con sus referencias y el mcp de higgsfield con nano banana pro y procede con la creación del reel y luego la edición del mismo con tesseract.
+Aprende de errores que puedan ir ocurriendo e itera hasta que quede perfecto.
+
+ESTADO: Seis imágenes creadas.
+
+-----------------------------------------------
+
+PROBLEMAS A RESOLVER
+====================
+
+continuidad de tipografías en carruseles
+
+Mejora de colocación de elementos (a veces se chocan varios y se hace menos legible)
+
+Mejora cuando subes varias imágenes da error porque solo puedes revisar una.
+
+Añadir más referencias de Pinterest en el flujo de creación de un post o carrusel para tener más opciones.
+
+pon de otra forma lo de 48h de fermentación
+s
+No he podido terminar eso.
+
+[ { "origin": "number", "code": "too_big", "maximum": 1, "inclusive": true, "path": [ "lineas", 0, "peso" ], "message": "Demasiado grande: se esperaba que número fuera <=1" } ]
+de la cuarta slide por de otra forma lo de 48h de fermentación
+s
+No he podido terminar eso.
+
+[ { "code": "invalid_union", "errors": [ [ { "code": "invalid_value", "values": [ 0 ], "path": [], "message": "Entrada inválida: se esperaba 0" } ], [ { "code": "invalid_value", "values": [ 90 ], "path": [], "message": "Entrada inválida: se esperaba 90" } ], [ { "code": "invalid_value", "values": [ -90 ], "path": [], "message": "Ent
+
+
+CORRECCIONES POR PARTE DEL USUARIO SOBRE UN CARRUSEL: en la ultima slide se ven textos sobreponiendose con otros, en la tercera también se ve el texto pegado arriba, la cuarta slide solo tiene una imagen de la mesa sin nada, es raro; 
+Tienes toda la razón: se había planteado como una pausa de textura de la mesa del obrador, pero sin el producto ni un mensaje claro queda vacía. ¿Prefieres que aprovechemos ese fondo para diseñar una lámina tipográfica hablando de las harinas ecológicas y las 48h de fermentación, o repetimos la foto (unos 0,15 USD) para que aparezca de nuevo la tartaleta?; la pegatina de 48 horas tiene una letra con un tamaño demasiado chico.
