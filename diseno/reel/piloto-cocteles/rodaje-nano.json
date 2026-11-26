@@ -1,0 +1,57 @@
+{
+  "modelo": "nano_banana_pro",
+  "resolucion": "2k",
+  "aspecto": "16:9",
+  "destino": "bandas de un tríptico vertical",
+  "referencia": "https://es.pinterest.com/pin/511017888998079557/",
+  "planos": [
+    {
+      "bebida": "clover-club",
+      "tipo": "apertura",
+      "prompt": "Use image 1 as the identity and physical glassware reference for this ruby raspberry Clover Club, smooth ivory foam cap, fine stemmed coupe. Preserve the characteristic shape, colour, garnish and believable material. One single full-bleed landscape editorial photograph, single continuous composition. An intimate European cocktail bar after dusk. The identical pale warm travertine bar runs horizontally along the lower quarter; soft amber practical lights in a defocused mahogany back bar. Warm rim light from camera left and soft neutral fill from the right reveal the glass outline without blown reflections. Camera perfectly level at just above counter height, 65 mm photographic perspective. Position one complete glass at horizontal centre, foot around 82% of image height and rim near 30%. Fill the lateral sides with breathing space, no people or lettering, no collage, no montage, no watermarks. Rich cinematic shadows and authentic liquid meniscus, believable gravity, refined print-editorial colour.",
+      "referencia": "fuentes/clover-club.jpg",
+      "trabajo": "cfa5d23e-5740-4a8f-8a4f-8221e0bea13d",
+      "coste_estimado_creditos": 2
+    },
+    {
+      "bebida": "old-fashioned",
+      "tipo": "apertura",
+      "prompt": "Use image 1 as the identity and physical glassware reference for this copper Old Fashioned, low heavy clear rocks tumbler with a single large clear ice cube and one curved strip of orange zest. Preserve the characteristic shape, colour, garnish and believable material. One single full-bleed landscape editorial photograph, single continuous composition. An intimate European cocktail bar after dusk. The identical pale warm travertine bar runs horizontally along the lower quarter; soft amber practical lights in a defocused mahogany back bar. Warm rim light from camera left and soft neutral fill from the right reveal the glass outline without blown reflections. Camera perfectly level at just above counter height, 65 mm photographic perspective. Position one complete glass at horizontal centre, foot around 82% of image height and rim near 30%. Fill the lateral sides with breathing space, no people or lettering, no collage, no montage, no watermarks. Rich cinematic shadows and authentic liquid meniscus, believable gravity, refined print-editorial colour.",
+      "referencia": "fuentes/old-fashioned.jpg",
+      "trabajo": "337e55f0-3c3f-4e05-85ea-01edbd29d97a",
+      "coste_estimado_creditos": 2
+    },
+    {
+      "bebida": "espresso-martini",
+      "tipo": "apertura",
+      "prompt": "Use image 1 as the identity and physical glassware reference for this dark Espresso Martini with tawny crema in a low stemmed coupe, three small coffee beans on the surface. Preserve the characteristic shape, colour, garnish and believable material. One single full-bleed landscape editorial photograph, single continuous composition. An intimate European cocktail bar after dusk. The identical pale warm travertine bar runs horizontally along the lower quarter; soft amber practical lights in a defocused mahogany back bar. Warm rim light from camera left and soft neutral fill from the right reveal the glass outline without blown reflections. Camera perfectly level at just above counter height, 65 mm photographic perspective. Position one complete glass at horizontal centre, foot around 82% of image height and rim near 30%. Fill the lateral sides with breathing space, no people or lettering, no collage, no montage, no watermarks. Rich cinematic shadows and authentic liquid meniscus, believable gravity, refined print-editorial colour.",
+      "referencia": "fuentes/espresso-martini.jpg",
+      "trabajo": "983a7125-f1f4-4d13-89fd-98f9739bb3f8",
+      "coste_estimado_creditos": 2
+    },
+    {
+      "bebida": "clover-club",
+      "tipo": "macro",
+      "prompt": "Lock identity to the rose-ruby Clover Club and same fine unornamented coupe as image 1. Very close three-quarter high angle showing a crescent of ivory foam, faint tiny bubbles along the glass edge and a narrow ruby line under the rim. The pale foam surface catches a soft pool of warm light; no added garnish. One horizontal photographic macro, same bar after dark. Black negative fill, a narrow warm key from upper left. Rich, tactile and natural, subject fills frame. Compose the key detail in the central 65 percent of width, allowing a slight trim at each side. No text, decoration or extra glasses. No hands. No montage.",
+      "referencia": "fotogramas/clover-club.png",
+      "trabajo": "334e28e5-6b63-4db2-8e33-d17ca52151a3",
+      "coste_estimado_creditos": 2
+    },
+    {
+      "bebida": "old-fashioned",
+      "tipo": "macro",
+      "prompt": "Lock identity to the Old Fashioned in image 1. Extremely close view through its clear straight-sided tumbler of the peel's pitted orange skin resting diagonally against a single transparent cube, amber whiskey and refracted light inside the glass. A lateral glint gives the ice weight, amber-to-black contrast. One horizontal photographic macro, same bar after dark. Black negative fill, a narrow warm key from upper left. Rich, tactile and natural, subject fills frame. Compose the key detail in the central 65 percent of width, allowing a slight trim at each side. No text, decoration or extra glasses. No hands. No montage.",
+      "referencia": "fotogramas/old-fashioned.png",
+      "trabajo": "794c3e4c-6ea1-4e68-97aa-9b9873d9008f",
+      "coste_estimado_creditos": 2
+    },
+    {
+      "bebida": "espresso-martini",
+      "tipo": "macro",
+      "prompt": "Lock identity to the espresso martini in image 1. Very close three-quarter high angle; golden fine crema and exactly three real coffee beans in a loose triangular cluster near the middle. One small concentric ripple on the surface catches the rim light. A thin segment of the coupe rim reads clearly. One horizontal photographic macro, same bar after dark. Black negative fill, a narrow warm key from upper left. Rich, tactile and natural, subject fills frame. Compose the key detail in the central 65 percent of width, allowing a slight trim at each side. No text, decoration or extra glasses. No hands. No montage.",
+      "referencia": "fotogramas/espresso-martini.png",
+      "trabajo": "279a06e4-c403-417c-83d7-bc52d9b9c658",
+      "coste_estimado_creditos": 2
+    }
+  ]
+}

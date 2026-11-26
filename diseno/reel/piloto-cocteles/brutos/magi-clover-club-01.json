@@ -1,0 +1,24 @@
+{
+  "model_requested": "sand/magi-2/image-to-video",
+  "requested_utc": "2026-11-26T12:51:22+00:00",
+  "duration": 4,
+  "resolution": "1080p",
+  "aspect_ratio": "16:9",
+  "generate_audio": true,
+  "source": "diseno/reel/piloto-cocteles/fotogramas/clover-club.png",
+  "source_sha256": "ddc354257b545adbec9c0fceacdcd64464a18eb150eef61458af1e10ab5fdfb9",
+  "estimate": {
+    "type": "description",
+    "pricing_description": "USD 0.08/sec. 1 concurrent generation per account across all MAGI-2 modes. Contact sales to increase the limit."
+  },
+  "estimated_usd": "0.32",
+  "upload_dimensions": [
+    1920,
+    1080
+  ],
+  "upload_sha256": "c16b8cc812b1059448fca3adf456f88f6c71bb6eb6d57b778085de2323ba5808",
+  "prompt": "A single continuous locked-off real-time shot on a sturdy tripod. Preserve this exact photographed bar, amber backlight, stone counter, coupe shape, red Clover Club and its cream foam from the first frame. The camera, exposure, framing and focus stay fixed. Immediately a single bartender's bare left hand with short natural nails enters from screen left at counter height. The thumb and forefinger gently grasp the thin stem just above the foot. In one continuous short motion the hand draws the coupe horizontally to the left by about one bowl-width, foot always flat on the bar, then releases and leaves frame left. The glass remains on screen in the left third and settles for the final second. Liquid lags very slightly, staying inside the glass. Only synchronized location sound: soft glass foot sliding across stone, quiet distant room tone. One drink, natural anatomy, no text, speech or music.",
+  "idempotency_key": "5c1d20b5-4a20-4bbe-9088-efac36fda3d2",
+  "status": "in_progress",
+  "request_id": "01a217e9-1a60-730c-aa7d-97e413d013e6"
+}

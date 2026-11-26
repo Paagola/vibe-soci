@@ -1,0 +1,24 @@
+{
+  "model_requested": "sand/magi-2/image-to-video",
+  "requested_utc": "2026-11-26T12:51:32+00:00",
+  "duration": 4,
+  "resolution": "1080p",
+  "aspect_ratio": "16:9",
+  "generate_audio": true,
+  "source": "diseno/reel/piloto-cocteles/fotogramas/old-fashioned.png",
+  "source_sha256": "eae6b9e54b88f9a39d9ef5bf9be81f918a38aa439c44d2a3e6258c5d6adb6ab4",
+  "estimate": {
+    "type": "description",
+    "pricing_description": "USD 0.08/sec. 1 concurrent generation per account across all MAGI-2 modes. Contact sales to increase the limit."
+  },
+  "estimated_usd": "0.32",
+  "upload_dimensions": [
+    1920,
+    1080
+  ],
+  "upload_sha256": "24156cb37fe3b6c39ce38eb0ef7089c9020b43f9f00a88f2e07aff7eae61f212",
+  "prompt": "Four seconds of uninterrupted real-time cocktail photography, tripod locked, same focal length, focus, lighting and exact composition as the first frame. One Old Fashioned in the same short straight smooth tumbler with amber liquid, single large ice cube and diagonal orange peel. A bartender's bare hand enters from screen right, fingers naturally grip the near right wall and turn the glass in place about 20 degrees in one gentle movement, keeping its foot on the stone. The ice nudges the inside wall once with a quiet crisp clink. The hand releases and withdraws to the right. The ice and peel remain in the drink. Hold the whole glass centered for the final second. Preserve the dark bar bokeh. Natural synchronized close sounds of fingertip contact, one subtle ice tick and very low bar-room ambience. No speech, text or music.",
+  "idempotency_key": "4bf4f759-e211-4eb6-9a20-8c82a3097f9f",
+  "status": "in_progress",
+  "request_id": "01a217e9-40f5-7329-a327-c2907827f91b"
+}
