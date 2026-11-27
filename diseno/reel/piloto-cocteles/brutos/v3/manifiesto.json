@@ -1,0 +1,14 @@
+{
+  "modelo": "magi_2 (image-to-video, via MCP de Higgsfield)",
+  "formato": "16:9, 1080p, 5 s, sin audio; salida 1920x1080 a 25 fps, 130 fotogramas",
+  "fecha": "2026-11-27",
+  "trabajos": {
+    "clover-arrastre": {"job": "8a27dec6-1339-4837-9fb4-2a84ca9226f1", "fuente": "fotogramas/clover-club.png", "movimiento": "mano desde la izquierda, copa sale por la izquierda"},
+    "old-arrastre": {"job": "e82462f8-1e68-4ce3-8ea2-f123c274d72f", "fuente": "fotogramas/old-fashioned.png", "movimiento": "mano desde la derecha, vaso sale por la derecha sin girar"},
+    "espresso-arrastre": {"job": "17add462-c786-4454-9fd0-a3bf539904a0", "fuente": "fotogramas/espresso-martini.png", "movimiento": "mano desde la izquierda, copa sale por la izquierda"},
+    "clover-detalle": {"job": "f8c447c3-0428-44d1-9005-d9a9050de12c", "fuente": "fotogramas/clover-club-macro.png"},
+    "old-detalle": {"job": "e1077ad7-32a1-4464-89a0-f755650e5a7a", "fuente": "fotogramas/old-fashioned-macro.png"},
+    "espresso-detalle": {"job": "23fe9f8d-c029-41a2-bec6-6e8480db6bb9", "fuente": "fotogramas/espresso-martini-macro.png"}
+  },
+  "coste": "6 clips x 5 s; importe estimado a 0,08 USD/s = 2,40 USD, sin conciliar con facturacion"
+}

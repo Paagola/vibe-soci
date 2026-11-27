@@ -204,3 +204,14 @@ Se resolvió la ruta general `/katana` en el MCP y se siguió su rama de adaptac
 **Comprobación del transporte.** La API de Higgsfield devolvió estado terminal `failed` y mensaje `Generation failed` para el trabajo histórico de 14 s. La causa y el cargo efectivo siguen sin comprobarse. Se recotizó la petición original con sus cuatro referencias, 9:16, 1080p y audio. El endpoint de estimación devolvió una tarifa de 0,08 USD/s, equivalente a **1,12 USD por otro intento de 14 s**. Se conservan los activos y sus huellas. El intento anterior y el control son operaciones independientes. [Registro de producción](REGISTRO.md)
 
 **Qué acredita la maqueta.** Se verificaron 350 fotogramas y 14,00 s a 540 × 960 para revisión. Los tres primeros planos usan imágenes estáticas; el cuarto incorpora vídeo Magi ya generado. El sonido de prueba procede del ambiente del control, repetido durante la maqueta. El control midió −42,7 LUFS y la maqueta −34,9 LUFS. Para la entrega de campaña quedan la respuesta audible del selector, la mezcla, el proyecto editable y la revisión del máster a 1080 × 1920. Esta prueba permite decidir sobre el ritmo y las transiciones antes de volver a comprar vídeo.
+
+## Lecciones del piloto de cócteles (27/11/2026)
+
+Resumen para el director de reels. El detalle y las pruebas están en [piloto-cocteles/README.md](piloto-cocteles/README.md#errores-de-proceso-y-reglas-para-el-sistema).
+
+- El análisis de una referencia exige una fila por tramo y banda con lo que se ve, lo que hace el sujeto y lo que hace el texto. «Detalle» no es una descripción.
+- Medir la tipografía del original (anchos de tinta, altura de versal, posición, color, efecto de aparición) antes de elegir fuente.
+- La referencia se guarda en el repositorio. La revisión compara con ella, no solo con la adaptación.
+- Cada desviación del original es una decisión anotada con su motivo.
+- Los textos que aparecen al paso de un objeto necesitan capas y una máscara del objeto desde el plan.
+- El tercer montaje deja abiertos los tramos 2 y 3: en el original son acciones de guarnición y vertido sobre fondo oscuro, no un zoom ni una vuelta al plano 1.
